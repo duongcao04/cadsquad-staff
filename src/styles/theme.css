@@ -1,0 +1,57 @@
+:root {
+    --background: oklch(1 0 0); /* #ffffff */
+    --background-secondary: oklch(96.4% 0.3% 247); /* #f6f6f6 */
+    --foreground: oklch(0.095 0 0); /* #171717 */
+    --border: oklch(0.896 0.003 0); /* #e4e4e4 */
+    --button-hover: oklch(0.953 0.001 0); /* #f2f2f2 */
+}
+
+@media (prefers-color-scheme: dark) {
+    /*
+    :root {
+        --background: oklch(0.061 0 0); 
+        --background-secondary: oklch(25.9% 0.4% 267);
+        --foreground: oklch(0.929 0 0); 
+        --border: oklch(0.168 0.001 0); 
+        --button-hover: oklch(0.165 0 0); 
+    */
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-background-secondary: var(--background-secondary);
+    --color-foreground: var(--foreground);
+    --color-border: var(--border);
+    --color-button-hover: var(--button-hover);
+
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    --font-saira: var(--font-saira);
+    --font-inter: var(--font-inter);
+
+    --color-primary: oklch(0.731 0.212 56.6);
+    --color-primary-50: oklch(0.968 0.03 74.2);
+    --color-primary-100: oklch(0.934 0.072 70.1);
+    --color-primary-200: oklch(0.877 0.133 70.7);
+    --color-primary-300: oklch(0.816 0.178 61.3);
+    --color-primary-400: oklch(0.741 0.223 55.5);
+    --color-primary-500: oklch(0.731 0.212 56.6);
+    --color-primary-600: oklch(0.661 0.226 46.2);
+    --color-primary-700: oklch(0.538 0.179 40.1);
+    --color-primary-800: oklch(0.44 0.144 34.9);
+    --color-primary-900: oklch(0.368 0.106 35.4);
+    --color-primary-950: oklch(0.216 0.056 33.9);
+
+    --color-secondary: var(--color-secondary-500);
+    --color-secondary-50: oklch(0.9452 0.0201 289.08);
+    --color-secondary-100: oklch(0.8812 0.0424 288.46);
+    --color-secondary-200: oklch(0.7734 0.0808 286.75);
+    --color-secondary-300: oklch(0.6627 0.1231 285.23);
+    --color-secondary-400: oklch(0.5483 0.1665 281.42);
+    --color-secondary-500: oklch(0.2681 0.1324 276.54); /* Base color (#1b1464) */
+    --color-secondary-600: oklch(0.2456 0.1207 275.9);
+    --color-secondary-700: oklch(0.2215 0.1072 275.3);
+    --color-secondary-800: oklch(0.1962 0.096 274.62);
+    --color-secondary-900: oklch(0.1708 0.0818 274.61);
+    --color-secondary-950: oklch(0.1335 0.0587 274.97);
+}

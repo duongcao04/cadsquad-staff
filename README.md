@@ -1,8 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 Nextjs Sample Template
 
-## Getting Started
+Welcome to **`nextjs-sample`**, a modern and extensible starter template for **Next.js 15** using **React 19**, **Tailwind CSS**, and essential tools for building fast, scalable, production-ready apps.
 
-First, run the development server:
+This template is built to help developers start faster with best practices, common utilities, and powerful packages already pre-configured.
+
+---
+
+## 📦 Tech Stack
+
+This template includes:
+
+- ✅ **Next.js 15.3.4** – App Router support, latest updates
+- ⚛️ **React 19** – Concurrent rendering, improved performance
+- 🎨 **Tailwind CSS** – Utility-first styling with `tailwind-merge` and `clsx`
+- 🌐 **next-intl** – Built-in internationalization (i18n)
+- 🧾 **Formik** + **Yup** – Form management and schema validation
+- ✉️ **Nodemailer** – Backend email sending
+- 🎞 **Motion** – Smooth animations
+- 🧩 **Lucide React** – Icon system with React components
+- 🧹 **Prettier Plugin** – Auto-sorted imports with `@trivago/prettier-plugin-sort-imports`
+
+---
+
+## 🛠️ How to Start
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-org/nextjs-sample.git
+cd nextjs-sample
+```
+
+### 2. Install Dependencies
+
+Choose your package manager:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+### 3. Start the Development Server
 
 ```bash
 npm run dev
@@ -14,23 +57,61 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000 in your browser to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Start Editing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open the main page:
 
-## Learn More
+```bash
+app/page.tsx
+```
 
-To learn more about Next.js, take a look at the following resources:
+Make changes, and they’ll reflect automatically thanks to hot reloading.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+.
+├── src/
+│   ├── app/            		  # App Router pages
+│   ├── components/     		  # Shared and reusable UI components
+│   ├── styles/         		  # Tailwind CSS and global styles
+│   ├── fonts/         			  # App fonts
+│   ├── validationSchemas/    # Validation schema with Yup
+│   ├── lib/            		  # Business logic, API, DB, or framework-level code
+│	  │   ├── utils.ts    		  # pure helper functions (e.g., string, number helpers)
+│	  │   ├── auth.ts    			  # functions for session/user management
+│	  │   ├── db.ts				      # db connection setup, Prisma client, etc.
+│	  │   ├── motion.ts				  # motion wrapper tag config
+│	  │   ├── api.ts				    # functions to call external/internal APIs
+│	  │   └── formatDate.ts 	  # date formatting logic
+│   └── i18n/           		  # i18n locale files for next-intl
+├── public/             		  # Static assets
+├── .prettierrc         		  # Prettier config with import sorting
+└── package.json        		  # Dependencies and scripts
+```
 
-## Deploy on Vercel
+## 🔧 Configuration Highlights
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Prettier (with sorted imports)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```json
+"prettier": {
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["^react", "^next", "^[a-z]", "^@", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
+}
+```
+
+Example Scripts
+
+```json
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint"
+}
+```
