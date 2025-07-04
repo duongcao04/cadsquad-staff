@@ -1,80 +1,74 @@
 import createIntlMiddleware from 'next-intl/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
-import {
-    type SupportLanguages,
-    defaultLocale,
-    getLocaleFromPathname,
-    isValidLocale,
-    routing,
-} from '@/i18n/routing'
+import { removeLocaleFromPathname, routing } from './i18n/routing'
 
 // Create the internationalization middleware
 const intlMiddleware = createIntlMiddleware(routing)
 
-// Helper function to detect user's preferred language
-function detectLanguage(req: NextRequest): SupportLanguages {
-    // 1. Check for language preference in cookies
-    const languageCookie = req.cookies.get('NEXT_LOCALE')?.value
-    if (languageCookie && isValidLocale(languageCookie)) {
-        return languageCookie
-    }
+// Define public routes that don't require authentication
+const publicRoutes = ['/auth']
 
-    // 2. Check Accept-Language header
-    const acceptLanguage = req.headers.get('accept-language')
-    if (acceptLanguage) {
-        const preferredLangs = acceptLanguage
-            .split(',')
-            .map((lang) => lang.split(';')[0].trim().toLowerCase())
+function isPublicRoute(pathname: string): boolean {
+    // Remove locale prefix to check the actual route
+    const pathWithoutLocale = removeLocaleFromPathname(pathname)
 
-        for (const lang of preferredLangs) {
-            // Check for exact match
-            if (isValidLocale(lang)) {
-                return lang
-            }
-            // Check for language code only (e.g., 'vi' from 'vi-VN')
-            const langCode = lang.split('-')[0]
-            if (isValidLocale(langCode)) {
-                return langCode
-            }
-        }
-    }
-
-    // 3. Return default locale
-    return defaultLocale
+    return publicRoutes.some(
+        (route) =>
+            pathWithoutLocale === route || pathWithoutLocale.startsWith(route)
+    )
 }
 
-// Helper function to check if a path already has a locale prefix
-function hasLocalePrefix(pathname: string): boolean {
-    return getLocaleFromPathname(pathname) !== null
-}
+export default function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl
 
-export default async function middleware(req: NextRequest) {
-    const path = req.nextUrl.pathname
+    // Check if user has session cookie
+    const sessionCookie = request.cookies.get('session')
+    const hasSession = sessionCookie && sessionCookie.value
 
-    // Check if a path already has a locale prefix
-    if (!hasLocalePrefix(path)) {
-        // Detect user's preferred language
-        const preferredLocale = detectLanguage(req)
+    // Extract locale from pathname or use default
+    const locale = pathname.split('/')[1] || 'en'
+    const isValidLocale = ['vi', 'en'].includes(locale)
 
-        // Create new URL with language prefix
-        const newUrl = new URL(`/${preferredLocale}${path}`, req.url)
+    // If it's a protected route and user is not authenticated
+    if (!isPublicRoute(pathname) && !hasSession) {
+        // Redirect to auth page with proper locale
+        const authUrl = new URL(
+            `/${isValidLocale ? locale : 'en'}/auth`,
+            request.url
+        )
 
-        // Preserve search parameters
-        newUrl.search = req.nextUrl.search
+        const pathWithoutLocale = removeLocaleFromPathname(pathname)
+        // Optionally add a redirect parameter to return after login
+        authUrl.searchParams.set('redirect', pathWithoutLocale)
 
-        // Redirect to a path with language prefix
-        return NextResponse.redirect(newUrl)
+        return NextResponse.redirect(authUrl)
     }
 
-    // Apply internationalization middleware
-    return intlMiddleware(req)
+    // If user is authenticated and trying to access auth pages, redirect to dashboard
+    if (hasSession && isPublicRoute(pathname) && pathname.includes('/auth')) {
+        const dashboardUrl = new URL(
+            `/${isValidLocale ? locale : 'en'}/`,
+            request.url
+        )
+        return NextResponse.redirect(dashboardUrl)
+    }
+
+    // Apply internationalization middleware for all other cases
+    return intlMiddleware(request)
 }
 
-// Combine both matchers to exclude paths from both middleware
 export const config = {
     matcher: [
-        // Exclude API, static assets, and file extensions from both middleware
-        '/((?!api|trpc|_next|_vercel|_next/static|_next/image|.*\\.png$|.*\\..*).*)',
+        // Enable a redirect to a matching locale at the root
+        '/',
+
+        // Set a cookie to remember the previous locale for
+        // all requests that have a locale prefix
+        '/(vi|en)/:path*',
+
+        // Enable redirects that add missing locales
+        // (e.g. `/pathnames` -> `/en/pathnames`)
+        '/((?!_next|_vercel|.*\\..*).*)',
     ],
 }

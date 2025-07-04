@@ -14,7 +14,6 @@ export async function generateMetadata({
 }>) {
     const { locale } = await params
 
-    // Use server-side translations
     const tMetadata = await getTranslations({
         locale,
         namespace: 'metadata.aboutUs',
@@ -45,9 +44,7 @@ export default async function DashboardLayout({
                 </div>
                 <div className="grid grid-cols-[70px_1fr] gap-2">
                     <Sidebar />
-                    <div className="rounded-md size-full shadow-2xl p-3">
-                        {children}
-                    </div>
+                    <div className="rounded-md size-full">{children}</div>
                 </div>
             </main>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import {
     Avatar,
@@ -8,7 +8,10 @@ import {
     Dropdown,
     DropdownItem,
     DropdownMenu,
+    DropdownSection,
     DropdownTrigger,
+    User as UserComp,
+    addToast,
 } from '@heroui/react'
 import { Input, Layout } from 'antd'
 import {
@@ -20,19 +23,54 @@ import {
     User,
     UserCircle,
 } from 'lucide-react'
+import { useLocale } from 'next-intl'
 
+import { usePathname, useRouter } from '@/i18n/navigation'
+import { logoutSession } from '@/lib/auth/session'
+import { supabase } from '@/lib/supabase/client'
+import { useAuthStore } from '@/lib/zustand/useAuthStore'
+
+import AppLoader from '../../../app/[locale]/loading'
 import CadsquadLogo from '../CadsquadLogo'
 
 const { Header: AntHeader } = Layout
 
 const Header = () => {
-    const handleSearch = (value) => {
-        console.log('Search value:', value)
+    const locale = useLocale()
+    const router = useRouter()
+    const pathname = usePathname()
+
+    const [isLoading, setLoading] = useState(false)
+
+    const authUser = useAuthStore((state) => state.authUser)
+    const { removeAuthUser } = useAuthStore()
+
+    const handleLogout = async () => {
+        try {
+            setLoading(true)
+            await supabase.auth.signOut()
+            await logoutSession(authUser)
+            removeAuthUser()
+            addToast({
+                title: 'Logout successfully!',
+                color: 'success',
+            })
+            router.push({
+                pathname: 'auth',
+                query: { redirect: pathname },
+            })
+        } catch (error) {
+            addToast({
+                title: 'Logout failed!',
+                description: `${error}`,
+                color: 'danger',
+            })
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const handleMenuClick = ({ key }) => {
-        console.log('Menu clicked:', key)
-    }
+    if (isLoading) return <AppLoader />
 
     return (
         <AntHeader
@@ -58,7 +96,6 @@ const Header = () => {
                         placeholder="Search"
                         prefix={<Search size={16} color="#999" />}
                         size="large"
-                        onPressEnter={(e) => handleSearch(e.target.value)}
                         style={{
                             borderRadius: '8px',
                             background: 'white',
@@ -93,36 +130,79 @@ const Header = () => {
                     />
 
                     {/* User Avatar with Dropdown */}
-                    <Dropdown>
+                    <Dropdown
+                        showArrow
+                        classNames={{
+                            base: 'before:bg-default-200', // change arrow background
+                            content:
+                                'p-0 border-small border-divider bg-background',
+                        }}
+                        radius="sm"
+                    >
                         <DropdownTrigger>
                             <Avatar
-                                className="bg-[#87d068] cursor-pointer"
+                                isBordered
+                                className="cursor-pointer"
+                                color="danger"
                                 icon={<User size={18} />}
+                                src={authUser?.avatar}
                             />
                         </DropdownTrigger>
-                        <DropdownMenu
-                            aria-label="User menu"
-                            onAction={(key) => handleMenuClick({ key })}
-                        >
-                            <DropdownItem
-                                key="profile"
-                                startContent={<UserCircle size={16} />}
-                            >
-                                Profile
-                            </DropdownItem>
-                            <DropdownItem
-                                key="settings"
-                                startContent={<Settings size={16} />}
-                            >
-                                Settings
-                            </DropdownItem>
-                            <DropdownItem key="divider" />
-                            <DropdownItem
-                                key="logout"
-                                startContent={<LogOut size={16} />}
-                            >
-                                Logout
-                            </DropdownItem>
+                        <DropdownMenu aria-label="User menu" className="p-3">
+                            <DropdownSection showDivider aria-label="Profile">
+                                <DropdownItem
+                                    key="profile"
+                                    className="h-14 gap-2 opacity-100"
+                                    hrefLang={locale}
+                                    href="/profile"
+                                >
+                                    <UserComp
+                                        avatarProps={{
+                                            size: 'sm',
+                                            src: authUser?.avatar,
+                                        }}
+                                        classNames={{
+                                            name: 'text-default-600',
+                                            description: 'text-default-500',
+                                        }}
+                                        name={authUser?.name}
+                                        description={`@${authUser?.username}`}
+                                    />
+                                </DropdownItem>
+                                <DropdownItem
+                                    key="onBoarding"
+                                    hrefLang={locale}
+                                    href="/onboarding"
+                                >
+                                    On boarding
+                                </DropdownItem>
+                                <DropdownItem
+                                    key="settings"
+                                    hrefLang={locale}
+                                    href="/settings"
+                                >
+                                    Settings
+                                </DropdownItem>
+                            </DropdownSection>
+
+                            <DropdownSection aria-label="Help & Settings">
+                                <DropdownItem
+                                    key="helpCenter"
+                                    startContent={<UserCircle size={16} />}
+                                    href="/help-center"
+                                    hrefLang={locale}
+                                >
+                                    Help Center
+                                </DropdownItem>
+                                <DropdownItem
+                                    key="logout"
+                                    startContent={<LogOut size={16} />}
+                                    color="danger"
+                                    onPress={handleLogout}
+                                >
+                                    Logout
+                                </DropdownItem>
+                            </DropdownSection>
                         </DropdownMenu>
                     </Dropdown>
                 </div>

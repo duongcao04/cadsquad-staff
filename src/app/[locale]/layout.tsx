@@ -8,6 +8,8 @@ import { AppProvider } from '@/app/providers'
 import { geistMono, geistSans, saira } from '@/fonts'
 import { SupportLanguages, routing } from '@/i18n/routing'
 
+import AppLoader from './loading'
+
 export default async function RootLayout({
     children,
     params,
@@ -34,9 +36,7 @@ export default async function RootLayout({
                 suppressHydrationWarning
             >
                 <AppProvider key="root" locale={locale} messages={messages}>
-                    <Suspense fallback={<p>Loading ...</p>}>
-                        {children}
-                    </Suspense>
+                    <Suspense fallback={<AppLoader />}>{children}</Suspense>
                 </AppProvider>
             </body>
         </html>

@@ -3,8 +3,7 @@ import { Project } from '@/validationSchemas/project.schema'
 export const Projects: Project[] = [
     {
         id: 'prj-001',
-        thumbnail:
-            'https://petapixel.com/assets/uploads/2024/01/High-resolution-image-of-sun.jpg',
+        thumbnail: 'https://www.csdvietnam.com/assets/img/logo.webp',
         sourceUrl: 'test-source',
         jobNo: 'FV.1234',
         jobName: '3D Modeling Testing',
@@ -17,8 +16,7 @@ export const Projects: Project[] = [
     },
     {
         id: 'prj-002',
-        thumbnail:
-            'https://petapixel.com/assets/uploads/2024/01/High-resolution-image-of-sun.jpg',
+        thumbnail: 'https://www.csdvietnam.com/assets/img/logo.webp',
         sourceUrl: 'test-source-2',
         jobNo: 'FV.5678',
         jobName: 'BIM Coordination',
@@ -31,8 +29,7 @@ export const Projects: Project[] = [
     },
     {
         id: 'prj-003',
-        thumbnail:
-            'https://petapixel.com/assets/uploads/2024/01/High-resolution-image-of-sun.jpg',
+        thumbnail: 'https://www.csdvietnam.com/assets/img/logo.webp',
         sourceUrl: 'test-source-3',
         jobNo: 'FV.9101',
         jobName: 'Construction Docs',
@@ -45,8 +42,7 @@ export const Projects: Project[] = [
     },
     {
         id: 'prj-004',
-        thumbnail:
-            'https://petapixel.com/assets/uploads/2024/01/High-resolution-image-of-sun.jpg',
+        thumbnail: 'https://www.csdvietnam.com/assets/img/logo.webp',
         sourceUrl: 'test-source-4',
         jobNo: 'FV.1121',
         jobName: 'Site Survey',
@@ -59,8 +55,7 @@ export const Projects: Project[] = [
     },
     {
         id: 'prj-005',
-        thumbnail:
-            'https://petapixel.com/assets/uploads/2024/01/High-resolution-image-of-sun.jpg',
+        thumbnail: 'https://www.csdvietnam.com/assets/img/logo.webp',
         sourceUrl: 'test-source-5',
         jobNo: 'FV.3141',
         jobName: 'Interior Design',

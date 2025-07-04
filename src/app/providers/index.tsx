@@ -17,7 +17,7 @@ export function AppProvider({ children, locale, messages }: Props) {
             timeZone="Asia/Ho_Chi_Minh"
         >
             <HeroUIProvider>
-                <ToastProvider />
+                <ToastProvider placement="bottom-center" />
                 <AntdRegistry>{children}</AntdRegistry>
             </HeroUIProvider>
         </NextIntlClientProvider>

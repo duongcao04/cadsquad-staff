@@ -14,3 +14,13 @@ export const ProjectSchema = yup.object().shape({
     updatedAt: yup.string(),
 })
 export type Project = yup.InferType<typeof ProjectSchema>
+
+export const CreateProjectSchema = yup.object().shape({
+    sourceUrl: yup.string().required(),
+    jobNo: yup.string().required(),
+    jobName: yup.string().required(),
+    price: yup.string().required(),
+    startedAt: yup.string().required(),
+    dueAt: yup.string().required(),
+})
+export type NewProject = yup.InferType<typeof CreateProjectSchema>

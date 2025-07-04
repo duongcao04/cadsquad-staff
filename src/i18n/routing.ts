@@ -49,10 +49,14 @@ export function getLocaleFromPathname(
 }
 
 // Helper function to remove locale from pathname
+// export function removeLocaleFromPathname(pathname: string): string {
+//     const locale = getLocaleFromPathname(pathname)
+//     if (locale) {
+//         return pathname.slice(`/${locale}`.length) || '/'
+//     }
+//     return pathname.replace(/^\/(vi|en)/, '') || '/'
+// }
+
 export function removeLocaleFromPathname(pathname: string): string {
-    const locale = getLocaleFromPathname(pathname)
-    if (locale) {
-        return pathname.slice(`/${locale}`.length) || '/'
-    }
-    return pathname
+    return pathname.replace(/^\/(vi|en)/, '') || '/'
 }
