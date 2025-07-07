@@ -8,6 +8,7 @@
         "@ant-design/nextjs-registry": "^1.0.2",
         "@heroui/react": "^2.8.0-beta.7",
         "@prisma/client": "^6.11.1",
+        "@prisma/extension-accelerate": "^2.0.1",
         "@supabase/ssr": "^0.6.1",
         "@trivago/prettier-plugin-sort-imports": "^5.2.2",
         "antd": "^5.26.0",
@@ -470,6 +471,8 @@
     "@nolyfill/is-core-module": ["@nolyfill/is-core-module@1.0.39", "", {}, "sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA=="],
 
     "@prisma/client": ["@prisma/client@6.11.1", "", { "peerDependencies": { "prisma": "*", "typescript": ">=5.1.0" }, "optionalPeers": ["prisma", "typescript"] }, "sha512-5CLFh8QP6KxRm83pJ84jaVCeSVPQr8k0L2SEtOJHwdkS57/VQDcI/wQpGmdyOZi+D9gdNabdo8tj1Uk+w+upsQ=="],
+
+    "@prisma/extension-accelerate": ["@prisma/extension-accelerate@2.0.1", "", { "peerDependencies": { "@prisma/client": ">=4.16.1" } }, "sha512-KSQlLC5F1qxFQCqSP8SnCwhkv9SE40v8WR+UjHdRce0R7Fv/K3IfJJNANGFx5MNoOypK1VN6wfvRr6CNA/l+BQ=="],
 
     "@protobufjs/aspromise": ["@protobufjs/aspromise@1.1.2", "", {}, "sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ=="],
 

@@ -57,7 +57,11 @@ export default function DateTimePicker({ form }: Props) {
             placement="topRight"
             renderExtraFooter={() => {
                 return (
-                    <div className="py-2 flex items-center justify-end gap-3">
+                    <div className="py-2 flex items-center justify-between gap-3">
+                        <div></div>
+                        <Button icon={<ClearOutlined />} onClick={resetRange}>
+                            Today
+                        </Button>
                         <Button icon={<ClearOutlined />} onClick={resetRange}>
                             Clear
                         </Button>

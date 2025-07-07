@@ -4,7 +4,6 @@ import { Button, Input, NumberInput, addToast } from '@heroui/react'
 import { Modal } from 'antd'
 import { useFormik } from 'formik'
 
-import { supabase } from '@/lib/supabase/client'
 import {
     CreateProjectSchema,
     NewProject,
@@ -28,23 +27,33 @@ export default function JobModal({ isOpen, onClose }: Props) {
             sourceUrl: '',
             startedAt: '',
             dueAt: '',
-            memberAssign: [],
+            memberAssignIds: [],
+            thumbnail: 'https://www.csdvietnam.com/assets/img/logo.webp',
         },
         validationSchema: CreateProjectSchema,
         onSubmit: async (values) => {
             try {
                 setLoading(true)
-                const { data } = await supabase
-                    .from('Project')
-                    .insert(values)
-                    .select()
-                if (data) {
-                    addToast({ title: 'Create project successfully!' })
+                const res = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(values),
+                })
+                const data = await res.json()
+
+                if (res.status === 201) {
+                    addToast({
+                        title: 'Create project successfully!',
+                        color: 'success',
+                    })
+                } else {
+                    throw new Error(data)
                 }
             } catch (error) {
                 addToast({
                     title: 'Create project failed!',
                     description: `${error}`,
+                    color: 'danger',
                 })
             } finally {
                 setLoading(false)
@@ -177,7 +186,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     />
                     <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssign) && formik.errors.memberAssign ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssignIds) && formik.errors.memberAssignIds ? 'text-danger' : 'text-secondary'}`}
                         >
                             Member Assign
                             <span className="absolute top-0 right-0 text-danger!">
@@ -189,7 +198,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                             {Boolean(formik.touched.sourceUrl) &&
                                 Boolean(formik.errors.sourceUrl) && (
                                     <p className="text-xs text-danger mt-1">
-                                        {formik.errors.memberAssign}
+                                        {formik.errors.memberAssignIds}
                                     </p>
                                 )}
                         </div>
@@ -221,7 +230,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     />
                     <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssign) && formik.errors.memberAssign ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) && formik.errors.dueAt ? 'text-danger' : 'text-secondary'}`}
                         >
                             Delivery
                             <span className="absolute top-0 right-0 text-danger!">
@@ -230,10 +239,10 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         </p>
                         <div className="w-full flex flex-col">
                             <DateTimePicker form={formik} />
-                            {Boolean(formik.touched.sourceUrl) &&
-                                Boolean(formik.errors.sourceUrl) && (
+                            {Boolean(formik.touched.dueAt) &&
+                                Boolean(formik.errors.dueAt) && (
                                     <p className="text-xs text-danger mt-1">
-                                        {formik.errors.memberAssign}
+                                        {formik.errors.dueAt}
                                     </p>
                                 )}
                         </div>

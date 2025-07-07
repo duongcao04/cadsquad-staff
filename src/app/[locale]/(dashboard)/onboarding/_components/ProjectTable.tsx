@@ -1,12 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Image, Table } from 'antd'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { calcDueTo } from '@/lib/formatDate'
-import { Projects } from '@/mockup/project'
 import { Project } from '@/validationSchemas/project.schema'
 
 const { Column, ColumnGroup } = Table
@@ -15,15 +14,29 @@ type DataType = Project & {
     key: React.Key
 }
 
-const data: DataType[] = Projects.map((prj) => {
-    return {
-        ...prj,
-        key: prj.id as string,
-    }
-})
 export default function ProjectTable() {
+    const [projects, setProjects] = useState([])
+    const [isLoading, setLoading] = useState(false)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true)
+                const res = await fetch('/api/projects', {
+                    method: 'GET',
+                })
+                const data = await res.json()
+                setProjects(data.data)
+            } catch (error) {
+                console.log(error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
+    }, [])
     return (
-        <Table<DataType> dataSource={data}>
+        <Table<DataType> dataSource={projects} loading={isLoading}>
             <ColumnGroup title="Job No">
                 <Column
                     title="Thumbnail"

@@ -47,9 +47,9 @@ export default function SelectMember({ form }: Props) {
             styles={{}}
             mode="multiple"
             onChange={(value) => {
-                form.setFieldValue('memberAssign', value)
+                form.setFieldValue('memberAssignIds', value)
             }}
-            value={form.values.memberAssign}
+            value={form.values.memberAssignIds}
         />
     )
 }
