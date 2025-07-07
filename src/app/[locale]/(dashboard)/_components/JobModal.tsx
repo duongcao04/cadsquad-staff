@@ -1,105 +1,245 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-import { Button, Input } from '@heroui/react'
+import { Button, Input, NumberInput, addToast } from '@heroui/react'
 import { Modal } from 'antd'
 import { useFormik } from 'formik'
 
+import { supabase } from '@/lib/supabase/client'
 import {
     CreateProjectSchema,
     NewProject,
 } from '@/validationSchemas/project.schema'
+
+import DateTimePicker from './form-fields/DateTimePicker'
+import SelectMember from './form-fields/SelectMember'
 
 type Props = {
     isOpen: boolean
     onClose: () => void
 }
 export default function JobModal({ isOpen, onClose }: Props) {
+    const [isLoading, setLoading] = useState(false)
+
     const formik = useFormik<NewProject>({
         initialValues: {
             jobName: '',
-            dueAt: '',
             jobNo: '',
             price: '',
             sourceUrl: '',
             startedAt: '',
+            dueAt: '',
+            memberAssign: [],
         },
         validationSchema: CreateProjectSchema,
-        onSubmit: (values) => {
-            console.log(values)
+        onSubmit: async (values) => {
+            try {
+                setLoading(true)
+                const { data } = await supabase
+                    .from('Project')
+                    .insert(values)
+                    .select()
+                if (data) {
+                    addToast({ title: 'Create project successfully!' })
+                }
+            } catch (error) {
+                addToast({
+                    title: 'Create project failed!',
+                    description: `${error}`,
+                })
+            } finally {
+                setLoading(false)
+            }
         },
     })
+
     return (
-        <Modal
-            open={isOpen}
-            onCancel={onClose}
-            title="Create new Job"
-            width={{
-                xs: '90%',
-                sm: '80%',
-                md: '70%',
-                lg: '60%',
-                xl: '50%',
-                xxl: '40%',
-            }}
-            footer={() => {
-                return (
-                    <div>
-                        <Button>OK</Button>
+        <form onSubmit={formik.handleSubmit}>
+            <Modal
+                open={isOpen}
+                onCancel={onClose}
+                title={<p className="capitalize text-lg">Create new Job</p>}
+                width={{
+                    xs: '90%',
+                    sm: '80%',
+                    md: '70%',
+                    lg: '60%',
+                    xl: '50%',
+                    xxl: '50%',
+                }}
+                classNames={{
+                    mask: 'backdrop-blur-sm',
+                }}
+                footer={() => {
+                    return (
+                        <div className="flex items-center justify-end gap-4">
+                            <Button
+                                variant="light"
+                                color="secondary"
+                                className="px-14"
+                                onPress={() => {
+                                    onClose()
+                                    formik.resetForm()
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                isLoading={isLoading}
+                                color="secondary"
+                                className="px-16"
+                                onPress={() => {
+                                    formik.handleSubmit()
+                                }}
+                            >
+                                Send Offer
+                            </Button>
+                        </div>
+                    )
+                }}
+            >
+                <div className="space-y-4 py-8 border-t border-border">
+                    <Input
+                        isRequired
+                        id="jobNo"
+                        name="jobNo"
+                        label="Job No."
+                        placeholder="e.g. FV.0001"
+                        value={formik.values.jobNo}
+                        onChange={formik.handleChange}
+                        labelPlacement="outside-left"
+                        color="secondary"
+                        variant="faded"
+                        classNames={{
+                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
+                            inputWrapper: 'w-full',
+                            label: 'text-right font-medium text-base',
+                        }}
+                        isInvalid={
+                            Boolean(formik.touched.jobNo) &&
+                            Boolean(formik.errors.jobNo)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.jobNo) && formik.errors.jobNo
+                        }
+                        size="lg"
+                    />
+                    <Input
+                        isRequired
+                        id="jobName"
+                        name="jobName"
+                        label="Job Name"
+                        placeholder="e.g. 3D Modeling"
+                        color="secondary"
+                        variant="faded"
+                        value={formik.values.jobName}
+                        onChange={formik.handleChange}
+                        labelPlacement="outside-left"
+                        classNames={{
+                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
+                            inputWrapper: 'w-full',
+                            label: 'text-right font-medium text-base',
+                        }}
+                        isInvalid={
+                            Boolean(formik.touched.jobName) &&
+                            Boolean(formik.errors.jobName)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.jobName) &&
+                            formik.errors.jobName
+                        }
+                        size="lg"
+                    />
+                    <Input
+                        isRequired
+                        id="sourceUrl"
+                        name="sourceUrl"
+                        label="Link"
+                        placeholder="e.g. http://example.com/"
+                        color="secondary"
+                        variant="faded"
+                        value={formik.values.sourceUrl}
+                        onChange={formik.handleChange}
+                        labelPlacement="outside-left"
+                        classNames={{
+                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
+                            inputWrapper: 'w-full',
+                            label: 'text-right font-medium text-base',
+                        }}
+                        isInvalid={
+                            Boolean(formik.touched.sourceUrl) &&
+                            Boolean(formik.errors.sourceUrl)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.sourceUrl) &&
+                            formik.errors.sourceUrl
+                        }
+                        size="lg"
+                    />
+                    <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
+                        <p
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssign) && formik.errors.memberAssign ? 'text-danger' : 'text-secondary'}`}
+                        >
+                            Member Assign
+                            <span className="absolute top-0 right-0 text-danger!">
+                                *
+                            </span>
+                        </p>
+                        <div className="w-full flex flex-col">
+                            <SelectMember form={formik} />
+                            {Boolean(formik.touched.sourceUrl) &&
+                                Boolean(formik.errors.sourceUrl) && (
+                                    <p className="text-xs text-danger mt-1">
+                                        {formik.errors.memberAssign}
+                                    </p>
+                                )}
+                        </div>
                     </div>
-                )
-            }}
-        >
-            <form onSubmit={formik.handleSubmit} className="space-y-5">
-                <Input
-                    isRequired
-                    id="jobNo"
-                    name="jobNo"
-                    label="Job No."
-                    value={formik.values.jobNo}
-                    onChange={formik.handleChange}
-                    isInvalid={
-                        Boolean(formik.touched.jobNo) &&
-                        Boolean(formik.errors.jobNo)
-                    }
-                    errorMessage={
-                        Boolean(formik.touched.jobNo) && formik.errors.jobNo
-                    }
-                    size="sm"
-                />
-                <Input
-                    isRequired
-                    id="jobName"
-                    name="jobName"
-                    label="Job Name"
-                    value={formik.values.jobName}
-                    onChange={formik.handleChange}
-                    isInvalid={
-                        Boolean(formik.touched.jobName) &&
-                        Boolean(formik.errors.jobName)
-                    }
-                    errorMessage={
-                        Boolean(formik.touched.jobName) && formik.errors.jobName
-                    }
-                    size="sm"
-                />
-                <Input
-                    isRequired
-                    id="sourceUrl"
-                    name="sourceUrl"
-                    label="Link"
-                    value={formik.values.sourceUrl}
-                    onChange={formik.handleChange}
-                    isInvalid={
-                        Boolean(formik.touched.sourceUrl) &&
-                        Boolean(formik.errors.sourceUrl)
-                    }
-                    errorMessage={
-                        Boolean(formik.touched.sourceUrl) &&
-                        formik.errors.sourceUrl
-                    }
-                    size="sm"
-                />
-            </form>
-        </Modal>
+                    <NumberInput
+                        isRequired
+                        id="price"
+                        name="price"
+                        label="Price"
+                        placeholder="0"
+                        color="secondary"
+                        variant="faded"
+                        value={Number(formik.values.price)}
+                        onChange={formik.handleChange}
+                        labelPlacement="outside-left"
+                        classNames={{
+                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
+                            inputWrapper: 'w-full',
+                            label: 'text-right font-medium text-base',
+                        }}
+                        isInvalid={
+                            Boolean(formik.touched.price) &&
+                            Boolean(formik.errors.price)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.price) && formik.errors.price
+                        }
+                        size="lg"
+                    />
+                    <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
+                        <p
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssign) && formik.errors.memberAssign ? 'text-danger' : 'text-secondary'}`}
+                        >
+                            Delivery
+                            <span className="absolute top-0 right-0 text-danger!">
+                                *
+                            </span>
+                        </p>
+                        <div className="w-full flex flex-col">
+                            <DateTimePicker form={formik} />
+                            {Boolean(formik.touched.sourceUrl) &&
+                                Boolean(formik.errors.sourceUrl) && (
+                                    <p className="text-xs text-danger mt-1">
+                                        {formik.errors.memberAssign}
+                                    </p>
+                                )}
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+        </form>
     )
 }

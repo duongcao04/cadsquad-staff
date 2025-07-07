@@ -8,7 +8,6 @@ export type Login = yup.InferType<typeof LoginSchema>
 
 export const UserSchema = yup.object().shape({
     id: yup.string(),
-    password: yup.string(),
     email: yup.string(),
     avatar: yup.string(),
     username: yup.string(),

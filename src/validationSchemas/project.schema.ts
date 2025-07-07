@@ -19,6 +19,7 @@ export const CreateProjectSchema = yup.object().shape({
     sourceUrl: yup.string().required(),
     jobNo: yup.string().required(),
     jobName: yup.string().required(),
+    memberAssign: yup.array(yup.string().required()).required().min(1),
     price: yup.string().required(),
     startedAt: yup.string().required(),
     dueAt: yup.string().required(),

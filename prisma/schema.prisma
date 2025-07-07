@@ -28,7 +28,7 @@ model User {
   notifications UserNotification[]
 
   role             Role      @default(USER)
-  assignedProjects Project[]
+  assignedProjects Project[] @relation("UserProjects")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -49,11 +49,11 @@ model Project {
   sourceUrl String
   thumbnail String
 
-  memberAssign User[]
+  memberAssign User[] @relation("UserProjects")
 
   startedAt   DateTime @default(now())
   dueAt       DateTime
-  completedAt DateTime
+  completedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
