@@ -66,7 +66,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
             <Modal
                 open={isOpen}
                 onCancel={onClose}
-                title={<p className="capitalize text-lg">Create new Job</p>}
+                title={<p className="text-lg capitalize">Create new Job</p>}
                 width={{
                     xs: '90%',
                     sm: '80%',
@@ -106,7 +106,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     )
                 }}
             >
-                <div className="space-y-4 py-8 border-t border-border">
+                <div className="py-8 space-y-4 border-t border-border">
                     <Input
                         isRequired
                         id="jobNo"
@@ -193,11 +193,11 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 *
                             </span>
                         </p>
-                        <div className="w-full flex flex-col">
+                        <div className="flex flex-col w-full">
                             <SelectMember form={formik} />
-                            {Boolean(formik.touched.sourceUrl) &&
-                                Boolean(formik.errors.sourceUrl) && (
-                                    <p className="text-xs text-danger mt-1">
+                            {Boolean(formik.touched.memberAssignIds) &&
+                                Boolean(formik.errors.memberAssignIds) && (
+                                    <p className="mt-1 text-xs text-danger">
                                         {formik.errors.memberAssignIds}
                                     </p>
                                 )}
@@ -237,11 +237,11 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 *
                             </span>
                         </p>
-                        <div className="w-full flex flex-col">
+                        <div className="flex flex-col w-full">
                             <DateTimePicker form={formik} />
                             {Boolean(formik.touched.dueAt) &&
                                 Boolean(formik.errors.dueAt) && (
-                                    <p className="text-xs text-danger mt-1">
+                                    <p className="mt-1 text-xs text-danger">
                                         {formik.errors.dueAt}
                                     </p>
                                 )}

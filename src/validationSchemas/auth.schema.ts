@@ -27,3 +27,20 @@ export const UserSchema = yup.object().shape({
     updatedAt: yup.string(),
 })
 export type User = yup.InferType<typeof UserSchema>
+
+export const CreateUserSchema = yup.object().shape({
+    email: yup.string().email().required(),
+    avatar: yup.string().required(),
+    username: yup.string().required(),
+    name: yup.string().required(),
+    jobTitle: yup.string().required(),
+    department: yup.string().required(),
+    phoneNumber: yup.string().required(),
+
+    // Optional enum validation
+    role: yup
+        .mixed<'USER' | 'ADMIN' | 'ACCOUNTING'>()
+        .oneOf(['USER', 'ADMIN', 'ACCOUNTING'], 'Invalid role')
+        .default('USER'),
+})
+export type NewUser = yup.InferType<typeof CreateUserSchema>
