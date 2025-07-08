@@ -44,12 +44,14 @@ type Props = {
     filteredFiles: FileItem[]
     setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>
     handleFileAction: (action: string, file: FileItem) => void
+    isLoading: boolean
 }
 export default function FileManagerTable({
     selectedFiles,
     filteredFiles,
     setSelectedFiles,
     handleFileAction,
+    isLoading,
 }: Props) {
     // Handle file/folder selection
     const toggleSelection = (id: string) => {
@@ -96,10 +98,10 @@ export default function FileManagerTable({
             key: 'name',
             render: (text: string, record: FileItem) => (
                 <div
-                    className="flex items-center space-x-2 cursor-pointer"
+                    className="flex items-center gap-3 cursor-pointer"
                     onClick={() => handleFileAction('open', record)}
                 >
-                    {getFileIcon(record.type)}
+                    {getFileIcon(record.type, record.color!)}
                     <span className="font-medium">{text}</span>
                 </div>
             ),
@@ -182,6 +184,7 @@ export default function FileManagerTable({
     ]
     return (
         <Table
+            loading={isLoading}
             columns={columns}
             dataSource={filteredFiles}
             rowKey="id"

@@ -6,6 +6,7 @@ export const fileItemSchema = yup.object({
     id: yup.string().required('ID is required'),
     name: yup.string().required('Name is required'),
     slug: yup.string().required('Slug is required'),
+    color: yup.string(),
     type: yup.mixed<FileType>().required('Type is required'),
     size: yup.string().required('Size is required'),
     items: yup.number().integer().min(0).optional(),

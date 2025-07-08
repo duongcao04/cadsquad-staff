@@ -26,13 +26,11 @@ import { useSearchParam } from '@/shared/hooks/useSearchParam'
 const DEBOUNCE_VALUE = 250
 
 type Props = {
-    setViewMode: React.Dispatch<React.SetStateAction<'list' | 'grid'>>
     onOpenNewFolderModal: () => void
     onOpenUploadModal: () => void
 }
 
 export default function FileManagerHeader({
-    setViewMode,
     onOpenNewFolderModal,
     onOpenUploadModal,
 }: Props) {
@@ -162,14 +160,8 @@ export default function FileManagerHeader({
                             key={item.id}
                             title={item.label}
                             onClick={() => {
-                                setViewMode(item.id as 'list' | 'grid')
                                 setSearchParams({
                                     mode: item.id,
-                                    // Preserve existing search if any
-                                    ...(debouncedSearchValue.trim() && {
-                                        search: debouncedSearchValue,
-                                    }),
-                                    ...(currentPath && { path: currentPath }),
                                 })
                             }}
                         />

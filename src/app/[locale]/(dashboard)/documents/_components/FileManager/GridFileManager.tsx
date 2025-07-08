@@ -39,7 +39,7 @@ export default function GridFileManager({
                         // onClick={() => handleFileAction('open', file)}
                     >
                         <div className="mb-2 text-4xl">
-                            {getFileIcon(file.type)}
+                            {getFileIcon(file.type, file.color!)}
                         </div>
                         <div className="text-center">
                             <p className="font-medium truncate w-full max-w-[120px] text-sm">

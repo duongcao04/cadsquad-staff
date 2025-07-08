@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
-import { Button, useDisclosure } from '@heroui/react'
+import { Button, addToast, useDisclosure } from '@heroui/react'
 import { Empty, message } from 'antd'
 import {
     ArrowUp,
@@ -19,7 +19,6 @@ import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileType } from '@/types/file.type'
 import { FileItem } from '@/validationSchemas/file.schema'
 
-import { sampleFiles } from '../../mockup/sampleDocuments'
 import DeleteModal from '../modals/DeleteModal'
 import MoveModal from '../modals/MoveModal'
 import NewFolderModal from '../modals/NewFolderModal'
@@ -31,11 +30,16 @@ import FileManagerTable from './FileManagerTable'
 import GridFileManager from './GridFileManager'
 
 // Helper function to get file icon
-export const getFileIcon = (type: FileType) => {
+export const getFileIcon = (type: FileType, folderColor: string) => {
     const iconClass = 'h-5 w-5'
     switch (type) {
         case 'folder':
-            return <FolderIcon className={`${iconClass} text-blue-500`} />
+            return (
+                <FolderIcon
+                    className={iconClass}
+                    style={{ color: folderColor }}
+                />
+            )
         case 'pdf':
             return <PDFIcon className={iconClass} />
         case 'image':
@@ -53,6 +57,7 @@ export default function FileManager() {
     const { getSearchParam, setSearchParams } = useSearchParam()
 
     const searchQuery = getSearchParam('search') ?? ''
+    const viewMode = getSearchParam('mode') ?? 'list'
     const dirQuery = getSearchParam('directory') ?? 'Home'
     const currentPath = dirQuery.split('_')
 
@@ -61,34 +66,53 @@ export default function FileManager() {
         onClose: onCloseNewFolderModal,
         onOpen: onOpenNewFolderModal,
     } = useDisclosure({ id: 'NewFolderModal' })
-
     const {
         isOpen: moveModalOpen,
         onClose: onCloseMoveModal,
         onOpen: onOpenMoveModal,
     } = useDisclosure({ id: 'MoveModal' })
-
     const {
         isOpen: uploadModalOpen,
         onClose: onCloseUploadModal,
         onOpen: onOpenUploadModal,
     } = useDisclosure({ id: 'UploadModal' })
-
     const {
         isOpen: renameFolderModalOpen,
         onClose: onCloseRenameFolderModal,
         onOpen: onOpenRenameFolderModal,
     } = useDisclosure({ id: 'RenameFolderModal' })
-
     const {
         isOpen: deleteModalOpen,
         onClose: onCloseDeleteModal,
         onOpen: onOpenDeleteModal,
     } = useDisclosure({ id: 'DeleteModal' })
 
-    const [files, setFiles] = useState<FileItem[]>(sampleFiles)
+    const [files, setFiles] = useState<FileItem[]>([])
+    const [isLoading, setLoading] = useState(false)
     const [selectedFiles, setSelectedFiles] = useState<string[]>([])
-    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+
+    useEffect(() => {
+        const fetchAllUsers = async () => {
+            try {
+                setLoading(true)
+                const res = await fetch('/api/fileSystems', {
+                    method: 'GET',
+                })
+                const { data: fileSystems } = await res.json()
+
+                setFiles(fileSystems!)
+            } catch (error) {
+                addToast({
+                    title: 'Load file failed!',
+                    description: `${error}`,
+                    color: 'danger',
+                })
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchAllUsers()
+    }, [])
 
     // Modals state
     const [previewModalOpen, setPreviewModalOpen] = useState(false)
@@ -185,7 +209,6 @@ export default function FileManager() {
     return (
         <div className="size-full">
             <FileManagerHeader
-                setViewMode={setViewMode}
                 onOpenNewFolderModal={onOpenNewFolderModal}
                 onOpenUploadModal={onOpenUploadModal}
             />
@@ -200,6 +223,7 @@ export default function FileManager() {
 
             {viewMode === 'list' && (
                 <FileManagerTable
+                    isLoading={isLoading}
                     filteredFiles={filteredFiles}
                     selectedFiles={selectedFiles}
                     setSelectedFiles={setSelectedFiles}
@@ -214,7 +238,7 @@ export default function FileManager() {
                 />
             )}
 
-            {filteredFiles.length === 0 && (
+            {!isLoading && filteredFiles.length === 0 && (
                 <div className="p-12">
                     <Empty
                         description={

@@ -22,6 +22,8 @@ model FileSystem {
   items          Int?
   path           String[]
 
+  color          String?
+
   // Người tạo file
   createdBy      User     @relation("CreatedFiles", fields: [createdById], references: [id])
   createdById    String   @db.Uuid

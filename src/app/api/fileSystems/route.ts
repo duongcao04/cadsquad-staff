@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
             slug,
             type,
             size,
+            color,
             items,
             path,
             createdById,
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
         } = body
 
         // Validate required fields
-        if (!name || !slug || !type || !size || !createdById) {
+        if (!name || !slug || !type || !createdById) {
             return NextResponse.json(
                 { success: false, error: 'Missing required fields' },
                 { status: 400 }
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
                 type,
                 size,
                 items,
+                color,
                 path: path || [],
                 createdById,
                 visibleToUsers: visibleToUserIds
