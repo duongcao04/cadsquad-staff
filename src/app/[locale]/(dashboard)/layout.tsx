@@ -16,7 +16,7 @@ export async function generateMetadata({
 
     const tMetadata = await getTranslations({
         locale,
-        namespace: 'metadata.aboutUs',
+        namespace: 'metadata.dashboard',
     })
 
     return {
@@ -34,7 +34,7 @@ export default async function DashboardLayout({
         <div className="dashboard-page">
             <Header />
             <main className="container py-3">
-                <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center justify-start gap-5">
                         <AdminCreateButton />
                         <div className="w-0.5 h-6 bg-border" />

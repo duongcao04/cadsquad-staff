@@ -1,0 +1,197 @@
+'use client'
+
+import React from 'react'
+
+import {
+    Button,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+} from '@heroui/react'
+import { Checkbox, Table } from 'antd'
+import dayjs from 'dayjs'
+import {
+    Download,
+    EllipsisVerticalIcon,
+    EyeIcon,
+    FolderIcon,
+    Move,
+    Pencil,
+    Trash,
+} from 'lucide-react'
+
+import { FileItem } from '@/validationSchemas/file.schema'
+
+import { getFileIcon } from '.'
+
+// Helper function to format dates
+const formatDate = (date: Date) => {
+    const now = dayjs()
+    const fileDate = dayjs(date)
+
+    if (fileDate.isSame(now, 'day')) {
+        return 'Today'
+    } else if (fileDate.isSame(now.subtract(1, 'day'), 'day')) {
+        return 'Yesterday'
+    } else {
+        return fileDate.format('MMM D, YYYY')
+    }
+}
+
+type Props = {
+    selectedFiles: string[]
+    filteredFiles: FileItem[]
+    setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>
+    handleFileAction: (action: string, file: FileItem) => void
+}
+export default function FileManagerTable({
+    selectedFiles,
+    filteredFiles,
+    setSelectedFiles,
+    handleFileAction,
+}: Props) {
+    // Handle file/folder selection
+    const toggleSelection = (id: string) => {
+        setSelectedFiles((prev) =>
+            prev.includes(id)
+                ? prev.filter((fileId) => fileId !== id)
+                : [...prev, id]
+        )
+    }
+    // Handle select all
+    const toggleSelectAll = () => {
+        if (selectedFiles.length === filteredFiles.length) {
+            setSelectedFiles([])
+        } else {
+            setSelectedFiles(filteredFiles.map((file) => file.id))
+        }
+    }
+
+    // Table columns for list view
+    const columns = [
+        {
+            title: (
+                <Checkbox
+                    checked={
+                        selectedFiles.length === filteredFiles.length &&
+                        filteredFiles.length > 0
+                    }
+                    onChange={toggleSelectAll}
+                />
+            ),
+            dataIndex: 'select',
+            key: 'select',
+            width: 50,
+            render: (_: unknown, record: FileItem) => (
+                <Checkbox
+                    checked={selectedFiles.includes(record.id)}
+                    onChange={() => toggleSelection(record.id)}
+                />
+            ),
+        },
+        {
+            title: 'Name',
+            dataIndex: 'name',
+            key: 'name',
+            render: (text: string, record: FileItem) => (
+                <div
+                    className="flex items-center space-x-2 cursor-pointer"
+                    onClick={() => handleFileAction('open', record)}
+                >
+                    {getFileIcon(record.type)}
+                    <span className="font-medium">{text}</span>
+                </div>
+            ),
+        },
+        {
+            title: 'Size',
+            dataIndex: 'size',
+            key: 'size',
+            render: (text: string, record: FileItem) =>
+                record.type === 'folder'
+                    ? `${record.items} item${record.items !== 1 ? 's' : ''}`
+                    : text,
+        },
+        {
+            title: 'Modified',
+            dataIndex: 'updatedAt',
+            key: 'updatedAt',
+            render: (date: Date) => formatDate(date),
+        },
+        {
+            title: 'Actions',
+            key: 'actions',
+            width: 80,
+            render: (_: unknown, file: FileItem) => (
+                <Dropdown>
+                    <DropdownTrigger>
+                        <Button isIconOnly size="sm" variant="light">
+                            <EllipsisVerticalIcon className="w-4 h-4" />
+                        </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu aria-label="File menu action">
+                        <DropdownItem
+                            key="open"
+                            startContent={
+                                file.type === 'folder' ? (
+                                    <FolderIcon className="w-4 h-4" />
+                                ) : (
+                                    <EyeIcon className="w-4 h-4" />
+                                )
+                            }
+                            onClick={() => handleFileAction('open', file)}
+                        >
+                            {file.type === 'folder' ? 'Open' : 'Preview'}
+                        </DropdownItem>
+                        <DropdownItem
+                            key="download"
+                            startContent={<Download className="w-4 h-4" />}
+                            onClick={() => handleFileAction('download', file)}
+                        >
+                            {file.type === 'folder'
+                                ? 'Download as ZIP'
+                                : 'Download'}
+                        </DropdownItem>
+                        <DropdownItem
+                            key="rename"
+                            startContent={<Pencil className="w-4 h-4" />}
+                            onClick={() => handleFileAction('rename', file)}
+                        >
+                            Rename
+                        </DropdownItem>
+                        <DropdownItem
+                            key="move"
+                            startContent={<Move className="w-4 h-4" />}
+                            onClick={() => handleFileAction('move', file)}
+                        >
+                            Move
+                        </DropdownItem>
+                        <DropdownItem
+                            key="delete"
+                            startContent={<Trash className="w-4 h-4" />}
+                            onClick={() => handleFileAction('delete', file)}
+                            color="danger"
+                        >
+                            Delete
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            ),
+        },
+    ]
+    return (
+        <Table
+            columns={columns}
+            dataSource={filteredFiles}
+            rowKey="id"
+            pagination={false}
+            rowClassName={(record) =>
+                selectedFiles.includes(record.id) ? 'bg-blue-50' : ''
+            }
+            locale={{
+                emptyText: <div />,
+            }}
+        />
+    )
+}

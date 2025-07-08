@@ -38,7 +38,7 @@ export default function AdminCreateButton() {
     })
 
     return (
-        <>
+        <div>
             <JobModal isOpen={isOpenJM} onClose={onCloseJM} />
             <UserModal isOpen={isOpenUM} onClose={onCloseUm} />
             <Dropdown>
@@ -89,6 +89,6 @@ export default function AdminCreateButton() {
                     </DropdownSection>
                 </DropdownMenu>
             </Dropdown>
-        </>
+        </div>
     )
 }

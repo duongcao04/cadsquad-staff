@@ -10,5 +10,21 @@
     "cadServices": {
         "title": "Dịch vụ CAD | Cadsquad.vn",
         "description": "CADSQUAD Vietnam cung cấp giải pháp thiết kế cơ khí và dịch vụ CAD chất lượng cao, biến ý tưởng thành sản phẩm bền vững cho khách hàng toàn cầu."
+    },
+    "dashboard": {
+        "title": "Bảng điều khiển | Staff for CADSQUAD",
+        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
+    },
+    "profile": {
+        "title": "Thông tin cá nhân | Staff for CADSQUAD",
+        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
+    },
+    "onboarding": {
+        "title": "Công việc | Staff for CADSQUAD",
+        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
+    },
+    "documents": {
+        "title": "Tài liệu | Staff for CADSQUAD",
+        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
     }
 }

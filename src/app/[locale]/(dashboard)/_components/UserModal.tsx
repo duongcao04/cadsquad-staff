@@ -7,8 +7,23 @@ import { Modal, Select } from 'antd'
 import { useFormik } from 'formik'
 
 import { Role } from '@/generated/prisma'
-import { capitalize } from '@/lib/utils'
+import { supabase } from '@/lib/supabase/client'
+import { capitalize, removeVietnameseTones } from '@/lib/utils'
 import { CreateUserSchema, NewUser } from '@/validationSchemas/auth.schema'
+
+function generateRandomUsername(fullname: string) {
+    const randomName = removeVietnameseTones(fullname)
+        .toLowerCase()
+        .trim()
+        .split(/\s+/) // tách theo khoảng trắng
+        .map((part) => part.slice(0, part.length - 1)) // lấy `length` ký tự từ đầu
+        .join('')
+    // Unique suffix using timestamp + random hex
+    const timestamp = Date.now().toString(36) // base36 = shorter
+    const randomHex = Math.random().toString(16).slice(2, 6) // 4 hex digits
+
+    return `${randomName}${timestamp}${randomHex}`
+}
 
 type Props = {
     isOpen: boolean
@@ -32,23 +47,43 @@ export default function UserModal({ isOpen, onClose }: Props) {
         onSubmit: async (values) => {
             try {
                 setLoading(true)
-                console.log(values)
 
-                // const res = await fetch('/api/users', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify(values),
-                // })
-                // const data = await res.json()
+                // TODO: For test mode
+                // Please fix: Send invation to email -> Email verify and create account after that.
+                const { data: authData, error } = await supabase.auth.signUp({
+                    email: 'yangisdev@gmail.com',
+                    password: 'cadsquaddotvn',
+                })
 
-                // if (res.status === 201) {
-                //     addToast({
-                //         title: 'Create project successfully!',
-                //         color: 'success',
-                //     })
-                // } else {
-                //     throw new Error(data)
-                // }
+                if (error) {
+                    throw new Error(`${error}`)
+                }
+
+                const newUser = {
+                    ...values,
+                    id: authData.session?.user.id as string,
+                    username: generateRandomUsername(values.name),
+                    avatar:
+                        values.avatar!.length === 0
+                            ? `https://ui-avatars.com/api/?name=${removeVietnameseTones(values.name.replaceAll(' ', '+'))}`
+                            : values.avatar,
+                }
+
+                const res = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newUser),
+                })
+                const data = await res.json()
+
+                if (res.status === 201) {
+                    addToast({
+                        title: 'Create user successfully!',
+                        color: 'success',
+                    })
+                } else {
+                    throw new Error(data)
+                }
             } catch (error) {
                 addToast({
                     title: 'Create user failed!',
@@ -60,6 +95,7 @@ export default function UserModal({ isOpen, onClose }: Props) {
             }
         },
     })
+
     return (
         <form onSubmit={formik.handleSubmit}>
             <Modal
@@ -98,8 +134,9 @@ export default function UserModal({ isOpen, onClose }: Props) {
                                 onPress={() => {
                                     formik.handleSubmit()
                                 }}
+                                type="submit"
                             >
-                                Send Offer
+                                Create
                             </Button>
                         </div>
                     )
@@ -214,10 +251,7 @@ export default function UserModal({ isOpen, onClose }: Props) {
                         <p
                             className={`relative text-right font-semibold text-base pr-2 ${Boolean(formik.touched.role) && formik.errors.role ? 'text-danger' : 'text-secondary'}`}
                         >
-                            Permission
-                            <span className="absolute top-0 right-0 text-danger!">
-                                *
-                            </span>
+                            Select Role
                         </p>
                         <div className="flex flex-col w-full">
                             <Select

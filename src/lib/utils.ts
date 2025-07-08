@@ -6,6 +6,15 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function capitalize(string: string) {
-    return string.charAt(0).toUpperCase() +
-    string.slice(1);
+    return string.charAt(0).toUpperCase() + string.slice(1)
+}
+
+export function removeVietnameseTones(string: string) {
+    return string
+        .normalize('NFD') // Tách chữ và dấu
+        .replace(/[\u0300-\u036f]/g, '') // Xoá dấu
+        .replace(/đ/g, 'd') // đ → d
+        .replace(/Đ/g, 'D') // Đ → D
+        .replace(/\s+/g, ' ') // loại bỏ khoảng trắng thừa
+        .trim()
 }

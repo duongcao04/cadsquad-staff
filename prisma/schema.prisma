@@ -13,25 +13,51 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+model FileSystem {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String
+  type           String
+  size           String
+  items          Int?
+  path           String[]
+
+  // Người tạo file
+  createdBy      User     @relation("CreatedFiles", fields: [createdById], references: [id])
+  createdById    String   @db.Uuid
+
+  // Người được nhìn thấy file này
+  visibleToUsers User[]   @relation("VisibleToUsers")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
 
 model User {
-  id       String @id @db.Uuid
-  email    String @unique
-  username String @unique
-  name     String
-  avatar     String?
+  id             String   @id @db.Uuid
+  email          String   @unique
+  username       String   @unique
+  name           String
+  avatar         String?
 
-  jobTitle    String
-  department  String
-  phoneNumber String?
+  jobTitle       String?
+  department     String?
+  phoneNumber    String?
 
-  notifications UserNotification[]
+  role           Role     @default(USER)
 
-  role             Role      @default(USER)
+  // Notification, Projects (giữ nguyên)
+  notifications  UserNotification[]
   assignedProjects Project[] @relation("UserProjects")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // Files được tạo ra bởi user này
+  fileCreated    FileSystem[] @relation("CreatedFiles")
+
+  // Files được chia sẻ tới user này
+  files          FileSystem[] @relation("VisibleToUsers")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 enum Role {

@@ -30,12 +30,12 @@ export type User = yup.InferType<typeof UserSchema>
 
 export const CreateUserSchema = yup.object().shape({
     email: yup.string().email().required(),
-    avatar: yup.string().required(),
-    username: yup.string().required(),
+    avatar: yup.string(),
+    username: yup.string(),
     name: yup.string().required(),
     jobTitle: yup.string().required(),
     department: yup.string().required(),
-    phoneNumber: yup.string().required(),
+    phoneNumber: yup.string(),
 
     // Optional enum validation
     role: yup

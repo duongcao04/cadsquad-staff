@@ -1,0 +1,94 @@
+import { FileItem } from '@/validationSchemas/file.schema'
+
+export const sampleFiles: FileItem[] = [
+    {
+        id: '1',
+        name: 'Documents',
+        slug: 'Documents',
+        type: 'folder',
+        size: '',
+        visibleToUsers: [],
+        items: 5,
+        updatedAt: new Date('2024-01-20'),
+        path: ['Home'],
+    },
+    {
+        id: '2',
+        name: 'Images',
+        slug: 'Images',
+        type: 'folder',
+        size: '',
+
+        visibleToUsers: [],
+        items: 12,
+        updatedAt: new Date('2024-01-18'),
+        path: ['Home'],
+    },
+    {
+        id: '3',
+        name: 'Project Files',
+        slug: 'Project-Files',
+        type: 'folder',
+        size: '',
+
+        visibleToUsers: [],
+        items: 8,
+        updatedAt: new Date('2024-01-15'),
+        path: ['Home'],
+    },
+    {
+        id: '4',
+        name: 'Annual Report.pdf',
+        slug: 'Annual-Report.pdf',
+        type: 'pdf',
+        size: '2.4 MB',
+
+        visibleToUsers: [],
+        updatedAt: new Date('2024-01-10'),
+        path: ['Home'],
+    },
+    {
+        id: '5',
+        name: 'Presentation.pdf',
+        slug: 'Presentation.pdf',
+        type: 'pdf',
+        size: '3.8 MB',
+
+        visibleToUsers: [],
+        updatedAt: new Date('2024-01-05'),
+        path: ['Home'],
+    },
+    {
+        id: '6',
+        name: 'Profile Picture.jpg',
+        slug: 'Profile-Picture.jpg',
+        type: 'image',
+        size: '1.2 MB',
+
+        visibleToUsers: [],
+        updatedAt: new Date('2023-12-28'),
+        path: ['Home'],
+    },
+    {
+        id: '7',
+        name: 'Meeting Notes.docx',
+        slug: 'Meeting-Notes.docx',
+        type: 'document',
+        size: '245 KB',
+
+        visibleToUsers: [],
+        updatedAt: new Date('2023-12-20'),
+        path: ['Home'],
+    },
+    {
+        id: '8',
+        name: 'main.js',
+        slug: 'main.js',
+        type: 'code',
+        size: '56 KB',
+
+        visibleToUsers: [],
+        updatedAt: new Date('2023-12-15'),
+        path: ['Home', 'Documents'],
+    },
+]
