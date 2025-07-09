@@ -184,7 +184,7 @@ export default function FileManager() {
 
         onOpenRenameFolderModal()
         setActiveFile(null)
-        message.success('Item renamed successfully!')
+        addToast({ title: 'Item renamed successfully!' })
     }
 
     // Delete file/folder

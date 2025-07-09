@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-import { Button } from '@heroui/react'
+import { Button, Input } from '@heroui/react'
 import { Modal } from 'antd'
 
 import { FileItem } from '@/validationSchemas/file.schema'
@@ -18,22 +18,24 @@ export default function RenameModal({
     activeFile,
     renameFile,
 }: Props) {
+    const [newFileName, setNewFileName] = useState('')
+
     return (
         <Modal
             title={`Rename ${activeFile?.type === 'folder' ? 'Folder' : 'File'}`}
             open={isOpen}
             onCancel={onClose}
             footer={[
-                <Button key="cancel" variant="bordered" onClick={onClose}>
+                <Button key="cancel" variant="bordered" onPress={onClose}>
                     Cancel
                 </Button>,
-                <Button key="rename" color="primary" onClick={renameFile}>
+                <Button key="rename" color="primary" onPress={renameFile}>
                     Rename
                 </Button>,
             ]}
         >
             <div className="py-4">
-                {/* <Input
+                <Input
                     placeholder={
                         activeFile?.type === 'folder'
                             ? 'Folder Name'
@@ -41,8 +43,7 @@ export default function RenameModal({
                     }
                     value={newFileName}
                     onChange={(e) => setNewFileName(e.target.value)}
-                    onPressEnter={renameFile}
-                /> */}
+                />
             </div>
         </Modal>
     )
