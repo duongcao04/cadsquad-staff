@@ -25,12 +25,12 @@ import {
 } from 'lucide-react'
 import { useLocale } from 'next-intl'
 
+import AppLoader from '@/app/[locale]/loading'
 import { usePathname, useRouter } from '@/i18n/navigation'
 import { logoutSession } from '@/lib/auth/session'
 import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
 
-import AppLoader from '../../../app/[locale]/loading'
 import CadsquadLogo from '../CadsquadLogo'
 
 const { Header: AntHeader } = Layout
@@ -56,7 +56,7 @@ const Header = () => {
                 color: 'success',
             })
             router.push({
-                pathname: 'auth',
+                pathname: `${locale}/auth`,
                 query: { redirect: pathname },
             })
         } catch (error) {

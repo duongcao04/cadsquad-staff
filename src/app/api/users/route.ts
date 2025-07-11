@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
                         jobNo: true,
                         jobName: true,
                         price: true,
-                        status: true,
                     },
                 },
             },

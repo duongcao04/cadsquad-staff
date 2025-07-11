@@ -61,6 +61,19 @@ export async function setSession(user: User) {
     })
 }
 
+export async function setCustomSession(
+    sessionName: string,
+    sessionValue: string,
+    expiresIn: Date = new Date(Date.now() + 24 * 60 * 60 * 1000)
+) {
+    ;(await cookies()).set(sessionName, sessionValue, {
+        expires: expiresIn,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+    })
+}
+
 export async function logoutSession(user: User) {
     const session: SessionData = {
         user: { id: user.id! },

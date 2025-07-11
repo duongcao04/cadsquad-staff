@@ -10,6 +10,7 @@ import {
 } from '@/validationSchemas/project.schema'
 
 import DateTimePicker from './form-fields/DateTimePicker'
+import SelectJobStatus from './form-fields/SelectJobStatus'
 import SelectMember from './form-fields/SelectMember'
 
 type Props = {
@@ -28,7 +29,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
             startedAt: '',
             dueAt: '',
             memberAssignIds: [],
-            thumbnail: 'https://www.csdvietnam.com/assets/img/logo.webp',
+            jobStatusId: '',
         },
         validationSchema: CreateProjectSchema,
         onSubmit: async (values) => {
@@ -60,6 +61,8 @@ export default function JobModal({ isOpen, onClose }: Props) {
             }
         },
     })
+
+    console.log(formik.errors)
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -246,6 +249,26 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                     </p>
                                 )}
                         </div>
+                    </div>
+                    <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
+                        <p
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) && formik.errors.dueAt ? 'text-danger' : 'text-secondary'}`}
+                        >
+                            Status
+                            <span className="absolute top-0 right-0 text-danger!">
+                                *
+                            </span>
+                        </p>
+                        <SelectJobStatus form={formik} />
+                        {/* <div className="flex flex-col w-full">
+                            <DateTimePicker form={formik} />
+                            {Boolean(formik.touched.dueAt) &&
+                                Boolean(formik.errors.dueAt) && (
+                                    <p className="mt-1 text-xs text-danger">
+                                        {formik.errors.dueAt}
+                                    </p>
+                                )}
+                        </div> */}
                     </div>
                 </div>
             </Modal>

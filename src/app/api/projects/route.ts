@@ -2,7 +2,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-import { JOB_STATUS } from '@/generated/prisma'
 import prisma from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
@@ -10,11 +9,9 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url)
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '10')
-        const status = searchParams.get('status') as JOB_STATUS
         const search = searchParams.get('search')
 
         const where = {
-            ...(status && { status }),
             ...(search && {
                 OR: [
                     {
@@ -47,6 +44,7 @@ export async function GET(request: NextRequest) {
                             avatar: true,
                         },
                     },
+                    jobStatus: {},
                 },
                 orderBy: { createdAt: 'desc' },
                 skip: (page - 1) * limit,
@@ -76,9 +74,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { memberAssignIds, ...projectData } = body
-
-        console.log(body)
+        const { memberAssignIds, jobStatusId, ...projectData } = body
 
         // Validate required fields
         if (!projectData.jobNo || !projectData.jobName) {
@@ -105,10 +101,8 @@ export async function POST(request: NextRequest) {
             data: {
                 jobNo: projectData.jobNo,
                 jobName: projectData.jobName,
-                status: projectData.status || 'ON_PROGRESS',
                 price: Number(projectData.price),
                 sourceUrl: projectData.sourceUrl,
-                thumbnail: projectData.thumbnail,
                 startedAt: projectData.startedAt
                     ? new Date(projectData.startedAt)
                     : new Date(),
@@ -116,6 +110,11 @@ export async function POST(request: NextRequest) {
                 completedAt: projectData.completedAt
                     ? new Date(projectData.completedAt)
                     : null,
+                jobStatus: {
+                    connect: {
+                        id: jobStatusId,
+                    },
+                },
                 // Conditionally add memberAssign only if memberAssignIds exists and has items
                 ...(memberAssignIds &&
                     memberAssignIds.length > 0 && {

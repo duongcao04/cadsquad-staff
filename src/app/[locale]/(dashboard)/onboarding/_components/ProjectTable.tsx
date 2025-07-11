@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Image, Table } from 'antd'
+import { Button } from '@heroui/react'
+import { Image, Table, Tag } from 'antd'
+import { EyeIcon } from 'lucide-react'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { calcDueTo } from '@/lib/formatDate'
@@ -43,11 +45,11 @@ export default function ProjectTable() {
                     dataIndex="thumbnail"
                     key="thumbnail"
                     width={200}
-                    render={(thumbnailUrl) => {
+                    render={(_, record: DataType) => {
                         return (
-                            <div className="w-[160px] h-[70px]">
+                            <div className="w-[160px] h-[100px] overflow-hidden flex items-center justify-center">
                                 <Image
-                                    src={thumbnailUrl}
+                                    src={record.jobStatus.thumbnail}
                                     alt="image"
                                     className="size-full object-cover"
                                 />
@@ -88,8 +90,8 @@ export default function ProjectTable() {
                     return (
                         <p>
                             {calcDueTo(
-                                record.startedAt as string,
-                                record.dueAt as string
+                                record.startedAt?.toString() as string,
+                                record.dueAt?.toString() as string
                             )}
                         </p>
                     )
@@ -97,16 +99,28 @@ export default function ProjectTable() {
             />
             <Column
                 title="Status"
-                dataIndex="status"
-                key="status"
-                render={(status) => <p>{status}</p>}
+                dataIndex="jobStatus"
+                key="jobStatus"
+                render={(_, record: DataType) => (
+                    <Tag
+                        color={record.jobStatus.color}
+                        rootClassName="grid place-items-center w-40"
+                    >
+                        <p className="uppercase text-xl! font-semibold">
+                            {record.jobStatus.title}
+                        </p>
+                    </Tag>
+                )}
             />
             <Column
                 title="Action"
                 key="action"
-                render={(_, record: DataType) => (
-                    <div>
-                        <p>View</p>
+                render={() => (
+                    <div className="flex items-center justify-start gap-5">
+                        <Button variant="light" color="primary">
+                            <EyeIcon />
+                            View
+                        </Button>
                     </div>
                 )}
             />

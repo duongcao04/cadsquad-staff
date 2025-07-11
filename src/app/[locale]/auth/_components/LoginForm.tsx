@@ -14,6 +14,8 @@ import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { LoginSchema, User } from '@/validationSchemas/auth.schema'
 
+// import { IconMicrosoftColorful } from '.@/shared/components/icons/IconMicrosoftColorful'
+
 const HOME = envConfig.NEXT_PUBLIC_URL as string
 
 export default function LoginForm() {
@@ -71,6 +73,7 @@ export default function LoginForm() {
             }
         },
     })
+
     return (
         <form
             onSubmit={formik.handleSubmit}
@@ -137,15 +140,31 @@ export default function LoginForm() {
                         Ch.duong@cadsquad.vn
                     </Link>
                 </p>
-                <div className="mt-10 w-full grid place-items-center">
+                <div className="mt-10 w-[80%] mx-auto grid place-items-center">
                     <Button
                         color="danger"
-                        className="w-[80%] rounded-sm"
+                        className="w-full rounded-sm"
                         type="submit"
                         isLoading={isLoading}
                     >
                         Login
                     </Button>
+                    {/* <div className="flex items-center justify-between gap-3 w-full">
+                        <hr className="w-full opacity-20" />
+                        <p className="my-5 opacity-70">or</p>
+                        <hr className="w-full opacity-20" />
+                    </div>
+                    <Button
+                        type="button"
+                        color="secondary"
+                        className="w-full rounded-full"
+                        isLoading={isLoading}
+                        startContent={<IconMicrosoftColorful />}
+                        variant="bordered"
+                        onPress={loginWithMicrosoft}
+                    >
+                        <p className="px-2">Login with Microsoft</p>
+                    </Button> */}
                 </div>
             </div>
         </form>

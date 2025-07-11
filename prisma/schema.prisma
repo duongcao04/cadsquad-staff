@@ -3,7 +3,6 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -13,22 +12,20 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model FileSystem {
-  id             String   @id @default(cuid())
+  id             Int    @id @default(autoincrement())
   name           String
   slug           String
   type           String
   size           String
   items          Int?
   path           String[]
-
   color          String?
 
-  // Người tạo file
-  createdBy      User     @relation("CreatedFiles", fields: [createdById], references: [id])
   createdById    String   @db.Uuid
+  createdBy      User     @relation("CreatedFiles", fields: [createdById], references: [id])
 
-  // Người được nhìn thấy file này
   visibleToUsers User[]   @relation("VisibleToUsers")
 
   createdAt      DateTime @default(now())
@@ -36,7 +33,7 @@ model FileSystem {
 }
 
 model User {
-  id             String   @id @db.Uuid
+  id             String   @id @default(uuid()) @db.Uuid
   email          String   @unique
   username       String   @unique
   name           String
@@ -48,15 +45,11 @@ model User {
 
   role           Role     @default(USER)
 
-  // Notification, Projects (giữ nguyên)
-  notifications  UserNotification[]
-  assignedProjects Project[] @relation("UserProjects")
+  notifications      UserNotification[]
+  assignedProjects   Project[]         @relation("UserProjects")
 
-  // Files được tạo ra bởi user này
-  fileCreated    FileSystem[] @relation("CreatedFiles")
-
-  // Files được chia sẻ tới user này
-  files          FileSystem[] @relation("VisibleToUsers")
+  fileCreated        FileSystem[]      @relation("CreatedFiles")
+  files              FileSystem[]      @relation("VisibleToUsers")
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -69,40 +62,48 @@ enum Role {
 }
 
 model Project {
-  id        Int        @id @default(autoincrement())
-  jobNo     String     @unique
-  jobName   String
-  status    JOB_STATUS @default(ON_PROGRESS)
-  price     Int
-  sourceUrl String
+  id          Int       @id @default(autoincrement())
+  jobNo       String    @unique
+  jobName     String
+  price       Int
+  sourceUrl   String
+
+  memberAssign User[]   @relation("UserProjects")
+
+  jobStatus    JobStatus @relation(fields: [jobStatusId], references: [id])
+  jobStatusId  Int
+
+  startedAt    DateTime @default(now())
+  dueAt        DateTime
+  completedAt  DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model JobStatus {
+  id        Int       @id @default(autoincrement())
+  title     String
   thumbnail String
+  color String
+  order Int
 
-  memberAssign User[] @relation("UserProjects")
-
-  startedAt   DateTime @default(now())
-  dueAt       DateTime
-  completedAt DateTime?
+  projects  Project[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum JOB_STATUS {
-  DELIVERED
-  ON_PROGRESS
-  REVISION
-  CANCELLED
-}
-
 model UserNotification {
-  id Int @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
 
-  user           User         @relation(fields: [userId], references: [id])
-  userId         String       @db.Uuid
-  notification   Notification @relation(fields: [notificationId], references: [id])
-  notificationId Int
+  user            User          @relation(fields: [userId], references: [id])
+  userId          String        @db.Uuid
 
-  status NOTIFICATION_STATUS @default(UNSEEN)
+  notification    Notification  @relation(fields: [notificationId], references: [id])
+  notificationId  Int
+
+  status          NOTIFICATION_STATUS @default(UNSEEN)
 }
 
 enum NOTIFICATION_STATUS {
