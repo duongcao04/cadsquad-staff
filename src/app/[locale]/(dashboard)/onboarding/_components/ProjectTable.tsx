@@ -1,69 +1,58 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
 import { Button } from '@heroui/react'
 import { Image, Table, Tag } from 'antd'
 import { EyeIcon } from 'lucide-react'
+import useSWR from 'swr'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { calcDueTo } from '@/lib/formatDate'
+import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { Project } from '@/validationSchemas/project.schema'
 
-const { Column, ColumnGroup } = Table
+import { getProjects } from '../actions'
+
+const { Column } = Table
 
 type DataType = Project & {
     key: React.Key
 }
 
 export default function ProjectTable() {
-    const [projects, setProjects] = useState([])
-    const [isLoading, setLoading] = useState(false)
+    const { getSearchParam } = useSearchParam()
+    const statusFilter = getSearchParam('tab')
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true)
-                const res = await fetch('/api/projects', {
-                    method: 'GET',
-                })
-                const data = await res.json()
-                setProjects(data.data)
-            } catch (error) {
-                console.log(error)
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchData()
-    }, [])
+    const { data: projects, isLoading } = useSWR(
+        ['projects', statusFilter],
+        () => getProjects(statusFilter)
+    )
+
     return (
-        <Table<DataType> dataSource={projects} loading={isLoading}>
-            <ColumnGroup title="Job No">
-                <Column
-                    title="Thumbnail"
-                    dataIndex="thumbnail"
-                    key="thumbnail"
-                    width={200}
-                    render={(_, record: DataType) => {
-                        return (
-                            <div className="w-[160px] h-[100px] overflow-hidden flex items-center justify-center">
-                                <Image
-                                    src={record.jobStatus.thumbnail}
-                                    alt="image"
-                                    className="size-full object-cover"
-                                />
-                            </div>
-                        )
-                    }}
-                />
-                <Column
-                    title="Job No."
-                    dataIndex="jobNo"
-                    key="jobNo"
-                    width={200}
-                />
-            </ColumnGroup>
+        <Table<DataType>
+            dataSource={projects?.map((prj) => ({ ...prj, key: prj.id! }))}
+            loading={isLoading}
+        >
+            <Column
+                title=""
+                dataIndex="thumbnail"
+                key="thumbnail"
+                width={100}
+                render={(_, record: DataType) => {
+                    return (
+                        <div className="size-20 rounded-full overflow-hidden flex items-center justify-center">
+                            <Image
+                                src={record.jobStatus.thumbnail}
+                                alt="image"
+                                className="size-full object-cover rounded-full"
+                                preview={false}
+                            />
+                        </div>
+                    )
+                }}
+            />
+            <Column title="Job No." dataIndex="jobNo" key="jobNo" width={200} />
             <Column
                 title="Job Name"
                 dataIndex="jobName"

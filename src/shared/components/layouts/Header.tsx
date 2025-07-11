@@ -10,10 +10,12 @@ import {
     DropdownMenu,
     DropdownSection,
     DropdownTrigger,
+    Kbd,
     User as UserComp,
     addToast,
+    useDisclosure,
 } from '@heroui/react'
-import { Input, Layout } from 'antd'
+import { Layout } from 'antd'
 import {
     Bell,
     HelpCircle,
@@ -24,6 +26,7 @@ import {
     UserCircle,
 } from 'lucide-react'
 import { useLocale } from 'next-intl'
+import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import AppLoader from '@/app/[locale]/loading'
 import { usePathname, useRouter } from '@/i18n/navigation'
@@ -32,6 +35,7 @@ import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
 
 import CadsquadLogo from '../CadsquadLogo'
+import SearchModal from './SearchModal'
 
 const { Header: AntHeader } = Layout
 
@@ -40,10 +44,19 @@ const Header = () => {
     const router = useRouter()
     const pathname = usePathname()
 
+    const { isOpen, onClose, onOpen } = useDisclosure()
+
     const [isLoading, setLoading] = useState(false)
 
     const authUser = useAuthStore((state) => state.authUser)
     const { removeAuthUser } = useAuthStore()
+
+    useKeyboardShortcuts([
+        {
+            keys: ['ctrl', 'K'],
+            onEvent: () => onOpen(),
+        },
+    ])
 
     const handleLogout = async () => {
         try {
@@ -79,55 +92,80 @@ const Header = () => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 padding: 0,
                 overflow: 'hidden',
+                height: '60px',
             }}
         >
             {/* Logo */}
-            <div className="container grid grid-cols-[130px_1fr_200px] gap-5 items-center">
+            <div className="h-full container grid grid-cols-[130px_1fr_220px] gap-5 items-center place-items-center">
                 <CadsquadLogo
                     classNames={{
-                        logo: 'h-14',
+                        logo: 'h-10',
                     }}
                     logoTheme="white"
                 />
 
                 {/* Search bar */}
-                <div style={{ flex: 1 }}>
-                    <Input
-                        placeholder="Search"
-                        prefix={<Search size={16} color="#999" />}
-                        size="large"
-                        style={{
-                            borderRadius: '8px',
-                            background: 'white',
+                {/* <Input
+                    placeholder="Search every thing"
+                    startContent={<Search size={16} color="#999" />}
+                    size="md"
+                    radius="full"
+                    classNames={{
+                        base: 'w-[450px]',
+                    }}
+                    endContent={<Kbd keys={['command']}>K</Kbd>}
+                /> */}
+                <Button
+                    startContent={<Search size={16} color="#999" />}
+                    size="md"
+                    radius="full"
+                    variant="bordered"
+                    className="bg-white"
+                    onPress={onOpen}
+                >
+                    <p className="pr-[200px]">Search every thing</p>
+                    <Kbd
+                        keys={['ctrl']}
+                        onKeyDown={() => {
+                            onOpen()
                         }}
-                    />
-                </div>
+                    >
+                        K
+                    </Kbd>
+                </Button>
+                <SearchModal isOpen={isOpen} onClose={onClose} />
 
                 {/* Right actions */}
-                <div className="flex justify-end items-center gap-3">
-                    {/* Notification Bell */}
-                    <Button
-                        variant="light"
-                        startContent={<Bell size={25} color="white" />}
-                        isIconOnly
-                        onPress={() => console.log('Notifications clicked')}
-                    />
+                <div className="flex justify-end items-center gap-4">
+                    <div className="flex items-center justify-end gap-3">
+                        {/* Notification Bell */}
+                        <Button
+                            variant="light"
+                            startContent={<Bell size={22} color="white" />}
+                            isIconOnly
+                            onPress={() => console.log('Notifications clicked')}
+                        />
 
-                    {/* Settings */}
-                    <Button
-                        variant="light"
-                        startContent={<Settings size={25} color="white" />}
-                        isIconOnly
-                        onPress={() => console.log('Settings clicked')}
-                    />
+                        {/* Settings */}
+                        <Button
+                            variant="light"
+                            startContent={<Settings size={22} color="white" />}
+                            isIconOnly
+                            onPress={() => console.log('Settings clicked')}
+                        />
 
-                    {/* Help */}
-                    <Button
-                        variant="light"
-                        startContent={<HelpCircle size={25} color="white" />}
-                        isIconOnly
-                        onPress={() => console.log('Help clicked')}
-                    />
+                        {/* Help */}
+                        <Button
+                            variant="light"
+                            startContent={
+                                <HelpCircle size={22} color="white" />
+                            }
+                            isIconOnly
+                            onPress={() => console.log('Help clicked')}
+                        />
+                    </div>
+
+                    <div />
 
                     {/* User Avatar with Dropdown */}
                     <Dropdown
@@ -146,6 +184,9 @@ const Header = () => {
                                 color="danger"
                                 icon={<User size={18} />}
                                 src={authUser?.avatar}
+                                classNames={{
+                                    base: 'size-9',
+                                }}
                             />
                         </DropdownTrigger>
                         <DropdownMenu aria-label="User menu" className="p-3">

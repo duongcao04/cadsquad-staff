@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "npx prisma generate && next dev --turbopack",
     "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
@@ -32,7 +32,9 @@
     "nodemailer": "^7.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "swr": "^2.3.4",
     "tailwind-merge": "^3.3.1",
+    "use-keyboard-shortcuts": "^2.2.3",
     "yup": "^1.6.1",
     "zustand": "^5.0.6"
   },

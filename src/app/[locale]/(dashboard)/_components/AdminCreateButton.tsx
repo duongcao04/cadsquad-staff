@@ -12,6 +12,7 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { PlusIcon } from 'lucide-react'
+import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { IconFileColorful } from '@/shared/components/icons/IconFileColorful'
 import { IconFolderColorful } from '@/shared/components/icons/IconFolderColorful'
@@ -37,6 +38,21 @@ export default function AdminCreateButton() {
         id: 'UserModal',
     })
 
+    useKeyboardShortcuts([
+        {
+            keys: ['ctrl', 'J'],
+            onEvent: () => onOpenJM(),
+        },
+        {
+            keys: ['ctrl', 'shift' + 'F'],
+            onEvent: () => onOpenJM(),
+        },
+        {
+            keys: ['ctrl', 'U'],
+            onEvent: () => onOpenUM(),
+        },
+    ])
+
     return (
         <div>
             <JobModal isOpen={isOpenJM} onClose={onCloseJM} />
@@ -54,7 +70,7 @@ export default function AdminCreateButton() {
                     <DropdownSection showDivider>
                         <DropdownItem
                             key="new"
-                            shortcut="Ctrl + N"
+                            shortcut="Ctrl + J"
                             startContent={<IconWorkColorful />}
                             onPress={() => onOpenJM()}
                         >
@@ -64,14 +80,14 @@ export default function AdminCreateButton() {
                     <DropdownSection showDivider>
                         <DropdownItem
                             key="copy"
-                            shortcut="Ctrl + ⇧ + L"
+                            shortcut="Ctrl + ⇧ + F"
                             startContent={<IconFolderColorful />}
                         >
                             Folder
                         </DropdownItem>
                         <DropdownItem
                             key="edit"
-                            shortcut="Ctrl + ⇧ + F"
+                            shortcut="Ctrl + ⇧ + G"
                             startContent={<IconFileColorful />}
                         >
                             File
@@ -80,7 +96,7 @@ export default function AdminCreateButton() {
                     <DropdownSection>
                         <DropdownItem
                             key="edit"
-                            shortcut="Ctrl + ⇧ + U"
+                            shortcut="Ctrl + U"
                             startContent={<IconPeopleColorful />}
                             onPress={() => onOpenUM()}
                         >

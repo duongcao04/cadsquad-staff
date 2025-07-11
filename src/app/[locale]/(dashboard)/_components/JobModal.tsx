@@ -43,6 +43,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                 const data = await res.json()
 
                 if (res.status === 201) {
+                    onClose()
                     addToast({
                         title: 'Create project successfully!',
                         color: 'success',
@@ -216,6 +217,13 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         variant="faded"
                         value={Number(formik.values.price)}
                         onChange={formik.handleChange}
+                        startContent={
+                            <div className="pointer-events-none flex items-center">
+                                <span className="text-default-400 text-small px-0.5">
+                                    $
+                                </span>
+                            </div>
+                        }
                         labelPlacement="outside-left"
                         classNames={{
                             base: 'grid grid-cols-[0.25fr_1fr] gap-3',

@@ -25,7 +25,7 @@ export default function SelectMember({ form }: Props) {
 
     return (
         <Select
-            options={users.map((usr) => {
+            options={users?.map((usr) => {
                 return { ...usr, label: usr.name!, value: usr.id! }
             })}
             placeholder="Select one or more member"
