@@ -16,15 +16,7 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { Layout } from 'antd'
-import {
-    Bell,
-    HelpCircle,
-    LogOut,
-    Search,
-    Settings,
-    User,
-    UserCircle,
-} from 'lucide-react'
+import { LogOut, Search, User, UserCircle } from 'lucide-react'
 import { useLocale } from 'next-intl'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
@@ -35,6 +27,9 @@ import { supabase } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
 
 import CadsquadLogo from '../CadsquadLogo'
+import { CircleHelpIcon } from '../icons/animate/CircleHelpIcon'
+import { SettingsGearIcon } from '../icons/animate/SettingsGearIcon'
+import NotificationDropdown from './NotificationDropdown'
 import SearchModal from './SearchModal'
 
 const { Header: AntHeader } = Layout
@@ -139,17 +134,19 @@ const Header = () => {
                 <div className="flex justify-end items-center gap-4">
                     <div className="flex items-center justify-end gap-3">
                         {/* Notification Bell */}
-                        <Button
-                            variant="light"
-                            startContent={<Bell size={22} color="white" />}
-                            isIconOnly
-                            onPress={() => console.log('Notifications clicked')}
-                        />
+                        <NotificationDropdown />
 
                         {/* Settings */}
                         <Button
                             variant="light"
-                            startContent={<Settings size={22} color="white" />}
+                            startContent={
+                                <SettingsGearIcon
+                                    style={{
+                                        color: 'white',
+                                    }}
+                                    size={22}
+                                />
+                            }
                             isIconOnly
                             onPress={() => console.log('Settings clicked')}
                         />
@@ -158,7 +155,12 @@ const Header = () => {
                         <Button
                             variant="light"
                             startContent={
-                                <HelpCircle size={22} color="white" />
+                                <CircleHelpIcon
+                                    style={{
+                                        color: 'white',
+                                    }}
+                                    size={22}
+                                />
                             }
                             isIconOnly
                             onPress={() => console.log('Help clicked')}
@@ -176,6 +178,7 @@ const Header = () => {
                                 'p-0 border-small border-divider bg-background',
                         }}
                         radius="sm"
+                        placement="bottom-end"
                     >
                         <DropdownTrigger>
                             <Avatar

@@ -9,7 +9,7 @@ export const getJobStatuses: () => Promise<JobStatus[]> = async () => {
 }
 
 export const getProjects: (
-    statusId: string | null
+    statusId?: string | null
 ) => Promise<Project[]> = async (statusId) => {
     let url = '/api/projects'
     if (statusId) {

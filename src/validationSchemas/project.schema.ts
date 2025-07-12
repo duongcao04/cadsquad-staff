@@ -9,7 +9,11 @@ export type Project = Partial<ProjectPrisma> & {
     jobStatus: Partial<JobStatus>
 }
 
-export type JobStatus = Partial<JobStatusPrisma>
+export type JobStatus = Partial<JobStatusPrisma> & {
+    _count: {
+        projects: number
+    }
+}
 
 export const CreateProjectSchema = yup.object().shape({
     sourceUrl: yup.string().required(),

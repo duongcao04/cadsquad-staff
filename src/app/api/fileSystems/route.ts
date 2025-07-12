@@ -6,22 +6,15 @@ import prisma from '@/lib/prisma'
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url)
-        const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '10')
         const search = searchParams.get('search')
         const type = searchParams.get('type')
         const createdBy = searchParams.get('createdBy')
-
-        const skip = (page - 1) * limit
 
         // Build where clause
         const where: any = {}
 
         if (search) {
-            where.OR = [
-                { name: { contains: search, mode: 'insensitive' } },
-                { slug: { contains: search, mode: 'insensitive' } },
-            ]
+            where.OR = [{ name: { contains: search, mode: 'insensitive' } }]
         }
 
         if (type) {
@@ -32,7 +25,7 @@ export async function GET(request: NextRequest) {
             where.createdById = createdBy
         }
 
-        const [fileSystems, total] = await Promise.all([
+        const [fileSystems] = await Promise.all([
             prisma.fileSystem.findMany({
                 where,
                 include: {
@@ -54,8 +47,6 @@ export async function GET(request: NextRequest) {
                     },
                 },
                 orderBy: { createdAt: 'desc' },
-                skip,
-                take: limit,
             }),
             prisma.fileSystem.count({ where }),
         ])
@@ -63,12 +54,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             success: true,
             data: fileSystems,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
         })
     } catch (error) {
         console.error('Error fetching file systems:', error)
@@ -85,7 +70,6 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const {
             name,
-            slug,
             type,
             size,
             color,
@@ -96,7 +80,7 @@ export async function POST(request: NextRequest) {
         } = body
 
         // Validate required fields
-        if (!name || !slug || !type || !createdById) {
+        if (!name || !type || !createdById) {
             return NextResponse.json(
                 { success: false, error: 'Missing required fields' },
                 { status: 400 }
@@ -105,12 +89,12 @@ export async function POST(request: NextRequest) {
 
         // Check if slug already exists
         const existingFileSystem = await prisma.fileSystem.findFirst({
-            where: { slug },
+            where: { name },
         })
 
         if (existingFileSystem) {
             return NextResponse.json(
-                { success: false, error: 'Slug already exists' },
+                { success: false, error: 'Name already exists' },
                 { status: 409 }
             )
         }
@@ -119,7 +103,6 @@ export async function POST(request: NextRequest) {
         const fileSystem = await prisma.fileSystem.create({
             data: {
                 name,
-                slug,
                 type,
                 size,
                 items,

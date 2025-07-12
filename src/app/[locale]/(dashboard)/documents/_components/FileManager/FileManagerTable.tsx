@@ -195,6 +195,7 @@ export default function FileManagerTable({
             locale={{
                 emptyText: <div />,
             }}
+            scroll={{ y: 68 * 9 }}
         />
     )
 }

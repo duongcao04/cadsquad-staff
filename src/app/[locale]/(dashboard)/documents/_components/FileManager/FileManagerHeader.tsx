@@ -23,6 +23,8 @@ import { useDebouncedValue } from '@/hooks/useDebounce'
 
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
+import { ROOT_DIR } from '../../actions'
+
 const DEBOUNCE_VALUE = 250
 
 type Props = {
@@ -43,7 +45,7 @@ export default function FileManagerHeader({
     )
 
     const viewMode = getSearchParam('mode') ?? 'list'
-    const currentPath = getSearchParam('directory') ?? 'Home'
+    const currentPath = getSearchParam('directory') ?? ROOT_DIR
 
     const breadcrumbItems = currentPath.split('_')
 

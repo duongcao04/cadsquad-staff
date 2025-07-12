@@ -7,6 +7,8 @@ import { CloudUpload } from 'lucide-react'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileItem } from '@/validationSchemas/file.schema'
 
+import { ROOT_DIR } from '../../actions'
+
 type Props = {
     isOpen: boolean
     onClose: () => void
@@ -15,7 +17,7 @@ type Props = {
 export default function UploadModal({ isOpen, onClose, setFiles }: Props) {
     const { getSearchParam } = useSearchParam()
 
-    const dirQuery = getSearchParam('directory') ?? 'Home'
+    const dirQuery = getSearchParam('directory') ?? ROOT_DIR
     const currentPath = dirQuery.split('-')
 
     const [uploadProgress, setUploadProgress] = useState(0)

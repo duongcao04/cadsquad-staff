@@ -51,7 +51,7 @@ export default function UserModal({ isOpen, onClose }: Props) {
                 // TODO: For test mode
                 // Please fix: Send invation to email -> Email verify and create account after that.
                 const { data: authData, error } = await supabase.auth.signUp({
-                    email: 'yangisdev@gmail.com',
+                    email: values.email,
                     password: 'cadsquaddotvn',
                 })
 

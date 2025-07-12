@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Button, addToast, useDisclosure } from '@heroui/react'
 import { Empty, message } from 'antd'
@@ -12,13 +12,16 @@ import {
     PlusIcon,
     TvIcon,
 } from 'lucide-react'
+import useSWR from 'swr'
 
+import { FILE_SYSTEM_API } from '@/lib/swr/api'
 import { PDFIcon } from '@/shared/components/icons/file-icons/PDFIcon'
 import { WordIcon } from '@/shared/components/icons/file-icons/WordIcon'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileType } from '@/types/file.type'
 import { FileItem } from '@/validationSchemas/file.schema'
 
+import { ROOT_DIR, getFileSystem } from '../../actions'
 import DeleteModal from '../modals/DeleteModal'
 import MoveModal from '../modals/MoveModal'
 import NewFolderModal from '../modals/NewFolderModal'
@@ -58,7 +61,7 @@ export default function FileManager() {
 
     const searchQuery = getSearchParam('search') ?? ''
     const viewMode = getSearchParam('mode') ?? 'list'
-    const dirQuery = getSearchParam('directory') ?? 'Home'
+    const dirQuery = getSearchParam('directory') ?? ROOT_DIR
     const currentPath = dirQuery.split('_')
 
     const {
@@ -87,32 +90,12 @@ export default function FileManager() {
         onOpen: onOpenDeleteModal,
     } = useDisclosure({ id: 'DeleteModal' })
 
-    const [files, setFiles] = useState<FileItem[]>([])
-    const [isLoading, setLoading] = useState(false)
+    const { data: fileSystem, isLoading } = useSWR(
+        FILE_SYSTEM_API,
+        getFileSystem
+    )
+    const [files, setFiles] = useState<FileItem[]>(fileSystem ?? [])
     const [selectedFiles, setSelectedFiles] = useState<string[]>([])
-
-    useEffect(() => {
-        const fetchAllUsers = async () => {
-            try {
-                setLoading(true)
-                const res = await fetch('/api/fileSystems', {
-                    method: 'GET',
-                })
-                const { data: fileSystems } = await res.json()
-
-                setFiles(fileSystems!)
-            } catch (error) {
-                addToast({
-                    title: 'Load file failed!',
-                    description: `${error}`,
-                    color: 'danger',
-                })
-            } finally {
-                setLoading(false)
-            }
-        }
-        fetchAllUsers()
-    }, [])
 
     // Modals state
     const [previewModalOpen, setPreviewModalOpen] = useState(false)
@@ -122,7 +105,7 @@ export default function FileManager() {
     const [newFileName, setNewFileName] = useState('')
 
     // Filter files based on current path and search query
-    const filteredFiles = files.filter((file) => {
+    const filteredFiles = files?.filter((file) => {
         const pathMatch =
             JSON.stringify(file.path) === JSON.stringify(currentPath)
         const searchMatch =
@@ -134,7 +117,7 @@ export default function FileManager() {
     // Handle folder navigation
     const navigateToFolder = (folder: FileItem) => {
         if (folder.type === 'folder') {
-            const newPath = [...folder.path, folder.slug]
+            const newPath = [...folder.path, folder.name]
             setSearchParams({ directory: newPath.join('_') })
             setSelectedFiles([])
         }

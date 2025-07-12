@@ -2,21 +2,23 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { InputProps, Tabs, TabsProps } from 'antd'
+import { Badge, InputProps, Tabs, TabsProps } from 'antd'
 import { Input } from 'antd'
 import { Search } from 'lucide-react'
 import useSWR from 'swr'
 
+import { JOB_STATUS_API, PROJECT_API } from '@/lib/swr/api'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
-import { getJobStatuses } from '../actions'
+import { getJobStatuses, getProjects } from '../actions'
 
 export default function TableHeading() {
     const { getSearchParam, setSearchParams, removeSearchParam } =
         useSearchParam()
     const [keywords, setKeywords] = useState('')
 
-    const { data: jobStatus } = useSWR('jobStatuses', getJobStatuses)
+    const { data: jobStatus } = useSWR(JOB_STATUS_API, getJobStatuses)
+    const { data: projects } = useSWR(PROJECT_API, () => getProjects())
 
     const tabValue = getSearchParam('tab') ?? 'all'
 
@@ -41,7 +43,15 @@ export default function TableHeading() {
                             setSearchParams({ tab: status.id!.toString() })
                         }
                     >
-                        <p className="px-2">{status.title}</p>
+                        <Badge
+                            status="success"
+                            count={status._count.projects}
+                            classNames={{
+                                indicator: 'opacity-70 scale-80',
+                            }}
+                        >
+                            <p className="px-2">{status.title}</p>
+                        </Badge>
                     </button>
                 ),
             }
@@ -54,7 +64,15 @@ export default function TableHeading() {
                     className="flex gap-2 items-center cursor-pointer"
                     onClick={() => removeSearchParam('tab')}
                 >
-                    <p className="px-3">All</p>
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3">All</p>
+                    </Badge>
                 </button>
             ),
         })

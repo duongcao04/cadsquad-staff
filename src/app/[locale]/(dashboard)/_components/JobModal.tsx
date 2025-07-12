@@ -20,6 +20,42 @@ type Props = {
 export default function JobModal({ isOpen, onClose }: Props) {
     const [isLoading, setLoading] = useState(false)
 
+    const createNewJob = async (values: NewProject) => {
+        const res = await fetch('/api/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(values),
+        })
+        const data = await res.json()
+
+        if (res.status === 201) {
+            return
+        } else {
+            throw new Error(data)
+        }
+    }
+
+    const sendNotification = async (recipientId: string) => {
+        const newNotification = {
+            recipientId,
+            title: 'New job assigned',
+            content: 'Job No. FV.0551 have just been assigned from Phong Pham',
+        }
+        const res = await fetch('/api/notifications/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newNotification),
+        })
+        const data = await res.json()
+
+        if (res.status === 201 || res.status === 200) {
+            return
+        } else {
+            throw new Error(data)
+        }
+    }
+
+    // TODO: Create job and send noti to member.
     const formik = useFormik<NewProject>({
         initialValues: {
             jobName: '',
@@ -35,22 +71,17 @@ export default function JobModal({ isOpen, onClose }: Props) {
         onSubmit: async (values) => {
             try {
                 setLoading(true)
-                const res = await fetch('/api/projects', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(values),
-                })
-                const data = await res.json()
+                await createNewJob(values)
 
-                if (res.status === 201) {
-                    onClose()
-                    addToast({
-                        title: 'Create project successfully!',
-                        color: 'success',
-                    })
-                } else {
-                    throw new Error(data)
-                }
+                values.memberAssignIds.forEach(async (memId) => {
+                    await sendNotification(memId)
+                })
+
+                onClose()
+                addToast({
+                    title: 'Create project successfully!',
+                    color: 'success',
+                })
             } catch (error) {
                 addToast({
                     title: 'Create project failed!',
@@ -213,6 +244,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="price"
                         label="Price"
                         placeholder="0"
+                        maxValue={999999}
                         color="secondary"
                         variant="faded"
                         value={Number(formik.values.price)}

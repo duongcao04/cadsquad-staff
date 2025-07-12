@@ -11,6 +11,8 @@ import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileItem } from '@/validationSchemas/file.schema'
 
+import { ROOT_DIR } from '../../actions'
+
 const FOLDER_COLORS = [
     '#1b1464',
     '#009cea',
@@ -34,7 +36,7 @@ export default function NewFolderModal({ isOpen, onClose, setFiles }: Props) {
     const { getSearchParam } = useSearchParam()
     const { authUser } = useAuthStore()
 
-    const dirQuery = getSearchParam('directory') ?? 'Home'
+    const dirQuery = getSearchParam('directory') ?? ROOT_DIR
     const currentPath = dirQuery.split('_')
 
     const [isLoading, setLoading] = useState(false)
