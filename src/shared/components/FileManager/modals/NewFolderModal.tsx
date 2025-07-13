@@ -6,12 +6,10 @@ import { Button, Input, addToast } from '@heroui/react'
 import { Modal } from 'antd'
 import { FolderIcon, FolderPlus } from 'lucide-react'
 
-import { removeVietnameseTones } from '@/lib/utils'
+import { ROOT_DIR } from '@/app/[locale]/(dashboard)/documents/actions'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileItem } from '@/validationSchemas/file.schema'
-
-import { ROOT_DIR } from '../../actions'
 
 const FOLDER_COLORS = [
     '#1b1464',
@@ -53,7 +51,6 @@ export default function NewFolderModal({ isOpen, onClose, setFiles }: Props) {
             const newFolder: FileItem = {
                 id: Date.now().toString(),
                 name: newFolderName,
-                slug: removeVietnameseTones(newFolderName).replaceAll(' ', '-'),
                 color: folderColor,
                 visibleToUsers: [],
                 createdById: authUser.id!,

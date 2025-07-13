@@ -3,17 +3,15 @@ import React from 'react'
 import { Button } from '@heroui/react'
 import { ArrowDown, Move, Trash } from 'lucide-react'
 
+import { useFileStore } from './store/useFileStore'
+
 type Props = {
-    selectedFiles: string[]
     onOpenDeleteModal: () => void
-    setSelectedFiles: (value: React.SetStateAction<string[]>) => void
 }
 
-export default function BulkActionsToolbar({
-    selectedFiles,
-    onOpenDeleteModal,
-    setSelectedFiles,
-}: Props) {
+export default function BulkActionsToolbar({ onOpenDeleteModal }: Props) {
+    const { selectedFiles, setSelectedFiles } = useFileStore()
+
     const handleBulkAction = (action: string) => {
         switch (action) {
             case 'delete':

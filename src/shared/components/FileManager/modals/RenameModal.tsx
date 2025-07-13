@@ -3,21 +3,16 @@ import React, { useState } from 'react'
 import { Button, Input } from '@heroui/react'
 import { Modal } from 'antd'
 
-import { FileItem } from '@/validationSchemas/file.schema'
+import { useFileStore } from '@/shared/components/FileManager/store/useFileStore'
 
 type Props = {
     isOpen: boolean
     onClose: () => void
-    activeFile: FileItem | null
     renameFile: () => void
 }
 
-export default function RenameModal({
-    isOpen,
-    onClose,
-    activeFile,
-    renameFile,
-}: Props) {
+export default function RenameModal({ isOpen, onClose, renameFile }: Props) {
+    const { activeFile } = useFileStore()
     const [newFileName, setNewFileName] = useState('')
 
     return (

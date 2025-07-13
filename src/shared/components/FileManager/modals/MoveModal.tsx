@@ -3,6 +3,7 @@ import React from 'react'
 import { FolderOutlined } from '@ant-design/icons'
 import { Button, List, Modal, Typography } from 'antd'
 
+import { useFileStore } from '@/shared/components/FileManager/store/useFileStore'
 import { FileItem } from '@/validationSchemas/file.schema'
 
 const { Title, Text } = Typography
@@ -11,17 +12,11 @@ type Props = {
     isOpen: boolean
     onClose: () => void
     files: FileItem[]
-    selectedFiles: string[]
-    activeFile: FileItem | null
 }
 
-export default function MoveModal({
-    isOpen,
-    onClose,
-    files,
-    selectedFiles,
-    activeFile,
-}: Props) {
+export default function MoveModal({ isOpen, onClose, files }: Props) {
+    const { selectedFiles, activeFile } = useFileStore()
+
     const handleMove = (destinationPath?: string) => {
         // Move logic would go here
         console.log('Moving to:', destinationPath || 'Home')

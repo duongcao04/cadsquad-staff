@@ -21,3 +21,16 @@ export const getProjects: (
     const data = await res.json()
     return data.data
 }
+
+export const updateJobStatus: (
+    project: Project,
+    newJobStatus: JobStatus
+) => Promise<Project> = async (project, newJobStatus) => {
+    const res = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ jobStatusId: newJobStatus.id }),
+    })
+
+    const data = await res.json()
+    return data.data
+}

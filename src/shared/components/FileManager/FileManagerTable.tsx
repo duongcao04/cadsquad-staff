@@ -10,7 +10,6 @@ import {
     DropdownTrigger,
 } from '@heroui/react'
 import { Checkbox, Table } from 'antd'
-import dayjs from 'dayjs'
 import {
     Download,
     EllipsisVerticalIcon,
@@ -23,43 +22,28 @@ import {
 
 import { FileItem } from '@/validationSchemas/file.schema'
 
-import { getFileIcon } from '.'
-
-// Helper function to format dates
-const formatDate = (date: Date) => {
-    const now = dayjs()
-    const fileDate = dayjs(date)
-
-    if (fileDate.isSame(now, 'day')) {
-        return 'Today'
-    } else if (fileDate.isSame(now.subtract(1, 'day'), 'day')) {
-        return 'Yesterday'
-    } else {
-        return fileDate.format('MMM D, YYYY')
-    }
-}
+import { formatDate } from './actions/formatDate'
+import { getFileIcon } from './actions/getFileIcon'
+import { useFileStore } from './store/useFileStore'
 
 type Props = {
-    selectedFiles: string[]
     filteredFiles: FileItem[]
-    setSelectedFiles: React.Dispatch<React.SetStateAction<string[]>>
     handleFileAction: (action: string, file: FileItem) => void
     isLoading: boolean
 }
 export default function FileManagerTable({
-    selectedFiles,
     filteredFiles,
-    setSelectedFiles,
     handleFileAction,
     isLoading,
 }: Props) {
+    const { selectedFiles, setSelectedFiles } = useFileStore()
+
     // Handle file/folder selection
     const toggleSelection = (id: string) => {
-        setSelectedFiles((prev) =>
-            prev.includes(id)
-                ? prev.filter((fileId) => fileId !== id)
-                : [...prev, id]
-        )
+        const newSelectedFiles = selectedFiles.includes(id)
+            ? selectedFiles.filter((fileId) => fileId !== id)
+            : [...selectedFiles, id]
+        setSelectedFiles(newSelectedFiles)
     }
     // Handle select all
     const toggleSelectAll = () => {
@@ -195,7 +179,6 @@ export default function FileManagerTable({
             locale={{
                 emptyText: <div />,
             }}
-            scroll={{ y: 68 * 9 }}
         />
     )
 }

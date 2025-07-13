@@ -18,14 +18,14 @@ import {
     EyeIcon,
     Trash,
 } from 'lucide-react'
-import useSWR from 'swr'
+import useSWR, { mutate } from 'swr'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { JOB_STATUS_API, PROJECT_API } from '@/lib/swr/api'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
-import { Project } from '@/validationSchemas/project.schema'
+import { JobStatus, Project } from '@/validationSchemas/project.schema'
 
-import { getJobStatuses, getProjects } from '../actions'
+import { getJobStatuses, getProjects, updateJobStatus } from '../actions'
 import CountDown from './CountDown'
 
 const { Column } = Table
@@ -33,17 +33,27 @@ const { Column } = Table
 type DataType = Project & {
     key: React.Key
 }
-
 export default function ProjectTable() {
     const { getSearchParam } = useSearchParam()
     const statusFilter = getSearchParam('tab')
 
+    const { data: jobStatuses } = useSWR(JOB_STATUS_API, getJobStatuses)
     const { data: projects, isLoading } = useSWR(
         [PROJECT_API, statusFilter],
         () => getProjects(statusFilter)
     )
 
-    const { data: jobStatuses } = useSWR(JOB_STATUS_API, getJobStatuses)
+    const handleSwitch = async (project: Project, nextJobStatus: JobStatus) => {
+        try {
+            const data = await mutate(
+                PROJECT_API,
+                updateJobStatus(project, nextJobStatus)
+            )
+            console.log(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <Table<DataType>
@@ -136,10 +146,13 @@ export default function ProjectTable() {
                 title="Action"
                 key="action"
                 render={(_, record: DataType) => {
-                    const nextJobStatus =
+                    const nextJobStatusOrder =
                         record.jobStatus.order !== jobStatuses?.length
                             ? record.jobStatus.order! + 1
                             : null
+                    const nextJobStatus = jobStatuses?.find(
+                        (item) => item.order === nextJobStatusOrder
+                    ) as JobStatus
 
                     return (
                         <div className="flex items-center justify-start gap-1">
@@ -160,26 +173,22 @@ export default function ProjectTable() {
                                             startContent={
                                                 <ArrowLeftRight size={16} />
                                             }
+                                            onPress={() =>
+                                                handleSwitch(
+                                                    record,
+                                                    nextJobStatus
+                                                )
+                                            }
                                         >
                                             Switch to{' '}
                                             <Chip
                                                 style={{
                                                     backgroundColor:
-                                                        jobStatuses?.find(
-                                                            (item) =>
-                                                                item.order ===
-                                                                nextJobStatus
-                                                        )?.color,
+                                                        nextJobStatus?.color,
                                                     marginLeft: '5px',
                                                 }}
                                             >
-                                                {
-                                                    jobStatuses?.find(
-                                                        (item) =>
-                                                            item.order ===
-                                                            nextJobStatus
-                                                    )?.title
-                                                }
+                                                {nextJobStatus?.title}
                                             </Chip>
                                         </DropdownItem>
                                     </DropdownSection>

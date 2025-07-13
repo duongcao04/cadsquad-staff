@@ -21,9 +21,10 @@ import {
 
 import { useDebouncedValue } from '@/hooks/useDebounce'
 
+import { ROOT_DIR } from '@/app/[locale]/(dashboard)/documents/actions'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
-import { ROOT_DIR } from '../../actions'
+import { useFileStore } from './store/useFileStore'
 
 const DEBOUNCE_VALUE = 250
 
@@ -31,7 +32,6 @@ type Props = {
     onOpenNewFolderModal: () => void
     onOpenUploadModal: () => void
 }
-
 export default function FileManagerHeader({
     onOpenNewFolderModal,
     onOpenUploadModal,
@@ -44,10 +44,11 @@ export default function FileManagerHeader({
         getSearchParam('search') ?? ''
     )
 
-    const viewMode = getSearchParam('mode') ?? 'list'
-    const currentPath = getSearchParam('directory') ?? ROOT_DIR
+    const { currentPath, setCurrentPath } = useFileStore()
 
-    const breadcrumbItems = currentPath.split('_')
+    const viewMode = getSearchParam('mode') ?? 'list'
+
+    const breadcrumbItems = currentPath
 
     // Debounced search value - will only update after user stops typing
     const debouncedSearchValue = useDebouncedValue<string>(
@@ -59,7 +60,7 @@ export default function FileManagerHeader({
     const navigateToBreadcrumb = (index: number) => {
         console.log(currentPath.slice(0, index + 1))
 
-        // setCurrentPath(currentPath.slice(0, index + 1))
+        setCurrentPath(currentPath.slice(0, index + 1))
         // setSelectedFiles([])
     }
 
@@ -103,20 +104,26 @@ export default function FileManagerHeader({
         <div className="pt-3 pb-5 grid grid-cols-[850px_1fr] items-center gap-5">
             <div className="bg-[#f4f4f5] py-2.5 px-5 rounded-xl">
                 <Breadcrumbs>
-                    <BreadcrumbItem
-                        onPress={() => removeSearchParam('directory')}
-                    >
-                        <HomeIcon size={18} />
-                    </BreadcrumbItem>
                     {breadcrumbItems.map((item, index) => {
-                        const label = item.replaceAll('-', ' ')
+                        if (item === ROOT_DIR) {
+                            return (
+                                <BreadcrumbItem
+                                    key={item + index}
+                                    onPress={() =>
+                                        removeSearchParam('directory')
+                                    }
+                                >
+                                    <HomeIcon size={18} />
+                                </BreadcrumbItem>
+                            )
+                        }
 
                         return (
                             <BreadcrumbItem
                                 key={item + index}
                                 onPress={() => navigateToBreadcrumb(index)}
                             >
-                                {label}
+                                {item}
                             </BreadcrumbItem>
                         )
                     })}

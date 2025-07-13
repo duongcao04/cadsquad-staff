@@ -6,16 +6,15 @@ import { EllipsisVerticalIcon } from 'lucide-react'
 
 import { FileItem } from '@/validationSchemas/file.schema'
 
-import { getFileIcon } from '.'
+import { getFileIcon } from './actions/getFileIcon'
+import { useFileStore } from './store/useFileStore'
 
 type Props = {
-    selectedFiles: string[]
     filteredFiles: FileItem[]
 }
-export default function GridFileManager({
-    selectedFiles,
-    filteredFiles,
-}: Props) {
+export default function GridFileManager({ filteredFiles }: Props) {
+    const { selectedFiles } = useFileStore()
+
     return (
         <div className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {filteredFiles.map((file) => (

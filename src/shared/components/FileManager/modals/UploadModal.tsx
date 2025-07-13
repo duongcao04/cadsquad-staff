@@ -4,10 +4,9 @@ import { Button } from '@heroui/react'
 import { Modal, Progress } from 'antd'
 import { CloudUpload } from 'lucide-react'
 
+import { ROOT_DIR } from '@/app/[locale]/(dashboard)/documents/actions'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileItem } from '@/validationSchemas/file.schema'
-
-import { ROOT_DIR } from '../../actions'
 
 type Props = {
     isOpen: boolean
@@ -50,7 +49,7 @@ export default function UploadModal({ isOpen, onClose, setFiles }: Props) {
                                   ? 'code'
                                   : 'other',
                         size: '1.2 MB',
-                        modified: new Date(),
+                        modified: Date.now(),
                         path: currentPath,
                     }
 

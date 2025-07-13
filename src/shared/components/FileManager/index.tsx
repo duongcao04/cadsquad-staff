@@ -1,69 +1,43 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Button, addToast, useDisclosure } from '@heroui/react'
 import { Empty, message } from 'antd'
-import {
-    ArrowUp,
-    BanIcon,
-    BotIcon,
-    FolderIcon,
-    PlusIcon,
-    TvIcon,
-} from 'lucide-react'
+import { ArrowUp, PlusIcon } from 'lucide-react'
 import useSWR from 'swr'
 
+import {
+    ROOT_DIR,
+    getFileSystem,
+} from '@/app/[locale]/(dashboard)/documents/actions'
 import { FILE_SYSTEM_API } from '@/lib/swr/api'
-import { PDFIcon } from '@/shared/components/icons/file-icons/PDFIcon'
-import { WordIcon } from '@/shared/components/icons/file-icons/WordIcon'
+import { FILE } from '@/shared/constants/appConstant'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
-import { FileType } from '@/types/file.type'
 import { FileItem } from '@/validationSchemas/file.schema'
 
-import { ROOT_DIR, getFileSystem } from '../../actions'
-import DeleteModal from '../modals/DeleteModal'
-import MoveModal from '../modals/MoveModal'
-import NewFolderModal from '../modals/NewFolderModal'
-import RenameModal from '../modals/RenameModal'
-import UploadModal from '../modals/UploadModal'
 import BulkActionsToolbar from './BulkActionsToolbar'
 import FileManagerHeader from './FileManagerHeader'
 import FileManagerTable from './FileManagerTable'
 import GridFileManager from './GridFileManager'
+import DeleteModal from './modals/DeleteModal'
+import MoveModal from './modals/MoveModal'
+import NewFolderModal from './modals/NewFolderModal'
+import RenameModal from './modals/RenameModal'
+import UploadModal from './modals/UploadModal'
+import { useFileStore } from './store/useFileStore'
 
-// Helper function to get file icon
-export const getFileIcon = (type: FileType, folderColor: string) => {
-    const iconClass = 'h-5 w-5'
-    switch (type) {
-        case 'folder':
-            return (
-                <FolderIcon
-                    className={iconClass}
-                    style={{ color: folderColor }}
-                />
-            )
-        case 'pdf':
-            return <PDFIcon className={iconClass} />
-        case 'image':
-            return <BotIcon className={`${iconClass} text-green-500`} />
-        case 'document':
-            return <WordIcon className={iconClass} />
-        case 'code':
-            return <BanIcon className={`${iconClass} text-purple-500`} />
-        default:
-            return <TvIcon className={`${iconClass} text-gray-500`} />
-    }
+export type Props = {
+    defaultDirectory?: string
+    view?: 'list' | 'grid'
 }
-
-export default function FileManager() {
+export default function FileManager({
+    defaultDirectory = ROOT_DIR,
+    view = 'list',
+}: Props) {
     const { getSearchParam, setSearchParams } = useSearchParam()
 
-    const searchQuery = getSearchParam('search') ?? ''
-    const viewMode = getSearchParam('mode') ?? 'list'
-    const dirQuery = getSearchParam('directory') ?? ROOT_DIR
-    const currentPath = dirQuery.split('_')
-
+    // Modals state
     const {
         isOpen: newFolderModalOpen,
         onClose: onCloseNewFolderModal,
@@ -90,16 +64,29 @@ export default function FileManager() {
         onOpen: onOpenDeleteModal,
     } = useDisclosure({ id: 'DeleteModal' })
 
+    const {
+        currentPath,
+        setCurrentPath,
+        selectedFiles,
+        setSelectedFiles,
+        activeFile,
+        setActiveFile,
+    } = useFileStore()
+
+    const searchQuery = getSearchParam('search') ?? ''
+    const viewMode = getSearchParam('mode') ?? view
+
+    useEffect(() => {
+        setCurrentPath(defaultDirectory.split(FILE.SPLASH))
+    }, [])
+
     const { data: fileSystem, isLoading } = useSWR(
         FILE_SYSTEM_API,
         getFileSystem
     )
     const [files, setFiles] = useState<FileItem[]>(fileSystem ?? [])
-    const [selectedFiles, setSelectedFiles] = useState<string[]>([])
 
-    // Modals state
     const [previewModalOpen, setPreviewModalOpen] = useState(false)
-    const [activeFile, setActiveFile] = useState<FileItem | null>(null)
 
     // New folder name
     const [newFileName, setNewFileName] = useState('')
@@ -118,7 +105,8 @@ export default function FileManager() {
     const navigateToFolder = (folder: FileItem) => {
         if (folder.type === 'folder') {
             const newPath = [...folder.path, folder.name]
-            setSearchParams({ directory: newPath.join('_') })
+            setSearchParams({ directory: newPath.join(FILE.SPLASH) })
+            setCurrentPath(newPath)
             setSelectedFiles([])
         }
     }
@@ -197,28 +185,19 @@ export default function FileManager() {
             />
 
             {selectedFiles.length > 0 && (
-                <BulkActionsToolbar
-                    onOpenDeleteModal={onOpenDeleteModal}
-                    selectedFiles={selectedFiles}
-                    setSelectedFiles={setSelectedFiles}
-                />
+                <BulkActionsToolbar onOpenDeleteModal={onOpenDeleteModal} />
             )}
 
             {viewMode === 'list' && (
                 <FileManagerTable
                     isLoading={isLoading}
                     filteredFiles={filteredFiles}
-                    selectedFiles={selectedFiles}
-                    setSelectedFiles={setSelectedFiles}
                     handleFileAction={handleFileAction}
                 />
             )}
 
             {viewMode === 'grid' && (
-                <GridFileManager
-                    filteredFiles={filteredFiles}
-                    selectedFiles={selectedFiles}
-                />
+                <GridFileManager filteredFiles={filteredFiles} />
             )}
 
             {!isLoading && filteredFiles.length === 0 && (
@@ -263,22 +242,17 @@ export default function FileManager() {
             <RenameModal
                 isOpen={renameFolderModalOpen}
                 onClose={onCloseRenameFolderModal}
-                activeFile={activeFile}
                 renameFile={renameFile}
             />
             <DeleteModal
                 isOpen={deleteModalOpen}
                 onClose={onCloseDeleteModal}
-                activeFile={activeFile}
-                selectedFiles={selectedFiles}
                 deleteFiles={deleteFiles}
             />
             <MoveModal
                 isOpen={moveModalOpen}
                 onClose={onCloseMoveModal}
                 files={files}
-                selectedFiles={selectedFiles}
-                activeFile={activeFile}
             />
         </div>
     )

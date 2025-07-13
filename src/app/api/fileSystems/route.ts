@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
                         },
                     },
                 },
-                orderBy: { createdAt: 'desc' },
+                orderBy: { name: 'asc' },
             }),
             prisma.fileSystem.count({ where }),
         ])

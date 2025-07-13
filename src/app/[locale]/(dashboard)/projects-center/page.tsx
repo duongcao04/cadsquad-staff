@@ -5,11 +5,11 @@ import React from 'react'
 import FileManager from '@/shared/components/FileManager'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
-import { DOCUMENTS_DIR } from './actions'
+import { PROJECTS_CENTER_DIR } from '../documents/actions'
 
-export default function DocumentsPage() {
+export default function ProjectsCenterPage() {
     const { getSearchParam } = useSearchParam()
-    const dirQuery = getSearchParam('directory') ?? DOCUMENTS_DIR
+    const dirQuery = getSearchParam('directory') ?? PROJECTS_CENTER_DIR
 
     return (
         <div

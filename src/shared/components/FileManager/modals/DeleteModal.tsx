@@ -5,23 +5,16 @@ import React from 'react'
 import { Button } from '@heroui/react'
 import { Modal } from 'antd'
 
-import { FileItem } from '@/validationSchemas/file.schema'
+import { useFileStore } from '@/shared/components/FileManager/store/useFileStore'
 
 type Props = {
     isOpen: boolean
     onClose: () => void
-    activeFile: FileItem | null
-    selectedFiles: string[]
     deleteFiles: () => void
 }
 
-export default function DeleteModal({
-    isOpen,
-    onClose,
-    activeFile,
-    selectedFiles,
-    deleteFiles,
-}: Props) {
+export default function DeleteModal({ isOpen, onClose, deleteFiles }: Props) {
+    const { selectedFiles, activeFile } = useFileStore()
     return (
         <Modal
             title="Confirm Deletion"

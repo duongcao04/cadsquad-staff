@@ -6,11 +6,15 @@ import {
     UsersRound,
 } from 'lucide-react'
 
+export const FILE = {
+    SPLASH: encodeURIComponent('/'),
+}
+
 export const appSidebar = [
     { icon: LayoutDashboard, title: 'Dashboard', path: '/' },
     { icon: Target, title: 'Onboarding', path: '/onboarding' },
     { icon: FolderOpen, title: 'Documents', path: '/documents' },
-    { icon: PackageOpen, title: 'Project Center', path: '/projects' },
+    { icon: PackageOpen, title: 'Project Center', path: '/projects-center' },
     { icon: UsersRound, title: 'Team', path: '/team' },
 ]
 export type SidebarItem = (typeof appSidebar)[0]
