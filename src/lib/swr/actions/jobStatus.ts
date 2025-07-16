@@ -8,20 +8,6 @@ export const getJobStatuses: () => Promise<JobStatus[]> = async () => {
     return data.data
 }
 
-export const getProjects: (
-    statusId?: string | null
-) => Promise<Project[]> = async (statusId) => {
-    let url = '/api/projects'
-    if (statusId) {
-        url += `?status=${statusId}`
-    }
-    const res = await fetch(url, {
-        method: 'GET',
-    })
-    const data = await res.json()
-    return data.data
-}
-
 export const updateJobStatus: (
     project: Project,
     newJobStatus: JobStatus

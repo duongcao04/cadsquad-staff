@@ -18,6 +18,17 @@ export async function generateMetadata({
     }
 }
 
-export default function layout({ children }: { children: React.ReactNode }) {
-    return children
+export default function layout({
+    children,
+    detail,
+}: {
+    children: React.ReactNode
+    detail: React.ReactNode
+}) {
+    return (
+        <div>
+            {children}
+            {detail}
+        </div>
+    )
 }

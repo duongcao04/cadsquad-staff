@@ -7,10 +7,10 @@ import { Input } from 'antd'
 import { Search } from 'lucide-react'
 import useSWR from 'swr'
 
+import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
+import { getProjects } from '@/lib/swr/actions/project'
 import { JOB_STATUS_API, PROJECT_API } from '@/lib/swr/api'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
-
-import { getJobStatuses, getProjects } from '../actions'
 
 export default function TableHeading() {
     const { getSearchParam, setSearchParams, removeSearchParam } =

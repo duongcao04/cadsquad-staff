@@ -80,6 +80,7 @@ export default function FileManagerTable({
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
+            width: 740,
             render: (text: string, record: FileItem) => (
                 <div
                     className="flex items-center gap-3 cursor-pointer"
@@ -176,9 +177,7 @@ export default function FileManagerTable({
             rowClassName={(record) =>
                 selectedFiles.includes(record.id) ? 'bg-blue-50' : ''
             }
-            locale={{
-                emptyText: <div />,
-            }}
+            scroll={{ y: 600, x: 'unset' }}
         />
     )
 }

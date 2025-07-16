@@ -12,6 +12,45 @@ export async function GET(request: NextRequest) {
         const status = searchParams.get('status')
         const search = searchParams.get('search')
 
+        const jobNo = searchParams.get('jobNo')
+
+        if (jobNo) {
+            try {
+                const project = await prisma.project.findUnique({
+                    where: {
+                        jobNo: jobNo,
+                    },
+                    include: {
+                        memberAssign: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                jobTitle: true,
+                                department: true,
+                                avatar: true,
+                            },
+                        },
+                        jobStatus: {},
+                    },
+                })
+                if (!project) {
+                    return NextResponse.json(
+                        { error: 'Project not found' },
+                        { status: 404 }
+                    )
+                }
+
+                return NextResponse.json(project)
+            } catch (error) {
+                console.error('Error fetching project:', error)
+                return NextResponse.json(
+                    { error: 'Internal server error' },
+                    { status: 500 }
+                )
+            }
+        }
+
         const where = {
             ...(search && {
                 OR: [

@@ -3,10 +3,12 @@ import * as yup from 'yup'
 import {
     JobStatus as JobStatusPrisma,
     Project as ProjectPrisma,
+    User,
 } from '@/generated/prisma'
 
 export type Project = Partial<ProjectPrisma> & {
     jobStatus: Partial<JobStatus>
+    memberAssign: User[]
 }
 
 export type JobStatus = Partial<JobStatusPrisma> & {
