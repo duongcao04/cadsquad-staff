@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
         }
 
         const where = {
+            deletedAt: null,
             ...(search && {
                 OR: [
                     {

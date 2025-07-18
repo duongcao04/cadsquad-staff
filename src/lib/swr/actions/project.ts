@@ -41,3 +41,13 @@ export const createProject: (
     const data = await res.json()
     return data
 }
+
+export const deleteProject: (id: string | number) => Promise<Project> = async (
+    id
+) => {
+    const res = await fetch(`/api/projects/${id}`, {
+        method: 'DELETE',
+    })
+    const data = await res.json()
+    return data.data
+}

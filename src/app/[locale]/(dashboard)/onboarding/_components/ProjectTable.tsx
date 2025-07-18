@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
     Avatar,
@@ -13,6 +13,7 @@ import {
     DropdownSection,
     DropdownTrigger,
     Tooltip,
+    addToast,
 } from '@heroui/react'
 import { SharedSelection } from '@heroui/react'
 import { Image, Table } from 'antd'
@@ -27,12 +28,16 @@ import {
 } from 'lucide-react'
 import { ChevronDownIcon, Search } from 'lucide-react'
 import useSWR, { mutate } from 'swr'
+import useSWRMutation from 'swr/mutation'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { getJobStatuses, updateJobStatus } from '@/lib/swr/actions/jobStatus'
 import { getJobTypes } from '@/lib/swr/actions/jobTypes'
 import { getPaymentChannels } from '@/lib/swr/actions/paymentChannels'
-import { getProjects } from '@/lib/swr/actions/project'
+import {
+    deleteProject as deleteProjectAction,
+    getProjects,
+} from '@/lib/swr/actions/project'
 import { getUsers } from '@/lib/swr/actions/user'
 import {
     JOB_STATUS_API,
@@ -44,10 +49,15 @@ import {
 import { uniqueByKey } from '@/lib/utils'
 import { capitalize } from '@/lib/utils'
 import { useUserOptionsStore } from '@/shared/components/FileManager/store/useUserOptionsStore'
+import {
+    ConfirmModal,
+    useConfirmModal,
+} from '@/shared/components/ui/ConfirmModal'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { JobStatus, Project } from '@/validationSchemas/project.schema'
 
 import { useDetailModal } from '../@detail/actions'
+import { useJobStore } from '../store/useJobStore'
 import CountDown from './CountDown'
 
 const DEFAULT_TAB = 'priority'
@@ -58,14 +68,24 @@ type DataType = Project & {
 
 export default function ProjectTable() {
     const [keywords, setKeywords] = useState('')
+    const deleteModal = useConfirmModal()
 
+    const [deleteProject, setDeleteProject] = useState<Project | null>(null)
+
+    const { newJobNo, setNewJobNo } = useJobStore()
     const { projectTable, setProjectTable } = useUserOptionsStore()
     const { openModal } = useDetailModal()
 
     const { getSearchParam, setSearchParams, removeSearchParam } =
         useSearchParam()
-    const statusFilter = getSearchParam('tab')
     const tabValue = getSearchParam('tab') ?? DEFAULT_TAB
+
+    const { trigger: deleteProjectMutation, isMutating } = useSWRMutation(
+        PROJECT_API,
+        async (url, { arg }: { arg: string }) => {
+            return deleteProjectAction(arg)
+        }
+    )
 
     const { data: users } = useSWR(USER_API, getUsers)
     const { data: jobTypes } = useSWR(JOB_TYPE_API, getJobTypes)
@@ -74,13 +94,12 @@ export default function ProjectTable() {
         getPaymentChannels
     )
     const { data: jobStatuses } = useSWR(JOB_STATUS_API, getJobStatuses)
-    const { data: projects, isLoading } = useSWR(
-        [PROJECT_API, statusFilter],
-        () => getProjects(statusFilter),
-        {
-            refreshInterval: 5000,
-        }
-    )
+    const {
+        data: projects,
+        isLoading: loadingProjects,
+        isValidating: validatingProjects,
+        mutate: mutateProjects,
+    } = useSWR(PROJECT_API, () => getProjects())
 
     const handleSwitch = async (project: Project, nextJobStatus: JobStatus) => {
         try {
@@ -355,7 +374,10 @@ export default function ProjectTable() {
                                     <DropdownItem
                                         key="delete"
                                         startContent={<Trash size={16} />}
-                                        onClick={() => {}}
+                                        onClick={() => {
+                                            deleteModal.onOpen()
+                                            setDeleteProject(record)
+                                        }}
                                         color="danger"
                                     >
                                         Delete
@@ -492,8 +514,62 @@ export default function ProjectTable() {
         setProjectTable('visibleColumns', newVisibleColumns)
     }
 
+    // Remove hight after 1 second
+    useEffect(() => {
+        if (newJobNo) {
+            const timeout = setTimeout(() => {
+                setNewJobNo(null)
+            }, 800)
+
+            return () => clearTimeout(timeout)
+        }
+    }, [newJobNo])
+
     return (
         <>
+            <ConfirmModal
+                isOpen={deleteModal.isOpen}
+                onClose={deleteModal.onClose}
+                isLoading={isMutating}
+                onConfirm={async () => {
+                    try {
+                        if (deleteProject) {
+                            await deleteProjectMutation(
+                                deleteProject.id?.toString() as string
+                            )
+                            await mutateProjects()
+                            addToast({
+                                title: 'Delete project successfully!',
+                                color: 'success',
+                            })
+                        }
+                        return
+                    } catch (error) {
+                        addToast({
+                            title: 'Delete project failed!',
+                            description: `${JSON.stringify(error)}`,
+                            color: 'danger',
+                        })
+                    }
+                }}
+                variant="danger"
+                title={`Delete ${deleteProject?.jobNo}`}
+                message={
+                    <div className="flex flex-col items-center">
+                        <p className="text-base font-semibold">
+                            Are you sure you want to delete this project?
+                        </p>
+                        <p className="mt-3 text-sm text-center">
+                            This action will mark the project as deleted. You
+                            can restore it later if needed.
+                        </p>
+                        <p className="text-sm text-center">
+                            P/s: Deleted projects will move to cancelled
+                        </p>
+                    </div>
+                }
+                confirmText="Delete"
+            />
             <div className="grid grid-cols-[1fr_1fr_160px] gap-3">
                 <Tabs
                     activeKey={tabValue}
@@ -548,17 +624,24 @@ export default function ProjectTable() {
                         clm.key as keyof Project | 'action'
                     )
                 )}
+                rowKey="jobNo"
+                onRow={(record) => {
+                    return {
+                        className:
+                            record.jobNo === newJobNo ? 'bg-yellow-200' : '',
+                    }
+                }}
                 dataSource={projects?.map((prj, index) => ({
                     ...prj,
                     key: prj?.id ?? index,
                 }))}
-                loading={isLoading}
+                loading={loadingProjects && validatingProjects}
                 pagination={{
                     position: ['bottomCenter'],
                     pageSize: 10,
                 }}
                 size={projectTable.size}
-                rowClassName="h-8!"
+                rowClassName="h-8! transition duration-500"
                 showSorterTooltip
             />
         </>

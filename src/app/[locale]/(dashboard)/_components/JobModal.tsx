@@ -11,21 +11,25 @@ import { useCreateMutation } from '@/lib/swr/actions'
 import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
 import { getJobTypes } from '@/lib/swr/actions/jobTypes'
 import { getPaymentChannels } from '@/lib/swr/actions/paymentChannels'
+import { getProjects } from '@/lib/swr/actions/project'
 import { getUsers } from '@/lib/swr/actions/user'
 import {
     JOB_STATUS_API,
     JOB_TYPE_API,
     PAYMENT_CHANNEL_API,
     PROJECT_API,
+    SEND_NOTIFICATION_API,
     USER_API,
 } from '@/lib/swr/api'
 import { padToFourDigits } from '@/lib/utils'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
+import { NewNotification } from '@/validationSchemas/notification.schema'
 import {
     CreateProjectSchema,
     NewProject,
 } from '@/validationSchemas/project.schema'
 
+import { useJobStore } from '../onboarding/store/useJobStore'
 import DateTimePicker from './form-fields/DateTimePicker'
 
 const DOT_SYMBOL = '.'
@@ -41,13 +45,18 @@ type Props = {
 export default function JobModal({ isOpen, onClose }: Props) {
     const { authUser } = useAuthStore()
     const [isLoading, setLoading] = useState(false)
+    const { setNewJobNo } = useJobStore()
 
     const { trigger: createProject } =
         useCreateMutation<NewProject>(PROJECT_API)
+    const { trigger: createNotification } = useCreateMutation<NewNotification>(
+        SEND_NOTIFICATION_API
+    )
 
     /**
      * Fetch data
      */
+    const { mutate: mutateProject } = useSWR(PROJECT_API, () => getProjects())
     const { data: users } = useSWR(USER_API, getUsers)
     const { data: jobTypes, isLoading: loadingJobTypes } = useSWR(
         JOB_TYPE_API,
@@ -61,26 +70,6 @@ export default function JobModal({ isOpen, onClose }: Props) {
         JOB_STATUS_API,
         getJobStatuses
     )
-
-    const sendNotification = async (recipientId: string) => {
-        const newNotification = {
-            recipientId,
-            title: 'New job assigned',
-            content: 'Job No. FV.0551 have just been assigned from Phong Pham',
-        }
-        const res = await fetch('/api/notifications/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newNotification),
-        })
-        const data = await res.json()
-
-        if (res.status === 201 || res.status === 200) {
-            return
-        } else {
-            throw new Error(data)
-        }
-    }
 
     /**
      * Default value with API response
@@ -118,8 +107,8 @@ export default function JobModal({ isOpen, onClose }: Props) {
             startedAt: '',
             dueAt: '',
             memberAssignIds: [],
-            income: '',
-            staffCost: '',
+            income: null as unknown as number,
+            staffCost: null as unknown as number,
             paymentChannelId: null as unknown as string,
             jobStatusId: defaultJobStatusId,
         },
@@ -139,12 +128,19 @@ export default function JobModal({ isOpen, onClose }: Props) {
                 }
 
                 await createProject(newJob)
+                await mutateProject()
 
-                // values.memberAssignIds.forEach(async (memId) => {
-                //     await sendNotification(memId)
-                // })
+                values.memberAssignIds.forEach(async (recipientId) => {
+                    const newNotification: NewNotification = {
+                        recipientId,
+                        title: 'New job assigned!',
+                        content: `Job No. ${newJob.jobNo} have just been assigned from ${authUser?.name}. View here`,
+                    }
+                    await createNotification(newNotification)
+                })
 
                 onClose()
+                setNewJobNo(newJob.jobNo)
                 formik.resetForm()
                 addToast({
                     title: 'Create project successfully!',
@@ -367,14 +363,21 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 })}
                                 placeholder="Select one or more member"
                                 size="large"
+                                showSearch
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '')
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
+                                }
                                 optionRender={(opt) => {
                                     return (
                                         <div className="flex items-center justify-start gap-4">
-                                            <div className="size-12">
+                                            <div className="size-9">
                                                 <Image
-                                                    src={opt.data.avatar!}
+                                                    src={opt.data.avatar}
                                                     alt={opt.data.name}
                                                     className="size-full rounded-full object-cover"
+                                                    preview={false}
                                                 />
                                             </div>
                                             <p className="font-normal">
@@ -427,11 +430,14 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="income"
                         label="Income"
                         placeholder="0"
-                        maxValue={999999}
                         color="secondary"
                         variant="faded"
-                        value={Number(formik.values.income)}
-                        onChange={formik.handleChange}
+                        type="number"
+                        maxValue={999999999999999}
+                        value={formik.values.income}
+                        onChange={(value) =>
+                            formik.setFieldValue('income', Number(value))
+                        }
                         startContent={
                             <div className="pointer-events-none flex items-center">
                                 <span className="text-default-400 text-small px-0.5">
@@ -461,11 +467,14 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="staffCost"
                         label="Staff Cost"
                         placeholder="0"
-                        maxValue={999999}
                         color="secondary"
                         variant="faded"
-                        value={Number(formik.values.staffCost)}
-                        onChange={formik.handleChange}
+                        type="number"
+                        maxValue={999999999999999}
+                        value={formik.values.staffCost}
+                        onChange={(value) =>
+                            formik.setFieldValue('staffCost', Number(value))
+                        }
                         startContent={
                             <div className="pointer-events-none flex items-center">
                                 <span className="text-default-400 text-small px-0.5">

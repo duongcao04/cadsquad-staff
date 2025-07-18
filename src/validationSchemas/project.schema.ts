@@ -44,8 +44,8 @@ export const CreateProjectSchema = yup.object().shape({
     paymentChannelId: yup.string().required(),
     createdById: yup.string().required(),
     jobTypeId: yup.string().required(),
-    income: yup.string().required(),
-    staffCost: yup.string().required(),
+    income: yup.number().required(),
+    staffCost: yup.number().required(),
     startedAt: yup.string().required(),
     dueAt: yup.string().required(),
 })

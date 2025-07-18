@@ -100,3 +100,38 @@ export async function PATCH(
         await prisma.$disconnect()
     }
 }
+
+export async function DELETE(
+    request: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    const projectId = Number(params.id)
+
+    if (isNaN(projectId)) {
+        return NextResponse.json(
+            { message: 'Invalid project ID' },
+            { status: 400 }
+        )
+    }
+
+    try {
+        const project = await prisma.project.update({
+            where: { id: projectId },
+            data: { deletedAt: new Date() }, // soft delete
+        })
+
+        return NextResponse.json(
+            {
+                message: 'Project soft-deleted successfully',
+                data: project,
+            },
+            { status: 200 }
+        )
+    } catch (error) {
+        console.error('[DELETE_PROJECT_ERROR]', error)
+        return NextResponse.json(
+            { message: 'Internal Server Error' },
+            { status: 500 }
+        )
+    }
+}
