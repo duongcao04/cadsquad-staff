@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 
+import '@ant-design/v5-patch-for-react-19'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 

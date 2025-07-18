@@ -124,8 +124,10 @@ export default function ProjectTable() {
             },
             filters: uniqueByKey(projects ?? [], 'clientName')?.map((item) => ({
                 text: `${item.clientName}`,
-                value: item?.id ?? '',
+                value: item?.clientName ?? '',
             })),
+            onFilter: (value, record) =>
+                record?.clientName?.indexOf(value as string) === 0,
         },
         {
             title: 'Job No.',
