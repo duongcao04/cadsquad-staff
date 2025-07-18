@@ -1,39 +1,66 @@
-import React, { useState } from 'react'
+'use client'
+
+import React, { useMemo, useState } from 'react'
 
 import { Button, Input, NumberInput, addToast } from '@heroui/react'
-import { Modal } from 'antd'
+import { Image, Modal, Select } from 'antd'
 import { useFormik } from 'formik'
+import useSWR from 'swr'
 
+import { useCreateMutation } from '@/lib/swr/actions'
+import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
+import { getJobTypes } from '@/lib/swr/actions/jobTypes'
+import { getPaymentChannels } from '@/lib/swr/actions/paymentChannels'
+import { getUsers } from '@/lib/swr/actions/user'
+import {
+    JOB_STATUS_API,
+    JOB_TYPE_API,
+    PAYMENT_CHANNEL_API,
+    PROJECT_API,
+    USER_API,
+} from '@/lib/swr/api'
+import { padToFourDigits } from '@/lib/utils'
+import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import {
     CreateProjectSchema,
     NewProject,
 } from '@/validationSchemas/project.schema'
 
 import DateTimePicker from './form-fields/DateTimePicker'
-import SelectJobStatus from './form-fields/SelectJobStatus'
-import SelectMember from './form-fields/SelectMember'
+
+const DOT_SYMBOL = '.'
+
+const pareJobNo = (jobTypeCode: string, jobNumber: number) => {
+    return jobTypeCode + DOT_SYMBOL + padToFourDigits(jobNumber)
+}
 
 type Props = {
     isOpen: boolean
     onClose: () => void
 }
 export default function JobModal({ isOpen, onClose }: Props) {
+    const { authUser } = useAuthStore()
     const [isLoading, setLoading] = useState(false)
 
-    const createNewJob = async (values: NewProject) => {
-        const res = await fetch('/api/projects', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(values),
-        })
-        const data = await res.json()
+    const { trigger: createProject } =
+        useCreateMutation<NewProject>(PROJECT_API)
 
-        if (res.status === 201) {
-            return
-        } else {
-            throw new Error(data)
-        }
-    }
+    /**
+     * Fetch data
+     */
+    const { data: users } = useSWR(USER_API, getUsers)
+    const { data: jobTypes, isLoading: loadingJobTypes } = useSWR(
+        JOB_TYPE_API,
+        getJobTypes
+    )
+    const { data: paymentChannels } = useSWR(
+        PAYMENT_CHANNEL_API,
+        getPaymentChannels
+    )
+    const { data: jobStatuses, isLoading: loadingJobStatuses } = useSWR(
+        JOB_STATUS_API,
+        getJobStatuses
+    )
 
     const sendNotification = async (recipientId: string) => {
         const newNotification = {
@@ -55,29 +82,70 @@ export default function JobModal({ isOpen, onClose }: Props) {
         }
     }
 
-    // TODO: Create job and send noti to member.
+    /**
+     * Default value with API response
+     */
+    const defaultJobTypeId = useMemo(() => {
+        if (!loadingJobTypes && jobTypes) {
+            return jobTypes[0].id!.toString()
+        }
+        return ''
+    }, [jobTypes, loadingJobTypes])
+
+    const defaultJobNo = useMemo(() => {
+        if (!loadingJobTypes && jobTypes) {
+            const jobNumber = jobTypes[0]._count.projects + 1
+            return padToFourDigits(jobNumber)
+        }
+        return ''
+    }, [jobTypes, loadingJobTypes])
+
+    const defaultJobStatusId = useMemo(() => {
+        if (!loadingJobStatuses && jobStatuses) {
+            return jobStatuses[0].id!.toString()
+        }
+        return ''
+    }, [jobStatuses, loadingJobStatuses])
+
     const formik = useFormik<NewProject>({
         initialValues: {
+            createdById: authUser.id!,
+            clientName: '',
+            jobTypeId: defaultJobTypeId,
+            jobNo: defaultJobNo,
             jobName: '',
-            jobNo: '',
-            price: '',
             sourceUrl: '',
             startedAt: '',
             dueAt: '',
             memberAssignIds: [],
-            jobStatusId: '',
+            income: '',
+            staffCost: '',
+            paymentChannelId: null as unknown as string,
+            jobStatusId: defaultJobStatusId,
         },
         validationSchema: CreateProjectSchema,
+        enableReinitialize: true,
         onSubmit: async (values) => {
             try {
                 setLoading(true)
-                await createNewJob(values)
 
-                values.memberAssignIds.forEach(async (memId) => {
-                    await sendNotification(memId)
-                })
+                const jobType = jobTypes!.find(
+                    (jType) => jType.id!.toString() === values.jobTypeId
+                )
+                const jobNumber = jobType!._count.projects + 1
+                const newJob = {
+                    ...values,
+                    jobNo: pareJobNo(jobType!.code!, jobNumber),
+                }
+
+                await createProject(newJob)
+
+                // values.memberAssignIds.forEach(async (memId) => {
+                //     await sendNotification(memId)
+                // })
 
                 onClose()
+                formik.resetForm()
                 addToast({
                     title: 'Create project successfully!',
                     color: 'success',
@@ -85,7 +153,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
             } catch (error) {
                 addToast({
                     title: 'Create project failed!',
-                    description: `${error}`,
+                    description: `${JSON.stringify(error)}`,
                     color: 'danger',
                 })
             } finally {
@@ -93,8 +161,6 @@ export default function JobModal({ isOpen, onClose }: Props) {
             }
         },
     })
-
-    console.log(formik.errors)
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -135,35 +201,97 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                     formik.handleSubmit()
                                 }}
                             >
-                                Send Offer
+                                Create Job
                             </Button>
                         </div>
                     )
                 }}
             >
                 <div className="py-8 space-y-4 border-t border-border">
+                    <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
+                        <p
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) && formik.errors.dueAt ? 'text-danger' : 'text-secondary'}`}
+                        >
+                            Job No.
+                            <span className="absolute top-0 right-0 text-danger!">
+                                *
+                            </span>
+                        </p>
+                        <div className="grid grid-cols-[0.2fr_5px_1fr] gap-3 items-center">
+                            <Select
+                                options={jobTypes?.map((jType) => {
+                                    return {
+                                        ...jType,
+                                        label: jType.code!,
+                                        value: jType.id!.toString(),
+                                    }
+                                })}
+                                placeholder="Select Job Type first"
+                                size="large"
+                                onChange={(value) => {
+                                    const findJobType = jobTypes?.find(
+                                        (item) => item.id?.toString() === value
+                                    )
+                                    formik.setFieldValue('jobTypeId', value)
+                                    formik.setFieldValue(
+                                        'jobNo',
+                                        padToFourDigits(
+                                            (findJobType?._count.projects ??
+                                                0) + 1
+                                        )
+                                    )
+                                }}
+                                value={formik.values.jobTypeId}
+                            />
+                            <hr />
+                            <Input
+                                isRequired
+                                id="jobNo"
+                                name="jobNo"
+                                placeholder="e.g. 0001"
+                                value={formik.values.jobNo}
+                                onChange={formik.handleChange}
+                                color="secondary"
+                                variant="faded"
+                                classNames={{
+                                    inputWrapper: 'w-full',
+                                    label: 'text-right font-medium text-base',
+                                }}
+                                isInvalid={
+                                    Boolean(formik.touched.jobNo) &&
+                                    Boolean(formik.errors.jobNo)
+                                }
+                                errorMessage={
+                                    Boolean(formik.touched.jobNo) &&
+                                    formik.errors.jobNo
+                                }
+                                size="lg"
+                            />
+                        </div>
+                    </div>
                     <Input
                         isRequired
-                        id="jobNo"
-                        name="jobNo"
-                        label="Job No."
-                        placeholder="e.g. FV.0001"
-                        value={formik.values.jobNo}
-                        onChange={formik.handleChange}
-                        labelPlacement="outside-left"
+                        id="clientName"
+                        name="clientName"
+                        label="Client"
+                        placeholder="e.g. Tom Jain"
                         color="secondary"
                         variant="faded"
+                        value={formik.values.clientName}
+                        onChange={formik.handleChange}
+                        labelPlacement="outside-left"
                         classNames={{
                             base: 'grid grid-cols-[0.25fr_1fr] gap-3',
                             inputWrapper: 'w-full',
                             label: 'text-right font-medium text-base',
                         }}
                         isInvalid={
-                            Boolean(formik.touched.jobNo) &&
-                            Boolean(formik.errors.jobNo)
+                            Boolean(formik.touched.clientName) &&
+                            Boolean(formik.errors.clientName)
                         }
                         errorMessage={
-                            Boolean(formik.touched.jobNo) && formik.errors.jobNo
+                            Boolean(formik.touched.clientName) &&
+                            formik.errors.clientName
                         }
                         size="lg"
                     />
@@ -229,7 +357,42 @@ export default function JobModal({ isOpen, onClose }: Props) {
                             </span>
                         </p>
                         <div className="flex flex-col w-full">
-                            <SelectMember form={formik} />
+                            <Select
+                                options={users?.map((usr) => {
+                                    return {
+                                        ...usr,
+                                        label: usr.name!,
+                                        value: usr.id!,
+                                    }
+                                })}
+                                placeholder="Select one or more member"
+                                size="large"
+                                optionRender={(opt) => {
+                                    return (
+                                        <div className="flex items-center justify-start gap-4">
+                                            <div className="size-12">
+                                                <Image
+                                                    src={opt.data.avatar!}
+                                                    alt={opt.data.name}
+                                                    className="size-full rounded-full object-cover"
+                                                />
+                                            </div>
+                                            <p className="font-normal">
+                                                {opt.data.name}
+                                            </p>
+                                        </div>
+                                    )
+                                }}
+                                styles={{}}
+                                mode="multiple"
+                                onChange={(value) => {
+                                    formik.setFieldValue(
+                                        'memberAssignIds',
+                                        value
+                                    )
+                                }}
+                                value={formik.values.memberAssignIds}
+                            />
                             {Boolean(formik.touched.memberAssignIds) &&
                                 Boolean(formik.errors.memberAssignIds) && (
                                     <p className="mt-1 text-xs text-danger">
@@ -238,39 +401,6 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 )}
                         </div>
                     </div>
-                    <NumberInput
-                        isRequired
-                        id="price"
-                        name="price"
-                        label="Price"
-                        placeholder="0"
-                        maxValue={999999}
-                        color="secondary"
-                        variant="faded"
-                        value={Number(formik.values.price)}
-                        onChange={formik.handleChange}
-                        startContent={
-                            <div className="pointer-events-none flex items-center">
-                                <span className="text-default-400 text-small px-0.5">
-                                    $
-                                </span>
-                            </div>
-                        }
-                        labelPlacement="outside-left"
-                        classNames={{
-                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
-                        }}
-                        isInvalid={
-                            Boolean(formik.touched.price) &&
-                            Boolean(formik.errors.price)
-                        }
-                        errorMessage={
-                            Boolean(formik.touched.price) && formik.errors.price
-                        }
-                        size="lg"
-                    />
                     <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
                             className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) && formik.errors.dueAt ? 'text-danger' : 'text-secondary'}`}
@@ -290,25 +420,110 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 )}
                         </div>
                     </div>
-                    <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
+                    <hr className="w-[30%] mx-auto mt-1 pb-1 opacity-20" />
+                    <NumberInput
+                        isRequired
+                        id="income"
+                        name="income"
+                        label="Income"
+                        placeholder="0"
+                        maxValue={999999}
+                        color="secondary"
+                        variant="faded"
+                        value={Number(formik.values.income)}
+                        onChange={formik.handleChange}
+                        startContent={
+                            <div className="pointer-events-none flex items-center">
+                                <span className="text-default-400 text-small px-0.5">
+                                    $
+                                </span>
+                            </div>
+                        }
+                        labelPlacement="outside-left"
+                        classNames={{
+                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
+                            inputWrapper: 'w-full',
+                            label: 'text-right font-medium text-base',
+                        }}
+                        isInvalid={
+                            Boolean(formik.touched.income) &&
+                            Boolean(formik.errors.income)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.income) &&
+                            formik.errors.income
+                        }
+                        size="lg"
+                    />
+                    <NumberInput
+                        isRequired
+                        id="staffCost"
+                        name="staffCost"
+                        label="Staff Cost"
+                        placeholder="0"
+                        maxValue={999999}
+                        color="secondary"
+                        variant="faded"
+                        value={Number(formik.values.staffCost)}
+                        onChange={formik.handleChange}
+                        startContent={
+                            <div className="pointer-events-none flex items-center">
+                                <span className="text-default-400 text-small px-0.5">
+                                    đ
+                                </span>
+                            </div>
+                        }
+                        labelPlacement="outside-left"
+                        classNames={{
+                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
+                            inputWrapper: 'w-full',
+                            label: 'text-right font-medium text-base',
+                        }}
+                        isInvalid={
+                            Boolean(formik.touched.staffCost) &&
+                            Boolean(formik.errors.staffCost)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.staffCost) &&
+                            formik.errors.staffCost
+                        }
+                        size="lg"
+                    />
+                    <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) && formik.errors.dueAt ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssignIds) && formik.errors.memberAssignIds ? 'text-danger' : 'text-secondary'}`}
                         >
-                            Status
+                            Payment Channel
                             <span className="absolute top-0 right-0 text-danger!">
                                 *
                             </span>
                         </p>
-                        <SelectJobStatus form={formik} />
-                        {/* <div className="flex flex-col w-full">
-                            <DateTimePicker form={formik} />
-                            {Boolean(formik.touched.dueAt) &&
-                                Boolean(formik.errors.dueAt) && (
+                        <div className="flex flex-col w-full">
+                            <Select
+                                options={paymentChannels?.map((channel) => {
+                                    return {
+                                        ...channel,
+                                        label: channel.name!,
+                                        value: channel.id!.toString(),
+                                    }
+                                })}
+                                placeholder="Select one Payment channel"
+                                size="large"
+                                onChange={(value) => {
+                                    formik.setFieldValue(
+                                        'paymentChannelId',
+                                        value
+                                    )
+                                }}
+                                value={formik.values.paymentChannelId}
+                            />
+                            {Boolean(formik.touched.paymentChannelId) &&
+                                Boolean(formik.errors.paymentChannelId) && (
                                     <p className="mt-1 text-xs text-danger">
-                                        {formik.errors.dueAt}
+                                        {formik.errors.paymentChannelId}
                                     </p>
                                 )}
-                        </div> */}
+                        </div>
                     </div>
                 </div>
             </Modal>

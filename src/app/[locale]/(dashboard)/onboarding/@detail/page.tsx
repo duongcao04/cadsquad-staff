@@ -261,7 +261,7 @@ export default function ProjectDetailDrawer() {
                             <div className="flex items-center justify-start gap-2 opacity-80">
                                 <LinkIcon size={16} />
                                 <p className="font-normal line-clamp-1">
-                                    Attachment (1)
+                                    Sharepoint Link (1)
                                 </p>
                             </div>
                             <Link

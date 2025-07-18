@@ -1,5 +1,11 @@
-export const PROJECT_API = 'projects'
+export const USER_API = '/api/users'
 
-export const JOB_STATUS_API = 'jobStatuses'
+export const PROJECT_API = '/api/projects'
 
-export const FILE_SYSTEM_API = 'fileSystem'
+export const JOB_STATUS_API = '/api/jobStatus'
+
+export const FILE_SYSTEM_API = '/api/fileSystems'
+
+export const JOB_TYPE_API = '/api/jobTypes'
+
+export const PAYMENT_CHANNEL_API = '/api/paymentChannels'

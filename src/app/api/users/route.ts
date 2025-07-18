@@ -4,6 +4,43 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import prisma from '@/lib/prisma'
 
+export async function GET() {
+    try {
+        const users = await prisma.user.findMany({
+            orderBy: {
+                name: 'asc',
+            },
+            include: {
+                assignedProjects: {},
+                createdProjects: {},
+                statusChanges: {},
+                notifications: {},
+                _count: {
+                    select: {
+                        assignedProjects: true,
+                        createdProjects: true,
+                        notifications: true,
+                    },
+                },
+            },
+        })
+
+        return NextResponse.json({
+            success: true,
+            data: users,
+        })
+    } catch (error) {
+        console.error('Error fetching users:', error)
+        return NextResponse.json(
+            {
+                success: false,
+                error: 'Failed to fetch users',
+            },
+            { status: 500 }
+        )
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
@@ -39,7 +76,7 @@ export async function POST(request: NextRequest) {
                         id: true,
                         jobNo: true,
                         jobName: true,
-                        price: true,
+                        staffCost: true,
                     },
                 },
             },

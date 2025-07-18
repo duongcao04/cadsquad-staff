@@ -22,10 +22,17 @@ export function AppProvider({ children, locale, messages }: Props) {
             timeZone="Asia/Ho_Chi_Minh"
         >
             <HeroUIProvider>
-                <ToastProvider placement="bottom-center" />
                 <AntdRegistry>
                     <ConfigProvider theme={theme}>
                         <SWRConfig value={{ provider: localStorageProvider }}>
+                            <ToastProvider
+                                placement="bottom-center"
+                                regionProps={{
+                                    classNames: {
+                                        base: '!z-[10000]',
+                                    },
+                                }}
+                            />
                             {children}
                         </SWRConfig>
                     </ConfigProvider>

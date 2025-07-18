@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
                         jobNo: jobNo,
                     },
                     include: {
+                        paymentChannel: {},
                         memberAssign: {
                             select: {
                                 id: true,
@@ -78,6 +79,7 @@ export async function GET(request: NextRequest) {
             prisma.project.findMany({
                 where,
                 include: {
+                    paymentChannel: {},
                     memberAssign: {
                         select: {
                             id: true,
@@ -118,7 +120,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { memberAssignIds, jobStatusId, ...projectData } = body
+        const {
+            memberAssignIds,
+            jobStatusId,
+            jobTypeId,
+            createdById,
+            paymentChannelId,
+            ...projectData
+        } = body
 
         // Validate required fields
         if (!projectData.jobNo || !projectData.jobName) {
@@ -144,8 +153,10 @@ export async function POST(request: NextRequest) {
         const project = await prisma.project.create({
             data: {
                 jobNo: projectData.jobNo,
+                clientName: projectData.clientName,
                 jobName: projectData.jobName,
-                price: Number(projectData.price),
+                staffCost: Number(projectData.staffCost),
+                income: Number(projectData.income),
                 sourceUrl: projectData.sourceUrl,
                 startedAt: projectData.startedAt
                     ? new Date(projectData.startedAt)
@@ -156,7 +167,22 @@ export async function POST(request: NextRequest) {
                     : null,
                 jobStatus: {
                     connect: {
-                        id: jobStatusId,
+                        id: Number(jobStatusId),
+                    },
+                },
+                jobType: {
+                    connect: {
+                        id: Number(jobTypeId),
+                    },
+                },
+                paymentChannel: {
+                    connect: {
+                        id: Number(paymentChannelId),
+                    },
+                },
+                createdBy: {
+                    connect: {
+                        id: createdById,
                     },
                 },
                 // Conditionally add memberAssign only if memberAssignIds exists and has items

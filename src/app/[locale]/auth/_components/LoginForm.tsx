@@ -14,8 +14,6 @@ import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { LoginSchema, User } from '@/validationSchemas/auth.schema'
 
-// import { IconMicrosoftColorful } from '.@/shared/components/icons/IconMicrosoftColorful'
-
 const HOME = envConfig.NEXT_PUBLIC_URL as string
 
 export default function LoginForm() {
@@ -149,12 +147,12 @@ export default function LoginForm() {
                     >
                         Login
                     </Button>
-                    {/* <div className="flex items-center justify-between gap-3 w-full">
+                    <div className="flex items-center justify-between gap-3 w-full">
                         <hr className="w-full opacity-20" />
                         <p className="my-5 opacity-70">or</p>
                         <hr className="w-full opacity-20" />
                     </div>
-                    <Button
+                    {/* <Button
                         type="button"
                         color="secondary"
                         className="w-full rounded-full"

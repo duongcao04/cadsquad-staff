@@ -1,69 +1,36 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
-import { Badge, InputProps, Tabs, TabsProps } from 'antd'
+import { Select, SelectItem } from '@heroui/react'
+import { Badge, Tabs, TabsProps } from 'antd'
 import { Input } from 'antd'
 import { Search } from 'lucide-react'
 import useSWR from 'swr'
 
-import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
 import { getProjects } from '@/lib/swr/actions/project'
-import { JOB_STATUS_API, PROJECT_API } from '@/lib/swr/api'
+import { PROJECT_API } from '@/lib/swr/api'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
+
+const DEFAULT_TAB = 'priority'
 
 export default function TableHeading() {
     const { getSearchParam, setSearchParams, removeSearchParam } =
         useSearchParam()
     const [keywords, setKeywords] = useState('')
 
-    const { data: jobStatus } = useSWR(JOB_STATUS_API, getJobStatuses)
-    const { data: projects } = useSWR(PROJECT_API, () => getProjects())
+    // const { data: jobStatus } = useSWR(JOB_STATUS_API, getJobStatuses)
+    const { data: projects } = useSWR(PROJECT_API, () => getProjects(), {
+        refreshInterval: 5000,
+    })
 
-    const tabValue = getSearchParam('tab') ?? 'all'
+    const tabValue = getSearchParam('tab') ?? DEFAULT_TAB
 
-    useEffect(() => {
-        if (!keywords) {
-            removeSearchParam('search')
-        }
-    }, [getSearchParam])
-
-    const handleSearch: InputProps['onPressEnter'] = () => {
-        setSearchParams({ search: keywords })
-    }
-
-    const tabMenus: TabsProps['items'] = jobStatus
-        ?.map((status) => {
-            return {
-                key: status.id!.toString(),
-                label: (
-                    <button
-                        className="flex gap-2 items-center cursor-pointer"
-                        onClick={() =>
-                            setSearchParams({ tab: status.id!.toString() })
-                        }
-                    >
-                        <Badge
-                            status="success"
-                            count={status._count.projects}
-                            classNames={{
-                                indicator: 'opacity-70 scale-80',
-                            }}
-                        >
-                            <p className="px-2">{status.title}</p>
-                        </Badge>
-                    </button>
-                ),
-            }
-        })
-        .toReversed()
-        .concat({
-            key: 'all',
+    const tabMenus: TabsProps['items'] = [
+        {
+            key: 'priority',
             label: (
-                <button
-                    className="flex gap-2 items-center cursor-pointer"
-                    onClick={() => removeSearchParam('tab')}
-                >
+                <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
                         count={projects?.length}
@@ -71,30 +38,134 @@ export default function TableHeading() {
                             indicator: 'opacity-70 scale-80',
                         }}
                     >
-                        <p className="px-3">All</p>
+                        <p className="px-3 uppercase">Priority</p>
                     </Badge>
                 </button>
             ),
-        })
-        .toReversed()
+        },
+        {
+            key: 'active',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Active</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'late',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Late</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'delivered',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Delivered</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'completed',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Completed</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'cancelled',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Cancelled</p>
+                    </Badge>
+                </button>
+            ),
+        },
+    ]
+
+    const handleTabChange: TabsProps['onChange'] = (activeKey: string) => {
+        if (activeKey === DEFAULT_TAB) {
+            removeSearchParam('tab')
+        } else {
+            setSearchParams({ tab: activeKey })
+        }
+    }
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        setKeywords(value)
+        setSearchParams({ search: value })
+    }
+
+    const visibleColumns = ['Client', 'Job No.']
 
     return (
-        <div className="grid grid-cols-[600px_1fr] gap-10">
-            <Tabs activeKey={tabValue} items={tabMenus} />
+        <div className="grid grid-cols-[1fr_1fr_200px] gap-3">
+            <Tabs
+                activeKey={tabValue}
+                items={tabMenus}
+                onChange={handleTabChange}
+            />
             <div style={{ flex: 1 }}>
                 <Input
                     placeholder="Search"
                     prefix={<Search size={16} color="#999" />}
                     size="large"
                     value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
-                    onPressEnter={handleSearch}
+                    onChange={handleInputChange}
                     style={{
                         borderRadius: '8px',
                         background: 'white',
                     }}
                 />
             </div>
+            <Select label="Columns" size="sm" multiple={true}>
+                {visibleColumns.map((column, index) => (
+                    <SelectItem key={index}>{column}</SelectItem>
+                ))}
+            </Select>
         </div>
     )
 }

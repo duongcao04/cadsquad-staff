@@ -14,7 +14,7 @@ datasource db {
 }
 
 model FileSystem {
-  id             Int    @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   name           String
   type           String
   size           String
@@ -27,8 +27,15 @@ model FileSystem {
 
   visibleToUsers User[]   @relation("VisibleToUsers")
 
+  // Link files to projects
+  project        Project? @relation(fields: [projectId], references: [id])
+  projectId      Int?
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([createdById])
+  @@index([projectId])
 }
 
 model User {
@@ -44,11 +51,24 @@ model User {
 
   role           Role     @default(USER)
 
+  // Activity tracking
+  isActive       Boolean  @default(true)
+  lastLoginAt    DateTime?
+
   notifications      UserNotification[]
   assignedProjects   Project[]         @relation("UserProjects")
 
   fileCreated        FileSystem[]      @relation("CreatedFiles")
   files              FileSystem[]      @relation("VisibleToUsers")
+
+  // Status change tracking
+  statusChanges      ProjectStatusChange[]
+
+  // Project creation tracking
+  createdProjects    Project[]         @relation("ProjectCreator")
+
+  // Time tracking
+  timeEntries        TimeEntry[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -62,35 +82,151 @@ enum Role {
 
 model Project {
   id          Int       @id @default(autoincrement())
+
+  jobType JobType @relation(fields: [jobTypeId], references: [id])
+  jobTypeId Int
+
   jobNo       String    @unique
   jobName     String
-  price       Int
+  description String?
   sourceUrl   String
 
-  memberAssign User[]   @relation("UserProjects")
+  clientName String
+  income Int
+  staffCost       Int
 
+  // Project assignment
+  memberAssign User[]   @relation("UserProjects")
+  
+  // Project creator
+  createdBy    User     @relation("ProjectCreator", fields: [createdById], references: [id])
+  createdById  String   @db.Uuid
+
+  // Payment Channel
+  paymentChannel    PaymentChannel     @relation(fields: [paymentChannelId], references: [id])
+  paymentChannelId  Int
+
+  // Status management
   jobStatus    JobStatus @relation(fields: [jobStatusId], references: [id])
   jobStatusId  Int
 
+  // Status change history
+  statusChanges ProjectStatusChange[]
+
+  // Project dates
   startedAt    DateTime @default(now())
   dueAt        DateTime
   completedAt  DateTime?
 
+  // Project management features
+  priority     ProjectPriority @default(MEDIUM)
+  
+  // Related data
+  files        FileSystem[]
+  timeEntries  TimeEntry[]
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([jobStatusId])
+  @@index([createdById])
+  @@index([priority])
 }
 
+model PaymentChannel {
+  id        Int       @id @default(autoincrement())
+  name String
+  color String?
+  logoUrl String?
+
+  projects Project[]
+}
+
+model JobType {
+  id        Int       @id @default(autoincrement())
+  code String
+  name String
+  projects Project[]
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
 model JobStatus {
   id        Int       @id @default(autoincrement())
   title     String
   thumbnail String
-  color String
-  order Int
+  color     String
+  order     Int
 
-  projects  Project[]
+  projects         Project[]
+  fromStatusChanges ProjectStatusChange[] @relation("FromStatus")
+  toStatusChanges   ProjectStatusChange[] @relation("ToStatus")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
+// Status change tracking table
+model ProjectStatusChange {
+  id          Int       @id @default(autoincrement())
+  
+  // References
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  
+  fromStatus  JobStatus? @relation("FromStatus", fields: [fromStatusId], references: [id])
+  fromStatusId Int?
+  
+  toStatus    JobStatus @relation("ToStatus", fields: [toStatusId], references: [id])
+  toStatusId  Int
+  
+  // Who made the change
+  changedBy   User      @relation(fields: [changedById], references: [id])
+  changedById String    @db.Uuid
+  
+  // When the change happened
+  changedAt   DateTime  @default(now())
+  
+  // Optional: reason for change
+  reason      String?
+  
+  createdAt   DateTime  @default(now())
+  
+  @@index([projectId, changedAt])
+  @@index([changedById])
+}
+
+// Time tracking
+model TimeEntry {
+  id          Int       @id @default(autoincrement())
+  
+  // Time entry belongs to user
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @db.Uuid
+  
+  // Time entry belongs to project
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  
+  // Time tracking
+  startTime   DateTime
+  endTime     DateTime?
+  duration    Int?      // in minutes
+  
+  description String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([projectId])
+  @@index([startTime])
 }
 
 model UserNotification {
@@ -103,6 +239,10 @@ model UserNotification {
   notificationId  Int
 
   status          NOTIFICATION_STATUS @default(UNSEEN)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId, status])
 }
 
 enum NOTIFICATION_STATUS {
@@ -115,8 +255,27 @@ model Notification {
   title   String?
   content String
   image   String?
-
+  
+  // Notification types
+  type    NotificationType @default(INFO)
+  
+  // Optional: link to related entities
+  relatedProjectId Int?
+  
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   UserNotification UserNotification[]
+  
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+  PROJECT_UPDATE
+  DEADLINE_REMINDER
+  STATUS_CHANGE
 }

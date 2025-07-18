@@ -18,3 +18,14 @@ export function removeVietnameseTones(string: string) {
         .replace(/\s+/g, ' ') // loại bỏ khoảng trắng thừa
         .trim()
 }
+
+export function padToFourDigits(num: number | string): string {
+    return num.toString().padStart(4, '0')
+}
+
+export function uniqueByKey<T extends Record<string, unknown>>(
+    arr: T[],
+    key: keyof T
+): T[] {
+    return Array.from(new Map(arr.map((obj) => [obj[key], obj])).values())
+}

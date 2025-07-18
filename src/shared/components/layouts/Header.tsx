@@ -24,6 +24,7 @@ import AppLoader from '@/app/[locale]/loading'
 import { usePathname, useRouter } from '@/i18n/navigation'
 import { logoutSession } from '@/lib/auth/session'
 import { supabase } from '@/lib/supabase/client'
+import { clearCache } from '@/lib/swr/actions'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
 
 import CadsquadLogo from '../CadsquadLogo'
@@ -59,6 +60,7 @@ const Header = () => {
             await supabase.auth.signOut()
             await logoutSession(authUser)
             removeAuthUser()
+            clearCache()
             addToast({
                 title: 'Logout successfully!',
                 color: 'success',

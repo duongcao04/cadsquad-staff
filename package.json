@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npx prisma generate && next dev --turbopack",
+    "prisma:generate": "npx prisma generate",
+    "dev": "next dev --turbopack",
     "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
@@ -13,7 +14,9 @@
     "seed:users": "bun ./prisma/seeds/seedUsers.ts --env=development",
     "seed:jobStatus": "bun ./prisma/seeds/seedJobStatuses.ts --env=development",
     "seed:projects": "bun ./prisma/seeds/seedProjects.ts --env=development",
-    "seed:fileSystem": "bun ./prisma/seeds/seedFileSystem.ts --env=development"
+    "seed:fileSystem": "bun ./prisma/seeds/seedFileSystem.ts --env=development",
+    "seed:jobTypes": "bun ./prisma/seeds/seedJobTypes.ts --env=development",
+    "seed:seedPaymentChannels": "bun ./prisma/seeds/seedPaymentChannels.ts --env=development"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
@@ -47,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@mermaid-js/mermaid-cli": "^11.6.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",
@@ -54,6 +58,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
+    "prisma-erd-generator": "^2.0.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
