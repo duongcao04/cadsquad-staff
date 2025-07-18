@@ -87,14 +87,14 @@ export default function JobModal({ isOpen, onClose }: Props) {
      */
     const defaultJobTypeId = useMemo(() => {
         if (!loadingJobTypes && jobTypes) {
-            return jobTypes[0].id!.toString()
+            return jobTypes[0]?.id?.toString() as string
         }
         return ''
     }, [jobTypes, loadingJobTypes])
 
     const defaultJobNo = useMemo(() => {
         if (!loadingJobTypes && jobTypes) {
-            const jobNumber = jobTypes[0]._count.projects + 1
+            const jobNumber = jobTypes[0]?._count.projects + 1
             return padToFourDigits(jobNumber)
         }
         return ''
@@ -102,14 +102,14 @@ export default function JobModal({ isOpen, onClose }: Props) {
 
     const defaultJobStatusId = useMemo(() => {
         if (!loadingJobStatuses && jobStatuses) {
-            return jobStatuses[0].id!.toString()
+            return jobStatuses[0]?.id?.toString() as string
         }
         return ''
     }, [jobStatuses, loadingJobStatuses])
 
     const formik = useFormik<NewProject>({
         initialValues: {
-            createdById: authUser.id!,
+            createdById: authUser?.id ?? '',
             clientName: '',
             jobTypeId: defaultJobTypeId,
             jobNo: defaultJobNo,
@@ -361,8 +361,8 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 options={users?.map((usr) => {
                                     return {
                                         ...usr,
-                                        label: usr.name!,
-                                        value: usr.id!,
+                                        label: usr?.name,
+                                        value: usr?.id,
                                     }
                                 })}
                                 placeholder="Select one or more member"
@@ -503,8 +503,8 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 options={paymentChannels?.map((channel) => {
                                     return {
                                         ...channel,
-                                        label: channel.name!,
-                                        value: channel.id!.toString(),
+                                        label: channel?.name,
+                                        value: channel?.id?.toString(),
                                     }
                                 })}
                                 placeholder="Select one Payment channel"

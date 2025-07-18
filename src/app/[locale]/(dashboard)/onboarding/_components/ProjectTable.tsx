@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
 import {
     Avatar,
@@ -12,15 +12,20 @@ import {
     DropdownMenu,
     DropdownSection,
     DropdownTrigger,
+    Tooltip,
 } from '@heroui/react'
-import { Table } from 'antd'
+import { SharedSelection } from '@heroui/react'
+import { Image, Table } from 'antd'
 import type { TableProps } from 'antd'
+import { Badge, Tabs, TabsProps } from 'antd'
+import { Input } from 'antd'
 import {
     ArrowLeftRight,
     EllipsisVerticalIcon,
     EyeIcon,
     Trash,
 } from 'lucide-react'
+import { ChevronDownIcon, Search } from 'lucide-react'
 import useSWR, { mutate } from 'swr'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
@@ -37,6 +42,7 @@ import {
     USER_API,
 } from '@/lib/swr/api'
 import { uniqueByKey } from '@/lib/utils'
+import { capitalize } from '@/lib/utils'
 import { useUserOptionsStore } from '@/shared/components/FileManager/store/useUserOptionsStore'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { JobStatus, Project } from '@/validationSchemas/project.schema'
@@ -44,15 +50,22 @@ import { JobStatus, Project } from '@/validationSchemas/project.schema'
 import { useDetailModal } from '../@detail/actions'
 import CountDown from './CountDown'
 
+const DEFAULT_TAB = 'priority'
+
 type DataType = Project & {
     key: React.Key
 }
 
 export default function ProjectTable() {
+    const [keywords, setKeywords] = useState('')
+
+    const { projectTable, setProjectTable } = useUserOptionsStore()
     const { openModal } = useDetailModal()
-    const { projectTable } = useUserOptionsStore()
-    const { getSearchParam } = useSearchParam()
+
+    const { getSearchParam, setSearchParams, removeSearchParam } =
+        useSearchParam()
     const statusFilter = getSearchParam('tab')
+    const tabValue = getSearchParam('tab') ?? DEFAULT_TAB
 
     const { data: users } = useSWR(USER_API, getUsers)
     const { data: jobTypes } = useSWR(JOB_TYPE_API, getJobTypes)
@@ -63,10 +76,11 @@ export default function ProjectTable() {
     const { data: jobStatuses } = useSWR(JOB_STATUS_API, getJobStatuses)
     const { data: projects, isLoading } = useSWR(
         [PROJECT_API, statusFilter],
-        () => getProjects(statusFilter)
+        () => getProjects(statusFilter),
+        {
+            refreshInterval: 5000,
+        }
     )
-
-    console.log(projects)
 
     const handleSwitch = async (project: Project, nextJobStatus: JobStatus) => {
         try {
@@ -81,24 +95,24 @@ export default function ProjectTable() {
     }
 
     const columns: TableProps<DataType>['columns'] = [
-        // {
-        //     title: '',
-        //     dataIndex: 'thumbnail',
-        //     key: 'thumbnail',
-        //     width: 100,
-        //     render: (_, record: DataType) => {
-        //         return (
-        //             <div className="size-16 rounded-full overflow-hidden flex items-center justify-center">
-        //                 <Image
-        //                     src={record.jobStatus.thumbnail}
-        //                     alt="image"
-        //                     className="size-full object-cover rounded-full"
-        //                     preview={false}
-        //                 />
-        //             </div>
-        //         )
-        //     },
-        // },
+        {
+            title: 'Thumbnail',
+            dataIndex: 'thumbnail',
+            key: 'thumbnail',
+            width: 100,
+            render: (_, record: DataType) => {
+                return (
+                    <div className="size-11 rounded-full overflow-hidden flex items-center justify-center">
+                        <Image
+                            src={record?.jobStatus?.thumbnail}
+                            alt="image"
+                            className="size-full object-cover rounded-full"
+                            preview={false}
+                        />
+                    </div>
+                )
+            },
+        },
         {
             title: 'Client',
             dataIndex: 'clientName',
@@ -108,9 +122,9 @@ export default function ProjectTable() {
                 compare: (a, b) => a.clientName!.localeCompare(b.clientName!),
                 multiple: 4,
             },
-            filters: uniqueByKey(projects!, 'clientName').map((item) => ({
+            filters: uniqueByKey(projects ?? [], 'clientName')?.map((item) => ({
                 text: `${item.clientName}`,
-                value: item.id!,
+                value: item?.id ?? '',
             })),
         },
         {
@@ -122,9 +136,9 @@ export default function ProjectTable() {
                 compare: (a, b) => a.jobNo!.localeCompare(b.jobNo!),
                 multiple: 1,
             },
-            filters: uniqueByKey(jobTypes!, 'code').map((item) => ({
+            filters: uniqueByKey(jobTypes ?? [], 'code')?.map((item) => ({
                 text: `${item.code}- ${item.name}`,
-                value: item.id!,
+                value: item?.id ?? '',
             })),
             onFilter: (value, record) =>
                 record?.jobTypeId?.toString().indexOf(value as string) === 0,
@@ -186,10 +200,12 @@ export default function ProjectTable() {
                     ),
                 multiple: 2,
             },
-            filters: uniqueByKey(paymentChannels!, 'name').map((item) => ({
-                text: `${item.name}`,
-                value: item.name!,
-            })),
+            filters: uniqueByKey(paymentChannels ?? [], 'name')?.map(
+                (item) => ({
+                    text: `${item.name}`,
+                    value: item?.name ?? '',
+                })
+            ),
             onFilter: (value, record) =>
                 record!.paymentChannel.name!.indexOf(value as string) === 0,
         },
@@ -213,17 +229,42 @@ export default function ProjectTable() {
             key: 'memberAssign',
             width: '10%',
             render: (_, record: DataType) => {
+                const show = 4
                 return (
-                    <AvatarGroup size="sm">
+                    <AvatarGroup
+                        size="sm"
+                        max={show}
+                        total={record?.memberAssign?.length - show}
+                        classNames={{
+                            base: 'max-w-full',
+                        }}
+                    >
                         {record.memberAssign.map((mem) => {
-                            return <Avatar key={mem.id} src={mem.avatar!} />
+                            return (
+                                <Tooltip
+                                    key={mem.id}
+                                    content={mem?.name}
+                                    classNames={{
+                                        content: 'max-w-fit text-nowrap',
+                                    }}
+                                    color="secondary"
+                                >
+                                    <Avatar
+                                        src={mem?.avatar ?? ''}
+                                        classNames={{
+                                            base: 'data-[hover=true]:-translate-x-0 rtl:data-[hover=true]:translate-x-0 cursor-pointer',
+                                        }}
+                                        showFallback
+                                    />
+                                </Tooltip>
+                            )
                         })}
                     </AvatarGroup>
                 )
             },
-            filters: uniqueByKey(users!, 'id').map((item) => ({
+            filters: uniqueByKey(users ?? [], 'id')?.map((item) => ({
                 text: `${item.name}`,
-                value: item.id!,
+                value: item?.id ?? '',
             })),
             onFilter: (value, record) =>
                 record?.memberAssign?.some((item) => item.id === value),
@@ -239,24 +280,24 @@ export default function ProjectTable() {
                         backgroundColor: record.jobStatus.color,
                     }}
                     classNames={{
-                        base: 'block max-w-full flex items-center justify-start',
+                        base: 'block max-w-[140px] flex items-center justify-start',
                         content:
-                            'block w-full uppercase text-sm font-semibold tracking-wide text-center',
+                            'block max-w-[140px] uppercase text-sm font-semibold tracking-wide text-center',
                     }}
                 >
                     {record.jobStatus.title}
                 </Chip>
             ),
-            filters: uniqueByKey(jobStatuses!, 'id').map((item) => ({
+            filters: uniqueByKey(jobStatuses ?? [], 'id')?.map((item) => ({
                 text: `${item.title}`,
-                value: item.id!,
+                value: item?.id ?? '',
             })),
             onFilter: (value, record) =>
                 record?.jobStatus?.id?.toString()?.indexOf(value as string) ===
                 0,
         },
         {
-            title: <p className="text-center">Action</p>,
+            title: 'Action',
             key: 'action',
             width: '15%',
             render: (_, record: DataType) => {
@@ -269,18 +310,19 @@ export default function ProjectTable() {
                 ) as JobStatus
 
                 return (
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-start gap-2">
                         <Button
                             variant="light"
                             color="primary"
                             onPress={() => openModal(record.jobNo!)}
+                            size="sm"
                         >
                             <EyeIcon />
                             View
                         </Button>
                         <Dropdown>
                             <DropdownTrigger>
-                                <Button isIconOnly variant="light">
+                                <Button isIconOnly variant="light" size="sm">
                                     <EllipsisVerticalIcon size={16} />
                                 </Button>
                             </DropdownTrigger>
@@ -325,11 +367,189 @@ export default function ProjectTable() {
         },
     ]
 
+    const headerColumns = columns.map((column) => ({
+        title: column.title,
+        key: column.key,
+    }))
+
+    const tabMenus: TabsProps['items'] = [
+        {
+            key: 'priority',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Priority</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'active',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Active</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'late',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Late</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'delivered',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Delivered</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'completed',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Completed</p>
+                    </Badge>
+                </button>
+            ),
+        },
+        {
+            key: 'cancelled',
+            label: (
+                <button className="flex gap-2 items-center cursor-pointer">
+                    <Badge
+                        status="success"
+                        count={projects?.length}
+                        classNames={{
+                            indicator: 'opacity-70 scale-80',
+                        }}
+                    >
+                        <p className="px-3 uppercase">Cancelled</p>
+                    </Badge>
+                </button>
+            ),
+        },
+    ]
+
+    const handleTabChange: TabsProps['onChange'] = (activeKey: string) => {
+        if (activeKey === DEFAULT_TAB) {
+            removeSearchParam('tab')
+        } else {
+            setSearchParams({ tab: activeKey })
+        }
+    }
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        setKeywords(value)
+        setSearchParams({ search: value })
+    }
+
+    const setVisibleColumns = (keys: SharedSelection) => {
+        const newVisibleColumns = Array.from(keys)
+        setProjectTable('visibleColumns', newVisibleColumns)
+    }
+
     return (
         <>
+            <div className="grid grid-cols-[1fr_1fr_160px] gap-3">
+                <Tabs
+                    activeKey={tabValue}
+                    items={tabMenus}
+                    onChange={handleTabChange}
+                />
+                <div style={{ flex: 1 }}>
+                    <Input
+                        placeholder="Search"
+                        prefix={<Search size={16} color="#999" />}
+                        size="large"
+                        value={keywords}
+                        onChange={handleInputChange}
+                        style={{
+                            borderRadius: '8px',
+                            background: 'white',
+                        }}
+                    />
+                </div>
+                <Dropdown placement="bottom-end">
+                    <DropdownTrigger className="hidden sm:flex">
+                        <Button
+                            endContent={<ChevronDownIcon size={16} />}
+                            variant="flat"
+                            className="text-sm font-medium"
+                        >
+                            Columns
+                        </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                        disallowEmptySelection
+                        aria-label="Table Columns"
+                        closeOnSelect={false}
+                        selectedKeys={projectTable.visibleColumns}
+                        selectionMode="multiple"
+                        onSelectionChange={setVisibleColumns}
+                    >
+                        {headerColumns?.map((column) => (
+                            <DropdownItem
+                                key={column.key as number}
+                                className="capitalize"
+                            >
+                                {capitalize(`${column?.title}`)}
+                            </DropdownItem>
+                        ))}
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
             <Table<DataType>
-                columns={columns}
-                dataSource={projects?.map((prj) => ({ ...prj, key: prj.id! }))}
+                columns={columns.filter((clm) =>
+                    projectTable.visibleColumns?.includes(
+                        clm.key as keyof Project | 'action'
+                    )
+                )}
+                dataSource={projects?.map((prj, index) => ({
+                    ...prj,
+                    key: prj?.id ?? index,
+                }))}
                 loading={isLoading}
                 pagination={{
                     position: ['bottomCenter'],

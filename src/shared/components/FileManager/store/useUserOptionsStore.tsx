@@ -1,22 +1,37 @@
 import { create } from 'zustand'
 import { combine } from 'zustand/middleware'
 
+import { Project } from '@/validationSchemas/project.schema'
+
 type UserOptions = {
     projectTable: {
         size: 'small' | 'middle' | 'large'
+        visibleColumns: Array<keyof Project | 'action'>
     }
 }
 
 type UserAction = {
     setProjectTable: (
         action: keyof UserOptions['projectTable'],
-        value: UserOptions['projectTable']['size']
+        value: unknown
     ) => void
 }
 
 const getProjectTableOptions: () => UserOptions['projectTable'] = () => {
     let userOptions: UserOptions['projectTable'] = {
         size: 'small' as UserOptions['projectTable']['size'],
+        visibleColumns: [
+            'clientName',
+            'jobNo',
+            'jobName',
+            'memberAssign',
+            'paymentChannel',
+            'jobStatus',
+            'income',
+            'staffCost',
+            'dueAt',
+            'action',
+        ],
     }
 
     if (typeof window !== 'undefined') {
@@ -39,22 +54,46 @@ export const useUserOptionsStore = create(
         (set) => ({
             setProjectTable: (
                 action: keyof UserOptions['projectTable'],
-                value: UserOptions['projectTable']['size']
+                value: unknown
             ) => {
-                if ((action = 'size')) {
-                    set((state) => {
-                        if (typeof window !== 'undefined') {
-                            localStorage.setItem(
-                                'options_projectTable',
-                                JSON.stringify(state.projectTable)
-                            )
-                        }
-                        return {
-                            projectTable: {
+                switch (action) {
+                    case 'size':
+                        set((state) => {
+                            const newProjectTable = {
+                                ...state.projectTable,
                                 size: value,
-                            },
-                        }
-                    })
+                            }
+                            if (typeof window !== 'undefined') {
+                                localStorage.setItem(
+                                    'options_projectTable',
+                                    JSON.stringify(newProjectTable)
+                                )
+                            }
+                            return {
+                                projectTable: newProjectTable,
+                            } as UserOptions
+                        })
+                        break
+                    case 'visibleColumns':
+                        set((state) => {
+                            const newProjectTable = {
+                                ...state.projectTable,
+                                visibleColumns: value,
+                            }
+
+                            if (typeof window !== 'undefined') {
+                                localStorage.setItem(
+                                    'options_projectTable',
+                                    JSON.stringify(newProjectTable)
+                                )
+                            }
+                            return {
+                                projectTable: newProjectTable,
+                            } as UserOptions
+                        })
+                        break
+                    default:
+                        return
                 }
             },
         })

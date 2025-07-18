@@ -141,41 +141,42 @@ export default function ProjectDetailDrawer() {
                             </div>
                             <div className="w-full">
                                 {!showFullAssignee ? (
-                                    <Tooltip
-                                        content="Show detail"
-                                        color="primary"
+                                    <AvatarGroup
+                                        size="sm"
+                                        max={5}
+                                        total={
+                                            project?.memberAssign &&
+                                            project?.memberAssign.length - 5
+                                        }
+                                        isBordered
+                                        classNames={{
+                                            base: 'cursor-pointer',
+                                        }}
+                                        onClick={() =>
+                                            setShowFullAssignee(true)
+                                        }
                                     >
-                                        <AvatarGroup
-                                            size="sm"
-                                            max={5}
-                                            total={
-                                                project?.memberAssign &&
-                                                project?.memberAssign.length - 5
-                                            }
-                                            isBordered
-                                            classNames={{
-                                                base: 'cursor-pointer',
-                                            }}
-                                            onClick={() =>
-                                                setShowFullAssignee(true)
-                                            }
-                                        >
-                                            {project?.memberAssign.map(
-                                                (mem) => {
-                                                    return (
-                                                        <Avatar
-                                                            key={mem.id}
-                                                            src={mem.avatar!}
-                                                            classNames={{
-                                                                img: 'opacity-100',
-                                                            }}
-                                                            showFallback
-                                                        />
-                                                    )
-                                                }
-                                            )}
-                                        </AvatarGroup>
-                                    </Tooltip>
+                                        {project?.memberAssign.map((mem) => {
+                                            return (
+                                                <Tooltip
+                                                    key={mem.id}
+                                                    content={mem?.name}
+                                                    classNames={{
+                                                        content:
+                                                            'max-w-fit text-nowrap',
+                                                    }}
+                                                >
+                                                    <Avatar
+                                                        src={mem?.avatar ?? ''}
+                                                        classNames={{
+                                                            base: 'data-[hover=true]:-translate-x-0 rtl:data-[hover=true]:translate-x-0 cursor-pointer',
+                                                        }}
+                                                        showFallback
+                                                    />
+                                                </Tooltip>
+                                            )
+                                        })}
+                                    </AvatarGroup>
                                 ) : (
                                     <div className="grid grid-cols-[1fr_32px] gap-4">
                                         <div className="flex items-center justify-start flex-wrap gap-x-3 gap-y-4">

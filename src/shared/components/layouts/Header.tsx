@@ -192,6 +192,7 @@ const Header = () => {
                                 classNames={{
                                     base: 'size-9',
                                 }}
+                                suppressHydrationWarning
                             />
                         </DropdownTrigger>
                         <DropdownMenu aria-label="User menu" className="p-3">
