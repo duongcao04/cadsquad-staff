@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import prisma from '@/lib/prisma'
+import { ensureConnection } from '@/lib/prisma'
 
 export async function PATCH(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const prisma = await ensureConnection()
     try {
         const projectId = parseInt(params.id)
 
@@ -96,8 +97,6 @@ export async function PATCH(
             { error: 'Internal server error' },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
@@ -105,6 +104,7 @@ export async function DELETE(
     request: NextRequest,
     { params }: { params: { id: string } }
 ) {
+    const prisma = await ensureConnection()
     const projectId = Number(params.id)
 
     if (isNaN(projectId)) {

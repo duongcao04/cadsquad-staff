@@ -12,6 +12,8 @@ import {
 } from '@heroui/react'
 import { Drawer, Skeleton } from 'antd'
 import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import {
     Banknote,
     CalendarClock,
@@ -33,6 +35,11 @@ import { PROJECT_API } from '@/lib/swr/api'
 
 import DetailTabs from './_components/DetailTabs'
 import { useDetailModal } from './actions'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+const DATE_FORMAT = 'DD/MM/YYYY'
 
 export default function ProjectDetailDrawer() {
     const { closeModal, detailId } = useDetailModal()
@@ -94,7 +101,7 @@ export default function ProjectDetailDrawer() {
                                 </p>
                             </div>
                             <p className="font-semibold">
-                                {project?.jobStatus.title}
+                                {project?.jobStatus?.title}
                             </p>
                         </div>
                         <div className="grid grid-cols-[0.5fr_1fr]">
@@ -105,14 +112,10 @@ export default function ProjectDetailDrawer() {
                                 </p>
                             </div>
                             <p className="font-semibold">
-                                {dayjs(
-                                    new Date(
-                                        project?.startedAt as
-                                            | string
-                                            | number
-                                            | Date
-                                    )
-                                ).toString()}
+                                {dayjs
+                                    .utc(project?.startedAt)
+                                    .tz('Asia/Ho_Chi_Minh')
+                                    .format(DATE_FORMAT)}
                             </p>
                         </div>
                         <div className="grid grid-cols-[0.5fr_1fr]">
@@ -123,11 +126,10 @@ export default function ProjectDetailDrawer() {
                                 </p>
                             </div>
                             <p className="font-semibold">
-                                {dayjs(
-                                    new Date(
-                                        project?.dueAt as string | number | Date
-                                    )
-                                ).toString()}
+                                {dayjs
+                                    .utc(project?.dueAt)
+                                    .tz('Asia/Ho_Chi_Minh')
+                                    .format(DATE_FORMAT)}
                             </p>
                         </div>
                         <div
@@ -156,7 +158,7 @@ export default function ProjectDetailDrawer() {
                                             setShowFullAssignee(true)
                                         }
                                     >
-                                        {project?.memberAssign.map((mem) => {
+                                        {project?.memberAssign?.map((mem) => {
                                             return (
                                                 <Tooltip
                                                     key={mem.id}
@@ -180,7 +182,7 @@ export default function ProjectDetailDrawer() {
                                 ) : (
                                     <div className="grid grid-cols-[1fr_32px] gap-4">
                                         <div className="flex items-center justify-start flex-wrap gap-x-3 gap-y-4">
-                                            {project?.memberAssign.map(
+                                            {project?.memberAssign?.map(
                                                 (mem) => {
                                                     return (
                                                         <div

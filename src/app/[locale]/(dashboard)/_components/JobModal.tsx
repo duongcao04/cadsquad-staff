@@ -6,6 +6,7 @@ import { Button, Input, NumberInput, addToast } from '@heroui/react'
 import { Image, Modal, Select } from 'antd'
 import { useFormik } from 'formik'
 import useSWR from 'swr'
+import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { useCreateMutation } from '@/lib/swr/actions'
 import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
@@ -43,6 +44,13 @@ type Props = {
     onClose: () => void
 }
 export default function JobModal({ isOpen, onClose }: Props) {
+    useKeyboardShortcuts([
+        {
+            keys: ['escape'],
+            onEvent: () => onClose(),
+        },
+    ])
+
     const { authUser } = useAuthStore()
     const [isLoading, setLoading] = useState(false)
     const { setNewJobNo } = useJobStore()
@@ -135,6 +143,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         recipientId,
                         title: 'New job assigned!',
                         content: `Job No. ${newJob.jobNo} have just been assigned from ${authUser?.name}. View here`,
+                        image: jobStatuses?.[0].thumbnail ?? null,
                     }
                     await createNotification(newNotification)
                 })

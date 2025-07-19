@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import prisma from '@/lib/prisma'
+import { ensureConnection } from '@/lib/prisma'
 
 // GET /api/fileSystems - Get all file systems
 export async function GET(request: NextRequest) {
+    const prisma = await ensureConnection()
     try {
         const { searchParams } = new URL(request.url)
         const search = searchParams.get('search')
@@ -66,6 +67,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/fileSystems - Create a new file system
 export async function POST(request: NextRequest) {
+    const prisma = await ensureConnection()
     try {
         const body = await request.json()
         const {
@@ -155,6 +157,7 @@ export async function POST(request: NextRequest) {
 
 // PUT /api/fileSystems - Update multiple file systems (bulk update)
 export async function PUT(request: NextRequest) {
+    const prisma = await ensureConnection()
     try {
         const body = await request.json()
         const { ids, updates } = body
@@ -188,6 +191,7 @@ export async function PUT(request: NextRequest) {
 
 // DELETE /api/fileSystems - Delete multiple file systems
 export async function DELETE(request: NextRequest) {
+    const prisma = await ensureConnection()
     try {
         const { searchParams } = new URL(request.url)
         const ids = searchParams.get('ids')?.split(',')

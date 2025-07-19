@@ -47,8 +47,6 @@ const main = async () => {
     } catch (error) {
         console.error('❌ Error during seeding:', error)
         throw error
-    } finally {
-        await prisma.$disconnect()
     }
 }
 

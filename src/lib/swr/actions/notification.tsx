@@ -1,8 +1,8 @@
-import { Notification } from '@/validationSchemas/notification.schema'
+import { UserNotification } from '@/validationSchemas/notification.schema'
 
 import { NOTIFICATION_API } from '../api'
 
-export const getNotifications: () => Promise<Notification[]> = async () => {
+export const getNotifications: () => Promise<UserNotification[]> = async () => {
     const res = await fetch(NOTIFICATION_API, {
         method: 'GET',
     })

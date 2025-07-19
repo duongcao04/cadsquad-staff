@@ -3,9 +3,10 @@
 import { NextResponse } from 'next/server'
 
 import { getSession } from '@/lib/auth/session'
-import prisma from '@/lib/prisma'
+import { ensureConnection } from '@/lib/prisma'
 
 export async function GET() {
+    const prisma = await ensureConnection()
     try {
         const currentUserId = await getSession()
         if (!currentUserId) {
@@ -43,7 +44,5 @@ export async function GET() {
             { error: 'Internal server error' },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }

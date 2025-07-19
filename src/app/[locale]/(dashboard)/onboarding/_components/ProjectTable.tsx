@@ -239,7 +239,14 @@ export default function ProjectTable() {
                 return (
                     <CountDown
                         endedDate={record.dueAt!}
-                        options={{ format: 'full' }}
+                        options={{
+                            format: 'short',
+                            showYears: true,
+                            showMonths: true,
+                            showDays: true,
+                            showMinutes: true,
+                            showSeconds: true,
+                        }}
                     />
                 )
             },

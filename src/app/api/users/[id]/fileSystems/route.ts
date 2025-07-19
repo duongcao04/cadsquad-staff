@@ -20,7 +20,9 @@ PATCH /api/user/123/fileSystems
 */
 import { NextRequest, NextResponse } from 'next/server'
 
-import prisma from '@/lib/prisma'
+import { prismaClient } from '@/lib/prisma'
+
+const prisma = prismaClient
 
 // GET /api/user/[id]/fileSystems - Get file systems for a specific user
 export async function GET(

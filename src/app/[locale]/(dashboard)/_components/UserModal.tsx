@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import { Button, Input, addToast } from '@heroui/react'
 import { Modal, Select } from 'antd'
 import { useFormik } from 'formik'
+import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { Role } from '@/generated/prisma'
 import { supabase } from '@/lib/supabase/client'
@@ -31,6 +32,13 @@ type Props = {
 }
 export default function UserModal({ isOpen, onClose }: Props) {
     const [isLoading, setLoading] = useState(false)
+
+    useKeyboardShortcuts([
+        {
+            keys: ['escape'],
+            onEvent: () => onClose(),
+        },
+    ])
 
     const formik = useFormik<NewUser>({
         initialValues: {

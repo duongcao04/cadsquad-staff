@@ -2,10 +2,11 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-import prisma from '@/lib/prisma'
+import { ensureConnection } from '@/lib/prisma'
 
 export async function GET() {
     try {
+        const prisma = await ensureConnection()
         const users = await prisma.user.findMany({
             orderBy: {
                 name: 'asc',
@@ -44,6 +45,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
+
+        const prisma = await ensureConnection()
+
         const existingEmail = await prisma.user.findUnique({
             where: { email: body.email },
         })

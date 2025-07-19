@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import prisma from '@/lib/prisma'
+import { ensureConnection } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
+    const prisma = await ensureConnection()
     try {
         const body = await request.json()
         const { recipientId, title, content, image } = body
@@ -72,7 +73,5 @@ export async function POST(request: NextRequest) {
             { error: 'Internal server error' },
             { status: 500 }
         )
-    } finally {
-        await prisma.$disconnect()
     }
 }

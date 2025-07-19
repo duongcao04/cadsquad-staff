@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react'
 
+import { calcLeftTime, cn } from '@/lib/utils'
+import { MS } from '@/shared/constants/appConstant'
+
 type CountDownProps = {
     endedDate: Date | string
     className?: string
@@ -10,33 +13,29 @@ type CountDownProps = {
         showHours?: boolean
         showMinutes?: boolean
         showSeconds?: boolean
-        format?: 'auto' | 'full' // 'auto' shows highest unit only, 'full' shows all enabled units
+        format?: 'auto' | 'full' | 'short' // 'auto' shows highest unit only, 'full' shows all enabled units
     }
 }
 
 export type CountDownOptions = CountDownProps['options']
-
-export const DEFAULT_OPTIONS: CountDownOptions = {
-    showYears: true,
-    showMonths: true,
-    showDays: true,
-    showHours: true,
-    showMinutes: true,
-    showSeconds: true,
-    format: 'full',
-}
 const CountDown: React.FC<CountDownProps> = ({
     endedDate,
     className = '',
-    options = DEFAULT_OPTIONS,
+    options = {
+        showYears: true,
+        showMonths: true,
+        showDays: true,
+        showHours: true,
+        showMinutes: true,
+        showSeconds: true,
+        format: 'full',
+    },
 }) => {
     const [timeText, setTimeText] = useState('')
 
     useEffect(() => {
         const calculateTimeLeft = () => {
-            const now = new Date().getTime()
-            const end = new Date(endedDate).getTime()
-            const difference = end - now
+            const difference = calcLeftTime(endedDate)
 
             if (difference <= 0) {
                 setTimeText('Expired')
@@ -61,26 +60,7 @@ const CountDown: React.FC<CountDownProps> = ({
             )
             const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
-            if (options.format === 'auto') {
-                // Show only the highest significant unit
-                let text = ''
-
-                if (years > 0 && options.showYears) {
-                    text = `${years} year${years > 1 ? 's' : ''} left`
-                } else if (months > 0 && options.showMonths) {
-                    text = `${months} month${months > 1 ? 's' : ''} left`
-                } else if (days > 0 && options.showDays) {
-                    text = `${days} day${days > 1 ? 's' : ''} left`
-                } else if (hours > 0 && options.showHours) {
-                    text = `${hours} hour${hours > 1 ? 's' : ''} left`
-                } else if (minutes > 0 && options.showMinutes) {
-                    text = `${minutes} minute${minutes > 1 ? 's' : ''} left`
-                } else if (options.showSeconds) {
-                    text = `${seconds} second${seconds > 1 ? 's' : ''} left`
-                }
-
-                setTimeText(text)
-            } else {
+            if (options.format === 'full') {
                 // Show all enabled units
                 const parts = []
 
@@ -102,10 +82,52 @@ const CountDown: React.FC<CountDownProps> = ({
                 if (seconds > 0 && options.showSeconds) {
                     parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`)
                 }
-
-                const text =
+                const textFull =
                     parts.length > 0 ? parts.join(', ') + ' left' : 'Expired'
-                setTimeText(text)
+                setTimeText(textFull)
+            } else if (options.format === 'short') {
+                // Show all enabled units
+                const temp = []
+
+                if (years > 0 && options.showYears) {
+                    temp.push(`${years}y`)
+                }
+                if (months > 0 && options.showMonths) {
+                    temp.push(`${months}m`)
+                }
+                if (days > 0 && options.showDays) {
+                    temp.push(`${days}d`)
+                }
+                if (hours >= 0 && options.showHours) {
+                    temp.push(`${hours}h`)
+                }
+                if (minutes >= 0 && options.showMinutes) {
+                    temp.push(`${minutes}m`)
+                }
+                if (seconds > 0 && options.showSeconds) {
+                    temp.push(`${seconds}s`)
+                }
+                const textShort = temp.length > 0 ? temp.join(', ') : 'Expired'
+                setTimeText(textShort)
+            } else {
+                // Show only the highest significant unit
+                let textAuto = ''
+
+                if (years > 0 && options.showYears) {
+                    textAuto = `${years} year${years > 1 ? 's' : ''} left`
+                } else if (months > 0 && options.showMonths) {
+                    textAuto = `${months} month${months > 1 ? 's' : ''} left`
+                } else if (days > 0 && options.showDays) {
+                    textAuto = `${days} day${days > 1 ? 's' : ''} left`
+                } else if (hours > 0 && options.showHours) {
+                    textAuto = `${hours} hour${hours > 1 ? 's' : ''} left`
+                } else if (minutes > 0 && options.showMinutes) {
+                    textAuto = `${minutes} minute${minutes > 1 ? 's' : ''} left`
+                } else if (options.showSeconds) {
+                    textAuto = `${seconds} second${seconds > 1 ? 's' : ''} left`
+                }
+
+                setTimeText(textAuto)
             }
         }
 
@@ -124,7 +146,17 @@ const CountDown: React.FC<CountDownProps> = ({
         options.format,
     ])
 
-    return <span className={className}>{timeText}</span>
+    const oneDayMs = MS.day
+    return (
+        <span
+            className={cn(
+                `${calcLeftTime(endedDate) < oneDayMs ? 'text-danger' : ''}`,
+                className
+            )}
+        >
+            {timeText}
+        </span>
+    )
 }
 
 export default CountDown

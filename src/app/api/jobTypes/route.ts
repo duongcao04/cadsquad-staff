@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server'
 
-import prisma from '@/lib/prisma'
+import { ensureConnection } from '@/lib/prisma'
 
 // GET - Fetch all job statuses
 export async function GET() {
     try {
+        const prisma = await ensureConnection()
         const jobTypes = await prisma.jobType.findMany({
             orderBy: {
                 name: 'asc',

@@ -1,4 +1,7 @@
 import { type ClassValue, clsx } from 'clsx'
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
 import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
@@ -28,4 +31,13 @@ export function uniqueByKey<T extends Record<string, unknown>>(
     key: keyof T
 ): T[] {
     return Array.from(new Map(arr.map((obj) => [obj[key], obj])).values())
+}
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+export const calcLeftTime = (endedDate: Date | string): number => {
+    const now = dayjs()
+    const end = dayjs.utc(endedDate).local() // hoặc .tz('Asia/Ho_Chi_Minh')
+    return end.diff(now)
 }

@@ -14,12 +14,14 @@ import {
 import { PlusIcon } from 'lucide-react'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
+import { IconAlertColorful } from '@/shared/components/icons/IconAlertColorful'
 import { IconFileColorful } from '@/shared/components/icons/IconFileColorful'
 import { IconFolderColorful } from '@/shared/components/icons/IconFolderColorful'
 import { IconPeopleColorful } from '@/shared/components/icons/IconPeopleColorful'
 import { IconWorkColorful } from '@/shared/components/icons/IconWorkColorful'
 
 import JobModal from './JobModal'
+import NotificationModal from './NotificationModal'
 import UserModal from './UserModal'
 
 export default function AdminCreateButton() {
@@ -37,19 +39,26 @@ export default function AdminCreateButton() {
     } = useDisclosure({
         id: 'UserModal',
     })
+    const {
+        isOpen: isOpenNM,
+        onOpen: onOpenNM,
+        onClose: onCloseNM,
+    } = useDisclosure({
+        id: 'NotificationModal',
+    })
 
     useKeyboardShortcuts([
         {
-            keys: ['ctrl', 'J'],
+            keys: ['alt', 'N'],
             onEvent: () => onOpenJM(),
         },
         {
-            keys: ['ctrl', 'shift' + 'F'],
-            onEvent: () => onOpenJM(),
-        },
-        {
-            keys: ['ctrl', 'U'],
+            keys: ['alt', 'U'],
             onEvent: () => onOpenUM(),
+        },
+        {
+            keys: ['alt', 'M'],
+            onEvent: () => onOpenNM(),
         },
     ])
 
@@ -57,6 +66,7 @@ export default function AdminCreateButton() {
         <div>
             <JobModal isOpen={isOpenJM} onClose={onCloseJM} />
             <UserModal isOpen={isOpenUM} onClose={onCloseUm} />
+            <NotificationModal isOpen={isOpenNM} onClose={onCloseNM} />
             <Dropdown>
                 <DropdownTrigger>
                     <Button
@@ -69,8 +79,8 @@ export default function AdminCreateButton() {
                 <DropdownMenu aria-label="Admin actions" variant="flat">
                     <DropdownSection showDivider>
                         <DropdownItem
-                            key="new"
-                            shortcut="Ctrl + J"
+                            key="createJob"
+                            shortcut="Alt + N"
                             startContent={<IconWorkColorful />}
                             onPress={() => onOpenJM()}
                         >
@@ -79,14 +89,14 @@ export default function AdminCreateButton() {
                     </DropdownSection>
                     <DropdownSection showDivider>
                         <DropdownItem
-                            key="copy"
+                            key="createFolder"
                             shortcut="Ctrl + ⇧ + F"
                             startContent={<IconFolderColorful />}
                         >
                             Folder
                         </DropdownItem>
                         <DropdownItem
-                            key="edit"
+                            key="createFile"
                             shortcut="Ctrl + ⇧ + G"
                             startContent={<IconFileColorful />}
                         >
@@ -95,12 +105,20 @@ export default function AdminCreateButton() {
                     </DropdownSection>
                     <DropdownSection>
                         <DropdownItem
-                            key="edit"
-                            shortcut="Ctrl + U"
+                            key="createUser"
+                            shortcut="Alt + U"
                             startContent={<IconPeopleColorful />}
                             onPress={() => onOpenUM()}
                         >
                             User
+                        </DropdownItem>
+                        <DropdownItem
+                            key="sendNotification"
+                            shortcut="Alt + M"
+                            startContent={<IconAlertColorful />}
+                            onPress={() => onOpenNM()}
+                        >
+                            Notification
                         </DropdownItem>
                     </DropdownSection>
                 </DropdownMenu>
