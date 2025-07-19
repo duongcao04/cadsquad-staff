@@ -11,8 +11,8 @@ import {
     DropdownTrigger,
     Spinner,
 } from '@heroui/react'
+import { Image } from 'antd'
 import { Bell } from 'lucide-react'
-import Image from 'next/image'
 import useSWR from 'swr'
 
 import { supabase } from '@/lib/supabase/client'
@@ -26,16 +26,25 @@ import { BellIcon } from '../icons/animate/BellIcon'
 function NotificationCard({ data }: { data: Notification }) {
     return (
         <div className="grid grid-cols-[50px_1fr_7px] gap-3 items-center">
-            <div className="w-full aspect-square rounded-full bg-secondary grid place-items-center">
+            <div className="w-full aspect-square">
                 {data?.image ? (
-                    <Image src={data?.image} alt="Notification image" />
+                    <div className="size-full aspect-square rounded-full">
+                        <Image
+                            src={data?.image}
+                            alt="Notification image"
+                            className="size-full aspect-square rounded-full object-fit"
+                            preview={false}
+                        />
+                    </div>
                 ) : (
-                    <CadsquadLogo
-                        classNames={{
-                            logo: 'p-1.5',
-                        }}
-                        logoTheme="white"
-                    />
+                    <div className="size-full aspect-square rounded-full grid place-items-center bg-secondary">
+                        <CadsquadLogo
+                            classNames={{
+                                logo: 'p-1.5',
+                            }}
+                            logoTheme="white"
+                        />
+                    </div>
                 )}
             </div>
             <div className="space-y-0.5">
