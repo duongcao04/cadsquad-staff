@@ -2,119 +2,83 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-import { ensureConnection } from '@/lib/prisma'
+import { NewProject } from '@/validationSchemas/project.schema'
+
+import { Message } from '../abstract/message.class'
+import { ProjectService, WorkflowStatus } from './projects.service'
+
+const projectService = new ProjectService()
+const message = new Message('project')
 
 export async function GET(request: NextRequest) {
     try {
-        const prisma = await ensureConnection()
-
         const { searchParams } = new URL(request.url)
         const page = parseInt(searchParams.get('page') || '1')
         const limit = parseInt(searchParams.get('limit') || '10')
-        const status = searchParams.get('status')
         const search = searchParams.get('search')
-
         const jobNo = searchParams.get('jobNo')
+        const workflowStatusName = searchParams.get('tab')
 
         if (jobNo) {
-            try {
-                const project = await prisma.project.findUnique({
-                    where: {
-                        jobNo: jobNo,
-                    },
-                    include: {
-                        paymentChannel: {},
-                        memberAssign: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true,
-                                jobTitle: true,
-                                department: true,
-                                avatar: true,
-                            },
-                        },
-                        jobStatus: {},
-                    },
-                })
-                if (!project) {
-                    return NextResponse.json(
-                        { error: 'Project not found' },
-                        { status: 404 }
-                    )
-                }
-
-                return NextResponse.json(project)
-            } catch (error) {
-                console.error('Error fetching project:', error)
+            const data = await projectService.getByJobNo(jobNo)
+            if (!data) {
                 return NextResponse.json(
-                    { error: 'Internal server error' },
-                    { status: 500 }
+                    {
+                        message: message.notFound(),
+                    },
+                    { status: 404 }
                 )
             }
-        }
 
-        const where = {
-            deletedAt: null,
-            ...(search && {
-                OR: [
+            return NextResponse.json({
+                message: message.getBy('jobNo'),
+                data,
+            })
+        } else if (workflowStatusName) {
+            const data = await projectService.getByWorkflowStatus(
+                workflowStatusName as WorkflowStatus
+            )
+            if (!data) {
+                return NextResponse.json(
                     {
-                        jobName: {
-                            contains: search,
-                            mode: 'insensitive' as const,
-                        },
+                        message: message.notFound(),
                     },
-                    {
-                        jobNo: {
-                            contains: search,
-                            mode: 'insensitive' as const,
-                        },
-                    },
-                ],
-            }),
-            // Add status filter
-            ...(status && {
-                jobStatusId: parseInt(status),
-            }),
-        }
+                    { status: 404 }
+                )
+            }
 
-        const [projects, total] = await Promise.all([
-            prisma.project.findMany({
-                where,
-                include: {
-                    paymentChannel: {},
-                    memberAssign: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            jobTitle: true,
-                            department: true,
-                            avatar: true,
-                        },
-                    },
-                    jobStatus: {},
+            return NextResponse.json(
+                {
+                    message: message.getBy('Tab'),
+                    data,
                 },
-                orderBy: { createdAt: 'desc' },
-                skip: (page - 1) * limit,
-                take: limit,
-            }),
-            prisma.project.count({ where }),
-        ])
+                { status: 200 }
+            )
+        } else {
+            const data = await projectService.getAll({ search, page, limit })
+            if (!data) {
+                return NextResponse.json(
+                    {
+                        message: message.notFound(),
+                    },
+                    { status: 404 }
+                )
+            }
 
-        return NextResponse.json({
-            data: projects,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages: Math.ceil(total / limit),
-            },
-        })
+            return NextResponse.json(
+                {
+                    message: message.getAll(),
+                    data,
+                },
+                { status: 200 }
+            )
+        }
     } catch (error) {
-        console.error('Error fetching projects:', error)
         return NextResponse.json(
-            { error: 'Internal server error' },
+            {
+                message: message.error(),
+                desciption: error,
+            },
             { status: 500 }
         )
     }
@@ -122,101 +86,44 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const prisma = await ensureConnection()
-        const body = await request.json()
-        const {
-            memberAssignIds,
-            jobStatusId,
-            jobTypeId,
-            createdById,
-            paymentChannelId,
-            ...projectData
-        } = body
+        const body: NewProject = await request.json()
+        const result = await projectService.create(body)
 
-        // Validate required fields
-        if (!projectData.jobNo || !projectData.jobName) {
+        if (!body.jobNo || !body.jobName) {
             return NextResponse.json(
-                { error: 'Job number and job name are required' },
+                {
+                    message: 'Job no and Job name is required.',
+                },
                 { status: 400 }
             )
         }
 
-        // Check if jobNo already exists
-        const existingProject = await prisma.project.findUnique({
-            where: { jobNo: projectData.jobNo },
+        const existingProject = await projectService.isExist({
+            jobNo: body.jobNo,
         })
 
         if (existingProject) {
             return NextResponse.json(
-                { error: 'Job number already exists' },
+                {
+                    message: 'Job no is already exist.',
+                },
                 { status: 400 }
             )
         }
 
-        // Create project with members
-        const project = await prisma.project.create({
-            data: {
-                jobNo: projectData.jobNo,
-                clientName: projectData.clientName,
-                jobName: projectData.jobName,
-                staffCost: Number(projectData.staffCost),
-                income: Number(projectData.income),
-                sourceUrl: projectData.sourceUrl,
-                startedAt: projectData.startedAt
-                    ? new Date(projectData.startedAt)
-                    : new Date(),
-                dueAt: new Date(projectData.dueAt),
-                completedAt: projectData.completedAt
-                    ? new Date(projectData.completedAt)
-                    : null,
-                jobStatus: {
-                    connect: {
-                        id: Number(jobStatusId),
-                    },
-                },
-                jobType: {
-                    connect: {
-                        id: Number(jobTypeId),
-                    },
-                },
-                paymentChannel: {
-                    connect: {
-                        id: Number(paymentChannelId),
-                    },
-                },
-                createdBy: {
-                    connect: {
-                        id: createdById,
-                    },
-                },
-                // Conditionally add memberAssign only if memberAssignIds exists and has items
-                ...(memberAssignIds &&
-                    memberAssignIds.length > 0 && {
-                        memberAssign: {
-                            connect: memberAssignIds.map((id: string) => ({
-                                id,
-                            })),
-                        },
-                    }),
-            },
-            include: {
-                memberAssign: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        jobTitle: true,
-                        department: true,
-                        avatar: true,
-                    },
-                },
-            },
-        })
-        return NextResponse.json(project, { status: 201 })
-    } catch (error) {
-        console.error('Error creating project:', error)
         return NextResponse.json(
-            { error: 'Internal server error' },
+            {
+                message: message.created(),
+                result,
+            },
+            { status: 201 }
+        )
+    } catch (error) {
+        return NextResponse.json(
+            {
+                message: message.error(),
+                desciption: error,
+            },
             { status: 500 }
         )
     }

@@ -2,40 +2,25 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-import { ensureConnection } from '@/lib/prisma'
+import { Message } from '../abstract/message.class'
+import { UserService } from './user.service'
+
+const userService = new UserService()
+const message = new Message('user')
 
 export async function GET() {
     try {
-        const prisma = await ensureConnection()
-        const users = await prisma.user.findMany({
-            orderBy: {
-                name: 'asc',
-            },
-            include: {
-                assignedProjects: {},
-                createdProjects: {},
-                statusChanges: {},
-                notifications: {},
-                _count: {
-                    select: {
-                        assignedProjects: true,
-                        createdProjects: true,
-                        notifications: true,
-                    },
-                },
-            },
-        })
+        const data = await userService.getAll()
 
         return NextResponse.json({
-            success: true,
-            data: users,
+            message: message.getAll(),
+            data,
         })
     } catch (error) {
-        console.error('Error fetching users:', error)
         return NextResponse.json(
             {
-                success: false,
-                error: 'Failed to fetch users',
+                message: message.error(),
+                error,
             },
             { status: 500 }
         )
@@ -46,13 +31,9 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
 
-        const prisma = await ensureConnection()
-
-        const existingEmail = await prisma.user.findUnique({
-            where: { email: body.email },
-        })
-        const existingUsername = await prisma.user.findUnique({
-            where: { username: body.username },
+        const existingEmail = await userService.isExist({ email: body.email })
+        const existingUsername = await userService.isExist({
+            username: body.username,
         })
 
         if (existingEmail || existingUsername) {
@@ -62,30 +43,14 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Create project with members
-        const user = await prisma.user.create({
-            data: {
-                id: body.id,
-                email: body.email,
-                username: body.username,
-                name: body.name,
-                avatar: body.avatar,
-                jobTitle: body.jobTitle,
-                department: body.department,
-                role: body.role || 'USER',
+        const data = await userService.create(body)
+        return NextResponse.json(
+            {
+                message: message.created(),
+                data,
             },
-            include: {
-                assignedProjects: {
-                    select: {
-                        id: true,
-                        jobNo: true,
-                        jobName: true,
-                        staffCost: true,
-                    },
-                },
-            },
-        })
-        return NextResponse.json(user, { status: 201 })
+            { status: 201 }
+        )
     } catch (error) {
         console.error('Error creating user:', error)
         return NextResponse.json(

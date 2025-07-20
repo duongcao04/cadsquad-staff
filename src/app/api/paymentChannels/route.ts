@@ -1,34 +1,27 @@
 import { NextResponse } from 'next/server'
 
-import { ensureConnection } from '@/lib/prisma'
+import { Message } from '../abstract/message.class'
+import { PaymentChannelService } from './paymentChannel.service'
+
+const paymentChannelService = new PaymentChannelService()
+const message = new Message('payment channel')
 
 export async function GET() {
     try {
-        const prisma = await ensureConnection()
-        const paymentChannels = await prisma.paymentChannel.findMany({
-            orderBy: {
-                name: 'asc',
-            },
-            include: {
-                projects: {},
-                _count: {
-                    select: {
-                        projects: true,
-                    },
-                },
-            },
-        })
+        const data = await paymentChannelService.getAll()
 
-        return NextResponse.json({
-            success: true,
-            data: paymentChannels,
-        })
+        return NextResponse.json(
+            {
+                message: message.getAll(),
+                data,
+            },
+            { status: 200 }
+        )
     } catch (error) {
         console.error('Error fetching job statuses:', error)
         return NextResponse.json(
             {
-                success: false,
-                error: 'Failed to fetch job statuses',
+                error: message.error(),
             },
             { status: 500 }
         )

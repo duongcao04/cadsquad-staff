@@ -13,7 +13,7 @@ export const getProjects: (
         method: 'GET',
     })
     const data = await res.json()
-    return data.data
+    return data.data.records
 }
 
 export const getProjectByJobNo: (
@@ -27,7 +27,28 @@ export const getProjectByJobNo: (
         method: 'GET',
     })
     const data = await res.json()
-    return data
+    return data.data
+}
+
+export const getProjectByTab: (tab?: string) => Promise<{
+    projects: Project[]
+    count: Record<
+        | 'priority'
+        | 'active'
+        | 'late'
+        | 'delivered'
+        | 'completed'
+        | 'cancelled',
+        number
+    >
+}> = async (tab = 'priority') => {
+    const url = `${PROJECT_API}?tab=${tab}`
+    const res = await fetch(url, {
+        method: 'GET',
+    })
+    const data = await res.json()
+    const { records: projects, count } = data.data
+    return { projects, count }
 }
 
 export const createProject: (

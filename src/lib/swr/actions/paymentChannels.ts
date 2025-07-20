@@ -7,5 +7,5 @@ export const getPaymentChannels: () => Promise<JobType[]> = async () => {
         method: 'GET',
     })
     const data = await res.json()
-    return data.data
+    return data.data.records
 }

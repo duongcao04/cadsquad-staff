@@ -7,5 +7,5 @@ export const getUsers: () => Promise<User[]> = async () => {
         method: 'GET',
     })
     const data = await res.json()
-    return data.data
+    return data.data.records
 }

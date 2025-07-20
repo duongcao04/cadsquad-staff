@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import {
     Avatar,
@@ -36,7 +36,7 @@ import { getJobTypes } from '@/lib/swr/actions/jobTypes'
 import { getPaymentChannels } from '@/lib/swr/actions/paymentChannels'
 import {
     deleteProject as deleteProjectAction,
-    getProjects,
+    getProjectByTab,
 } from '@/lib/swr/actions/project'
 import { getUsers } from '@/lib/swr/actions/user'
 import {
@@ -95,11 +95,18 @@ export default function ProjectTable() {
     )
     const { data: jobStatuses } = useSWR(JOB_STATUS_API, getJobStatuses)
     const {
-        data: projects,
+        data: projectData,
         isLoading: loadingProjects,
         isValidating: validatingProjects,
         mutate: mutateProjects,
-    } = useSWR(PROJECT_API, () => getProjects())
+    } = useSWR([`${PROJECT_API}?tab=${tabValue}`], () =>
+        getProjectByTab(tabValue)
+    )
+    const { projects, count } = useMemo(() => {
+        return (
+            projectData ?? { projects: [], count: {} as Record<string, number> }
+        )
+    }, [projectData])
 
     const handleSwitch = async (project: Project, nextJobStatus: JobStatus) => {
         try {
@@ -410,7 +417,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={projects?.length}
+                        count={count.priority}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -426,7 +433,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={projects?.length}
+                        count={count.active}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -442,7 +449,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={projects?.length}
+                        count={count.late}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -458,7 +465,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={projects?.length}
+                        count={count.delivered}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -474,7 +481,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={projects?.length}
+                        count={count.completed}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -490,7 +497,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={projects?.length}
+                        count={count.cancelled}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}

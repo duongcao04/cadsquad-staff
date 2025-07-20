@@ -1,33 +1,24 @@
 import { NextResponse } from 'next/server'
 
-import { ensureConnection } from '@/lib/prisma'
+import { Message } from '../abstract/message.class'
+import { JobStatusService } from './jobStatus.service'
+
+const jobStatusService = new JobStatusService()
+const message = new Message('job status')
 
 export async function GET() {
     try {
-        const prisma = await ensureConnection()
-        const jobStatuses = await prisma.jobStatus.findMany({
-            orderBy: {
-                order: 'asc',
-            },
-            include: {
-                _count: {
-                    select: {
-                        projects: true,
-                    },
-                },
-            },
-        })
+        const data = await jobStatusService.getAll()
 
         return NextResponse.json({
-            success: true,
-            data: jobStatuses,
+            message: message.getAll(),
+            data,
         })
     } catch (error) {
-        console.error('Error fetching job statuses:', error)
         return NextResponse.json(
             {
-                success: false,
-                error: 'Failed to fetch job statuses',
+                error,
+                messgae: message.error(),
             },
             { status: 500 }
         )

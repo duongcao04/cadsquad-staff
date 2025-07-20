@@ -82,6 +82,28 @@ export default function NotificationDropdown() {
         )
         .subscribe()
 
+        // Can use it avoid revalidate -> loose time
+    //         const { data, mutate } = useSWR('/api/users', fetcher)
+    // Then you POST a new user:
+    // ts
+    // Copy
+    // Edit
+    // const newUser = { id: 4, name: 'Duong' }
+
+    // await mutate(async (currentUsers) => {
+    //   const response = await fetch('/api/users', {
+    //     method: 'POST',
+    //     body: JSON.stringify(newUser),
+    //     headers: { 'Content-Type': 'application/json' },
+    //   })
+    //   const createdUser = await response.json()
+
+    //   return [...(currentUsers || []), createdUser]
+    // }, {
+    //   populateCache: true, // update local cache immediately
+    //   revalidate: false,   // don't refetch from server
+    // })
+
     return (
         <Dropdown placement="bottom-end">
             <DropdownTrigger>

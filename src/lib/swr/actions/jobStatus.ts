@@ -5,7 +5,7 @@ export const getJobStatuses: () => Promise<JobStatus[]> = async () => {
         method: 'GET',
     })
     const data = await res.json()
-    return data.data
+    return data.data.records
 }
 
 export const updateJobStatus: (
