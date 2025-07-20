@@ -27,13 +27,11 @@ const SidebarItem = ({ data }: { data: SidebarItem }) => {
             <Link href={data.path} className="block">
                 <Button
                     variant={isCurrentPage ? 'solid' : 'light'}
-                    className="rounded-full p-3 size-fit"
+                    className="rounded-full w-fit aspect-square"
                     isIconOnly
                     color={isCurrentPage ? 'primary' : 'default'}
                 >
-                    <div className="size-full flex items-center justify-start gap-3">
-                        <data.icon />
-                    </div>
+                    <data.icon size={20} />
                 </Button>
             </Link>
         </Tooltip>
