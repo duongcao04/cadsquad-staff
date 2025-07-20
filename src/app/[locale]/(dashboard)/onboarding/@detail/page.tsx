@@ -15,6 +15,7 @@ import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import {
+    ArrowLeftRight,
     Banknote,
     CalendarClock,
     CalendarPlus,
@@ -59,24 +60,42 @@ export default function ProjectDetailDrawer() {
                 isLoading ? (
                     <Skeleton paragraph={{ rows: 1 }} />
                 ) : (
-                    <div className="flex items-center justify-start gap-2">
-                        <p className="max-w-[70%] line-clamp-1">
-                            {project?.jobNo}
-                        </p>
-                        <p>/</p>
-                        <Chip
-                            style={{
-                                backgroundColor: project?.jobStatus?.color,
-                            }}
-                            classNames={{
-                                base: 'block max-w-full flex items-center justify-start',
-                                content:
-                                    'block w-full uppercase text-sm font-semibold tracking-wide text-center',
-                            }}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-start gap-2">
+                            <p className="max-w-[70%] line-clamp-1">
+                                {project?.jobNo}
+                            </p>
+                            <p>/</p>
+                            <Chip
+                                style={{
+                                    backgroundColor: project?.jobStatus?.color,
+                                }}
+                                classNames={{
+                                    base: 'block max-w-full flex items-center justify-start',
+                                    content:
+                                        'block w-full uppercase text-sm font-semibold tracking-wide text-center',
+                                }}
+                                size="sm"
+                            >
+                                {project?.jobStatus?.title}
+                            </Chip>
+                        </div>
+                        <Button
+                            startContent={<ArrowLeftRight size={16} />}
                             size="sm"
+                            variant="light"
                         >
-                            {project?.jobStatus?.title}
-                        </Chip>
+                            Switch to
+                            <Chip
+                                style={{
+                                    // backgroundColor: nextJobStatus?.color,
+                                    marginLeft: '5px',
+                                }}
+                                size="sm"
+                            >
+                                completed
+                            </Chip>
+                        </Button>
                     </div>
                 )
             }

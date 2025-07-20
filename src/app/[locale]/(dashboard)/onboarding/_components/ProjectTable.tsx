@@ -10,7 +10,6 @@ import {
     Dropdown,
     DropdownItem,
     DropdownMenu,
-    DropdownSection,
     DropdownTrigger,
     Tooltip,
     addToast,
@@ -20,18 +19,12 @@ import { Image, Table } from 'antd'
 import type { TableProps } from 'antd'
 import { Badge, Tabs, TabsProps } from 'antd'
 import { Input } from 'antd'
-import {
-    ArrowLeftRight,
-    EllipsisVerticalIcon,
-    EyeIcon,
-    Trash,
-} from 'lucide-react'
-import { ChevronDownIcon, Search } from 'lucide-react'
-import useSWR, { mutate } from 'swr'
+import { ChevronDownIcon, EyeIcon, Search } from 'lucide-react'
+import useSWR from 'swr'
 import useSWRMutation from 'swr/mutation'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { getJobStatuses, updateJobStatus } from '@/lib/swr/actions/jobStatus'
+import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
 import { getJobTypes } from '@/lib/swr/actions/jobTypes'
 import { getPaymentChannels } from '@/lib/swr/actions/paymentChannels'
 import {
@@ -54,10 +47,11 @@ import {
     useConfirmModal,
 } from '@/shared/components/ui/ConfirmModal'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
-import { JobStatus, Project } from '@/validationSchemas/project.schema'
+import { Project } from '@/validationSchemas/project.schema'
 
 import { useDetailModal } from '../@detail/actions'
 import { useJobStore } from '../store/useJobStore'
+import ActionDropdown from './ActionDropdown'
 import CountDown from './CountDown'
 
 const DEFAULT_TAB = 'priority'
@@ -107,18 +101,6 @@ export default function ProjectTable() {
             projectData ?? { projects: [], count: {} as Record<string, number> }
         )
     }, [projectData])
-
-    const handleSwitch = async (project: Project, nextJobStatus: JobStatus) => {
-        try {
-            const data = await mutate(
-                PROJECT_API,
-                updateJobStatus(project, nextJobStatus)
-            )
-            console.log(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
 
     const columns: TableProps<DataType>['columns'] = [
         {
@@ -251,6 +233,7 @@ export default function ProjectTable() {
                             showYears: true,
                             showMonths: true,
                             showDays: true,
+                            showHours: true,
                             showMinutes: true,
                             showSeconds: true,
                         }}
@@ -336,14 +319,6 @@ export default function ProjectTable() {
             key: 'action',
             width: '15%',
             render: (_, record: DataType) => {
-                const nextJobStatusOrder =
-                    record.jobStatus.order !== jobStatuses?.length
-                        ? record.jobStatus.order! + 1
-                        : null
-                const nextJobStatus = jobStatuses?.find(
-                    (item) => item.order === nextJobStatusOrder
-                ) as JobStatus
-
                 return (
                     <div className="flex items-center justify-start gap-2">
                         <Button
@@ -355,50 +330,11 @@ export default function ProjectTable() {
                             <EyeIcon />
                             View
                         </Button>
-                        <Dropdown>
-                            <DropdownTrigger>
-                                <Button isIconOnly variant="light" size="sm">
-                                    <EllipsisVerticalIcon size={16} />
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu aria-label="Project menu actions">
-                                <DropdownSection showDivider>
-                                    <DropdownItem
-                                        key="switch"
-                                        startContent={
-                                            <ArrowLeftRight size={16} />
-                                        }
-                                        onPress={() =>
-                                            handleSwitch(record, nextJobStatus)
-                                        }
-                                    >
-                                        Switch to{' '}
-                                        <Chip
-                                            style={{
-                                                backgroundColor:
-                                                    nextJobStatus?.color,
-                                                marginLeft: '5px',
-                                            }}
-                                        >
-                                            {nextJobStatus?.title}
-                                        </Chip>
-                                    </DropdownItem>
-                                </DropdownSection>
-                                <DropdownSection>
-                                    <DropdownItem
-                                        key="delete"
-                                        startContent={<Trash size={16} />}
-                                        onClick={() => {
-                                            deleteModal.onOpen()
-                                            setDeleteProject(record)
-                                        }}
-                                        color="danger"
-                                    >
-                                        Delete
-                                    </DropdownItem>
-                                </DropdownSection>
-                            </DropdownMenu>
-                        </Dropdown>
+                        <ActionDropdown
+                            data={record}
+                            setDeleteProject={setDeleteProject}
+                            onOpen={deleteModal.onOpen}
+                        />
                     </div>
                 )
             },
@@ -417,7 +353,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count.priority}
+                        count={count?.priority}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -433,7 +369,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count.active}
+                        count={count?.active}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -449,7 +385,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count.late}
+                        count={count?.late}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -465,7 +401,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count.delivered}
+                        count={count?.delivered}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -481,7 +417,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count.completed}
+                        count={count?.completed}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -497,7 +433,7 @@ export default function ProjectTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count.cancelled}
+                        count={count?.cancelled}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -641,15 +577,16 @@ export default function ProjectTable() {
                 rowKey="jobNo"
                 onRow={(record) => {
                     return {
-                        className:
-                            record.jobNo === newJobNo ? 'bg-yellow-200' : '',
+                        className: `${record.jobNo === newJobNo ? 'bg-yellow-200' : ''} cursor-pointer`,
+                        title: 'Double click to view',
+                        onDoubleClick: () => openModal(record.jobNo!),
                     }
                 }}
                 dataSource={projects?.map((prj, index) => ({
                     ...prj,
                     key: prj?.id ?? index,
                 }))}
-                loading={loadingProjects && validatingProjects}
+                loading={loadingProjects || validatingProjects}
                 pagination={{
                     position: ['bottomCenter'],
                     pageSize: 10,
