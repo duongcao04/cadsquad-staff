@@ -6,35 +6,46 @@ import { Line } from '@ant-design/plots'
 
 export default function ProjectTimeline() {
     const data = [
-        { year: '1991', value: 3 },
-        { year: '1992', value: 4 },
-        { year: '1993', value: 3.5 },
-        { year: '1994', value: 5 },
-        { year: '1995', value: 4.9 },
-        { year: '1996', value: 6 },
-        { year: '1997', value: 7 },
-        { year: '1998', value: 9 },
-        { year: '1999', value: 13 },
+        { year: '2020', value: 6, category: 'Total projects' },
+        { year: '2020', value: 2, category: 'Completed projects' },
+
+        { year: '2021', value: 9, category: 'Total projects' },
+        { year: '2021', value: 5, category: 'Completed projects' },
+
+        { year: '2022', value: 7, category: 'Total projects' }, // giảm
+        { year: '2022', value: 4, category: 'Completed projects' },
+
+        { year: '2023', value: 11, category: 'Total projects' }, // tăng
+        { year: '2023', value: 8, category: 'Completed projects' },
+
+        { year: '2024', value: 10, category: 'Total projects' }, // giảm nhẹ
+        { year: '2024', value: 6, category: 'Completed projects' },
+
+        { year: '2025', value: 13, category: 'Total projects' }, // tăng mạnh
+        { year: '2025', value: 10, category: 'Completed projects' },
     ]
+
     const config = {
         data,
         xField: 'year',
         yField: 'value',
+        seriesField: 'category',
+        smooth: true,
         point: {
-            shapeField: 'square',
-            sizeField: 4,
+            size: 5,
+            shape: 'circle',
         },
-        interaction: {
-            tooltip: {
-                marker: false,
-            },
-        },
-        style: {
-            lineWidth: 2,
-        },
+        colorField: 'category',
+        legend: { position: 'top' },
     }
     return (
-        <div className="p-2 rounded-3xl border border-gray-100">
+        <div
+            className="p-2 rounded-2xl border border-gray-100"
+            style={{
+                boxShadow:
+                    'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px',
+            }}
+        >
             <div className="pl-3 pr-5 py-3 w-full flex items-center justify-between">
                 <h3 className="font-semibold text-lg text-secondary">
                     Project Timeline

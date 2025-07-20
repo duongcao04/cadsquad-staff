@@ -32,9 +32,12 @@ export default async function DashboardLayout({
 }>) {
     return (
         <div className="dashboard-page">
-            <Header />
-            <main className="container py-3">
-                <div className="flex items-center justify-between mb-4">
+            <div className="fixed top-0 w-full z-[99]">
+                <Header />
+            </div>
+            <div className="h-[60px]" />
+            <main className="py-3">
+                <div className="container flex items-center justify-between mb-4">
                     <div className="flex items-center justify-start gap-5">
                         <AdminCreateButton />
                         <div className="w-0.5 h-6 bg-border" />
@@ -42,9 +45,11 @@ export default async function DashboardLayout({
                     </div>
                     <Timmer />
                 </div>
-                <div className="grid grid-cols-[70px_1fr] gap-2">
+                <div className="max-w-screen pl-3 grid grid-cols-[70px_1fr] gap-2">
                     <Sidebar />
-                    <div className="rounded-md size-full">{children}</div>
+                    <div className="h-[calc(100vh-60px-24px-40px-16px)] rounded-md size-full overflow-y-auto overflow-x-hidden pr-3">
+                        {children}
+                    </div>
                 </div>
             </main>
         </div>

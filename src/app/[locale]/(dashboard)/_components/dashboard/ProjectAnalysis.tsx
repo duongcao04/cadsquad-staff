@@ -62,7 +62,11 @@ export default function ProjectAnalysis() {
                 return (
                     <div
                         key={index}
-                        className="border border-border py-5 px-6 rounded-xl shadow-sm flex items-start justify-between gap-3"
+                        className="border border-border py-5 px-6 rounded-xl flex items-start justify-between gap-3"
+                        style={{
+                            boxShadow:
+                                'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px',
+                        }}
                     >
                         <div>
                             <p className="capitalizea text-sm font-medium">

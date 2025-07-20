@@ -2,84 +2,26 @@
 
 import React from 'react'
 
-import type { BadgeProps, CalendarProps } from 'antd'
-import { Badge, Calendar } from 'antd'
+import { Calendar } from 'antd'
+import type { CalendarProps } from 'antd'
 import type { Dayjs } from 'dayjs'
 
-const getListData = (value: Dayjs) => {
-    let listData: { type: string; content: string }[] = [] // Specify the type of listData
-    switch (value.date()) {
-        case 8:
-            listData = [
-                { type: 'warning', content: 'This is warning event.' },
-                { type: 'success', content: 'This is usual event.' },
-            ]
-            break
-        case 10:
-            listData = [
-                { type: 'warning', content: 'This is warning event.' },
-                { type: 'success', content: 'This is usual event.' },
-                { type: 'error', content: 'This is error event.' },
-            ]
-            break
-        case 15:
-            listData = [
-                { type: 'warning', content: 'This is warning event' },
-                {
-                    type: 'success',
-                    content: 'This is very long usual event......',
-                },
-                { type: 'error', content: 'This is error event 1.' },
-                { type: 'error', content: 'This is error event 2.' },
-                { type: 'error', content: 'This is error event 3.' },
-                { type: 'error', content: 'This is error event 4.' },
-            ]
-            break
-        default:
-    }
-    return listData || []
-}
-
-const getMonthData = (value: Dayjs) => {
-    if (value.month() === 8) {
-        return 1394
-    }
+const onPanelChange = (value: Dayjs, mode: CalendarProps<Dayjs>['mode']) => {
+    console.log(value.format('YYYY-MM-DD'), mode)
 }
 
 const CalendarManage: React.FC = () => {
-    const monthCellRender = (value: Dayjs) => {
-        const num = getMonthData(value)
-        return num ? (
-            <div className="notes-month">
-                <section>{num}</section>
-                <span>Backlog number</span>
-            </div>
-        ) : null
-    }
-
-    const dateCellRender = (value: Dayjs) => {
-        const listData = getListData(value)
-        return (
-            <ul className="events">
-                {listData.map((item) => (
-                    <li key={item.content}>
-                        <Badge
-                            status={item.type as BadgeProps['status']}
-                            text={item.content}
-                        />
-                    </li>
-                ))}
-            </ul>
-        )
-    }
-
-    const cellRender: CalendarProps<Dayjs>['cellRender'] = (current, info) => {
-        if (info.type === 'date') return dateCellRender(current)
-        if (info.type === 'month') return monthCellRender(current)
-        return info.originNode
-    }
-
-    return <Calendar cellRender={cellRender} />
+    return (
+        <div
+            className="p-2 rounded-2xl h-full border border-gray-100"
+            style={{
+                boxShadow:
+                    'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px',
+            }}
+        >
+            <Calendar fullscreen={false} onPanelChange={onPanelChange} />
+        </div>
+    )
 }
 
 export default CalendarManage
