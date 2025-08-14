@@ -1,7 +1,4 @@
-'use server'
-
-import { NextRequest, NextResponse } from "next/server"
-
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
@@ -15,14 +12,19 @@ export async function POST(request: NextRequest) {
 		const { session } = await supabase.auth
 			.signInWithPassword({
 				email: email,
-				password: password,
-			}).then((res) => {
+				password: password
+			})
+			.then((res) => {
 				return res.data
 			})
 
 		if (!session) {
 			return NextResponse.json(
-				{ success: false, message: "Đăng nhập thất bại", error: 'Unauthenticated' },
+				{
+					success: false,
+					message: 'Đăng nhập thất bại',
+					error: 'Unauthenticated',
+				},
 				{ status: 401 }
 			)
 		}
@@ -32,17 +34,21 @@ export async function POST(request: NextRequest) {
 			accessToken: session?.access_token,
 			expiresIn: session?.expires_in,
 			expiresAt: session?.expires_at,
-			refreshToken: session?.refresh_token
+			refreshToken: session?.refresh_token,
 		}
 
 		return NextResponse.json(
-			{ success: true, message: "Đăng nhập thành công", result },
+			{ success: true, message: 'Đăng nhập thành công', result },
 			{ status: 200 }
 		)
 	} catch (error) {
 		console.error('Error creating file system:', error)
 		return NextResponse.json(
-			{ success: false, message: "Đăng nhập thất bại", error: 'Unauthenticated' },
+			{
+				success: false,
+				message: 'Đăng nhập thất bại',
+				error: 'Unauthenticated',
+			},
 			{ status: 401 }
 		)
 	}

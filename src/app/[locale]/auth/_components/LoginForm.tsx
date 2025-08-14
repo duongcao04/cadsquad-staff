@@ -6,14 +6,11 @@ import { Button, Input, addToast } from '@heroui/react'
 import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
 
-import useAuth from '@/queries/useAuth'
-
 import envConfig from '@/config/envConfig'
 import { Link, useRouter } from '@/i18n/navigation'
+import useAuth from '@/queries/useAuth'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { LoginSchema } from '@/validationSchemas/auth.schema'
-
-import { getSession } from '../../../../lib/auth/session'
 
 const HOME = envConfig.NEXT_PUBLIC_URL as string
 
@@ -40,14 +37,14 @@ export default function LoginForm() {
                 setLoading(true)
                 await login(values)
                 addToast({
-                    title: 'Sign in successfully!',
+                    title: 'Đăng nhập thành công',
                     color: 'success',
                 })
 
                 router.push(redirect)
             } catch (error) {
                 addToast({
-                    title: 'Sign in failed!',
+                    title: 'Đăng nhập thất bại',
                     description: `${error}`,
                     color: 'danger',
                 })
@@ -62,12 +59,12 @@ export default function LoginForm() {
             onSubmit={formik.handleSubmit}
             className="min-w-[600px] shadow-lg rounded-sm py-8 p-16 bg-white"
         >
-            <h1 className="text-2xl font-bold font-saira text-left">Sign in</h1>
+            <h1 className="text-2xl font-bold text-left font-saira">Sign in</h1>
             <p>
                 to continue to{' '}
                 <Link
                     href={HOME}
-                    className="hover:underline text-blue-700 underline-offset-2"
+                    className="text-blue-700 hover:underline underline-offset-2"
                 >
                     staff.csdvietnam.com
                 </Link>
@@ -118,7 +115,7 @@ export default function LoginForm() {
                     Support? Contact to{' '}
                     <Link
                         href={'mailto:ch.duong@cadsquad.vn'}
-                        className="hover:underline text-blue-700 underline-offset-2"
+                        className="text-blue-700 hover:underline underline-offset-2"
                     >
                         Ch.duong@cadsquad.vn
                     </Link>
@@ -132,7 +129,7 @@ export default function LoginForm() {
                     >
                         Login
                     </Button>
-                    <div className="flex items-center justify-between gap-3 w-full">
+                    <div className="flex items-center justify-between w-full gap-3">
                         <hr className="w-full opacity-20" />
                         <p className="my-5 opacity-70">or</p>
                         <hr className="w-full opacity-20" />

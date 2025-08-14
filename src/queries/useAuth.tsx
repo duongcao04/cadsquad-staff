@@ -1,10 +1,9 @@
 'use client'
 
 import useSWR, { SWRConfiguration } from 'swr'
+import Cookies from 'universal-cookie'
 
-import { setCustomSession, setSession } from '@/lib/auth/session'
 import { axiosClient } from '@/lib/axios'
-import { supabase } from '@/lib/supabase/client'
 import { getProfile } from '@/lib/swr/actions/auth'
 import { Login, User } from '@/validationSchemas/auth.schema'
 
@@ -22,11 +21,16 @@ export default function useAuth(options?: SWRConfiguration<User>) {
     )
 
     const login = async (loginData: Login) => {
-        await axiosClient
+        const cookies = new Cookies()
+        return await axiosClient
             .post('auth/login', JSON.stringify(loginData))
-            .then((res) => {
-                const { data } = res
-                console.log(data.result)
+            .then(async (res) => {
+                const { accessToken, expiresIn } = res.data.result
+                // Set cookie for authentication
+                cookies.set('session', accessToken, {
+                    path: '/',
+                    maxAge: expiresIn,
+                })
             })
     }
 

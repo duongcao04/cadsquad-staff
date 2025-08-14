@@ -6,6 +6,7 @@ import { cookies } from 'next/headers'
 
 import { User } from '@/validationSchemas/auth.schema'
 import envConfig from '@/config/envConfig'
+import { constants } from '@/shared/constants'
 
 const key = new TextEncoder().encode(envConfig.NEXT_PUBLIC_SUPABASE_JWT_KEY)
 const SALT_ROUNDS = 10
@@ -47,32 +48,43 @@ export async function getSession() {
     return await verifyToken(session)
 }
 
-export async function setSession(user: User) {
+export async function setSession(user: User, expiresAt?: number) {
     const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
+    const expires = expiresAt ? new Date(expiresAt) : expiresInOneDay
     const session: SessionData = {
         user: { id: user.id!, role: user.role!, iat: Date.now().toString() },
-        expires: expiresInOneDay.toISOString(),
+        expires: expires.toISOString(),
     }
     const encryptedSession = await signToken(session)
-        ; (await cookies()).set('session', encryptedSession, {
-            expires: expiresInOneDay,
-            httpOnly: true,
-            secure: true,
-            sameSite: 'lax',
-        })
-}
-
-export async function setCustomSession(
-    sessionName: string,
-    sessionValue: string,
-    expiresIn: Date = new Date(Date.now() + 24 * 60 * 60 * 1000)
-) {
-    return (await cookies()).set(sessionName, sessionValue, {
-        expires: expiresIn,
+    return (await cookies()).set('session', encryptedSession, {
+        expires: expiresInOneDay,
         httpOnly: true,
         secure: true,
         sameSite: 'lax',
     })
+}
+
+type CustomSessionData = {
+    name: string,
+    value: string,
+    expiresAt: string
+}
+export async function setCustomSession({name, value, expiresAt}: CustomSessionData) {
+    let expires = new Date(Date.now() + constants.ms.day[1])
+
+    if (expiresAt) {
+        expires = new Date(expiresAt)
+    }
+    try {
+        return (await cookies()).set(name, JSON.stringify(value), {
+            expires,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+        })
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 export async function logoutSession(user: User) {
