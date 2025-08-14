@@ -1,11 +1,10 @@
 import createIntlMiddleware from 'next-intl/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
+import apiMiddleware from '@/app/api/_utils/api-middleware'
 import { publicRoutes } from '@/config/routeConfig'
-
-import apiMiddleware from './app/api/utils/api-middleware'
-import { removeLocaleFromPathname, routing } from './i18n/routing'
-import { verifyToken } from './lib/auth/session'
+import { removeLocaleFromPathname, routing } from '@/i18n/routing'
+import { verifyToken } from '@/lib/auth/session'
 
 // Create the internationalization middleware
 const intlMiddleware = createIntlMiddleware(routing)
