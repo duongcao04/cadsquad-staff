@@ -1,4 +1,4 @@
-import { Notification, PrismaClient, User } from '@/generated/prisma'
+import { Notification, PrismaClient, User } from '@prisma/client'
 
 export const seedUserNotifications = async (
     prisma: PrismaClient,

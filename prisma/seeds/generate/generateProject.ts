@@ -1,55 +1,11 @@
-import { JobStatus, User } from '@/generated/prisma'
+import { JobStatus, JobType, User } from '@prisma/client'
 
 // Project name components for random generation
 const projectTypes = [
-    'Automated Assembly Line',
-    'HVAC System',
-    'Robotic Arm',
-    'Heat Exchanger',
-    'Conveyor Belt System',
-    'Pneumatic System',
-    'Turbine Blade',
-    'Gear Box',
-    'Hydraulic Press',
-    'Vibration Damping System',
-    'Engine Cooling System',
-    'CNC Machine Tool',
-    'Bearing Analysis',
-    'Compressor Performance',
-    'Material Handling System',
-    'Pump Station',
-    'Valve Control System',
-    'Shaft Design',
-    'Boiler System',
-    'Clutch Mechanism',
-    'Brake System',
-    'Suspension System',
-    'Transmission System',
-    'Flywheel Design',
-    'Pressure Vessel',
-    'Piping Network',
-    'Cooling Tower',
-    'Centrifugal Fan',
-    'Steam Turbine',
-    'Gas Compressor',
+    "Automated Assembly Line", "HVAC System", "Robotic Arm", "Heat Exchanger", "Conveyor Belt System", "Pneumatic System", "Turbine Blade", "Gear Box", "Hydraulic Press", "Vibration Damping System", "Engine Cooling System", "CNC Machine Tool", "Bearing Analysis", "Compressor Performance", "Material Handling System", "Pump Station", "Valve Control System", "Shaft Design", "Boiler System", "Clutch Mechanism", "Brake System", "Suspension System", "Transmission System", "Flywheel Design", "Pressure Vessel", "Piping Network", "Cooling Tower", "Centrifugal Fan", "Steam Turbine", "Gas Compressor",
 ]
 
-const projectActions = [
-    'Design',
-    'Analysis',
-    'Optimization',
-    'Testing',
-    'Upgrade',
-    'Redesign',
-    'Development',
-    'Implementation',
-    'Maintenance',
-    'Installation',
-    'Calibration',
-    'Inspection',
-    'Simulation',
-    'Validation',
-    'Integration',
+const projectActions = ["Design", "Analysis", "Optimization", "Testing", "Upgrade", "Redesign", "Development", "Implementation", "Maintenance", "Installation", "Calibration", "Inspection", "Simulation", "Validation", "Integration",
 ]
 
 const repositories = [
@@ -113,19 +69,54 @@ const generateSourceUrl = (): string => {
     return `https://github.com/mech-eng/${repo}`
 }
 
+function getRandomClientName() {
+    const firstNames = [
+        'Liam',
+        'Emma',
+        'Noah',
+        'Olivia',
+        'Ava',
+        'Ethan',
+        'Sophia',
+        'Mason',
+        'Isabella',
+        'Logan',
+    ]
+    const lastNames = [
+        'Smith',
+        'Johnson',
+        'Williams',
+        'Jones',
+        'Brown',
+        'Davis',
+        'Miller',
+        'Wilson',
+        'Moore',
+        'Taylor',
+    ]
+
+    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
+    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
+
+    return `${firstName} ${lastName}`
+}
+
+
+export type RadomProjectOptions = {
+    year?: number
+    minPrice?: number
+    maxPrice?: number
+    minTeamSize?: number
+    maxTeamSize?: number
+    startDateRange?: { start: Date; end: Date }
+    durationRange?: { min: number; max: number } // in months
+}
 // Main random project generator function
 export const generateRandomProject = (
     users: User[],
+    jobTypes: JobType[],
     jobStatuses: JobStatus[],
-    options: {
-        year?: number
-        minPrice?: number
-        maxPrice?: number
-        minTeamSize?: number
-        maxTeamSize?: number
-        startDateRange?: { start: Date; end: Date }
-        durationRange?: { min: number; max: number } // in months
-    } = {}
+    options: RadomProjectOptions = {}
 ) => {
     const {
         year = 2024,
@@ -142,7 +133,9 @@ export const generateRandomProject = (
 
     const jobNo = generateJobNo()
     const jobName = generateProjectName()
-    const price = getRandomPrice(minPrice, maxPrice)
+    const income = getRandomPrice(minPrice, maxPrice)
+    const staffCost = getRandomPrice(minPrice, maxPrice)
+    const clientName = getRandomClientName()
     const sourceUrl = generateSourceUrl()
     const jobStatus = getRandomElement(jobStatuses)
 
@@ -164,6 +157,10 @@ export const generateRandomProject = (
         users,
         Math.min(teamSize, users.length)
     )
+    const jobType = getRandomElements(
+        jobTypes,
+        Math.min(teamSize, users.length)
+    )
 
     // Generate completion date if status is completed
     const completedAt =
@@ -174,8 +171,11 @@ export const generateRandomProject = (
     return {
         jobNo,
         jobName,
-        price,
+        income,
+        staffCost,
+        jobType,
         sourceUrl,
+        clientName,
         jobStatusId: jobStatus.id,
         startedAt,
         dueAt,
@@ -189,8 +189,9 @@ export const generateRandomProject = (
 export const generateRandomProjects = (
     count: number,
     users: User[],
+    jobType: JobType[],
     jobStatuses: JobStatus[],
-    options: Parameters<typeof generateRandomProject>[2] = {}
+    options?: RadomProjectOptions
 ) => {
     const projects = []
     const usedJobNos = new Set<string>()
@@ -201,7 +202,11 @@ export const generateRandomProjects = (
 
         // Ensure unique job numbers
         do {
-            project = generateRandomProject(users, jobStatuses, options)
+            project = generateRandomProject(
+                users,
+                jobType,
+                jobStatuses, options
+            )
             attempts++
         } while (usedJobNos.has(project.jobNo) && attempts < 100)
 

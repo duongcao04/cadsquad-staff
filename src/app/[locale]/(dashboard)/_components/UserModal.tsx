@@ -3,11 +3,11 @@
 import React, { useState } from 'react'
 
 import { Button, Input, addToast } from '@heroui/react'
+import { RoleEnum } from '@prisma/client'
 import { Modal, Select } from 'antd'
 import { useFormik } from 'formik'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
-import { Role } from '@/generated/prisma'
 import { supabase } from '@/lib/supabase/client'
 import { capitalize, removeVietnameseTones } from '@/lib/utils'
 import { CreateUserSchema, NewUser } from '@/validationSchemas/auth.schema'
@@ -263,7 +263,7 @@ export default function UserModal({ isOpen, onClose }: Props) {
                         </p>
                         <div className="flex flex-col w-full">
                             <Select
-                                options={Object.entries(Role).map((i) => {
+                                options={Object.entries(RoleEnum).map((i) => {
                                     return {
                                         ...i,
                                         label: capitalize(

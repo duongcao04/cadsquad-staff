@@ -1,4 +1,4 @@
-import { PrismaClient } from '@/generated/prisma'
+import { PrismaClient } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 const jobTypes = [
@@ -26,17 +26,22 @@ const jobTypes = [
 
 export const seedJobStatuses = async (prisma: PrismaClient) => {
     console.log('Seeding job types...')
+    console.log('---------------------------------------')
 
     const jobTypesCreated = await Promise.all(
-        jobTypes.map((jType) =>
-            prisma.jobType.upsert({
+        jobTypes.map((jType) => {
+            console.log(jType.code, ".", jType.code, ":::", jType.name);
+
+            return prisma.jobType.upsert({
                 where: { id: jType.id },
                 update: {},
                 create: jType,
             })
+        }
         )
     )
 
+    console.log('---------------------------------------')
     console.log(`✅ Created ${jobTypesCreated.length} job types`)
     return jobTypesCreated
 }

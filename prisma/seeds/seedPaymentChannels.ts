@@ -1,4 +1,4 @@
-import { PrismaClient } from '@/generated/prisma'
+import { PrismaClient } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 const paymentChannels = [
@@ -22,7 +22,7 @@ const paymentChannels = [
         id: 5,
         name: 'CSD.BINANCE',
     },
-	{
+    {
         id: 6,
         name: 'CSD.ACB',
     },
@@ -30,17 +30,22 @@ const paymentChannels = [
 
 export const seedPaymentChannels = async (prisma: PrismaClient) => {
     console.log('Seeding payment channels...')
+    console.log('---------------------------------------')
 
     const paymentChannelsCreated = await Promise.all(
-        paymentChannels.map((payment) =>
-            prisma.paymentChannel.upsert({
+        paymentChannels.map((payment) => {
+            console.log(payment.id, "-", payment.name);
+
+            return prisma.paymentChannel.upsert({
                 where: { id: payment.id },
                 update: {},
                 create: payment,
             })
+        }
         )
     )
 
+    console.log('---------------------------------------')
     console.log(`✅ Created ${paymentChannelsCreated.length} payment channels`)
     return paymentChannelsCreated
 }

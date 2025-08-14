@@ -1,4 +1,4 @@
-import { JobStatus, PrismaClient, User } from '@/generated/prisma'
+import { Job, JobStatus, JobType, PrismaClient, User } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 import { generateRandomProjects } from './generate/generateProject'
@@ -6,12 +6,14 @@ import { generateRandomProjects } from './generate/generateProject'
 export const seedProjects = async (
     prisma: PrismaClient,
     users: User[],
+    jobTypes: JobType[],
     jobStatuses: JobStatus[],
     count: number = 15
 ) => {
     console.log(`Seeding ${count} random mechanical engineering projects...`)
+    console.log('---------------------------------------')
 
-    const randomProjects = generateRandomProjects(count, users, jobStatuses, {
+    const randomProjects = generateRandomProjects(count, users, jobTypes, jobStatuses, {
         year: 2024,
         minPrice: 25000,
         maxPrice: 150000,
@@ -25,24 +27,26 @@ export const seedProjects = async (
     })
 
     const projects = await Promise.all(
-        randomProjects.map((projectData) =>
-            prisma.project.upsert({
-                where: { jobNo: projectData.jobNo },
+        randomProjects.map((jd) =>
+            prisma.job.upsert({
+                where: { jobNo: jd.jobNo },
                 update: {},
-                create: projectData,
+                create: jd as unknown as Job,
             })
         )
     )
 
+    console.log('---------------------------------------')
     console.log(
         `✅ Created ${projects.length} random mechanical engineering projects`
     )
     return projects
 }
-;(async function () {
-    const users = (await prisma.user.findMany()).filter(
-        (item) => item.department === 'Engineering'
-    )
-    const jobStatuses = await prisma.jobStatus.findMany()
-    seedProjects(prisma, users, jobStatuses, 16)
-})()
+    ; (async function () {
+        const users = (await prisma.user.findMany()).filter(
+            (item) => item.department === 'Engineering'
+        )
+        const jobTypes = await prisma.jobType.findMany()
+        const jobStatuses = await prisma.jobStatus.findMany()
+        seedProjects(prisma, users, jobTypes, jobStatuses, 16)
+    })()

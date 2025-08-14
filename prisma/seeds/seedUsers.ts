@@ -1,4 +1,4 @@
-import { PrismaClient } from '@/generated/prisma'
+import { PrismaClient } from '@prisma/client'
 import prisma from '@/lib/prisma'
 import { supabase } from '@/lib/supabase/client'
 
@@ -77,24 +77,28 @@ const users = [
 
 export const seedUsers = async (prisma: PrismaClient) => {
     console.log('Seeding users...')
+    console.log('---------------------------------------')
 
     const usersCreated = await Promise.all(
         users.map(async (userData) => {
-            const { data: auth } = await supabase.auth.signUp({
+            const { user } = await supabase.auth.signUp({
                 email: userData.email,
-                password: 'cadsquaddotvn',
-            })
+                password: 'cadsquad',
+            }).then(res => res.data)
+            console.log(user?.id, ":::", userData.email);
+
             return prisma.user.upsert({
                 where: { email: userData.email },
                 update: {},
-                create: { ...userData, id: auth.session?.user.id },
+                create: { ...userData, uuid: user?.id },
             })
         })
     )
 
+    console.log('---------------------------------------')
     console.log(`✅ Created ${usersCreated.length} users`)
     return usersCreated
 }
-;(async function () {
-    await seedUsers(prisma)
-})()
+    ; (async function () {
+        await seedUsers(prisma)
+    })()

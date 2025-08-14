@@ -3,9 +3,14 @@
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+}
+
+generator docs {
+  provider = "node node_modules/prisma-docs-generator"
+  output   = "./docs"
 }
 
 datasource db {
@@ -14,120 +19,121 @@ datasource db {
 }
 
 model FileSystem {
-  id             Int      @id @default(autoincrement())
-  name           String
-  type           String
-  size           String
-  items          Int?
-  path           String[]
-  color          String?
+  id    Int      @id @default(autoincrement())
+  name  String
+  type  String
+  size  String
+  items Int?
+  path  String[]
+  color String?
 
-  createdById    String   @db.Uuid
-  createdBy      User     @relation("CreatedFiles", fields: [createdById], references: [id])
+  createdById Int
+  createdBy   User @relation("CreatedFiles", fields: [createdById], references: [id])
 
-  visibleToUsers User[]   @relation("VisibleToUsers")
+  visibleToUsers User[] @relation("VisibleToUsers")
 
-  // Link files to projects
-  project        Project? @relation(fields: [projectId], references: [id])
-  projectId      Int?
+  // Link files to jobs
+  job   Job? @relation(fields: [jobId], references: [id])
+  jobId Int?
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([createdById])
-  @@index([projectId])
+  @@index([jobId])
 }
 
 model User {
-  id             String   @id @default(uuid()) @db.Uuid
-  email          String   @unique
-  username       String   @unique
-  name           String
-  avatar         String?
+  id       Int     @id @default(autoincrement())
+  uuid     String? @default(uuid()) @db.Uuid // Supabase authentication id
+  email    String  @unique
+  username String  @unique
+  name     String
+  avatar   String?
 
-  jobTitle       String?
-  department     String?
-  phoneNumber    String?
+  jobTitle    String?
+  department  String?
+  phoneNumber String?
 
-  role           Role     @default(USER)
+  role RoleEnum @default(USER)
 
   // Activity tracking
-  isActive       Boolean  @default(true)
-  lastLoginAt    DateTime?
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
 
-  notifications      UserNotification[]
-  assignedProjects   Project[]         @relation("UserProjects")
+  notifications UserNotification[]
+  assignedJobs  Job[]              @relation("UserJobs")
 
-  fileCreated        FileSystem[]      @relation("CreatedFiles")
-  files              FileSystem[]      @relation("VisibleToUsers")
+  fileCreated FileSystem[] @relation("CreatedFiles")
+  files       FileSystem[] @relation("VisibleToUsers")
 
   // Status change tracking
-  statusChanges      ProjectStatusChange[]
+  statusChanges JobStatusChange[]
 
-  // Project creation tracking
-  createdProjects    Project[]         @relation("ProjectCreator")
+  // Job creation tracking
+  createdJobs Job[] @relation("JobCreator")
 
   // Time tracking
-  timeEntries        TimeEntry[]
+  timeEntries TimeEntry[]
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum Role {
+enum RoleEnum {
   USER
   ADMIN
   ACCOUNTING
 }
 
-model Project {
-  id          Int       @id @default(autoincrement())
+model Job {
+  id Int @id @default(autoincrement())
 
-  jobType JobType @relation(fields: [jobTypeId], references: [id])
+  jobType   JobType @relation(fields: [jobTypeId], references: [id])
   jobTypeId Int
 
-  jobNo       String    @unique
+  jobNo       String  @unique
   jobName     String
   description String?
   sourceUrl   String
 
   clientName String
-  income Int
-  staffCost       Int
+  income     Int
+  staffCost  Int
 
-  // Project assignment
-  memberAssign User[]   @relation("UserProjects")
-  
-  // Project creator
-  createdBy    User     @relation("ProjectCreator", fields: [createdById], references: [id])
-  createdById  String   @db.Uuid
+  // Job assignment
+  memberAssign User[] @relation("UserJobs")
+
+  // Job creator
+  createdBy   User @relation("JobCreator", fields: [createdById], references: [id])
+  createdById Int
 
   // Payment Channel
-  paymentChannel    PaymentChannel     @relation(fields: [paymentChannelId], references: [id])
-  paymentChannelId  Int
+  paymentChannel   PaymentChannel @relation(fields: [paymentChannelId], references: [id])
+  paymentChannelId Int
 
   // Status management
-  jobStatus    JobStatus @relation(fields: [jobStatusId], references: [id])
-  jobStatusId  Int
+  jobStatus   JobStatus @relation(fields: [jobStatusId], references: [id])
+  jobStatusId Int
 
   // Status change history
-  statusChanges ProjectStatusChange[]
+  statusChanges JobStatusChange[]
 
-  // Project dates
-  startedAt    DateTime @default(now())
-  dueAt        DateTime
-  completedAt  DateTime?
+  // Job dates
+  startedAt   DateTime  @default(now())
+  dueAt       DateTime
+  completedAt DateTime?
 
-  // Project management features
-  priority     ProjectPriority @default(MEDIUM)
-  
+  // Job management features
+  priority JobPriority @default(MEDIUM)
+
   // Related data
-  files        FileSystem[]
-  timeEntries  TimeEntry[]
+  files       FileSystem[]
+  timeEntries TimeEntry[]
 
-  deletedAt   DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([jobStatusId])
   @@index([createdById])
@@ -135,37 +141,42 @@ model Project {
 }
 
 model PaymentChannel {
-  id        Int       @id @default(autoincrement())
-  name String
-  color String?
+  id      Int     @id @default(autoincrement())
+  name    String
+  color   String?
   logoUrl String?
 
-  projects Project[]
+  jobs Job[]
 }
 
 model JobType {
-  id        Int       @id @default(autoincrement())
+  id   Int    @id @default(autoincrement())
   code String
   name String
-  projects Project[]
+  jobs Job[]
 }
 
-enum ProjectPriority {
+enum JobPriority {
   LOW
   MEDIUM
   HIGH
   URGENT
 }
+
 model JobStatus {
-  id        Int       @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   title     String
   thumbnail String
   color     String
   order     Int
+  icon      String?
 
-  projects         Project[]
-  fromStatusChanges ProjectStatusChange[] @relation("FromStatus")
-  toStatusChanges   ProjectStatusChange[] @relation("ToStatus")
+  nextStatusId Int?
+  prevStatusId Int?
+
+  jobs              Job[]
+  fromStatusChanges JobStatusChange[] @relation("FromStatus")
+  toStatusChanges   JobStatusChange[] @relation("ToStatus")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -174,75 +185,75 @@ model JobStatus {
 }
 
 // Status change tracking table
-model ProjectStatusChange {
-  id          Int       @id @default(autoincrement())
-  
+model JobStatusChange {
+  id Int @id @default(autoincrement())
+
   // References
-  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   Int
-  
-  fromStatus  JobStatus? @relation("FromStatus", fields: [fromStatusId], references: [id])
+  job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId Int
+
+  fromStatus   JobStatus? @relation("FromStatus", fields: [fromStatusId], references: [id])
   fromStatusId Int?
-  
-  toStatus    JobStatus @relation("ToStatus", fields: [toStatusId], references: [id])
-  toStatusId  Int
-  
+
+  toStatus   JobStatus @relation("ToStatus", fields: [toStatusId], references: [id])
+  toStatusId Int
+
   // Who made the change
-  changedBy   User      @relation(fields: [changedById], references: [id])
-  changedById String    @db.Uuid
-  
+  changedBy   User @relation(fields: [changedById], references: [id])
+  changedById Int
+
   // When the change happened
-  changedAt   DateTime  @default(now())
-  
+  changedAt DateTime @default(now())
+
   // Optional: reason for change
-  reason      String?
-  
-  createdAt   DateTime  @default(now())
-  
-  @@index([projectId, changedAt])
+  reason String?
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId, changedAt])
   @@index([changedById])
 }
 
 // Time tracking
 model TimeEntry {
-  id          Int       @id @default(autoincrement())
-  
+  id Int @id @default(autoincrement())
+
   // Time entry belongs to user
-  user        User      @relation(fields: [userId], references: [id])
-  userId      String    @db.Uuid
-  
-  // Time entry belongs to project
-  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   Int
-  
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
+
+  // Time entry belongs to job
+  job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId Int
+
   // Time tracking
-  startTime   DateTime
-  endTime     DateTime?
-  duration    Int?      // in minutes
-  
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int? // in minutes
+
   description String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
-  @@index([projectId])
+  @@index([jobId])
   @@index([startTime])
 }
 
 model UserNotification {
-  id              Int           @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  user            User          @relation(fields: [userId], references: [id])
-  userId          String        @db.Uuid
+  user   User @relation(fields: [userId], references: [id])
+  userId Int
 
-  notification    Notification  @relation(fields: [notificationId], references: [id])
-  notificationId  Int
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  notificationId Int
 
-  status          NOTIFICATION_STATUS @default(UNSEEN)
-  
-  createdAt       DateTime @default(now())
-  
+  status NOTIFICATION_STATUS @default(UNSEEN)
+
+  createdAt DateTime @default(now())
+
   @@index([userId, status])
 }
 
@@ -256,17 +267,17 @@ model Notification {
   title   String?
   content String
   image   String?
-  
+
   // Notification types
-  type    NotificationType @default(INFO)
-  
+  type NotificationType @default(INFO)
+
   // Optional: link to related entities
-  relatedProjectId Int?
-  
+  relatedJobId Int?
+
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   UserNotification UserNotification[]
-  
+
   @@index([type])
   @@index([createdAt])
 }
@@ -276,7 +287,7 @@ enum NotificationType {
   WARNING
   ERROR
   SUCCESS
-  PROJECT_UPDATE
+  JOB_UPDATE
   DEADLINE_REMINDER
   STATUS_CHANGE
 }

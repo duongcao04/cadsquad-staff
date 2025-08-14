@@ -1,4 +1,4 @@
-import { PrismaClient, User } from '@/generated/prisma'
+import { PrismaClient, User } from '@prisma/client'
 import prisma from '@/lib/prisma'
 
 const fileSystem = [
@@ -446,13 +446,13 @@ export const seedFileSystemBatch = async (
     console.log(`✅ Created ${filesCreated.length} file system items`)
     return filesCreated
 }
-;(async function () {
-    const users = await prisma.user.findMany()
+    ; (async function () {
+        const users = await prisma.user.findMany()
 
-    // Use either approach:
-    // Sequential processing with delays
-    await seedFileSystem(prisma, users)
+        // Use either approach:
+        // Sequential processing with delays
+        await seedFileSystem(prisma, users)
 
-    // Or batch processing with delays
-    // await seedFileSystemBatch(prisma, users)
-})()
+        // Or batch processing with delays
+        // await seedFileSystemBatch(prisma, users)
+    })()

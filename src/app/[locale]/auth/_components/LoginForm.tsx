@@ -6,17 +6,21 @@ import { Button, Input, addToast } from '@heroui/react'
 import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
 
+import useAuth from '@/queries/useAuth'
+
 import envConfig from '@/config/envConfig'
 import { Link, useRouter } from '@/i18n/navigation'
-import { setSession } from '@/lib/auth/session'
-import { supabase } from '@/lib/supabase/client'
-import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
-import { LoginSchema, User } from '@/validationSchemas/auth.schema'
+import { LoginSchema } from '@/validationSchemas/auth.schema'
+
+import { getSession } from '../../../../lib/auth/session'
 
 const HOME = envConfig.NEXT_PUBLIC_URL as string
 
 export default function LoginForm() {
+    const { login } = useAuth({
+        revalidateOnMount: false,
+    })
     const router = useRouter()
     const { getSearchParam } = useSearchParam()
     const redirect = getSearchParam('redirect') ?? '/'
@@ -24,8 +28,6 @@ export default function LoginForm() {
     const [isVisible, setIsVisible] = useState(false)
     const [isLoading, setLoading] = useState(false)
     const toggleVisibility = () => setIsVisible(!isVisible)
-
-    const { setAuthUser } = useAuthStore()
 
     const formik = useFormik({
         initialValues: {
@@ -36,30 +38,13 @@ export default function LoginForm() {
         onSubmit: async (values) => {
             try {
                 setLoading(true)
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: values.email,
-                    password: values.password,
+                await login(values)
+                addToast({
+                    title: 'Sign in successfully!',
+                    color: 'success',
                 })
 
-                if (error || !data.session) {
-                    throw new Error(`${error?.message}`)
-                }
-
-                if (data.session) {
-                    setSession(data.session.user as User)
-                    const { data: userInf } = await supabase
-                        .from('User')
-                        .select()
-                        .eq('id', data.user.id)
-                        .maybeSingle()
-                    setAuthUser(userInf as User)
-
-                    addToast({
-                        title: 'Sign in successfully!',
-                        color: 'success',
-                    })
-                    router.push(redirect)
-                }
+                router.push(redirect)
             } catch (error) {
                 addToast({
                     title: 'Sign in failed!',
