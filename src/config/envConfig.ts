@@ -9,6 +9,7 @@ const configSchema = yup.object({
     NEXT_PUBLIC_SMTP_PASS: yup.string(),
     NEXT_PUBLIC_SUPABASE_URL: yup.string(),
     NEXT_PUBLIC_SUPABASE_ANON_KEY: yup.string(),
+    NEXT_PUBLIC_SUPABASE_JWT_KEY: yup.string(),
 })
 
 function configProject() {
@@ -22,6 +23,8 @@ function configProject() {
             NEXT_PUBLIC_SMTP_USER: process.env.NEXT_PUBLIC_SMTP_USER,
             NEXT_PUBLIC_SMTP_PASS: process.env.NEXT_PUBLIC_SMTP_PASS,
             NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+            NEXT_PUBLIC_SUPABASE_JWT_KEY:
+                process.env.NEXT_PUBLIC_SUPABASE_JWT_KEY,
             NEXT_PUBLIC_SUPABASE_ANON_KEY:
                 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         })

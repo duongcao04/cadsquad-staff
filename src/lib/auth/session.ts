@@ -5,8 +5,9 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
 import { User } from '@/validationSchemas/auth.schema'
+import envConfig from '@/config/envConfig'
 
-const key = new TextEncoder().encode(process.env.AUTH_SECRET)
+const key = new TextEncoder().encode(envConfig.NEXT_PUBLIC_SUPABASE_JWT_KEY)
 const SALT_ROUNDS = 10
 
 export async function hashPassword(password: string) {
@@ -47,7 +48,7 @@ export async function getSession() {
 }
 
 export async function setSession(user: User) {
-    const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
     const session: SessionData = {
         user: { id: user.id!, role: user.role!, iat: Date.now().toString() },
         expires: expiresInOneDay.toISOString(),
@@ -76,7 +77,7 @@ export async function setCustomSession(
 
 export async function logoutSession(user: User) {
     const session: SessionData = {
-        user: { id: user.id! },
+        user: { id: user.id!, role: user.role!, iat: Date.now().toString() },
         expires: new Date(Date.now()).toISOString(),
     }
     const encryptedSession = await signToken(session)
