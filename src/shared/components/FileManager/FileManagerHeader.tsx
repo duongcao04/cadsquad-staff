@@ -19,7 +19,7 @@ import {
     Upload,
 } from 'lucide-react'
 
-import { useDebouncedValue } from '@/queries/useDebounce'
+import { useDebouncedValue } from '@/hooks/useDebounce'
 
 import { ROOT_DIR } from '@/app/[locale]/(dashboard)/documents/actions'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'

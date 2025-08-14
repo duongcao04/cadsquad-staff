@@ -45,7 +45,7 @@ model FileSystem {
 
 model User {
   id       Int     @id @default(autoincrement())
-  uuid     String? @default(uuid()) @db.Uuid // Supabase authentication id
+  uuid     String? @unique @default(uuid()) @db.Uuid // Supabase authentication id
   email    String  @unique
   username String  @unique
   name     String

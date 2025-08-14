@@ -21,7 +21,7 @@ export async function comparePasswords(
 }
 
 type SessionData = {
-    user: { id: string }
+    user: { id: string, role: string, iat: string }
     expires: string
 }
 
@@ -49,16 +49,16 @@ export async function getSession() {
 export async function setSession(user: User) {
     const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000)
     const session: SessionData = {
-        user: { id: user.id! },
+        user: { id: user.id!, role: user.role!, iat: Date.now().toString() },
         expires: expiresInOneDay.toISOString(),
     }
     const encryptedSession = await signToken(session)
-    ;(await cookies()).set('session', encryptedSession, {
-        expires: expiresInOneDay,
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-    })
+        ; (await cookies()).set('session', encryptedSession, {
+            expires: expiresInOneDay,
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+        })
 }
 
 export async function setCustomSession(
@@ -66,7 +66,7 @@ export async function setCustomSession(
     sessionValue: string,
     expiresIn: Date = new Date(Date.now() + 24 * 60 * 60 * 1000)
 ) {
-    ;(await cookies()).set(sessionName, sessionValue, {
+    return (await cookies()).set(sessionName, sessionValue, {
         expires: expiresIn,
         httpOnly: true,
         secure: true,
@@ -80,12 +80,12 @@ export async function logoutSession(user: User) {
         expires: new Date(Date.now()).toISOString(),
     }
     const encryptedSession = await signToken(session)
-    ;(await cookies()).set('session', encryptedSession, {
-        expires: new Date(Date.now()),
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-    })
+        ; (await cookies()).set('session', encryptedSession, {
+            expires: new Date(Date.now()),
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+        })
 }
 
 // TODO: add refresh token for expand work session

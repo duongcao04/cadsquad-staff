@@ -2,11 +2,11 @@
 
 import useSWR, { SWRConfiguration } from 'swr'
 
+import { setCustomSession, setSession } from '@/lib/auth/session'
+import { axiosClient } from '@/lib/axios'
 import { supabase } from '@/lib/supabase/client'
 import { getProfile } from '@/lib/swr/actions/auth'
 import { Login, User } from '@/validationSchemas/auth.schema'
-
-import { setSession } from '../lib/auth/session'
 
 export const AUTH_API = '/api/auth'
 
@@ -22,16 +22,12 @@ export default function useAuth(options?: SWRConfiguration<User>) {
     )
 
     const login = async (loginData: Login) => {
-        await supabase.auth
-            .signInWithPassword({
-                email: loginData.email,
-                password: loginData.password,
-            })
+        await axiosClient
+            .post('auth/login', JSON.stringify(loginData))
             .then((res) => {
-                setSession(res.data.user as User)
+                const { data } = res
+                console.log(data.result)
             })
-
-        await mutate()
     }
 
     const logout = async () => {
