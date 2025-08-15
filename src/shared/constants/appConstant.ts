@@ -1,10 +1,23 @@
 import {
-    FolderOpen,
-    LayoutDashboard,
-    PackageOpen,
-    Target,
-    UsersRound,
-} from 'lucide-react'
+    IconWorkbench,
+    IconWorkbenchOutline,
+} from '@/shared/components/icons/sidebar-icons/IconWorkbench'
+import {
+    IconOnboard,
+    IconOnboardOutline,
+} from '@/shared/components/icons/sidebar-icons/IconOnboard'
+import {
+    IconDocuments,
+    IconDocumentsOutline,
+} from '@/shared/components/icons/sidebar-icons/IconDocuments'
+import {
+    IconProjectCenter,
+    IconProjectCenterOutline,
+} from '@/shared/components/icons/sidebar-icons/IconProjectCenter'
+import {
+    IconTeam,
+    IconTeamOutline,
+} from '@/shared/components/icons/sidebar-icons/IconTeam'
 
 export const FILE = {
     SPLASH: encodeURIComponent('/'),
@@ -18,11 +31,37 @@ export const MS = {
 }
 
 export const appSidebar = [
-    { icon: LayoutDashboard, title: 'Dashboard', path: '/' },
-    { icon: Target, title: 'Onboarding', path: '/onboarding' },
-    { icon: FolderOpen, title: 'Documents', path: '/documents' },
-    { icon: PackageOpen, title: 'Project Center', path: '/projects-center' },
-    { icon: UsersRound, title: 'Team', path: '/team' },
+    {
+        icon: IconWorkbenchOutline,
+        iconFill: IconWorkbench,
+        title: 'Workbench',
+        path: '/',
+    },
+    // { icon: Grip, title: 'Overview', path: '/' },
+    {
+        icon: IconOnboardOutline,
+        iconFill: IconOnboard,
+        title: 'Onboarding',
+        path: '/onboarding',
+    },
+    {
+        icon: IconDocumentsOutline,
+        iconFill: IconDocuments,
+        title: 'Documents',
+        path: '/documents',
+    },
+    {
+        icon: IconProjectCenterOutline,
+        iconFill: IconProjectCenter,
+        title: 'Project Center',
+        path: '/projects-center',
+    },
+    {
+        icon: IconTeamOutline,
+        iconFill: IconTeam,
+        title: 'Team',
+        path: '/team',
+    },
 ]
 export type SidebarItem = (typeof appSidebar)[0]
 

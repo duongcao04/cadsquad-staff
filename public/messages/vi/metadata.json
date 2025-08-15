@@ -1,30 +1,30 @@
 {
-    "home": {
-        "title": "CSD Vietnam | Highly skilled and experienced group",
-        "description": "CADSQUAD Vietnam cung cấp giải pháp thiết kế cơ khí và dịch vụ CAD chất lượng cao, biến ý tưởng thành sản phẩm bền vững cho khách hàng toàn cầu."
+    "overview": {
+        "title": "Tổng quan | Cadsquad",
+        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
     },
-    "aboutUs": {
-        "title": "Về chúng tôi | Cadsquad.vn",
-        "description": "CADSQUAD Vietnam cung cấp giải pháp thiết kế cơ khí và dịch vụ CAD chất lượng cao, biến ý tưởng thành sản phẩm bền vững cho khách hàng toàn cầu."
-    },
-    "cadServices": {
-        "title": "Dịch vụ CAD | Cadsquad.vn",
-        "description": "CADSQUAD Vietnam cung cấp giải pháp thiết kế cơ khí và dịch vụ CAD chất lượng cao, biến ý tưởng thành sản phẩm bền vững cho khách hàng toàn cầu."
-    },
-    "dashboard": {
-        "title": "Bảng điều khiển | Staff for CADSQUAD",
-        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
+    "workbench": {
+        "title": "Bảng làm việc | Cadsquad",
+        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
     },
     "profile": {
-        "title": "Thông tin cá nhân | Staff for CADSQUAD",
-        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
+        "title": "Hồ sơ | Cadsquad",
+        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
     },
     "onboarding": {
-        "title": "Công việc | Staff for CADSQUAD",
-        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
+        "title": "Đang triển khai | Cadsquad",
+        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
     },
     "documents": {
-        "title": "Tài liệu | Staff for CADSQUAD",
-        "description": "CADSQUAD Vietnam delivers high-quality mechanical design and CAD services, turning ideas into sustainable products for global clients."
+        "title": "Tài liệu | Cadsquad",
+        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+    },
+    "projectCenter": {
+        "title": "Trung tâm Dự án | Cadsquad",
+        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+    },
+    "team": {
+        "title": "Nhóm | Cadsquad",
+        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
     }
 }

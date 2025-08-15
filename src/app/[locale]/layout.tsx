@@ -6,10 +6,11 @@ import { notFound } from 'next/navigation'
 
 import '@/app/globals.css'
 import { AppProvider } from '@/app/providers'
-import { geistMono, geistSans, saira } from '@/fonts'
+import { geistMono, geistSans, quicksand, saira } from '@/fonts'
 import { SupportLanguages, routing } from '@/i18n/routing'
 
 import AppLoader from './loading'
+import GlassBackground from '../../shared/components/ui/GlassBackground'
 
 export default async function RootLayout({
     children,
@@ -33,11 +34,13 @@ export default async function RootLayout({
     return (
         <html lang={locale}>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} ${saira.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} ${saira.variable} ${quicksand.variable} antialiased`}
                 suppressHydrationWarning
             >
                 <AppProvider key="root" locale={locale} messages={messages}>
-                    <Suspense fallback={<AppLoader />}>{children}</Suspense>
+                    <Suspense fallback={<AppLoader />}>
+                        <GlassBackground>{children}</GlassBackground>
+                    </Suspense>
                 </AppProvider>
             </body>
         </html>

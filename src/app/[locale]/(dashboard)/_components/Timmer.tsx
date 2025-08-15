@@ -2,11 +2,9 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { useLocale } from 'next-intl'
-
 const Timmer: React.FC = () => {
     const [now, setNow] = useState(new Date())
-    const locale = useLocale()
+    // const locale = useLocale()
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -17,18 +15,17 @@ const Timmer: React.FC = () => {
 
     // Format time as HH:mm:ss
     const timeString = now.toLocaleTimeString()
-    // Format date as locale string with area
-    const dateString = now.toLocaleDateString(locale, {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    })
+    // const dateString = now.toLocaleDateString(locale, {
+    //     weekday: 'long',
+    //     year: 'numeric',
+    //     month: 'long',
+    //     day: 'numeric',
+    // })
 
     return (
-        <div className="flex flex-col items-end">
-            <span className="text-base font-mono">{timeString}</span>
-            <span className="text-xs text-gray-500">{dateString}</span>
+        <div className="text-sm font-arial flex flex-col text-right">
+            <span className="text-xs text-text2">Viet Nam</span>
+            <span className="font-medium">{timeString}</span>
         </div>
     )
 }

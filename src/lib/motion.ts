@@ -7,6 +7,7 @@ import { MotionConfig, motion } from 'motion/react'
  */
 export const MotionDiv = motion.div
 export const MotionSection = motion.section
+export const MotionAside = motion.aside
 export const MotionButton = motion.button
 /**
  * List

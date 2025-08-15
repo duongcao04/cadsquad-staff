@@ -3,28 +3,14 @@
 import React, { useState } from 'react'
 
 import { Button, Input, addToast } from '@heroui/react'
-import { RoleEnum } from '@prisma/client'
 import { Modal, Select } from 'antd'
 import { useFormik } from 'formik'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { supabase } from '@/lib/supabase/client'
 import { capitalize, removeVietnameseTones } from '@/lib/utils'
-import { CreateUserSchema, NewUser } from '@/validationSchemas/auth.schema'
-
-function generateRandomUsername(fullname: string) {
-    const randomName = removeVietnameseTones(fullname)
-        .toLowerCase()
-        .trim()
-        .split(/\s+/) // tách theo khoảng trắng
-        .map((part) => part.slice(0, part.length - 1)) // lấy `length` ký tự từ đầu
-        .join('')
-    // Unique suffix using timestamp + random hex
-    const timestamp = Date.now().toString(36) // base36 = shorter
-    const randomHex = Math.random().toString(16).slice(2, 6) // 4 hex digits
-
-    return `${randomName}${timestamp}${randomHex}`
-}
+import { CreateUserSchema, NewUser } from '@/validationSchemas/user.schema'
+import { RoleEnum } from '@prisma/client'
 
 type Props = {
     isOpen: boolean
@@ -49,7 +35,6 @@ export default function UserModal({ isOpen, onClose }: Props) {
             department: '',
             phoneNumber: '',
             role: 'USER',
-            username: '',
         },
         validationSchema: CreateUserSchema,
         onSubmit: async (values) => {
@@ -70,7 +55,6 @@ export default function UserModal({ isOpen, onClose }: Props) {
                 const newUser = {
                     ...values,
                     id: authData.session?.user.id as string,
-                    username: generateRandomUsername(values.name),
                     avatar:
                         values.avatar!.length === 0
                             ? `https://ui-avatars.com/api/?name=${removeVietnameseTones(values.name.replaceAll(' ', '+'))}`

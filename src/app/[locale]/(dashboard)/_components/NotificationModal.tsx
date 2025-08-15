@@ -9,12 +9,12 @@ import useSWR from 'swr'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { useCreateMutation } from '@/lib/swr/actions'
-import { getUsers } from '@/lib/swr/actions/user'
-import { SEND_NOTIFICATION_API, USER_API } from '@/lib/swr/api'
+import { SEND_NOTIFICATION_API } from '@/lib/swr/api'
 import {
     CreateNotificationSchema,
     NewNotification,
 } from '@/validationSchemas/notification.schema'
+import { useUsers } from '@/queries/useUser'
 
 type Props = {
     isOpen: boolean
@@ -29,7 +29,7 @@ export default function NotificationModal({ isOpen, onClose }: Props) {
     ])
 
     const [isLoading, setLoading] = useState(false)
-    const { data: users } = useSWR(USER_API, getUsers)
+    const { data: users } = useUsers()
 
     const { trigger: createNotification } = useCreateMutation<NewNotification>(
         SEND_NOTIFICATION_API

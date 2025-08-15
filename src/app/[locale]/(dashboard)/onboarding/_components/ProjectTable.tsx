@@ -25,20 +25,11 @@ import useSWRMutation from 'swr/mutation'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
-import { getJobTypes } from '@/lib/swr/actions/jobTypes'
-import { getPaymentChannels } from '@/lib/swr/actions/paymentChannels'
 import {
     deleteProject as deleteProjectAction,
     getProjectByTab,
 } from '@/lib/swr/actions/project'
-import { getUsers } from '@/lib/swr/actions/user'
-import {
-    JOB_STATUS_API,
-    JOB_TYPE_API,
-    PAYMENT_CHANNEL_API,
-    PROJECT_API,
-    USER_API,
-} from '@/lib/swr/api'
+import { JOB_STATUS_API, PROJECT_API } from '@/lib/swr/api'
 import { uniqueByKey } from '@/lib/utils'
 import { capitalize } from '@/lib/utils'
 import { useUserOptionsStore } from '@/shared/components/FileManager/store/useUserOptionsStore'
@@ -53,6 +44,9 @@ import { useDetailModal } from '../@detail/actions'
 import { useJobStore } from '../store/useJobStore'
 import ActionDropdown from './ActionDropdown'
 import CountDown from './CountDown'
+import { useUsers } from '@/queries/useUser'
+import { useJobTypes } from '@/queries/useJobType'
+import { usePaymentChannels } from '@/queries/usePaymentChannel'
 
 const DEFAULT_TAB = 'priority'
 
@@ -81,12 +75,9 @@ export default function ProjectTable() {
         }
     )
 
-    const { data: users } = useSWR(USER_API, getUsers)
-    const { data: jobTypes } = useSWR(JOB_TYPE_API, getJobTypes)
-    const { data: paymentChannels } = useSWR(
-        PAYMENT_CHANNEL_API,
-        getPaymentChannels
-    )
+    const { data: users } = useUsers()
+    const { data: jobTypes } = useJobTypes()
+    const { data: paymentChannels } = usePaymentChannels()
     const { data: jobStatuses } = useSWR(JOB_STATUS_API, getJobStatuses)
     const {
         data: projectData,
@@ -577,7 +568,9 @@ export default function ProjectTable() {
                 rowKey="jobNo"
                 onRow={(record) => {
                     return {
-                        className: `${record.jobNo === newJobNo ? 'bg-yellow-200' : ''} cursor-pointer`,
+                        className: `${
+                            record.jobNo === newJobNo ? 'bg-yellow-200' : ''
+                        } cursor-pointer`,
                         title: 'Double click to view',
                         onDoubleClick: () => openModal(record.jobNo!),
                     }

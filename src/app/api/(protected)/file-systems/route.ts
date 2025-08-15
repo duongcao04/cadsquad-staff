@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/prisma'
 
-import { ensureConnection } from '@/lib/prisma'
-
-// GET /api/fileSystems - Get all file systems
 export async function GET(request: NextRequest) {
-    const prisma = await ensureConnection()
     try {
         const { searchParams } = new URL(request.url)
         const search = searchParams.get('search')
@@ -67,7 +64,6 @@ export async function GET(request: NextRequest) {
 
 // POST /api/fileSystems - Create a new file system
 export async function POST(request: NextRequest) {
-    const prisma = await ensureConnection()
     try {
         const body = await request.json()
         const {
@@ -113,10 +109,10 @@ export async function POST(request: NextRequest) {
                 createdById,
                 visibleToUsers: visibleToUserIds
                     ? {
-                        connect: visibleToUserIds.map((id: string) => ({
-                            id,
-                        })),
-                    }
+                          connect: visibleToUserIds.map((id: string) => ({
+                              id,
+                          })),
+                      }
                     : undefined,
             },
             include: {

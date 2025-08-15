@@ -3,6 +3,15 @@ import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 
 const nextConfig: NextConfig = {
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'avatar.iran.liara.run',
+                pathname: '/public/boy',
+            },
+        ],
+    },
     /* config options here */
     eslint: {
         // Tắt ESLint trong quá trình build

@@ -10,10 +10,7 @@ import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { useCreateMutation } from '@/lib/swr/actions'
 import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
-import { getJobTypes } from '@/lib/swr/actions/jobTypes'
-import { getPaymentChannels } from '@/lib/swr/actions/paymentChannels'
 import { getProjects } from '@/lib/swr/actions/project'
-import { getUsers } from '@/lib/swr/actions/user'
 import {
     JOB_STATUS_API,
     JOB_TYPE_API,
@@ -32,6 +29,9 @@ import {
 
 import { useJobStore } from '../onboarding/store/useJobStore'
 import DateTimePicker from './form-fields/DateTimePicker'
+import { useJobTypes } from '@/queries/useJobType'
+import { useUsers } from '@/queries/useUser'
+import { usePaymentChannels } from '@/queries/usePaymentChannel'
 
 const DOT_SYMBOL = '.'
 
@@ -65,16 +65,12 @@ export default function JobModal({ isOpen, onClose }: Props) {
      * Fetch data
      */
     const { mutate: mutateProject } = useSWR(PROJECT_API, () => getProjects())
-    const { data: users } = useSWR(USER_API, getUsers)
-    const { data: jobTypes, isLoading: loadingJobTypes } = useSWR(
-        JOB_TYPE_API,
-        getJobTypes
-    )
-    const { data: paymentChannels } = useSWR(
-        PAYMENT_CHANNEL_API,
-        getPaymentChannels
-    )
-    const { data: jobStatuses, isLoading: loadingJobStatuses } = useSWR(
+    const { data: users, isLoading: loadingUsers } = useUsers()
+    const { data: jobTypes, isLoading: loadingJobTypes } = useJobTypes()
+
+
+    const { data: paymentChannels, isLoading: loadingPaymentChannels } = usePaymentChannels()
+    const { data: jobStatuses } = useSWR(
         JOB_STATUS_API,
         getJobStatuses
     )
@@ -89,27 +85,20 @@ export default function JobModal({ isOpen, onClose }: Props) {
         return ''
     }, [jobTypes, loadingJobTypes])
 
-    const defaultJobNo = useMemo(() => {
+    const getJobNo = useMemo(() => {
         if (!loadingJobTypes && jobTypes) {
-            const jobNumber = jobTypes[0]?._count.projects + 1
-            return padToFourDigits(jobNumber)
+            const jobNumber = jobTypes[0]?._count.jobs + 1
+            return jobNumber.toString().padStart(4, '0')
         }
         return ''
     }, [jobTypes, loadingJobTypes])
-
-    const defaultJobStatusId = useMemo(() => {
-        if (!loadingJobStatuses && jobStatuses) {
-            return jobStatuses[0]?.id?.toString() as string
-        }
-        return ''
-    }, [jobStatuses, loadingJobStatuses])
 
     const formik = useFormik<NewProject>({
         initialValues: {
             createdById: authUser?.id ?? '',
             clientName: '',
             jobTypeId: defaultJobTypeId,
-            jobNo: defaultJobNo,
+            jobNo: getJobNo,
             jobName: '',
             sourceUrl: '',
             startedAt: '',
@@ -118,7 +107,6 @@ export default function JobModal({ isOpen, onClose }: Props) {
             income: null as unknown as number,
             staffCost: null as unknown as number,
             paymentChannelId: null as unknown as string,
-            jobStatusId: defaultJobStatusId,
         },
         validationSchema: CreateProjectSchema,
         enableReinitialize: true,
@@ -129,7 +117,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                 const jobType = jobTypes!.find(
                     (jType) => jType.id!.toString() === values.jobTypeId
                 )
-                const jobNumber = jobType!._count.projects + 1
+                const jobNumber = jobType!._count.jobs + 1
                 const newJob = {
                     ...values,
                     jobNo: pareJobNo(jobType!.code!, jobNumber),
@@ -241,7 +229,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                     formik.setFieldValue(
                                         'jobNo',
                                         padToFourDigits(
-                                            (findJobType?._count.projects ??
+                                            (findJobType?._count.jobs ??
                                                 0) + 1
                                         )
                                     )
@@ -327,7 +315,6 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         size="lg"
                     />
                     <Input
-                        isRequired
                         id="sourceUrl"
                         name="sourceUrl"
                         label="Link"
@@ -363,6 +350,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         </p>
                         <div className="flex flex-col w-full">
                             <Select
+                                loading={loadingUsers}
                                 options={users?.map((usr) => {
                                     return {
                                         ...usr,
@@ -383,7 +371,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                         <div className="flex items-center justify-start gap-4">
                                             <div className="size-9">
                                                 <Image
-                                                    src={opt.data.avatar}
+                                                    src={opt.data.avatar ?? "https://avatar.iran.liara.run/public/boy?username=cadsquad"}
                                                     alt={opt.data.name}
                                                     className="size-full rounded-full object-cover"
                                                     preview={false}
@@ -518,6 +506,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         </p>
                         <div className="flex flex-col w-full">
                             <Select
+                                loading={loadingPaymentChannels}
                                 options={paymentChannels?.map((channel) => {
                                     return {
                                         ...channel,

@@ -82,7 +82,7 @@ export default function NotificationDropdown() {
         )
         .subscribe()
 
-        // Can use it avoid revalidate -> loose time
+    // Can use it avoid revalidate -> loose time
     //         const { data, mutate } = useSWR('/api/users', fetcher)
     // Then you POST a new user:
     // ts
@@ -111,12 +111,10 @@ export default function NotificationDropdown() {
                     variant="light"
                     startContent={
                         <BellIcon
-                            style={{
-                                color: 'white',
-                            }}
-                            size={22}
+                            size={18}
                         />
                     }
+                    size='sm'
                     isIconOnly
                 />
             </DropdownTrigger>

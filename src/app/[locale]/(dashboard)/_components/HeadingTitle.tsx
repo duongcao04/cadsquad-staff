@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { usePathname } from '@/i18n/navigation'
 
 export default function HeadingTitle() {
+    const pathname = usePathname()
     const [title, setTitle] = useState('')
 
     useEffect(() => {
@@ -11,11 +13,7 @@ export default function HeadingTitle() {
                 ? document.title.split('|')[0]
                 : document.title
         )
-    }, [])
+    }, [pathname])
 
-    return (
-        <p className="align-middle uppercase font-saira font-medium text-2xl">
-            {title}
-        </p>
-    )
+    return <p className="align-middle font-medium text-lg">{title}</p>
 }

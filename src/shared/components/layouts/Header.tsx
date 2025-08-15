@@ -32,8 +32,27 @@ import { CircleHelpIcon } from '../icons/animate/CircleHelpIcon'
 import { SettingsGearIcon } from '../icons/animate/SettingsGearIcon'
 import NotificationDropdown from './NotificationDropdown'
 import SearchModal from './SearchModal'
+import { MotionButton } from '@/lib/motion'
+import { Variants } from 'motion/react'
 
 const { Header: AntHeader } = Layout
+
+const buttonVariants: Variants = {
+    init: {
+        opacity: 0,
+    },
+    animate: {
+        opacity: 1,
+        boxShadow: 'none',
+        background: 'var(--color-text-fore1)',
+    },
+    hover: {
+        opacity: 1,
+        boxShadow:
+            'rgba(27, 31, 35, 0.04) 0px 1px 0px, rgba(255, 255, 255, 0.25) 0px 1px 0px inset',
+        background: 'var(--color-text3)',
+    },
+}
 
 const Header = () => {
     const locale = useLocale()
@@ -85,20 +104,20 @@ const Header = () => {
     return (
         <AntHeader
             style={{
-                background: 'var(--color-secondary)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                background: 'transparent',
+                // boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 padding: 0,
                 overflow: 'hidden',
-                height: '60px',
+                height: '56px',
             }}
+            className="border-b border-border"
         >
             {/* Logo */}
-            <div className="h-full container grid grid-cols-[130px_1fr_220px] gap-5 items-center place-items-center">
+            <div className="h-full container grid grid-cols-[130px_1fr_220px] gap-5 items-center">
                 <CadsquadLogo
                     classNames={{
-                        logo: 'h-10',
+                        logo: 'h-8',
                     }}
-                    logoTheme="white"
                 />
 
                 {/* Search bar */}
@@ -112,12 +131,12 @@ const Header = () => {
                     }}
                     endContent={<Kbd keys={['command']}>K</Kbd>}
                 /> */}
-                <Button
+                {/* <Button
                     startContent={<Search size={16} color="#999" />}
-                    size="md"
+                    size="sm"
                     radius="full"
                     variant="bordered"
-                    className="bg-white"
+                    className="bg-white border-[1px] max-w-[350px]"
                     onPress={onOpen}
                 >
                     <p className="pr-[200px]">Search every thing</p>
@@ -129,11 +148,41 @@ const Header = () => {
                     >
                         K
                     </Kbd>
-                </Button>
-                <SearchModal isOpen={isOpen} onClose={onClose} />
+                </Button> */}
+                <div className="w-full">
+                    <div className="w-full flex items-center justify-center">
+                        <MotionButton
+                            variants={buttonVariants}
+                            initial="init"
+                            animate="animate"
+                            whileHover="hover"
+                            className="max-w-[500px] border-[1px] border-border rounded-full bg-text-fore1 cursor-pointer"
+                            onClick={onOpen}
+                        >
+                            <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">
+                                <div className="flex items-center justify-start gap-3">
+                                    <Search size={16} />
+                                    <p className="block text-sm">Search ...</p>
+                                </div>
+                                <Kbd
+                                    keys={['command']}
+                                    onKeyDown={() => {
+                                        onOpen()
+                                    }}
+                                    classNames={{
+                                        base: 'opacity-85',
+                                    }}
+                                >
+                                    K
+                                </Kbd>
+                            </div>
+                        </MotionButton>
+                    </div>
+                    <SearchModal isOpen={isOpen} onClose={onClose} />
+                </div>
 
                 {/* Right actions */}
-                <div className="flex justify-end items-center gap-4">
+                <div className="h-full flex justify-end items-center gap-3">
                     <div className="flex items-center justify-end gap-3">
                         {/* Notification Bell */}
                         <NotificationDropdown />
@@ -141,14 +190,8 @@ const Header = () => {
                         {/* Settings */}
                         <Button
                             variant="light"
-                            startContent={
-                                <SettingsGearIcon
-                                    style={{
-                                        color: 'white',
-                                    }}
-                                    size={22}
-                                />
-                            }
+                            startContent={<SettingsGearIcon size={18} />}
+                            size="sm"
                             isIconOnly
                             onPress={() => console.log('Settings clicked')}
                         />
@@ -156,20 +199,14 @@ const Header = () => {
                         {/* Help */}
                         <Button
                             variant="light"
-                            startContent={
-                                <CircleHelpIcon
-                                    style={{
-                                        color: 'white',
-                                    }}
-                                    size={22}
-                                />
-                            }
+                            startContent={<CircleHelpIcon size={18} />}
+                            size="sm"
                             isIconOnly
                             onPress={() => console.log('Help clicked')}
                         />
                     </div>
 
-                    <div />
+                    <div className="h-[50%] w-[1.5px] bg-border ml-1.5 mr-3" />
 
                     {/* User Avatar with Dropdown */}
                     <Dropdown
@@ -192,6 +229,7 @@ const Header = () => {
                                 classNames={{
                                     base: 'size-9',
                                 }}
+                                size="sm"
                                 suppressHydrationWarning
                             />
                         </DropdownTrigger>
@@ -219,9 +257,9 @@ const Header = () => {
                                 <DropdownItem
                                     key="onBoarding"
                                     hrefLang={locale}
-                                    href="/onboarding"
+                                    href="/overview"
                                 >
-                                    On boarding
+                                    Overview
                                 </DropdownItem>
                                 <DropdownItem
                                     key="settings"

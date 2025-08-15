@@ -6,25 +6,28 @@ import { MotionDiv } from '@/lib/motion'
 
 import CSDLogo from '../../../public/logo.webp'
 import '../../styles/loading.css'
+import GlassBackground from '@/shared/components/ui/GlassBackground'
 
 export default function AppLoader() {
     return (
-        <MotionDiv
-            className="fixed w-screen h-screen max-w-screen max-h-screen overflow-hidden grid place-items-center backdrop-blur-md"
-            initial={{ x: 0, opacity: 1 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100vw', opacity: 0 }}
-            transition={{ duration: 0.5 }}
-        >
-            <div className="loader"></div>
-            <div className="absolute rounded-full">
-                <Image
-                    src={CSDLogo}
-                    alt="CSD Logo"
-                    className="rounded-full max-w-[200px]"
-                    quality={100}
-                />
-            </div>
-        </MotionDiv>
+        <GlassBackground>
+            <MotionDiv
+                className="w-screen h-screen max-w-screen max-h-screen overflow-hidden grid place-items-center"
+                initial={{ x: 0, opacity: 1 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: '100vw', opacity: 0 }}
+                transition={{ duration: 0.5 }}
+            >
+                <div className="loader"></div>
+                <div className="absolute rounded-full">
+                    <Image
+                        src={CSDLogo}
+                        alt="CSD Logo"
+                        className="rounded-full max-w-[200px]"
+                        quality={100}
+                    />
+                </div>
+            </MotionDiv>
+        </GlassBackground>
     )
 }

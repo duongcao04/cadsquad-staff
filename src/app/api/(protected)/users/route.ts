@@ -58,11 +58,16 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // - Generate username
+        const username =
+            body.firstName.toLowerCase().replace(/\s+/g, '_') +
+            body.lastName.toLowerCase().replace(/\s+/g, '_') +
+            Date.now()
         const userCreated = await prisma.user.create({
             data: {
                 id: body.id,
                 email: body.email,
-                username: body.username,
+                username: username,
                 name: body.name,
                 avatar: body.avatar,
                 jobTitle: body.jobTitle,

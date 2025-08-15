@@ -23,8 +23,12 @@ import { IconWorkColorful } from '@/shared/components/icons/IconWorkColorful'
 import JobModal from './JobModal'
 import NotificationModal from './NotificationModal'
 import UserModal from './UserModal'
+import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
+import { Variants } from 'motion/react'
+import { MotionDiv } from '@/lib/motion'
 
 export default function AdminCreateButton() {
+    const { sidebarStatus } = useUiStore()
     const {
         isOpen: isOpenJM,
         onOpen: onOpenJM,
@@ -62,18 +66,62 @@ export default function AdminCreateButton() {
         },
     ])
 
+    const iconVariants: Variants = {
+        init: { opacity: 0, rotate: 0 },
+        animate: {
+            opacity: 1,
+            rotate: 0,
+            transition: { damping: 20, type: 'spring' },
+        },
+        hover: {
+            opacity: 1,
+            rotate: '180deg',
+            transition: { damping: 20, type: 'spring' },
+        },
+    }
+
     return (
-        <div>
+        <MotionDiv
+            initial="init"
+            animate="animate"
+            whileHover="hover"
+            className="w-fit"
+        >
             <JobModal isOpen={isOpenJM} onClose={onCloseJM} />
             <UserModal isOpen={isOpenUM} onClose={onCloseUm} />
             <NotificationModal isOpen={isOpenNM} onClose={onCloseNM} />
             <Dropdown>
-                <DropdownTrigger>
+                <DropdownTrigger className="w-fit">
                     <Button
-                        startContent={<PlusIcon />}
-                        className="pr-10 text-white rounded-full bg-gradient-to-br from-secondary-600 via-secondary-500 to-secondary-400"
+                        startContent={
+                            <MotionDiv variants={iconVariants}>
+                                <PlusIcon size={20} />
+                            </MotionDiv>
+                        }
+                        size="sm"
+                        isIconOnly={sidebarStatus === ESidebarStatus.COLLAPSE}
+                        className="text-sm text-white rounded-full bg-gradient-to-br from-primary-500 via-primary-700 to-primary-800 font-semibold"
+                        style={{
+                            paddingLeft:
+                                sidebarStatus === ESidebarStatus.EXPAND
+                                    ? '12px'
+                                    : '0',
+                            paddingRight:
+                                sidebarStatus === ESidebarStatus.EXPAND
+                                    ? '16px'
+                                    : '0',
+                        }}
                     >
-                        Create
+                        <p
+                            style={{
+                                display:
+                                    sidebarStatus === ESidebarStatus.EXPAND
+                                        ? 'block'
+                                        : 'none',
+                            }}
+                        >
+                            Create
+                        </p>
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Admin actions" variant="flat">
@@ -123,6 +171,6 @@ export default function AdminCreateButton() {
                     </DropdownSection>
                 </DropdownMenu>
             </Dropdown>
-        </div>
+        </MotionDiv>
     )
 }
