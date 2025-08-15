@@ -10,6 +10,8 @@ import {
     IconCollapseOutline,
 } from '../icons/sidebar-icons/IconCollapse'
 import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
+import SidebarCalendar from '../SidebarCalendar'
+import { IconCalendar } from '../icons/sidebar-icons/IconCalendar'
 
 const sidebarData = appSidebar
 
@@ -78,6 +80,30 @@ export default function Sidebar() {
                         />
                     )
                 })}
+            </div>
+            <div className="h-22" />
+            <div className="w-full pl-4 pr-1.5">
+                <div className="flex items-center justify-between cursor-pointer">
+                    {sidebarStatus === ESidebarStatus.EXPAND && (
+                        <p className="p-2 text-sm font-semibold leading-5 text-nowrap overflow-hidden">
+                            Lịch
+                        </p>
+                    )}
+                    {sidebarStatus === ESidebarStatus.COLLAPSE && (
+                        <div className="py-2 px-2.5">
+                            <IconCalendar
+                                width={20}
+                                height={20}
+                                strokeWidth={0}
+                            />
+                        </div>
+                    )}
+                </div>
+                <div className="mt-1.5 px-2">
+                    {sidebarStatus === ESidebarStatus.EXPAND && (
+                        <SidebarCalendar />
+                    )}
+                </div>
             </div>
         </MotionAside>
     )

@@ -41,7 +41,7 @@ export default async function DashboardLayout({
             <main className="max-w-screen">
                 <div className="size-full py-2.5 flex items-start justify-start gap-2">
                     <div className="space-y-5">
-                        <div className="pl-4">
+                        <div className="mt-2 pl-4">
                             <AdminCreateButton />
                         </div>
                         <Sidebar />

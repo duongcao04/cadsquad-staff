@@ -54,7 +54,7 @@ type DataType = Project & {
     key: React.Key
 }
 
-export default function ProjectTable() {
+export default function JobTable() {
     const [keywords, setKeywords] = useState('')
     const deleteModal = useConfirmModal()
 
