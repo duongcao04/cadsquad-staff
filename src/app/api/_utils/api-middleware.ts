@@ -10,10 +10,14 @@ function isPublicApi(pathname: string): boolean {
 
 export default async function apiMiddleware(request: NextRequest) {
     const { pathname } = request.nextUrl
+    // 1. Get token from cookie
     const sessionCookie = request.cookies.get('session')?.value
+    // 2. If not found token on Cookie -> use token from Header
+    const token =
+        sessionCookie ?? request.headers.get('Authorization')?.split(' ')[1]
 
     if (!isPublicApi(removeLocaleFromPathname(pathname))) {
-        if (!sessionCookie) {
+        if (!token) {
             return NextResponse.json(
                 {
                     success: false,
@@ -23,7 +27,7 @@ export default async function apiMiddleware(request: NextRequest) {
                 { status: 401 }
             )
         }
-        const isCertificated = await verifyToken(sessionCookie)
+        const isCertificated = await verifyToken(token)
         if (!isCertificated) {
             return NextResponse.json(
                 {

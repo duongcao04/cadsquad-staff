@@ -14,26 +14,22 @@ import { mutate } from 'swr'
 
 import { updateJobStatus } from '@/lib/swr/actions/jobStatus'
 import { PROJECT_API } from '@/lib/swr/api'
-import { JobStatus, Project } from '@/validationSchemas/project.schema'
+import { JobStatus, Job } from '@/validationSchemas/job.schema'
 
 import { useNextJobStatus } from '../utils/useNextJobStatus'
 
 type Props = {
-    setDeleteProject: React.Dispatch<React.SetStateAction<Project | null>>
+    setDeleteJob: React.Dispatch<React.SetStateAction<Job | null>>
     onOpen: () => void
-    data: Project
+    data: Job
 }
 
-export default function ActionDropdown({
-    data,
-    setDeleteProject,
-    onOpen,
-}: Props) {
+export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
     const { nextStatuses, hasMultipleOptions } = useNextJobStatus(
         data.jobStatus.order!
     )
 
-    const handleSwitch = async (project: Project, nextJobStatus: JobStatus) => {
+    const handleSwitch = async (project: Job, nextJobStatus: JobStatus) => {
         try {
             const data = await mutate(
                 PROJECT_API,
@@ -123,7 +119,7 @@ export default function ActionDropdown({
                         startContent={<Trash size={16} />}
                         onClick={() => {
                             onOpen()
-                            setDeleteProject(data)
+                            setDeleteJob(data)
                         }}
                         color="danger"
                     >

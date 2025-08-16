@@ -6,10 +6,9 @@ import {
     PaymentChannel as PaymentChannelPrisma,
     Job as JobPrisma,
     User,
-
 } from '@prisma/client'
 
-export type Project = Partial<JobPrisma> & {
+export type Job = Partial<JobPrisma> & {
     jobStatus: Partial<JobStatus>
     memberAssign: User[]
     paymentChannel: PaymentChannel
@@ -29,13 +28,13 @@ export type JobType = Partial<JobTypePrisma> & {
 }
 
 export type PaymentChannel = Partial<PaymentChannelPrisma> & {
-    projects?: Project[]
+    jobs?: Job[]
     _count: {
-        projects: number
+        jobs: number
     }
 }
 
-export const CreateProjectSchema = yup.object().shape({
+export const CreateJobSchema = yup.object().shape({
     sourceUrl: yup.string(),
     jobNo: yup.string().required(),
     jobName: yup.string().required(),
@@ -50,4 +49,4 @@ export const CreateProjectSchema = yup.object().shape({
     startedAt: yup.string().required(),
     dueAt: yup.string().required(),
 })
-export type NewProject = yup.InferType<typeof CreateProjectSchema>
+export type NewJob = yup.InferType<typeof CreateJobSchema>

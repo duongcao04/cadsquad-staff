@@ -10,7 +10,7 @@
         "@ant-design/v5-patch-for-react-19": "^1.0.3",
         "@heroicons/react": "^2.2.0",
         "@heroui/react": "^2.8.0-beta.7",
-        "@prisma/extension-accelerate": "^2.0.1",
+        "@prisma/extension-accelerate": "^2.0.2",
         "@supabase/ssr": "^0.6.1",
         "@tanstack/react-query": "^5.85.3",
         "@tanstack/react-query-devtools": "^5.85.3",
@@ -581,7 +581,7 @@
 
     "@prisma/engines": ["@prisma/engines@4.16.2", "", {}, "sha512-vx1nxVvN4QeT/cepQce68deh/Turxy5Mr+4L4zClFuK1GlxN3+ivxfuv+ej/gvidWn1cE1uAhW7ALLNlYbRUAw=="],
 
-    "@prisma/extension-accelerate": ["@prisma/extension-accelerate@2.0.1", "", { "peerDependencies": { "@prisma/client": ">=4.16.1" } }, "sha512-KSQlLC5F1qxFQCqSP8SnCwhkv9SE40v8WR+UjHdRce0R7Fv/K3IfJJNANGFx5MNoOypK1VN6wfvRr6CNA/l+BQ=="],
+    "@prisma/extension-accelerate": ["@prisma/extension-accelerate@2.0.2", "", { "peerDependencies": { "@prisma/client": ">=4.16.1" } }, "sha512-yZK6/k7uOEFpEsKoZezQS1CKDboPtBCQ0NyI70e1Un8tDiRgg80iWGyjsJmRpps2ZIut3MroHP+dyR3wVKh8lA=="],
 
     "@prisma/fetch-engine": ["@prisma/fetch-engine@4.16.2", "", { "dependencies": { "@prisma/debug": "4.16.2", "@prisma/get-platform": "4.16.2", "execa": "5.1.1", "find-cache-dir": "3.3.2", "fs-extra": "11.1.1", "hasha": "5.2.2", "http-proxy-agent": "7.0.0", "https-proxy-agent": "7.0.0", "kleur": "4.1.5", "node-fetch": "2.6.11", "p-filter": "2.1.0", "p-map": "4.0.0", "p-retry": "4.6.2", "progress": "2.0.3", "rimraf": "3.0.2", "temp-dir": "2.0.0", "tempy": "1.0.1" } }, "sha512-lnCnHcOaNn0kw8qTJbVcNhyfIf5Lus2GFXbj3qpkdKEIB9xLgqkkuTP+35q1xFaqwQ0vy4HFpdRUpFP7njE15g=="],
 

@@ -63,10 +63,10 @@ export default function SearchModal({ isOpen, onClose }: Props) {
                 content: 'p-0!',
             }}
             width={{
-                xs: '40%',
-                sm: '40%',
-                md: '40%',
-                lg: '40%',
+                xs: '90%',
+                sm: '80%',
+                md: '70%',
+                lg: '60%',
                 xl: '40%',
                 xxl: '40%',
             }}

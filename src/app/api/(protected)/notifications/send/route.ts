@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-import { ensureConnection } from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
-    const prisma = await ensureConnection()
     try {
         const body = await request.json()
         const { recipientId, title, content, image } = body

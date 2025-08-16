@@ -28,30 +28,27 @@ import {
     Users,
 } from 'lucide-react'
 import Link from 'next/link'
-import useSWR from 'swr'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { getProjectByJobNo } from '@/lib/swr/actions/project'
-import { PROJECT_API } from '@/lib/swr/api'
 
 import DetailTabs from './_components/DetailTabs'
 import { useDetailModal } from './actions'
+import { useJobDetail } from '@/queries/useJob'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
 const DATE_FORMAT = 'DD/MM/YYYY'
 
-export default function ProjectDetailDrawer() {
+export default function JobDetailDrawer() {
     const { closeModal, detailId } = useDetailModal()
-    const isOpen = detailId === null ? false : true
+    console.log(detailId)
+
+    const isOpen = Boolean(detailId)
 
     const [showFullAssignee, setShowFullAssignee] = useState(false)
 
-    const { data: project, isLoading } = useSWR(
-        [`${PROJECT_API}/?jobNo=${detailId}`],
-        () => getProjectByJobNo(detailId)
-    )
+    const { job, isLoading } = useJobDetail(detailId)
 
     return (
         <Drawer
@@ -63,12 +60,12 @@ export default function ProjectDetailDrawer() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start gap-2">
                             <p className="max-w-[70%] line-clamp-1">
-                                {project?.jobNo}
+                                {job?.jobNo}
                             </p>
                             <p>/</p>
                             <Chip
                                 style={{
-                                    backgroundColor: project?.jobStatus?.color,
+                                    backgroundColor: job?.jobStatus?.color,
                                 }}
                                 classNames={{
                                     base: 'block max-w-full flex items-center justify-start',
@@ -77,7 +74,7 @@ export default function ProjectDetailDrawer() {
                                 }}
                                 size="sm"
                             >
-                                {project?.jobStatus?.title}
+                                {job?.jobStatus?.title}
                             </Chip>
                         </div>
                         <Button
@@ -109,7 +106,7 @@ export default function ProjectDetailDrawer() {
             {!isLoading && (
                 <>
                     <p className="text-2xl font-semibold text-wrap">
-                        {project?.jobName}
+                        {job?.jobName}
                     </p>
                     <div className="mt-7 space-y-4 text-base">
                         <div className="grid grid-cols-[0.5fr_1fr]">
@@ -120,7 +117,7 @@ export default function ProjectDetailDrawer() {
                                 </p>
                             </div>
                             <p className="font-semibold">
-                                {project?.jobStatus?.title}
+                                {job?.jobStatus?.title}
                             </p>
                         </div>
                         <div className="grid grid-cols-[0.5fr_1fr]">
@@ -132,7 +129,7 @@ export default function ProjectDetailDrawer() {
                             </div>
                             <p className="font-semibold">
                                 {dayjs
-                                    .utc(project?.startedAt)
+                                    .utc(job?.startedAt)
                                     .tz('Asia/Ho_Chi_Minh')
                                     .format(DATE_FORMAT)}
                             </p>
@@ -146,13 +143,15 @@ export default function ProjectDetailDrawer() {
                             </div>
                             <p className="font-semibold">
                                 {dayjs
-                                    .utc(project?.dueAt)
+                                    .utc(job?.dueAt)
                                     .tz('Asia/Ho_Chi_Minh')
                                     .format(DATE_FORMAT)}
                             </p>
                         </div>
                         <div
-                            className={`grid grid-cols-[0.5fr_1fr] ${showFullAssignee && 'pt-1 items-start'}`}
+                            className={`grid grid-cols-[0.5fr_1fr] ${
+                                showFullAssignee && 'pt-1 items-start'
+                            }`}
                         >
                             <div className="flex items-center justify-start gap-2 opacity-80">
                                 <Users size={16} />
@@ -166,8 +165,8 @@ export default function ProjectDetailDrawer() {
                                         size="sm"
                                         max={5}
                                         total={
-                                            project?.memberAssign &&
-                                            project?.memberAssign.length - 5
+                                            job?.memberAssign &&
+                                            job?.memberAssign.length - 5
                                         }
                                         isBordered
                                         classNames={{
@@ -177,7 +176,7 @@ export default function ProjectDetailDrawer() {
                                             setShowFullAssignee(true)
                                         }
                                     >
-                                        {project?.memberAssign?.map((mem) => {
+                                        {job?.memberAssign?.map((mem) => {
                                             return (
                                                 <Tooltip
                                                     key={mem.id}
@@ -201,31 +200,27 @@ export default function ProjectDetailDrawer() {
                                 ) : (
                                     <div className="grid grid-cols-[1fr_32px] gap-4">
                                         <div className="flex items-center justify-start flex-wrap gap-x-3 gap-y-4">
-                                            {project?.memberAssign?.map(
-                                                (mem) => {
-                                                    return (
-                                                        <div
-                                                            key={mem.id}
-                                                            className="flex items-center justify-start gap-3 bg bg-border p-1 rounded-3xl pr-4"
-                                                        >
-                                                            <Avatar
-                                                                size="sm"
-                                                                src={
-                                                                    mem.avatar!
-                                                                }
-                                                                classNames={{
-                                                                    img: 'opacity-100',
-                                                                }}
-                                                                isBordered
-                                                                showFallback
-                                                            />
-                                                            <p className="text-sm">
-                                                                {mem.name}
-                                                            </p>
-                                                        </div>
-                                                    )
-                                                }
-                                            )}
+                                            {job?.memberAssign?.map((mem) => {
+                                                return (
+                                                    <div
+                                                        key={mem.id}
+                                                        className="flex items-center justify-start gap-3 bg bg-border p-1 rounded-3xl pr-4"
+                                                    >
+                                                        <Avatar
+                                                            size="sm"
+                                                            src={mem.avatar!}
+                                                            classNames={{
+                                                                img: 'opacity-100',
+                                                            }}
+                                                            isBordered
+                                                            showFallback
+                                                        />
+                                                        <p className="text-sm">
+                                                            {mem.name}
+                                                        </p>
+                                                    </div>
+                                                )
+                                            })}
                                         </div>
                                         <Tooltip
                                             content="Hidden"
@@ -287,14 +282,14 @@ export default function ProjectDetailDrawer() {
                                 </p>
                             </div>
                             <Link
-                                href={project?.sourceUrl ?? '#'}
+                                href={job?.sourceUrl ?? '#'}
                                 target="_blank"
                                 className="border border-border w-fit px-3 py-2 rounded-lg grid grid-cols-[30px_1fr] gap-4 items-center max-w-[40%]"
                             >
                                 <FolderIcon size={30} strokeWidth={1.4} />
                                 <div>
                                     <p className="text-sm font-medium line-clamp-1">
-                                        {project?.jobNo} - {project?.jobName}
+                                        {job?.jobNo} - {job?.jobName}
                                     </p>
                                 </div>
                             </Link>

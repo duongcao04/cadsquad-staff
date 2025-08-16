@@ -95,7 +95,7 @@ model Job {
   jobNo       String  @unique
   jobName     String
   description String?
-  sourceUrl   String
+  sourceUrl   String?
 
   clientName String
   income     Int

@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 import { combine } from 'zustand/middleware'
 
-import { Project } from '@/validationSchemas/project.schema'
+import { Job } from '@/validationSchemas/job.schema'
 
 type UserOptions = {
     projectTable: {
         size: 'small' | 'middle' | 'large'
-        visibleColumns: Array<keyof Project | 'action'>
+        visibleColumns: Array<keyof Job | 'action'>
     }
 }
 

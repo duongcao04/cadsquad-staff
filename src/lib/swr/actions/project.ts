@@ -1,4 +1,4 @@
-import { NewProject, Project } from '@/validationSchemas/project.schema'
+import { NewProject, Project } from '@/validationSchemas/job.schema'
 
 import { PROJECT_API } from '../api'
 

@@ -6,11 +6,11 @@ export const useDetailModal = () => {
     const { setSearchParams, removeSearchParam, getSearchParam } =
         useSearchParam()
 
-    const openModal = (projectId: string | number) => {
-        setSearchParams({ detail: projectId.toString() })
+    const openModal = (jobId: string | number) => {
+        setSearchParams({ detail: jobId.toString() })
     }
 
-    const detailId = getSearchParam('detail')
+    const detailId = getSearchParam('detail') ?? undefined
 
     const closeModal = () => {
         removeSearchParam('detail')

@@ -1,4 +1,4 @@
-import { JobStatus, Project } from '@/validationSchemas/project.schema'
+import { JobStatus, Project } from '@/validationSchemas/job.schema'
 
 export const getJobStatuses: () => Promise<JobStatus[]> = async () => {
     const res = await fetch('/api/jobStatus', {

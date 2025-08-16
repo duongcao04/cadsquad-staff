@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
     Avatar,
@@ -20,16 +20,8 @@ import type { TableProps } from 'antd'
 import { Badge, Tabs, TabsProps } from 'antd'
 import { Input } from 'antd'
 import { ChevronDownIcon, EyeIcon, Search } from 'lucide-react'
-import useSWR from 'swr'
-import useSWRMutation from 'swr/mutation'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
-import {
-    deleteProject as deleteProjectAction,
-    getProjectByTab,
-} from '@/lib/swr/actions/project'
-import { JOB_STATUS_API, PROJECT_API } from '@/lib/swr/api'
 import { uniqueByKey } from '@/lib/utils'
 import { capitalize } from '@/lib/utils'
 import { useUserOptionsStore } from '@/shared/components/FileManager/store/useUserOptionsStore'
@@ -38,7 +30,6 @@ import {
     useConfirmModal,
 } from '@/shared/components/ui/ConfirmModal'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
-import { Project } from '@/validationSchemas/project.schema'
 
 import { useDetailModal } from '../@detail/actions'
 import { useJobStore } from '../store/useJobStore'
@@ -47,51 +38,66 @@ import CountDown from './CountDown'
 import { useUsers } from '@/queries/useUser'
 import { useJobTypes } from '@/queries/useJobType'
 import { usePaymentChannels } from '@/queries/usePaymentChannel'
+import { Job } from '@/validationSchemas/job.schema'
+import {
+    useCountJobByTab,
+    useDeleteJobMutation,
+    useJobs,
+} from '@/queries/useJob'
+import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
 
-const DEFAULT_TAB = 'priority'
-
-type DataType = Project & {
+type DataType = Job & {
     key: React.Key
 }
 
 export default function JobTable() {
-    const [keywords, setKeywords] = useState('')
+    /**
+     * Instance hooks
+     */
+    const { getSearchParam, setSearchParams, removeSearchParam } =
+        useSearchParam()
     const deleteModal = useConfirmModal()
-
-    const [deleteProject, setDeleteProject] = useState<Project | null>(null)
-
     const { newJobNo, setNewJobNo } = useJobStore()
     const { projectTable, setProjectTable } = useUserOptionsStore()
     const { openModal } = useDetailModal()
-
-    const { getSearchParam, setSearchParams, removeSearchParam } =
-        useSearchParam()
-    const tabValue = getSearchParam('tab') ?? DEFAULT_TAB
-
-    const { trigger: deleteProjectMutation, isMutating } = useSWRMutation(
-        PROJECT_API,
-        async (url, { arg }: { arg: string }) => {
-            return deleteProjectAction(arg)
-        }
-    )
-
+    /**
+     * Get initial data
+     */
+    const tabQuery = getSearchParam('tab') ?? 'priority'
+    const { data: countActive } = useCountJobByTab('active')
+    const { data: countPriotiry } = useCountJobByTab('priority')
+    const { data: countDelivered } = useCountJobByTab('delivered')
+    const { data: countLate } = useCountJobByTab('late')
+    const { data: countCompleted } = useCountJobByTab('completed')
+    const { data: countCancelled } = useCountJobByTab('cancelled')
+    const counts = {
+        active: countActive,
+        priority: countPriotiry,
+        delivered: countDelivered,
+        late: countLate,
+        completed: countCompleted,
+        cancelled: countCancelled,
+    }
     const { data: users } = useUsers()
     const { data: jobTypes } = useJobTypes()
     const { data: paymentChannels } = usePaymentChannels()
-    const { data: jobStatuses } = useSWR(JOB_STATUS_API, getJobStatuses)
-    const {
-        data: projectData,
-        isLoading: loadingProjects,
-        isValidating: validatingProjects,
-        mutate: mutateProjects,
-    } = useSWR([`${PROJECT_API}?tab=${tabValue}`], () =>
-        getProjectByTab(tabValue)
-    )
-    const { projects, count } = useMemo(() => {
-        return (
-            projectData ?? { projects: [], count: {} as Record<string, number> }
-        )
-    }, [projectData])
+    // const { data: jobStatuses } = useJobStatuses()
+    const { jobs, isLoading: loadingJobs } = useJobs({
+        tab: tabQuery as TJobTab,
+    })
+    /**
+     * Import mutation
+     */
+    // const { mutateAsync: updateJobMutate, isIdle: isUpdatingJob } =
+    //     useUpdateJobMutation()
+    const { mutateAsync: deleteJobMutate, isIdle: isDeletingJob } =
+        useDeleteJobMutation()
+    /**
+     * Define states
+     */
+    const [keywords, setKeywords] = useState('')
+    const [deleteJob, setDeleteJob] = useState<Job | null>(null)
+    const [currentTab, setCurrentTab] = useState(tabQuery)
 
     const columns: TableProps<DataType>['columns'] = [
         {
@@ -121,7 +127,7 @@ export default function JobTable() {
                 compare: (a, b) => a.clientName!.localeCompare(b.clientName!),
                 multiple: 4,
             },
-            filters: uniqueByKey(projects ?? [], 'clientName')?.map((item) => ({
+            filters: uniqueByKey(jobs ?? [], 'clientName')?.map((item) => ({
                 text: `${item.clientName}`,
                 value: item?.clientName ?? '',
             })),
@@ -297,10 +303,10 @@ export default function JobTable() {
                     {record.jobStatus.title}
                 </Chip>
             ),
-            filters: uniqueByKey(jobStatuses ?? [], 'id')?.map((item) => ({
-                text: `${item.title}`,
-                value: item?.id ?? '',
-            })),
+            // filters: uniqueByKey(jobStatuses ?? [], 'id')?.map((item) => ({
+            //     text: `${item.title}`,
+            //     value: item?.id?.toString() ?? '',
+            // })),
             onFilter: (value, record) =>
                 record?.jobStatus?.id?.toString()?.indexOf(value as string) ===
                 0,
@@ -323,7 +329,7 @@ export default function JobTable() {
                         </Button>
                         <ActionDropdown
                             data={record}
-                            setDeleteProject={setDeleteProject}
+                            setDeleteJob={setDeleteJob}
                             onOpen={deleteModal.onOpen}
                         />
                     </div>
@@ -332,7 +338,7 @@ export default function JobTable() {
         },
     ]
 
-    const headerColumns = columns.map((column) => ({
+    const headerColumns = columns!.map((column) => ({
         title: column.title,
         key: column.key,
     }))
@@ -344,7 +350,7 @@ export default function JobTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count?.priority}
+                        count={counts['priority']}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -360,7 +366,7 @@ export default function JobTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count?.active}
+                        count={counts['active']}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -376,7 +382,7 @@ export default function JobTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count?.late}
+                        count={counts['late']}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -392,7 +398,7 @@ export default function JobTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count?.delivered}
+                        count={counts['delivered']}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -408,7 +414,7 @@ export default function JobTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count?.completed}
+                        count={counts['completed']}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -424,7 +430,7 @@ export default function JobTable() {
                 <button className="flex gap-2 items-center cursor-pointer">
                     <Badge
                         status="success"
-                        count={count?.cancelled}
+                        count={counts['cancelled']}
                         classNames={{
                             indicator: 'opacity-70 scale-80',
                         }}
@@ -437,7 +443,8 @@ export default function JobTable() {
     ]
 
     const handleTabChange: TabsProps['onChange'] = (activeKey: string) => {
-        if (activeKey === DEFAULT_TAB) {
+        setCurrentTab(activeKey)
+        if (activeKey === 'priority') {
             removeSearchParam('tab')
         } else {
             setSearchParams({ tab: activeKey })
@@ -471,41 +478,40 @@ export default function JobTable() {
             <ConfirmModal
                 isOpen={deleteModal.isOpen}
                 onClose={deleteModal.onClose}
-                isLoading={isMutating}
+                isLoading={isDeletingJob}
                 onConfirm={async () => {
                     try {
-                        if (deleteProject) {
-                            await deleteProjectMutation(
-                                deleteProject.id?.toString() as string
+                        if (deleteJob) {
+                            await deleteJobMutate(
+                                deleteJob.id?.toString() as string
                             )
-                            await mutateProjects()
                             addToast({
-                                title: 'Delete project successfully!',
+                                title: 'Xóa dự án thành công',
                                 color: 'success',
                             })
                         }
                         return
                     } catch (error) {
                         addToast({
-                            title: 'Delete project failed!',
+                            title: 'Xóa dự án thất bại',
                             description: `${JSON.stringify(error)}`,
                             color: 'danger',
                         })
                     }
                 }}
                 variant="danger"
-                title={`Delete ${deleteProject?.jobNo}`}
+                title={`Delete ${deleteJob?.jobNo}`}
                 message={
                     <div className="flex flex-col items-center">
                         <p className="text-base font-semibold">
-                            Are you sure you want to delete this project?
+                            Are you sure you want to delete this job?
                         </p>
                         <p className="mt-3 text-sm text-center">
-                            This action will mark the project as deleted. You
-                            can restore it later if needed.
+                            This action will mark the job as deleted. You can
+                            restore it later if needed.
                         </p>
                         <p className="text-sm text-center">
-                            P/s: Deleted projects will move to cancelled
+                            P/s: Deleted jobs will move to cancelled
                         </p>
                     </div>
                 }
@@ -513,7 +519,7 @@ export default function JobTable() {
             />
             <div className="grid grid-cols-[1fr_1fr_160px] gap-3">
                 <Tabs
-                    activeKey={tabValue}
+                    activeKey={currentTab}
                     items={tabMenus}
                     onChange={handleTabChange}
                 />
@@ -560,9 +566,9 @@ export default function JobTable() {
                 </Dropdown>
             </div>
             <Table<DataType>
-                columns={columns.filter((clm) =>
+                columns={columns!.filter((clm) =>
                     projectTable.visibleColumns?.includes(
-                        clm.key as keyof Project | 'action'
+                        clm.key as keyof Job | 'action'
                     )
                 )}
                 rowKey="jobNo"
@@ -575,11 +581,11 @@ export default function JobTable() {
                         onDoubleClick: () => openModal(record.jobNo!),
                     }
                 }}
-                dataSource={projects?.map((prj, index) => ({
+                dataSource={jobs?.map((prj, index) => ({
                     ...prj,
                     key: prj?.id ?? index,
                 }))}
-                loading={loadingProjects || validatingProjects}
+                loading={loadingJobs}
                 pagination={{
                     position: ['bottomCenter'],
                     pageSize: 10,

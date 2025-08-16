@@ -12,7 +12,7 @@ import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { getProjectByTab } from '@/lib/swr/actions/project'
 import { PROJECT_API } from '@/lib/swr/api'
 import { useUserOptionsStore } from '@/shared/components/FileManager/store/useUserOptionsStore'
-import { Project } from '@/validationSchemas/project.schema'
+import { Project } from '@/validationSchemas/job.schema'
 
 import CountDown from '../../onboarding/_components/CountDown'
 

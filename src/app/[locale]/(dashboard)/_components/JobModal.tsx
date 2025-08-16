@@ -2,36 +2,27 @@
 
 import React, { useMemo, useState } from 'react'
 
-import { Button, Input, NumberInput, addToast } from '@heroui/react'
+import { Button, Input, InputProps, NumberInput, addToast } from '@heroui/react'
 import { Image, Modal, Select } from 'antd'
 import { useFormik } from 'formik'
 import useSWR from 'swr'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { useCreateMutation } from '@/lib/swr/actions'
-import { getJobStatuses } from '@/lib/swr/actions/jobStatus'
 import { getProjects } from '@/lib/swr/actions/project'
-import {
-    JOB_STATUS_API,
-    JOB_TYPE_API,
-    PAYMENT_CHANNEL_API,
-    PROJECT_API,
-    SEND_NOTIFICATION_API,
-    USER_API,
-} from '@/lib/swr/api'
 import { padToFourDigits } from '@/lib/utils'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { NewNotification } from '@/validationSchemas/notification.schema'
-import {
-    CreateProjectSchema,
-    NewProject,
-} from '@/validationSchemas/project.schema'
+import { CreateJobSchema, NewJob } from '@/validationSchemas/job.schema'
 
 import { useJobStore } from '../onboarding/store/useJobStore'
 import DateTimePicker from './form-fields/DateTimePicker'
 import { useJobTypes } from '@/queries/useJobType'
 import { useUsers } from '@/queries/useUser'
 import { usePaymentChannels } from '@/queries/usePaymentChannel'
+import { useJobStatuses } from '@/queries/useJobStatus'
+import { SEND_NOTIFICATION_API } from '../../../../lib/swr/api'
+import { useCreateJobMutation } from '../../../../queries/useJob'
 
 const DOT_SYMBOL = '.'
 
@@ -55,25 +46,20 @@ export default function JobModal({ isOpen, onClose }: Props) {
     const [isLoading, setLoading] = useState(false)
     const { setNewJobNo } = useJobStore()
 
-    const { trigger: createProject } =
-        useCreateMutation<NewProject>(PROJECT_API)
+    const { mutateAsync: createJobMutate, isIdle: isCreatingJob } =
+        useCreateJobMutation()
     const { trigger: createNotification } = useCreateMutation<NewNotification>(
         SEND_NOTIFICATION_API
     )
 
     /**
-     * Fetch data
+     * Get initial data
      */
-    const { mutate: mutateProject } = useSWR(PROJECT_API, () => getProjects())
     const { data: users, isLoading: loadingUsers } = useUsers()
     const { data: jobTypes, isLoading: loadingJobTypes } = useJobTypes()
-
-
-    const { data: paymentChannels, isLoading: loadingPaymentChannels } = usePaymentChannels()
-    const { data: jobStatuses } = useSWR(
-        JOB_STATUS_API,
-        getJobStatuses
-    )
+    const { data: paymentChannels, isLoading: loadingPaymentChannels } =
+        usePaymentChannels()
+    const { data: jobStatuses } = useJobStatuses()
 
     /**
      * Default value with API response
@@ -93,7 +79,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
         return ''
     }, [jobTypes, loadingJobTypes])
 
-    const formik = useFormik<NewProject>({
+    const formik = useFormik<NewJob>({
         initialValues: {
             createdById: authUser?.id ?? '',
             clientName: '',
@@ -108,7 +94,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
             staffCost: null as unknown as number,
             paymentChannelId: null as unknown as string,
         },
-        validationSchema: CreateProjectSchema,
+        validationSchema: CreateJobSchema,
         enableReinitialize: true,
         onSubmit: async (values) => {
             try {
@@ -122,9 +108,6 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     ...values,
                     jobNo: pareJobNo(jobType!.code!, jobNumber),
                 }
-
-                await createProject(newJob)
-                await mutateProject()
 
                 values.memberAssignIds.forEach(async (recipientId) => {
                     const newNotification: NewNotification = {
@@ -155,12 +138,22 @@ export default function JobModal({ isOpen, onClose }: Props) {
         },
     })
 
+    const inputClassNames: InputProps['classNames'] = {
+        inputWrapper:
+            'w-full border-[1px] bg-[hsl(0,0%,96%)] shadow-xs !placeholder:italic',
+        label: 'text-right font-medium text-base',
+    }
+
     return (
         <form onSubmit={formik.handleSubmit}>
             <Modal
                 open={isOpen}
                 onCancel={onClose}
-                title={<p className="text-lg capitalize">Create new Job</p>}
+                title={
+                    <p className="text-xl font-semibold capitalize">
+                        Create Job
+                    </p>
+                }
                 width={{
                     xs: '90%',
                     sm: '80%',
@@ -169,15 +162,23 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     xl: '50%',
                     xxl: '50%',
                 }}
-                classNames={{
-                    mask: 'backdrop-blur-sm',
+                style={{ top: 80 }}
+                styles={{
+                    mask: {
+                        background: '#000000b7',
+                        backdropFilter: 'blur(8px)',
+                        WebkitBackdropFilter: 'blur(8px)', // for Safari support
+                    },
+                    content: {
+                        borderRadius: '24px',
+                    },
                 }}
                 footer={() => {
                     return (
                         <div className="flex items-center justify-end gap-4">
                             <Button
                                 variant="light"
-                                color="secondary"
+                                color="primary"
                                 className="px-14"
                                 onPress={() => {
                                     onClose()
@@ -188,7 +189,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                             </Button>
                             <Button
                                 isLoading={isLoading}
-                                color="secondary"
+                                color="primary"
                                 className="px-16"
                                 onPress={() => {
                                     formik.handleSubmit()
@@ -203,7 +204,12 @@ export default function JobModal({ isOpen, onClose }: Props) {
                 <div className="py-8 space-y-4 border-t border-border">
                     <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) && formik.errors.dueAt ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${
+                                Boolean(formik.touched.dueAt) &&
+                                formik.errors.dueAt
+                                    ? 'text-danger'
+                                    : 'text-primary'
+                            }`}
                         >
                             Job No.
                             <span className="absolute top-0 right-0 text-danger!">
@@ -229,8 +235,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                     formik.setFieldValue(
                                         'jobNo',
                                         padToFourDigits(
-                                            (findJobType?._count.jobs ??
-                                                0) + 1
+                                            (findJobType?._count.jobs ?? 0) + 1
                                         )
                                     )
                                 }}
@@ -244,12 +249,10 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 placeholder="e.g. 0001"
                                 value={formik.values.jobNo}
                                 onChange={formik.handleChange}
-                                color="secondary"
+                                color="primary"
                                 variant="faded"
-                                classNames={{
-                                    inputWrapper: 'w-full',
-                                    label: 'text-right font-medium text-base',
-                                }}
+                                classNames={inputClassNames}
+                                isDisabled
                                 isInvalid={
                                     Boolean(formik.touched.jobNo) &&
                                     Boolean(formik.errors.jobNo)
@@ -268,15 +271,14 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="clientName"
                         label="Client"
                         placeholder="e.g. Tom Jain"
-                        color="secondary"
+                        color="primary"
                         variant="faded"
                         value={formik.values.clientName}
                         onChange={formik.handleChange}
                         labelPlacement="outside-left"
                         classNames={{
                             base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
+                            ...inputClassNames,
                         }}
                         isInvalid={
                             Boolean(formik.touched.clientName) &&
@@ -294,15 +296,14 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="jobName"
                         label="Job Name"
                         placeholder="e.g. 3D Modeling"
-                        color="secondary"
+                        color="primary"
                         variant="faded"
                         value={formik.values.jobName}
                         onChange={formik.handleChange}
                         labelPlacement="outside-left"
                         classNames={{
                             base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
+                            ...inputClassNames,
                         }}
                         isInvalid={
                             Boolean(formik.touched.jobName) &&
@@ -319,15 +320,14 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="sourceUrl"
                         label="Link"
                         placeholder="e.g. http://example.com/"
-                        color="secondary"
+                        color="primary"
                         variant="faded"
                         value={formik.values.sourceUrl}
                         onChange={formik.handleChange}
                         labelPlacement="outside-left"
                         classNames={{
                             base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
+                            ...inputClassNames,
                         }}
                         isInvalid={
                             Boolean(formik.touched.sourceUrl) &&
@@ -341,7 +341,12 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     />
                     <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssignIds) && formik.errors.memberAssignIds ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${
+                                Boolean(formik.touched.memberAssignIds) &&
+                                formik.errors.memberAssignIds
+                                    ? 'text-danger'
+                                    : 'text-primary'
+                            }`}
                         >
                             Member Assign
                             <span className="absolute top-0 right-0 text-danger!">
@@ -371,7 +376,10 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                         <div className="flex items-center justify-start gap-4">
                                             <div className="size-9">
                                                 <Image
-                                                    src={opt.data.avatar ?? "https://avatar.iran.liara.run/public/boy?username=cadsquad"}
+                                                    src={
+                                                        opt.data.avatar ??
+                                                        'https://avatar.iran.liara.run/public/boy?username=cadsquad'
+                                                    }
                                                     alt={opt.data.name}
                                                     className="size-full rounded-full object-cover"
                                                     preview={false}
@@ -403,7 +411,12 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     </div>
                     <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) && formik.errors.dueAt ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${
+                                Boolean(formik.touched.dueAt) &&
+                                formik.errors.dueAt
+                                    ? 'text-danger'
+                                    : 'text-primary'
+                            }`}
                         >
                             Delivery
                             <span className="absolute top-0 right-0 text-danger!">
@@ -427,7 +440,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="income"
                         label="Income"
                         placeholder="0"
-                        color="secondary"
+                        color="primary"
                         variant="faded"
                         type="number"
                         maxValue={999999999999999}
@@ -445,8 +458,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         labelPlacement="outside-left"
                         classNames={{
                             base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
+                            ...inputClassNames,
                         }}
                         isInvalid={
                             Boolean(formik.touched.income) &&
@@ -464,7 +476,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         name="staffCost"
                         label="Staff Cost"
                         placeholder="0"
-                        color="secondary"
+                        color="primary"
                         variant="faded"
                         type="number"
                         maxValue={999999999999999}
@@ -482,8 +494,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         labelPlacement="outside-left"
                         classNames={{
                             base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
+                            ...inputClassNames,
                         }}
                         isInvalid={
                             Boolean(formik.touched.staffCost) &&
@@ -497,7 +508,12 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     />
                     <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssignIds) && formik.errors.memberAssignIds ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${
+                                Boolean(formik.touched.memberAssignIds) &&
+                                formik.errors.memberAssignIds
+                                    ? 'text-danger'
+                                    : 'text-primary'
+                            }`}
                         >
                             Payment Channel
                             <span className="absolute top-0 right-0 text-danger!">

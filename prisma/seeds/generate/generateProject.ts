@@ -2,10 +2,54 @@ import { JobStatus, JobType, User } from '@prisma/client'
 
 // Project name components for random generation
 const projectTypes = [
-    "Automated Assembly Line", "HVAC System", "Robotic Arm", "Heat Exchanger", "Conveyor Belt System", "Pneumatic System", "Turbine Blade", "Gear Box", "Hydraulic Press", "Vibration Damping System", "Engine Cooling System", "CNC Machine Tool", "Bearing Analysis", "Compressor Performance", "Material Handling System", "Pump Station", "Valve Control System", "Shaft Design", "Boiler System", "Clutch Mechanism", "Brake System", "Suspension System", "Transmission System", "Flywheel Design", "Pressure Vessel", "Piping Network", "Cooling Tower", "Centrifugal Fan", "Steam Turbine", "Gas Compressor",
+    'Automated Assembly Line',
+    'HVAC System',
+    'Robotic Arm',
+    'Heat Exchanger',
+    'Conveyor Belt System',
+    'Pneumatic System',
+    'Turbine Blade',
+    'Gear Box',
+    'Hydraulic Press',
+    'Vibration Damping System',
+    'Engine Cooling System',
+    'CNC Machine Tool',
+    'Bearing Analysis',
+    'Compressor Performance',
+    'Material Handling System',
+    'Pump Station',
+    'Valve Control System',
+    'Shaft Design',
+    'Boiler System',
+    'Clutch Mechanism',
+    'Brake System',
+    'Suspension System',
+    'Transmission System',
+    'Flywheel Design',
+    'Pressure Vessel',
+    'Piping Network',
+    'Cooling Tower',
+    'Centrifugal Fan',
+    'Steam Turbine',
+    'Gas Compressor',
 ]
 
-const projectActions = ["Design", "Analysis", "Optimization", "Testing", "Upgrade", "Redesign", "Development", "Implementation", "Maintenance", "Installation", "Calibration", "Inspection", "Simulation", "Validation", "Integration",
+const projectActions = [
+    'Design',
+    'Analysis',
+    'Optimization',
+    'Testing',
+    'Upgrade',
+    'Redesign',
+    'Development',
+    'Implementation',
+    'Maintenance',
+    'Installation',
+    'Calibration',
+    'Inspection',
+    'Simulation',
+    'Validation',
+    'Integration',
 ]
 
 const repositories = [
@@ -70,29 +114,9 @@ const generateSourceUrl = (): string => {
 }
 
 function getRandomClientName() {
-    const firstNames = [
-        'Liam',
-        'Emma',
-        'Noah',
-        'Olivia',
-        'Ava',
-        'Ethan',
-        'Sophia',
-        'Mason',
-        'Isabella',
-        'Logan',
+    const firstNames = ["Liam","Emma","Noah","Olivia","Ava","Ethan","Sophia","Mason","Isabella","Logan",
     ]
-    const lastNames = [
-        'Smith',
-        'Johnson',
-        'Williams',
-        'Jones',
-        'Brown',
-        'Davis',
-        'Miller',
-        'Wilson',
-        'Moore',
-        'Taylor',
+    const lastNames = ["Smith","Johnson","Williams","Jones","Brown","Davis","Miller","Wilson","Moore","Taylor",
     ]
 
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
@@ -100,7 +124,6 @@ function getRandomClientName() {
 
     return `${firstName} ${lastName}`
 }
-
 
 export type RadomProjectOptions = {
     year?: number
@@ -205,7 +228,8 @@ export const generateRandomProjects = (
             project = generateRandomProject(
                 users,
                 jobType,
-                jobStatuses, options
+                jobStatuses,
+                options
             )
             attempts++
         } while (usedJobNos.has(project.jobNo) && attempts < 100)

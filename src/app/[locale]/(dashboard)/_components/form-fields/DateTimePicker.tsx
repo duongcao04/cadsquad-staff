@@ -6,7 +6,7 @@ import { RangePickerProps } from 'antd/es/date-picker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { FormikProps } from 'formik'
 
-import { NewProject } from '@/validationSchemas/project.schema'
+import { NewProject } from '@/validationSchemas/job.schema'
 
 const { RangePicker } = DatePicker
 
