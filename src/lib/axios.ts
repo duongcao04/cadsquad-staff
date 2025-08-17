@@ -30,6 +30,7 @@ axiosClient.interceptors.request.use(
         return config
     },
     (error) => {
+        if (error?.response) return Promise.reject(error.response)
         return Promise.reject(error)
     }
 )

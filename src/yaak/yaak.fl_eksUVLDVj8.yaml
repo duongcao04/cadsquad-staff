@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_eksUVLDVj8
+createdAt: 2025-08-14T07:14:57.991682400
+updatedAt: 2025-08-14T07:14:57.991683200
+workspaceId: wk_zxFnCkLnS9
+folderId: null
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: payment-channels
+sortPriority: -1755155700000.0

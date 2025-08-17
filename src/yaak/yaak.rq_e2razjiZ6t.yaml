@@ -1,0 +1,19 @@
+type: http_request
+model: http_request
+id: rq_e2razjiZ6t
+createdAt: 2025-08-14T07:16:49.532575200
+updatedAt: 2025-08-16T07:55:21.463999600
+workspaceId: wk_zxFnCkLnS9
+folderId: null
+authentication:
+  token: ${[ response.body.path(request='rq_sRNcc8ba5A', path=b64'JC5yZXN1bHQuYWNjZXNzVG9rZW4', behavior='smart') ]}
+authenticationType: bearer
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: job-statuses->getAll
+sortPriority: -1755242950000.0
+url: ${[ BASE_URL ]}/job-statuses
+urlParameters: []

@@ -1,0 +1,31 @@
+type: http_request
+model: http_request
+id: rq_dJPcL5t5PK
+createdAt: 2025-08-16T10:18:42.646706300
+updatedAt: 2025-08-16T10:20:18.151468300
+workspaceId: wk_zxFnCkLnS9
+folderId: fl_xCunCfprf3
+authentication:
+  token: ${[ response.body.path(request='rq_sRNcc8ba5A', path=b64'JC5yZXN1bHQuYWNjZXNzVG9rZW4', behavior='smart') ]}
+authenticationType: bearer
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: jobs->count
+sortPriority: 0.0
+url: ${[ BASE_URL ]}/jobs/count
+urlParameters:
+- enabled: true
+  name: tab
+  value: priority
+  id: V7v62rSvqp
+- enabled: false
+  name: jobNo
+  value: '270898'
+  id: qw0uj6QvNF
+- enabled: true
+  name: ''
+  value: ''
+  id: 4eFm8Nb5rk

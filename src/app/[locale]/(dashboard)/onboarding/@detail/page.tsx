@@ -41,14 +41,13 @@ dayjs.extend(timezone)
 const DATE_FORMAT = 'DD/MM/YYYY'
 
 export default function JobDetailDrawer() {
-    const { closeModal, detailId } = useDetailModal()
-    console.log(detailId)
-
-    const isOpen = Boolean(detailId)
+    const { isOpen, closeModal, jobNo } = useDetailModal()
 
     const [showFullAssignee, setShowFullAssignee] = useState(false)
 
-    const { job, isLoading } = useJobDetail(detailId)
+    const { job, isLoading, error } = useJobDetail(jobNo)
+
+    console.log(error)
 
     return (
         <Drawer
@@ -59,40 +58,45 @@ export default function JobDetailDrawer() {
                 ) : (
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start gap-2">
-                            <p className="max-w-[70%] line-clamp-1">
-                                {job?.jobNo}
-                            </p>
-                            <p>/</p>
-                            <Chip
-                                style={{
-                                    backgroundColor: job?.jobStatus?.color,
-                                }}
-                                classNames={{
-                                    base: 'block max-w-full flex items-center justify-start',
-                                    content:
-                                        'block w-full uppercase text-sm font-semibold tracking-wide text-center',
-                                }}
-                                size="sm"
-                            >
-                                {job?.jobStatus?.title}
-                            </Chip>
+                            <p className="max-w-[70%] line-clamp-1">{jobNo}</p>
+                            {job && (
+                                <>
+                                    <p>/</p>
+                                    <Chip
+                                        style={{
+                                            backgroundColor:
+                                                job?.jobStatus?.color,
+                                        }}
+                                        classNames={{
+                                            base: 'block max-w-full flex items-center justify-start',
+                                            content:
+                                                'block w-full uppercase text-sm font-semibold tracking-wide text-center',
+                                        }}
+                                        size="sm"
+                                    >
+                                        {job?.jobStatus?.title}
+                                    </Chip>
+                                </>
+                            )}
                         </div>
-                        <Button
-                            startContent={<ArrowLeftRight size={16} />}
-                            size="sm"
-                            variant="light"
-                        >
-                            Switch to
-                            <Chip
-                                style={{
-                                    // backgroundColor: nextJobStatus?.color,
-                                    marginLeft: '5px',
-                                }}
+                        {job && (
+                            <Button
+                                startContent={<ArrowLeftRight size={16} />}
                                 size="sm"
+                                variant="light"
                             >
-                                completed
-                            </Chip>
-                        </Button>
+                                Switch to
+                                <Chip
+                                    style={{
+                                        // backgroundColor: nextJobStatus?.color,
+                                        marginLeft: '5px',
+                                    }}
+                                    size="sm"
+                                >
+                                    completed
+                                </Chip>
+                            </Button>
+                        )}
                     </div>
                 )
             }
@@ -103,7 +107,8 @@ export default function JobDetailDrawer() {
             onClose={closeModal}
         >
             {isLoading && <Spinner />}
-            {!isLoading && (
+            {!isLoading && error && <p>{JSON.stringify(error)}</p>}
+            {!isLoading && !error && (
                 <>
                     <p className="text-2xl font-semibold text-wrap">
                         {job?.jobName}

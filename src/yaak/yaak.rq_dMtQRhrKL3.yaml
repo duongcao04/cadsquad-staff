@@ -1,0 +1,19 @@
+type: http_request
+model: http_request
+id: rq_dMtQRhrKL3
+createdAt: 2025-08-16T07:43:11.785205600
+updatedAt: 2025-08-16T07:55:16.803826
+workspaceId: wk_zxFnCkLnS9
+folderId: fl_eksUVLDVj8
+authentication:
+  token: ${[ response.body.path(request='rq_sRNcc8ba5A', path=b64'JC5yZXN1bHQuYWNjZXNzVG9rZW4', behavior='smart') ]}
+authenticationType: bearer
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: payment-channels->getAll
+sortPriority: -1755103575193.999
+url: ${[ BASE_URL ]}/payment-channels
+urlParameters: []

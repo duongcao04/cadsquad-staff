@@ -1,0 +1,31 @@
+type: http_request
+model: http_request
+id: rq_sRNcc8ba5A
+createdAt: 2025-08-13T16:46:15.196157700
+updatedAt: 2025-08-14T08:15:21.263423200
+workspaceId: wk_zxFnCkLnS9
+folderId: fl_sBMt7KjLER
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "email": "ch.duong@cadsquad.vn",
+      "password": "cadsquad"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: ''
+  value: ''
+  id: vM4WXZ5dPA
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: CITSmYT9Yd
+method: POST
+name: auth->login
+sortPriority: -1755103575194.0
+url: ${[ BASE_URL ]}/auth/login
+urlParameters: []
