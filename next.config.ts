@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
             {
                 protocol: 'https',
                 hostname: 'avatar.iran.liara.run',
-                pathname: '/public/boy',
+                pathname: '/**/*',
             },
         ],
     },
