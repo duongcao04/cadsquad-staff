@@ -339,6 +339,7 @@ export default function JobTable() {
             title: 'Action',
             key: 'action',
             width: 150,
+            fixed: 'right',
             render: (_, record: DataType) => {
                 return (
                     <div className="px-4 flex items-center justify-end gap-2">

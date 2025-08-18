@@ -21,7 +21,7 @@ import { useLocale } from 'next-intl'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import AppLoader from '@/app/[locale]/loading'
-import { usePathname, useRouter } from '@/i18n/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { logoutSession } from '@/lib/auth/session'
 import { supabase } from '@/lib/supabase/client'
 import { clearCache } from '@/lib/swr/actions'
@@ -186,16 +186,20 @@ const Header = () => {
                     <div className="flex items-center justify-end gap-3">
                         {/* Notification Bell */}
                         <NotificationDropdown />
-
                         {/* Settings */}
-                        <Button
-                            variant="light"
-                            startContent={<SettingsGearIcon size={18} />}
-                            size="sm"
-                            isIconOnly
-                            onPress={() => console.log('Settings clicked')}
-                        />
-
+                        <Link
+                            href={'/settings'}
+                            className="size-8 flex items-center justify-center"
+                            passHref
+                        >
+                            <Button
+                                variant="light"
+                                startContent={<SettingsGearIcon size={18} />}
+                                size="sm"
+                                isIconOnly
+                                onPress={() => console.log('Settings clicked')}
+                            />
+                        </Link>
                         {/* Help */}
                         <Button
                             variant="light"
@@ -227,7 +231,7 @@ const Header = () => {
                                 icon={<User size={18} />}
                                 src={authUser?.avatar}
                                 classNames={{
-                                    base: 'size-9',
+                                    base: 'size-8',
                                 }}
                                 size="sm"
                                 suppressHydrationWarning

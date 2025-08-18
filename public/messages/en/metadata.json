@@ -26,5 +26,9 @@
     "team": {
         "title": "Team | Cadsquad",
         "description": "Cadsquad Project Management System streamlines mechanical design workflows, tracks tasks, manages CAD files, enables team collaboration, and ensures on-time, high-quality project delivery."
+    },
+    "settings": {
+        "title": "Settings | Cadsquad",
+        "description": "Cadsquad Project Management System streamlines mechanical design workflows, tracks tasks, manages CAD files, enables team collaboration, and ensures on-time, high-quality project delivery."
     }
 }

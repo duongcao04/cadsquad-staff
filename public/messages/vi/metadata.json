@@ -26,5 +26,9 @@
     "team": {
         "title": "Nhóm | Cadsquad",
         "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+    },
+    "settings": {
+        "title": "Cài đặt | Cadsquad",
+        "description": "Cadsquad Project Management System streamlines mechanical design workflows, tracks tasks, manages CAD files, enables team collaboration, and ensures on-time, high-quality project delivery."
     }
 }
