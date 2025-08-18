@@ -5,12 +5,12 @@ export const BASE_URL = String(envConfig.NEXT_PUBLIC_API_ENDPOINT)
 
 import { cookie } from '@/lib/cookie'
 
-export type ApiResponse<T> = {
+export type ApiResponse<T, D = Record<string, unknown>> = {
     success: boolean
     message: string
     error?: string
     result?: T
-    meta?: Record<string, unknown>
+    meta?: D
 }
 
 export const axiosClient = axios.create({

@@ -6,6 +6,24 @@ import { Job, NewJob } from '@/validationSchemas/job.schema'
 import { queryClient } from '../app/providers/TanstackQueryProvider'
 import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
 
+type JobsResponse = {
+    jobs: Job[]
+    counts?: {
+        priority: number
+        active: number
+        completed: number
+        delivered: number
+        late: number
+        cancelled: number
+    }
+}
+type PaginationMeta = {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+}
+
 export type TQueryJobParams = {
     tab?: TJobTab
     search?: string
@@ -20,27 +38,9 @@ export const useJobs = (params?: TQueryJobParams) => {
         isFetching,
         isLoading: isFirstLoading,
     } = useQuery({
-        queryKey: ['jobs', params?.tab ?? 'active'],
+        queryKey: ['jobs', params?.tab ?? 'active', params?.page ?? 1],
         queryFn: () =>
-            axiosClient.get<
-                ApiResponse<{
-                    jobs: Job[]
-                    counts?: {
-                        priority: number
-                        active: number
-                        completed: number
-                        delivered: number
-                        late: number
-                        cancelled: number
-                    }
-                    meta?: {
-                        total: number
-                        page: number
-                        limit: number
-                        totalPages: number
-                    }
-                }>
-            >('jobs', {
+            axiosClient.get<ApiResponse<JobsResponse, PaginationMeta>>('jobs', {
                 params: params,
             }),
         select: (res) => res.data,

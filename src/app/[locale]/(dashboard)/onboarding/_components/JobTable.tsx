@@ -13,12 +13,12 @@ import {
     DropdownTrigger,
     Tooltip,
     addToast,
+    Input,
+    Checkbox,
 } from '@heroui/react'
 import { SharedSelection } from '@heroui/react'
 import { Image, Table } from 'antd'
 import type { TableProps } from 'antd'
-import { Badge, Tabs, TabsProps } from 'antd'
-import { Input } from 'antd'
 import { ChevronDownIcon, EyeIcon, Search } from 'lucide-react'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
@@ -39,23 +39,29 @@ import { useUsers } from '@/queries/useUser'
 import { useJobTypes } from '@/queries/useJobType'
 import { usePaymentChannels } from '@/queries/usePaymentChannel'
 import { Job } from '@/validationSchemas/job.schema'
-import {
-    useCountJobByTab,
-    useDeleteJobMutation,
-    useJobs,
-} from '@/queries/useJob'
+import { useDeleteJobMutation, useJobs } from '@/queries/useJob'
 import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
+import JobTableTabs from './JobTableTabs'
 
 type DataType = Job & {
     key: React.Key
 }
 
 export default function JobTable() {
+    const { getSearchParam, setSearchParams, removeSearchParam } =
+        useSearchParam()
+    const tabQuery = getSearchParam('tab') ?? 'priority'
+    /**
+     * Define states
+     */
+    const [keywords, setKeywords] = useState('')
+    const [deleteJob, setDeleteJob] = useState<Job | null>(null)
+    const [currentTab, setCurrentTab] = useState(tabQuery)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [bulkSelected, setBulkSelected] = useState<number[]>([]) // Save Array<jobNo>
     /**
      * Instance hooks
      */
-    const { getSearchParam, setSearchParams, removeSearchParam } =
-        useSearchParam()
     const deleteModal = useConfirmModal()
     const { newJobNo, setNewJobNo } = useJobStore()
     const { projectTable, setProjectTable } = useUserOptionsStore()
@@ -63,27 +69,18 @@ export default function JobTable() {
     /**
      * Get initial data
      */
-    const tabQuery = getSearchParam('tab') ?? 'priority'
-    const { data: countActive } = useCountJobByTab('active')
-    const { data: countPriotiry } = useCountJobByTab('priority')
-    const { data: countDelivered } = useCountJobByTab('delivered')
-    const { data: countLate } = useCountJobByTab('late')
-    const { data: countCompleted } = useCountJobByTab('completed')
-    const { data: countCancelled } = useCountJobByTab('cancelled')
-    const counts = {
-        active: countActive,
-        priority: countPriotiry,
-        delivered: countDelivered,
-        late: countLate,
-        completed: countCompleted,
-        cancelled: countCancelled,
-    }
     const { data: users } = useUsers()
     const { data: jobTypes } = useJobTypes()
     const { data: paymentChannels } = usePaymentChannels()
     // const { data: jobStatuses } = useJobStatuses()
-    const { jobs, isLoading: loadingJobs } = useJobs({
-        tab: tabQuery as TJobTab,
+    const {
+        jobs,
+        isLoading: loadingJobs,
+        meta,
+    } = useJobs({
+        tab: currentTab as TJobTab,
+        page: currentPage,
+        search: keywords,
     })
     /**
      * Import mutation
@@ -92,14 +89,43 @@ export default function JobTable() {
     //     useUpdateJobMutation()
     const { mutateAsync: deleteJobMutate, isIdle: isDeletingJob } =
         useDeleteJobMutation()
-    /**
-     * Define states
-     */
-    const [keywords, setKeywords] = useState('')
-    const [deleteJob, setDeleteJob] = useState<Job | null>(null)
-    const [currentTab, setCurrentTab] = useState(tabQuery)
 
+    const onSelectRow = (rowId: number) => {
+        const foundIndex = bulkSelected.findIndex((i) => i === rowId)
+        // isSelected -> remove
+        if (foundIndex !== -1) {
+            const res = [...bulkSelected]
+            res.splice(foundIndex, 1)
+            setBulkSelected(res)
+        } else {
+            setBulkSelected((pre) => [...pre, rowId])
+        }
+    }
     const columns: TableProps<DataType>['columns'] = [
+        {
+            title: '',
+            dataIndex: 'select',
+            key: 'select',
+            width: 44,
+            render: (_, record: DataType) => {
+                const foundIndex = bulkSelected.findIndex(
+                    (i) => i === record.id
+                )
+                const isActived = foundIndex !== -1
+                return (
+                    <div className="w-full flex items-center justify-center">
+                        <Checkbox
+                            size="sm"
+                            isSelected={isActived}
+                            onValueChange={() => onSelectRow(Number(record.id))}
+                            classNames={{
+                                base: 'block w-full flex items-center justify-center',
+                            }}
+                        />
+                    </div>
+                )
+            },
+        },
         {
             title: 'Thumbnail',
             dataIndex: 'thumbnail',
@@ -169,9 +195,7 @@ export default function JobTable() {
             dataIndex: 'income',
             key: 'income',
             width: '10%',
-            render: () => (
-                <p className="text-base font-semibold text-red-500">$ 10</p>
-            ),
+            render: () => <p className="font-semibold text-red-500">$ 10</p>,
             sorter: {
                 compare: (a, b) => a.income! - b.income!,
                 multiple: 2,
@@ -183,7 +207,7 @@ export default function JobTable() {
             key: 'staffCost',
             width: '10%',
             render: (staffCost) => (
-                <p className="text-base font-semibold text-red-500">
+                <p className="font-semibold text-red-500">
                     {formatCurrencyVND(staffCost)}
                 </p>
             ),
@@ -314,17 +338,18 @@ export default function JobTable() {
         {
             title: 'Action',
             key: 'action',
-            width: '15%',
+            width: 150,
             render: (_, record: DataType) => {
                 return (
-                    <div className="flex items-center justify-start gap-2">
+                    <div className="px-4 flex items-center justify-end gap-2">
                         <Button
                             variant="light"
                             color="primary"
                             onPress={() => openModal(record.jobNo!)}
+                            className="flex items-center justify-center"
                             size="sm"
                         >
-                            <EyeIcon />
+                            <EyeIcon size={18} className="text-text-fore2" />
                             View
                         </Button>
                         <ActionDropdown
@@ -343,118 +368,13 @@ export default function JobTable() {
         key: column.key,
     }))
 
-    const tabMenus: TabsProps['items'] = [
-        {
-            key: 'priority',
-            label: (
-                <button className="flex gap-2 items-center cursor-pointer">
-                    <Badge
-                        status="success"
-                        count={counts['priority']}
-                        classNames={{
-                            indicator: 'opacity-70 scale-80',
-                        }}
-                    >
-                        <p className="px-3 uppercase">Priority</p>
-                    </Badge>
-                </button>
-            ),
-        },
-        {
-            key: 'active',
-            label: (
-                <button className="flex gap-2 items-center cursor-pointer">
-                    <Badge
-                        status="success"
-                        count={counts['active']}
-                        classNames={{
-                            indicator: 'opacity-70 scale-80',
-                        }}
-                    >
-                        <p className="px-3 uppercase">Active</p>
-                    </Badge>
-                </button>
-            ),
-        },
-        {
-            key: 'late',
-            label: (
-                <button className="flex gap-2 items-center cursor-pointer">
-                    <Badge
-                        status="success"
-                        count={counts['late']}
-                        classNames={{
-                            indicator: 'opacity-70 scale-80',
-                        }}
-                    >
-                        <p className="px-3 uppercase">Late</p>
-                    </Badge>
-                </button>
-            ),
-        },
-        {
-            key: 'delivered',
-            label: (
-                <button className="flex gap-2 items-center cursor-pointer">
-                    <Badge
-                        status="success"
-                        count={counts['delivered']}
-                        classNames={{
-                            indicator: 'opacity-70 scale-80',
-                        }}
-                    >
-                        <p className="px-3 uppercase">Delivered</p>
-                    </Badge>
-                </button>
-            ),
-        },
-        {
-            key: 'completed',
-            label: (
-                <button className="flex gap-2 items-center cursor-pointer">
-                    <Badge
-                        status="success"
-                        count={counts['completed']}
-                        classNames={{
-                            indicator: 'opacity-70 scale-80',
-                        }}
-                    >
-                        <p className="px-3 uppercase">Completed</p>
-                    </Badge>
-                </button>
-            ),
-        },
-        {
-            key: 'cancelled',
-            label: (
-                <button className="flex gap-2 items-center cursor-pointer">
-                    <Badge
-                        status="success"
-                        count={counts['cancelled']}
-                        classNames={{
-                            indicator: 'opacity-70 scale-80',
-                        }}
-                    >
-                        <p className="px-3 uppercase">Cancelled</p>
-                    </Badge>
-                </button>
-            ),
-        },
-    ]
-
-    const handleTabChange: TabsProps['onChange'] = (activeKey: string) => {
+    const handleTabChange = (activeKey: string) => {
         setCurrentTab(activeKey)
         if (activeKey === 'priority') {
             removeSearchParam('tab')
         } else {
             setSearchParams({ tab: activeKey })
         }
-    }
-
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value
-        setKeywords(value)
-        setSearchParams({ search: value })
     }
 
     const setVisibleColumns = (keys: SharedSelection) => {
@@ -518,24 +438,22 @@ export default function JobTable() {
                 confirmText="Delete"
             />
             <div className="grid grid-cols-[1fr_1fr_160px] gap-3">
-                <Tabs
+                <JobTableTabs
                     activeKey={currentTab}
-                    items={tabMenus}
                     onChange={handleTabChange}
                 />
-                <div style={{ flex: 1 }}>
-                    <Input
-                        placeholder="Search"
-                        prefix={<Search size={16} color="#999" />}
-                        size="large"
-                        value={keywords}
-                        onChange={handleInputChange}
-                        style={{
-                            borderRadius: '8px',
-                            background: 'white',
-                        }}
-                    />
-                </div>
+                <Input
+                    value={keywords}
+                    startContent={
+                        <Search size={18} className="text-text-fore2" />
+                    }
+                    onChange={(event) => {
+                        const value = event.target.value
+                        setKeywords(value)
+                        setSearchParams({ search: value })
+                    }}
+                    placeholder="Tìm kiếm theo mã, tên dự án, khách hàng,..."
+                />
                 <Dropdown placement="bottom-end">
                     <DropdownTrigger className="hidden sm:flex">
                         <Button
@@ -565,35 +483,49 @@ export default function JobTable() {
                     </DropdownMenu>
                 </Dropdown>
             </div>
-            <Table<DataType>
-                columns={columns!.filter((clm) =>
-                    projectTable.visibleColumns?.includes(
-                        clm.key as keyof Job | 'action'
-                    )
-                )}
-                rowKey="jobNo"
-                onRow={(record) => {
-                    return {
-                        className: `${
-                            record.jobNo === newJobNo ? 'bg-yellow-200' : ''
-                        } cursor-pointer`,
-                        title: 'Double click to view',
-                        onDoubleClick: () => openModal(record.jobNo!),
-                    }
+            <div
+                className="size-full bg-text4 py-3 px-4"
+                style={{
+                    borderRadius: '20px',
                 }}
-                dataSource={jobs?.map((prj, index) => ({
-                    ...prj,
-                    key: prj?.id ?? index,
-                }))}
-                loading={loadingJobs}
-                pagination={{
-                    position: ['bottomCenter'],
-                    pageSize: 10,
-                }}
-                size={projectTable.size}
-                rowClassName="h-8! transition duration-500"
-                showSorterTooltip
-            />
+            >
+                <Table<DataType>
+                    columns={columns!.filter((clm) =>
+                        projectTable.visibleColumns?.includes(
+                            clm.key as keyof Job | 'action'
+                        )
+                    )}
+                    rowKey="jobNo"
+                    onRow={(record) => {
+                        return {
+                            className: `${
+                                record.jobNo === newJobNo ? 'bg-yellow-200' : ''
+                            } cursor-pointer`,
+                            title: 'Double click to view',
+                            onDoubleClick: () => openModal(record.jobNo!),
+                            onClick: () => onSelectRow(Number(record.id)),
+                        }
+                    }}
+                    dataSource={jobs?.map((prj, index) => ({
+                        ...prj,
+                        key: prj?.id ?? index,
+                    }))}
+                    loading={loadingJobs}
+                    pagination={{
+                        position: ['bottomCenter'],
+                        pageSize: meta?.limit,
+                        current: meta?.page,
+                        size: 'default',
+                        total: meta?.total,
+                        onChange(page) {
+                            setCurrentPage(page)
+                        },
+                    }}
+                    size={projectTable.size}
+                    rowClassName="h-8! transition duration-500"
+                    showSorterTooltip
+                />
+            </div>
         </>
     )
 }

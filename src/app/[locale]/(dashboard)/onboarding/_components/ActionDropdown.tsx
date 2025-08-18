@@ -2,45 +2,117 @@ import React from 'react'
 
 import {
     Button,
-    Chip,
     Dropdown,
     DropdownItem,
+    DropdownItemProps,
     DropdownMenu,
     DropdownSection,
+    DropdownSectionProps,
     DropdownTrigger,
 } from '@heroui/react'
-import { CheckCheck, CircleX, EllipsisVerticalIcon, Trash } from 'lucide-react'
-import { mutate } from 'swr'
+import {
+    CircleCheck,
+    CircleDollarSign,
+    CopyIcon,
+    Edit,
+    EllipsisVerticalIcon,
+    PinIcon,
+    Trash,
+    UserPlus,
+} from 'lucide-react'
 
-import { updateJobStatus } from '@/lib/swr/actions/jobStatus'
-import { PROJECT_API } from '@/lib/swr/api'
-import { JobStatus, Job } from '@/validationSchemas/job.schema'
+import { Job } from '@/validationSchemas/job.schema'
 
-import { useNextJobStatus } from '../utils/useNextJobStatus'
+type ActionGroup = {
+    key: React.Key | null | undefined
+    groupTitle: string
+    groupProps?: DropdownSectionProps
+    children: {
+        key: string | number
+        title: string
+        childProps?: Omit<DropdownItemProps, 'key'>
+        icon: React.ReactNode
+        onClick: () => void
+    }[]
+}
+const adminActons: ActionGroup[] = [
+    {
+        key: 'Assignee menu',
+        groupTitle: 'Assignee',
+        children: [
+            {
+                key: 'assignReassign',
+                title: 'Assign / Reassign',
+                icon: <UserPlus size={14} />,
+                onClick: () => {},
+            },
+        ],
+    },
+    {
+        key: 'Job menu',
+        groupTitle: 'Job',
+        children: [
+            {
+                key: 'pin',
+                title: 'Pin Job',
+                icon: <PinIcon size={14} className="rotate-45" />,
+                onClick: () => {},
+            },
+            {
+                key: 'assignReassign',
+                title: 'Assign / Reassign',
+                icon: <UserPlus size={14} />,
+                onClick: () => {},
+            },
+            {
+                key: 'editJob',
+                title: 'Edit Job',
+                icon: <Edit size={14} />,
+                onClick: () => {},
+            },
+            {
+                key: 'duplicateJob',
+                title: 'Duplicate Job',
+                icon: <CopyIcon size={14} />,
+                onClick: () => {},
+            },
+            {
+                key: 'deleteJob',
+                title: 'Delete',
+                icon: <Trash size={14} />,
+                onClick: () => {},
+                childProps: {
+                    color: 'danger',
+                },
+            },
+        ],
+    },
+    {
+        key: 'Payment menu',
+        groupTitle: 'Payment',
+        children: [
+            {
+                key: 'updateCost',
+                title: 'Update Cost',
+                icon: <CircleDollarSign size={14} />,
+                onClick: () => {},
+            },
+            {
+                key: 'markAsPaid',
+                title: 'Mark as Paid',
+                icon: <CircleCheck size={14} />,
+                onClick: () => {},
+            },
+        ],
+    },
+]
 
 type Props = {
     setDeleteJob: React.Dispatch<React.SetStateAction<Job | null>>
     onOpen: () => void
     data: Job
 }
-
 export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
-    const { nextStatuses, hasMultipleOptions } = useNextJobStatus(
-        data.jobStatus.order!
-    )
-
-    const handleSwitch = async (project: Job, nextJobStatus: JobStatus) => {
-        try {
-            const data = await mutate(
-                PROJECT_API,
-                updateJobStatus(project, nextJobStatus)
-            )
-            console.log(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
     return (
         <Dropdown>
             <DropdownTrigger>
@@ -48,84 +120,32 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                     <EllipsisVerticalIcon size={16} />
                 </Button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Project menu actions">
-                <DropdownSection showDivider title={'Workflow'}>
-                    {hasMultipleOptions ? (
-                        <>
-                            <DropdownItem
-                                key="multi-approved"
-                                startContent={<CheckCheck size={16} />}
-                                onPress={() =>
-                                    handleSwitch(data, nextStatuses.approved!)
-                                }
-                            >
-                                Approved to
-                                <Chip
-                                    style={{
-                                        backgroundColor:
-                                            nextStatuses.approved?.color,
-                                        marginLeft: '5px',
-                                    }}
-                                >
-                                    {nextStatuses.approved?.title}
-                                </Chip>
-                            </DropdownItem>
-                            <DropdownItem
-                                key="multi-disapproved"
-                                startContent={<CircleX size={16} />}
-                                onPress={() =>
-                                    handleSwitch(
-                                        data,
-                                        nextStatuses.disapproved!
-                                    )
-                                }
-                            >
-                                Disapproved to
-                                <Chip
-                                    style={{
-                                        backgroundColor:
-                                            nextStatuses.disapproved?.color,
-                                        marginLeft: '5px',
-                                    }}
-                                >
-                                    {nextStatuses.disapproved?.title}
-                                </Chip>
-                            </DropdownItem>
-                        </>
-                    ) : (
-                        <DropdownItem
-                            key="disapproved"
-                            startContent={<CheckCheck size={16} />}
-                            onPress={() =>
-                                handleSwitch(data, nextStatuses.approved!)
-                            }
+            <DropdownMenu aria-label="Job menu actions">
+                {adminActons.map((group) => {
+                    return (
+                        <DropdownSection
+                            key={group.key}
+                            title={group.groupTitle}
+                            {...group.groupProps}
                         >
-                            Approved to
-                            <Chip
-                                style={{
-                                    backgroundColor:
-                                        nextStatuses.approved?.color,
-                                    marginLeft: '5px',
-                                }}
-                            >
-                                {nextStatuses.approved?.title}
-                            </Chip>
-                        </DropdownItem>
-                    )}
-                </DropdownSection>
-                <DropdownSection>
-                    <DropdownItem
-                        key="delete"
-                        startContent={<Trash size={16} />}
-                        onClick={() => {
-                            onOpen()
-                            setDeleteJob(data)
-                        }}
-                        color="danger"
-                    >
-                        Delete
-                    </DropdownItem>
-                </DropdownSection>
+                            {group.children.map((item) => {
+                                return (
+                                    <DropdownItem
+                                        key={item.key}
+                                        startContent={
+                                            <div className="text-text-fore2">
+                                                {item.icon}
+                                            </div>
+                                        }
+                                        {...item.childProps}
+                                    >
+                                        {item.title}
+                                    </DropdownItem>
+                                )
+                            })}
+                        </DropdownSection>
+                    )
+                })}
             </DropdownMenu>
         </Dropdown>
     )

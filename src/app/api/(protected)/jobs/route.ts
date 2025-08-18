@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getTabQuery } from './utils/getTabQuery'
+import { getTabQuery, TJobTab } from './utils/getTabQuery'
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
@@ -145,8 +145,16 @@ export async function GET(request: NextRequest) {
                 prisma.job.count({ where: getTabQuery('late') }),
                 prisma.job.count({ where: getTabQuery('cancelled') }),
             ])
+        const counts = {
+            priority,
+            active,
+            completed,
+            delivered,
+            late,
+            cancelled,
+        }
 
-        const total = active
+        const total = counts[tab as TJobTab]
         const meta = {
             page,
             limit,
@@ -176,14 +184,7 @@ export async function GET(request: NextRequest) {
             message: responseMessage,
             result: {
                 jobs,
-                counts: {
-                    priority,
-                    active,
-                    completed,
-                    delivered,
-                    late,
-                    cancelled,
-                },
+                counts,
             },
             meta,
         })
