@@ -15,9 +15,7 @@ import { LoginSchema } from '@/validationSchemas/auth.schema'
 const HOME = envConfig.NEXT_PUBLIC_URL as string
 
 export default function LoginForm() {
-    const { login } = useAuth({
-        revalidateOnMount: false,
-    })
+    const { login } = useAuth()
     const router = useRouter()
     const { getSearchParam } = useSearchParam()
     const redirect = getSearchParam('redirect') ?? '/'

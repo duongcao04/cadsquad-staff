@@ -34,10 +34,10 @@ export default function SettingsLayout({
             <div className="h-[56px]" />
             {/*  */}
             <main className="max-w-screen h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
-                <div className="mx-auto mt-14 max-w-[1540px] lg:px-14">
-                    <div className="w-full grid grid-cols-[360px_1fr] gap-12">
+                <div className="mx-auto mt-4">
+                    <div className="w-full grid grid-cols-[300px_1fr] gap-10">
                         <SettingSidebar />
-                        {children}
+                        <div className='max-w-[900px]'>{children}</div>
                     </div>
                 </div>
             </main>

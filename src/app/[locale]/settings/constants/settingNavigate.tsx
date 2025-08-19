@@ -36,14 +36,14 @@ export const VI_SETTING_NAVIGATE: SettingGroup[] = [
                 icon: SquareUserRound,
             },
             {
-                id: 1.1,
+                id: 1.3,
                 title: 'Cập nhật thông tin',
                 href: '/settings/account',
                 icon: CircleUserRound,
             },
             {
                 id: 1.2,
-                title: 'Mật khẩu và bảo mật',
+                title: 'Đăng nhập và bảo mật',
                 href: '/settings/security',
                 icon: ShieldPlus,
             },
@@ -57,7 +57,7 @@ export const VI_SETTING_NAVIGATE: SettingGroup[] = [
                 id: 2.1,
                 title: 'Giao diện',
                 icon: Palette,
-                href: '/settings/appeare',
+                href: '/settings/appearance',
             },
             {
                 id: 2.2,
@@ -112,7 +112,7 @@ export const SETTING_NAVIGATE: SettingGroup[] = [
             },
             {
                 id: 1.3,
-                title: 'Password & Security',
+                title: 'Login & Security',
                 href: '/settings/security',
                 icon: ShieldPlus,
             },
@@ -126,7 +126,7 @@ export const SETTING_NAVIGATE: SettingGroup[] = [
                 id: 2.1,
                 title: 'Appearance',
                 icon: Palette,
-                href: '/settings/appeare',
+                href: '/settings/appearance',
             },
             {
                 id: 2.2,

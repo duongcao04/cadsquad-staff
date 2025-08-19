@@ -4,7 +4,7 @@ import { compare, hash } from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-import { User } from '@/validationSchemas/auth.schema'
+import { User } from '@/validationSchemas/user.schema'
 import envConfig from '@/config/envConfig'
 import { constants } from '@/shared/constants'
 
@@ -23,7 +23,7 @@ export async function comparePasswords(
 }
 
 type SessionData = {
-    user: { id: string, role: string, iat: string }
+    user: { id: string; role: string; iat: string }
     expires: string
 }
 
@@ -52,7 +52,11 @@ export async function setSession(user: User, expiresAt?: number) {
     const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000) // 1 day from now
     const expires = expiresAt ? new Date(expiresAt) : expiresInOneDay
     const session: SessionData = {
-        user: { id: user.id!, role: user.role!, iat: Date.now().toString() },
+        user: {
+            id: user.id!.toString(),
+            role: user.role!,
+            iat: Date.now().toString(),
+        },
         expires: expires.toISOString(),
     }
     const encryptedSession = await signToken(session)
@@ -65,11 +69,15 @@ export async function setSession(user: User, expiresAt?: number) {
 }
 
 type CustomSessionData = {
-    name: string,
-    value: string,
+    name: string
+    value: string
     expiresAt: string
 }
-export async function setCustomSession({name, value, expiresAt}: CustomSessionData) {
+export async function setCustomSession({
+    name,
+    value,
+    expiresAt,
+}: CustomSessionData) {
     let expires = new Date(Date.now() + constants.ms.day[1])
 
     if (expiresAt) {
@@ -83,22 +91,26 @@ export async function setCustomSession({name, value, expiresAt}: CustomSessionDa
             sameSite: 'lax',
         })
     } catch (error) {
-        console.log(error);
+        console.log(error)
     }
 }
 
 export async function logoutSession(user: User) {
     const session: SessionData = {
-        user: { id: user.id!, role: user.role!, iat: Date.now().toString() },
+        user: {
+            id: user.id!.toString(),
+            role: user.role!,
+            iat: Date.now().toString(),
+        },
         expires: new Date(Date.now()).toISOString(),
     }
     const encryptedSession = await signToken(session)
-        ; (await cookies()).set('session', encryptedSession, {
-            expires: new Date(Date.now()),
-            httpOnly: true,
-            secure: true,
-            sameSite: 'lax',
-        })
+    ;(await cookies()).set('session', encryptedSession, {
+        expires: new Date(Date.now()),
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+    })
 }
 
 // TODO: add refresh token for expand work session

@@ -34,6 +34,7 @@ import NotificationDropdown from './NotificationDropdown'
 import SearchModal from './SearchModal'
 import { MotionButton } from '@/lib/motion'
 import { Variants } from 'motion/react'
+import useAuth from '@/queries/useAuth'
 
 const { Header: AntHeader } = Layout
 
@@ -60,11 +61,12 @@ const Header = () => {
     const pathname = usePathname()
 
     const { isOpen, onClose, onOpen } = useDisclosure()
-
     const [isLoading, setLoading] = useState(false)
 
-    const authUser = useAuthStore((state) => state.authUser)
-    const { removeAuthUser } = useAuthStore()
+    const {
+        profile: { data },
+        logout,
+    } = useAuth()
 
     useKeyboardShortcuts([
         {
@@ -76,10 +78,7 @@ const Header = () => {
     const handleLogout = async () => {
         try {
             setLoading(true)
-            await supabase.auth.signOut()
-            await logoutSession(authUser)
-            removeAuthUser()
-            clearCache()
+            logout()
             addToast({
                 title: 'Logout successfully!',
                 color: 'success',
@@ -229,7 +228,7 @@ const Header = () => {
                                 className="cursor-pointer"
                                 color="danger"
                                 icon={<User size={18} />}
-                                src={authUser?.avatar}
+                                src={data?.avatar}
                                 classNames={{
                                     base: 'size-8',
                                 }}
@@ -248,14 +247,14 @@ const Header = () => {
                                     <UserComp
                                         avatarProps={{
                                             size: 'sm',
-                                            src: authUser?.avatar,
+                                            src: data?.avatar,
                                         }}
                                         classNames={{
                                             name: 'text-default-600',
                                             description: 'text-default-500',
                                         }}
-                                        name={authUser?.name}
-                                        description={`@${authUser?.username}`}
+                                        name={data?.name}
+                                        description={`@${data?.username}`}
                                     />
                                 </DropdownItem>
                                 <DropdownItem

@@ -1,24 +1,19 @@
 'use client'
 
-import useSWR, { SWRConfiguration } from 'swr'
-
-import { axiosClient } from '@/lib/axios'
-import { getProfile } from '@/lib/swr/actions/auth'
-import { Login, User } from '@/validationSchemas/auth.schema'
+import { ApiResponse, axiosClient } from '@/lib/axios'
+import { Login } from '@/validationSchemas/auth.schema'
 import { cookie } from '@/lib/cookie'
+import { useQuery } from '@tanstack/react-query'
+import { User } from '@/validationSchemas/user.schema'
 
 export const AUTH_API = '/api/auth'
 
-export default function useAuth(options?: SWRConfiguration<User>) {
-    const { data: profile, mutate } = useSWR(
-        `${AUTH_API}/profile`,
-        () => getProfile(),
-        {
-            dedupingInterval: 60 * 60 * 1000,
-            revalidateOnFocus: false,
-            ...options,
-        }
-    )
+export default function useAuth() {
+    const profile = useQuery({
+        queryKey: ['profile'],
+        queryFn: () => axiosClient.get<ApiResponse<User>>('auth/profile'),
+        select: (res) => res.data.result,
+    })
 
     const login = async (loginData: Login) => {
         return await axiosClient
@@ -34,7 +29,7 @@ export default function useAuth(options?: SWRConfiguration<User>) {
     }
 
     const logout = async () => {
-        mutate(undefined, false)
+        return cookie.remove('session')
     }
 
     return { profile, login, logout }

@@ -1,29 +1,43 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+    const userHeader = request.headers.get('x-user')
+    const user = userHeader ? JSON.parse(userHeader) : null
+    console.log(user)
+
+    // 1. Get user from headers
+    if (!user) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Lấy thông tin tài khoản thất bại',
+                error: 'Unauthenticated',
+            },
+            { status: 401 }
+        )
+    }
+
     try {
-        const supabase = createClient()
-        // 1. Get user from Supabase Auth
-        const { claims: user } = await (await supabase).auth.getClaims().then(res => res.data!)
-        if (!user) {
+        // 2. Match user on Supabase Auth and Prisma Database with UUID field
+        const result = await prisma.user.findUnique({
+            where: { uuid: user.sub },
+        })
+        if (!result) {
             return NextResponse.json(
                 {
                     success: false,
                     message: 'Lấy thông tin tài khoản thất bại',
-                    error: "Unauthenticated"
+                    error: 'NOT FOUND',
                 },
-                { status: 401 }
+                { status: 404 }
             )
         }
-        // 2. Match user on Supabase Auth and Prisma Database with UUID field
-        const result = await prisma.user.findUnique({ where: { uuid: user.sub } })
         return NextResponse.json(
             {
                 success: true,
                 message: 'Lấy thông tin tài khoản thành công',
-                result
+                result,
             },
             { status: 200 }
         )
@@ -33,7 +47,7 @@ export async function GET() {
             {
                 success: false,
                 message: 'Lấy thông tin tài khoản thất bại',
-                error: "Unauthenticated"
+                error: 'Unauthenticated',
             },
             { status: 401 }
         )
