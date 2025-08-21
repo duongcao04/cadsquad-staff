@@ -485,7 +485,7 @@ export default function JobTable() {
                 </Dropdown>
             </div>
             <div
-                className="size-full bg-text4 py-3 px-4"
+                className="size-full p-1"
                 style={{
                     borderRadius: '20px',
                 }}
@@ -497,6 +497,13 @@ export default function JobTable() {
                         )
                     )}
                     rowKey="jobNo"
+                    onHeaderRow={() => {
+                        return {
+                            style: {
+                                background: 'var(--color-text4)',
+                            },
+                        }
+                    }}
                     onRow={(record) => {
                         return {
                             className: `${
