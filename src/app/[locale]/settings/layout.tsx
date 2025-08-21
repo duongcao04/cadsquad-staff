@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server'
 import Header from '@/shared/components/layouts/Header'
-import SettingSidebar from './_components/SettingSidebar'
 
 export async function generateMetadata({
     params,
@@ -20,7 +19,7 @@ export async function generateMetadata({
     }
 }
 
-export default function SettingsLayout({
+export default async function SettingsLayout({
     children,
 }: {
     children: React.ReactNode
@@ -34,12 +33,7 @@ export default function SettingsLayout({
             <div className="h-[56px]" />
             {/*  */}
             <main className="max-w-screen h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
-                <div className="mx-auto mt-4">
-                    <div className="w-full grid grid-cols-[300px_1fr] gap-10">
-                        <SettingSidebar />
-                        <div className='max-w-[900px]'>{children}</div>
-                    </div>
-                </div>
+                <div className="mx-auto mt-4">{children}</div>
             </main>
         </div>
     )

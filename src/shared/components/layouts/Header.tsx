@@ -230,7 +230,7 @@ const Header = () => {
                                 icon={<User size={18} />}
                                 src={data?.avatar}
                                 classNames={{
-                                    base: 'size-8',
+                                    base: '!size-6',
                                 }}
                                 size="sm"
                                 suppressHydrationWarning

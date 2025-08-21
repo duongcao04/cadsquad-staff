@@ -3,7 +3,6 @@ import {
     BellPlus,
     CircleUserRound,
     LucideProps,
-    Moon,
     Palette,
     Earth,
     ShieldPlus,
@@ -11,7 +10,7 @@ import {
 } from 'lucide-react'
 import { ForwardRefExoticComponent, RefAttributes } from 'react'
 
-type SettingGroup = {
+export type SettingGroup = {
     id: number | string
     groupTitle?: string
     description?: string
@@ -24,7 +23,7 @@ type SettingGroup = {
         >
     }[]
 }
-export const VI_SETTING_NAVIGATE: SettingGroup[] = [
+export const VI_PERSONAL_SETTING_NAV: SettingGroup[] = [
     {
         id: 1,
         groupTitle: 'Tài khoản',
@@ -65,12 +64,6 @@ export const VI_SETTING_NAVIGATE: SettingGroup[] = [
                 icon: Earth,
                 href: '/settings/language_and_region',
             },
-            {
-                id: 2.3,
-                title: 'Chế độ tối',
-                icon: Moon,
-                href: '/settings/dark_mode',
-            },
         ],
     },
     {
@@ -93,7 +86,7 @@ export const VI_SETTING_NAVIGATE: SettingGroup[] = [
     },
 ]
 
-export const SETTING_NAVIGATE: SettingGroup[] = [
+export const PERSONAL_SETTING_NAV: SettingGroup[] = [
     {
         id: 1,
         groupTitle: 'Account',
@@ -133,12 +126,6 @@ export const SETTING_NAVIGATE: SettingGroup[] = [
                 title: 'Language & Region',
                 icon: Earth,
                 href: '/settings/language_and_region',
-            },
-            {
-                id: 2.3,
-                title: 'Dark Mode',
-                icon: Moon,
-                href: '/settings/dark_mode',
             },
         ],
     },

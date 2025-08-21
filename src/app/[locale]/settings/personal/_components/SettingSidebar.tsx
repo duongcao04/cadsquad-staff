@@ -1,17 +1,17 @@
 'use client'
 
 import React from 'react'
-import {
-    SETTING_NAVIGATE,
-    VI_SETTING_NAVIGATE,
-} from '../constants/settingNavigate'
-import { useLocale } from 'next-intl'
 import { Variants } from 'motion/react'
 import { MotionDiv } from '@/lib/motion'
 import Link from 'next/link'
 import { usePathname } from '@/i18n/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@heroui/react'
+import { useLocale } from 'next-intl'
+import {
+    PERSONAL_SETTING_NAV,
+    VI_PERSONAL_SETTING_NAV,
+} from '../constants/personalSettingNavigate'
 
 const itemVariants: Variants = {
     init: { opacity: 0, background: 'transparent' },
@@ -56,26 +56,25 @@ const itemLineVariants: Variants = {
         },
     },
 }
-
 export default function SettingSidebar() {
-    const pathname = usePathname()
     const locale = useLocale()
-    const settingNavigate =
-        locale === 'vi' ? VI_SETTING_NAVIGATE : SETTING_NAVIGATE
+    const pathname = usePathname()
+    const perSettingNav =
+        locale === 'vi' ? PERSONAL_SETTING_NAV : VI_PERSONAL_SETTING_NAV
 
     return (
         <div className="w-full rounded-2xl space-y-3.5">
-            <div className="pl-4 flex items-center justify-start gap-2">
+            <div className="flex items-center justify-start gap-2 pl-4">
                 <Link href={'/'} passHref>
                     <Button isIconOnly size="sm" variant="light">
                         <ChevronLeft size={18} />
                     </Button>
                 </Link>
-                <h1 className="text-sm font-semibold leading-5 text-nowrap overflow-hidden">
-                    Settings
+                <h1 className="overflow-hidden text-sm font-semibold leading-5 text-nowrap">
+                    Personal Settings
                 </h1>
             </div>
-            {settingNavigate.map((group) => {
+            {perSettingNav.map((group) => {
                 return (
                     <div key={group.id}>
                         <p className="pl-4 text-sm font-medium text-text2">
