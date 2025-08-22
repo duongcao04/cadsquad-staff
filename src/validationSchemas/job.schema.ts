@@ -41,7 +41,7 @@ export const CreateJobSchema = yup.object().shape({
     clientName: yup.string().required(),
     memberAssignIds: yup.array(yup.string().required()).required().min(1),
     paymentChannelId: yup.string().required(),
-    createdById: yup.string().required(),
+    createdById: yup.number().required(),
     jobTypeId: yup.string().required(),
     income: yup.number().required(),
     staffCost: yup.number().required(),

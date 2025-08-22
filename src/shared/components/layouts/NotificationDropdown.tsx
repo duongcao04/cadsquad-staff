@@ -13,11 +13,6 @@ import {
 } from '@heroui/react'
 import { Image } from 'antd'
 import { Bell } from 'lucide-react'
-import useSWR from 'swr'
-
-import { supabase } from '@/lib/supabase/client'
-import { getNotifications } from '@/lib/swr/actions/notification'
-import { NOTIFICATION_API } from '@/lib/swr/api'
 import { Notification } from '@/validationSchemas/notification.schema'
 
 import CadsquadLogo from '../CadsquadLogo'
@@ -59,29 +54,6 @@ function NotificationCard({ data }: { data: Notification }) {
 }
 
 export default function NotificationDropdown() {
-    const {
-        data: notifications,
-        mutate,
-        isLoading,
-        isValidating,
-    } = useSWR(NOTIFICATION_API, getNotifications)
-
-    supabase
-        .channel('userNotifications')
-        .on(
-            'postgres_changes',
-            {
-                event: '*', // hoặc 'INSERT', 'UPDATE', 'DELETE'
-                schema: 'public',
-                table: 'UserNotification',
-            },
-            (payload) => {
-                console.log('Realtime change received!', payload)
-                mutate()
-            }
-        )
-        .subscribe()
-
     // Can use it avoid revalidate -> loose time
     //         const { data, mutate } = useSWR('/api/users', fetcher)
     // Then you POST a new user:
@@ -109,12 +81,8 @@ export default function NotificationDropdown() {
             <DropdownTrigger>
                 <Button
                     variant="light"
-                    startContent={
-                        <BellIcon
-                            size={18}
-                        />
-                    }
-                    size='sm'
+                    startContent={<BellIcon size={18} />}
+                    size="sm"
                     isIconOnly
                 />
             </DropdownTrigger>
@@ -132,12 +100,10 @@ export default function NotificationDropdown() {
                         className=" gap-2 opacity-100"
                         startContent={<Bell size={18} />}
                     >
-                        <p className="font-semibold">
-                            Notifications ({notifications?.length ?? 0})
-                        </p>
+                        <p className="font-semibold">Notifications</p>
                     </DropdownItem>
                 </DropdownSection>
-                {isLoading && isValidating ? (
+                {/* {isLoading && isValidating ? (
                     <DropdownSection aria-label="Loading Notifications">
                         <DropdownItem key="Loading">
                             <div className="w-full h-full grid place-items-center">
@@ -165,7 +131,7 @@ export default function NotificationDropdown() {
                             </DropdownItem>
                         )}
                     </DropdownSection>
-                )}
+                )} */}
             </DropdownMenu>
         </Dropdown>
     )

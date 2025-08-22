@@ -11,19 +11,19 @@ import { Link } from '@/i18n/navigation'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { getProjectByTab } from '@/lib/swr/actions/project'
 import { PROJECT_API } from '@/lib/swr/api'
-import { useUserOptionsStore } from '@/shared/components/FileManager/store/useUserOptionsStore'
-import { Project } from '@/validationSchemas/job.schema'
 
 import CountDown from '../../onboarding/_components/CountDown'
+import { useSettingStore } from '../../../settings/shared/store/useSettingStore'
+import { Job } from '../../../../../validationSchemas/job.schema'
 
 const DEFAULT_TAB = 'active'
 
-type DataType = Project & {
+type DataType = Job & {
     key: React.Key
 }
 
 export default function ProjectManage() {
-    const { projectTable } = useUserOptionsStore()
+    const { table } = useSettingStore()
 
     const {
         data: projectData,
@@ -199,11 +199,7 @@ export default function ProjectManage() {
                 </Link>
             </div>
             <Table<DataType>
-                columns={columns.filter((clm) =>
-                    projectTable.visibleColumns?.includes(
-                        clm.key as keyof Project | 'action'
-                    )
-                )}
+                columns={columns}
                 rowKey="jobNo"
                 dataSource={projects?.map((prj, index) => ({
                     ...prj,
@@ -211,7 +207,7 @@ export default function ProjectManage() {
                 }))}
                 loading={loadingProjects && validatingProjects}
                 pagination={false}
-                size={projectTable.size}
+                size={table.size}
                 rowClassName="h-8! transition duration-500"
                 showSorterTooltip
             />

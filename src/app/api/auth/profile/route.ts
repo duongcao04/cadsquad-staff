@@ -4,8 +4,6 @@ import prisma from '@/lib/prisma'
 export async function GET(request: NextRequest) {
     const userHeader = request.headers.get('x-user')
     const user = userHeader ? JSON.parse(userHeader) : null
-    console.log(user)
-
     // 1. Get user from headers
     if (!user) {
         return NextResponse.json(

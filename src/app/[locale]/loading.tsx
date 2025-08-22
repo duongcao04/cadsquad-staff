@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 
 import Image from 'next/image'
@@ -5,10 +7,24 @@ import Image from 'next/image'
 import { MotionDiv } from '@/lib/motion'
 
 import CSDLogo from '../../../public/logo.webp'
+import WhiteCSDLogo from '../../../public/logo-white.webp'
 import '../../styles/loading.css'
 import GlassBackground from '@/shared/components/ui/GlassBackground'
+import { useTheme } from 'next-themes'
 
 export default function AppLoader() {
+    const { theme, systemTheme } = useTheme()
+
+    let logo = CSDLogo
+    if (theme === 'light') {
+        logo = CSDLogo
+    } else {
+        if (systemTheme === 'light') {
+            logo = CSDLogo
+        } else {
+            logo = WhiteCSDLogo
+        }
+    }
     return (
         <GlassBackground>
             <MotionDiv
@@ -21,7 +37,7 @@ export default function AppLoader() {
                 <div className="loader"></div>
                 <div className="absolute rounded-full">
                     <Image
-                        src={CSDLogo}
+                        src={logo}
                         alt="CSD Logo"
                         className="rounded-full max-w-[200px]"
                         quality={100}

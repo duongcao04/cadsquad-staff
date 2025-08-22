@@ -22,10 +22,6 @@ import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import AppLoader from '@/app/[locale]/loading'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
-import { logoutSession } from '@/lib/auth/session'
-import { supabase } from '@/lib/supabase/client'
-import { clearCache } from '@/lib/swr/actions'
-import { useAuthStore } from '@/lib/zustand/useAuthStore'
 
 import CadsquadLogo from '../CadsquadLogo'
 import { CircleHelpIcon } from '../icons/animate/CircleHelpIcon'
@@ -35,6 +31,7 @@ import SearchModal from './SearchModal'
 import { MotionButton } from '@/lib/motion'
 import { Variants } from 'motion/react'
 import useAuth from '@/queries/useAuth'
+import SettingsDropdown from './SettingsDropdown'
 
 const { Header: AntHeader } = Layout
 
@@ -49,8 +46,6 @@ const buttonVariants: Variants = {
     },
     hover: {
         opacity: 1,
-        boxShadow:
-            'rgba(27, 31, 35, 0.04) 0px 1px 0px, rgba(255, 255, 255, 0.25) 0px 1px 0px inset',
         background: 'var(--color-text3)',
     },
 }
@@ -160,8 +155,10 @@ const Header = () => {
                         >
                             <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">
                                 <div className="flex items-center justify-start gap-3">
-                                    <Search size={16} />
-                                    <p className="block text-sm">Search ...</p>
+                                    <Search size={16} className="text-text2" />
+                                    <p className="block text-sm text-text2">
+                                        Search ...
+                                    </p>
                                 </div>
                                 <Kbd
                                     keys={['command']}
@@ -185,9 +182,20 @@ const Header = () => {
                     <div className="flex items-center justify-end gap-3">
                         {/* Notification Bell */}
                         <NotificationDropdown />
-                        {/* Settings */}
+                        {/* Help */}
+                        <Button
+                            variant="light"
+                            startContent={<CircleHelpIcon size={18} />}
+                            size="sm"
+                            isIconOnly
+                            onPress={() => console.log('Help clicked')}
+                        />
+                        {/* Settings for Admin*/}
+                        <SettingsDropdown />
+
+                        {/* Settings for users 
                         <Link
-                            href={'/settings'}
+                            href={'/settings/personal'}
                             className="size-8 flex items-center justify-center"
                             passHref
                         >
@@ -198,15 +206,7 @@ const Header = () => {
                                 isIconOnly
                                 onPress={() => console.log('Settings clicked')}
                             />
-                        </Link>
-                        {/* Help */}
-                        <Button
-                            variant="light"
-                            startContent={<CircleHelpIcon size={18} />}
-                            size="sm"
-                            isIconOnly
-                            onPress={() => console.log('Help clicked')}
-                        />
+                        </Link> */}
                     </div>
 
                     <div className="h-[50%] w-[1.5px] bg-border ml-1.5 mr-3" />
@@ -228,7 +228,7 @@ const Header = () => {
                                 className="cursor-pointer"
                                 color="danger"
                                 icon={<User size={18} />}
-                                src={data?.avatar}
+                                src={data?.avatar ?? ''}
                                 classNames={{
                                     base: '!size-6',
                                 }}
@@ -247,7 +247,7 @@ const Header = () => {
                                     <UserComp
                                         avatarProps={{
                                             size: 'sm',
-                                            src: data?.avatar,
+                                            src: data?.avatar ?? '',
                                         }}
                                         classNames={{
                                             name: 'text-default-600',
@@ -267,9 +267,9 @@ const Header = () => {
                                 <DropdownItem
                                     key="settings"
                                     hrefLang={locale}
-                                    href="/settings"
+                                    href="/settings/personal"
                                 >
-                                    Settings
+                                    Account settings
                                 </DropdownItem>
                             </DropdownSection>
 
@@ -280,7 +280,7 @@ const Header = () => {
                                     href="/help-center"
                                     hrefLang={locale}
                                 >
-                                    Help Center
+                                    Help center
                                 </DropdownItem>
                                 <DropdownItem
                                     key="logout"

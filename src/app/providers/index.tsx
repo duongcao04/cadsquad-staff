@@ -7,6 +7,7 @@ import { SWRConfig } from 'swr'
 import { localStorageProvider } from '@/lib/swr/provider'
 import TanstackQueryProvider from './TanstackQueryProvider'
 import AntdProvider from './AntdProvider'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
 
 type Props = {
     children: React.ReactNode
@@ -20,23 +21,31 @@ export function AppProvider({ children, locale, messages }: Props) {
             messages={messages}
             timeZone="Asia/Ho_Chi_Minh"
         >
-            <AntdProvider>
-                <HeroUIProvider>
-                    <TanstackQueryProvider>
-                        <SWRConfig value={{ provider: localStorageProvider }}>
-                            <ToastProvider
-                                placement="bottom-center"
-                                regionProps={{
-                                    classNames: {
-                                        base: '!z-[10000]',
-                                    },
-                                }}
-                            />
-                            {children}
-                        </SWRConfig>
-                    </TanstackQueryProvider>
-                </HeroUIProvider>
-            </AntdProvider>
+            <NextThemesProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem={true}
+            >
+                <AntdProvider>
+                    <HeroUIProvider>
+                        <TanstackQueryProvider>
+                            <SWRConfig
+                                value={{ provider: localStorageProvider }}
+                            >
+                                <ToastProvider
+                                    placement="bottom-center"
+                                    regionProps={{
+                                        classNames: {
+                                            base: '!z-[10000]',
+                                        },
+                                    }}
+                                />
+                                {children}
+                            </SWRConfig>
+                        </TanstackQueryProvider>
+                    </HeroUIProvider>
+                </AntdProvider>
+            </NextThemesProvider>
         </NextIntlClientProvider>
     )
 }

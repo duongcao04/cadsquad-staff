@@ -1,22 +1,23 @@
-export const appTheme = [
+// TODO: fix thumbnail
+export const appTableSize = [
     {
         id: 1,
-        title: 'Light',
-        code: 'light',
+        title: 'Small',
+        code: 'small',
         thumbnail:
             'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--light.f6e5e7a6.png',
     },
     {
         id: 2,
-        title: 'Dark',
-        code: 'dark',
+        title: 'Medium',
+        code: 'medium',
         thumbnail:
             'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--dark.d20b635b.png',
     },
     {
         id: 3,
-        title: 'System',
-        code: 'system',
+        title: 'Large',
+        code: 'large',
         thumbnail:
             'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--auto.86589aea.png',
     },

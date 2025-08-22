@@ -168,7 +168,7 @@ model JobStatus {
   title     String
   thumbnail String
   color     String
-  order     Int
+  order     Int     @unique
   icon      String?
 
   nextStatusId Int?

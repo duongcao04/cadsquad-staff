@@ -1,7 +1,7 @@
 'use client'
 
 import { Link, usePathname } from '@/i18n/navigation'
-import { type SidebarItem, appSidebar } from '@/shared/constants/appConstant'
+import { type SidebarItem, appSidebar } from '@/shared/constants/appSidebar'
 import { MotionAside, MotionButton, MotionDiv, MotionP } from '@/lib/motion'
 import { Variants } from 'motion/react'
 import { Dispatch, SetStateAction, useState } from 'react'
@@ -12,6 +12,7 @@ import {
 import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
 import SidebarCalendar from '../SidebarCalendar'
 import { IconCalendar } from '../icons/sidebar-icons/IconCalendar'
+import { useLocale } from 'next-intl'
 
 const sidebarData = appSidebar
 
@@ -119,6 +120,7 @@ const SidebarItem = ({
     setActivedItem: Dispatch<SetStateAction<SidebarItem | null>>
 }) => {
     const { sidebarStatus } = useUiStore()
+    const locale = useLocale()
 
     const buttonVariants: Variants = {
         init: {
@@ -169,6 +171,8 @@ const SidebarItem = ({
         },
     }
 
+    const title = locale === 'vi' ? data.viTitle : data.title
+
     return (
         <MotionDiv
             className="size-full"
@@ -182,7 +186,7 @@ const SidebarItem = ({
                 prefetch
                 passHref
                 className="grid grid-cols-[16px_1fr] place-items-center"
-                title={data.title}
+                title={title}
             >
                 <div className="w-4 flex items-center">
                     <MotionDiv
@@ -214,7 +218,7 @@ const SidebarItem = ({
                                 isActived ? 'font-semibold' : ''
                             } text-nowrap overflow-hidden py-2 pr-2 pl-0.5`}
                         >
-                            {data.title}
+                            {title}
                         </MotionP>
                     )}
                 </MotionButton>

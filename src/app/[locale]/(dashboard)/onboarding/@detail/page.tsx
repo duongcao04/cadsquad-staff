@@ -10,7 +10,7 @@ import {
     Spinner,
     Tooltip,
 } from '@heroui/react'
-import { Drawer, Skeleton } from 'antd'
+import { Drawer, Skeleton, Tag } from 'antd'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
@@ -62,20 +62,10 @@ export default function JobDetailDrawer() {
                             {job && (
                                 <>
                                     <p>/</p>
-                                    <Chip
-                                        style={{
-                                            backgroundColor:
-                                                job?.jobStatus?.color,
-                                        }}
-                                        classNames={{
-                                            base: 'block max-w-full flex items-center justify-start',
-                                            content:
-                                                'block w-full uppercase text-sm font-semibold tracking-wide text-center',
-                                        }}
-                                        size="sm"
-                                    >
-                                        {job?.jobStatus?.title}
-                                    </Chip>
+
+                                    <Tag color={job?.jobStatus.color}>
+                                        {job?.jobStatus.title}
+                                    </Tag>
                                 </>
                             )}
                         </div>

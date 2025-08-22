@@ -1,12 +1,13 @@
 'use client'
 
 import React from 'react'
-import useAuth from '@/queries/useAuth'
-import { Button, Input, InputProps } from '@heroui/react'
-import { useFormik } from 'formik'
-import { Link } from '../../../../../i18n/navigation'
 import { appTheme } from '../constants/AppTheme'
 import { Image } from 'antd'
+import { Link } from '@/i18n/navigation'
+import { useTheme } from 'next-themes'
+import { Check } from 'lucide-react'
+import { appTableSize } from '../constants/AppTableSize'
+import { useSettingStore } from '@/app/[locale]/settings/shared/store/useSettingStore'
 
 export const THEME_COLORS = [
     'var(--color-primary)',
@@ -20,35 +21,11 @@ export const THEME_COLORS = [
 ]
 
 export default function EditAppearanceForm() {
-    const {
-        profile: { data },
-    } = useAuth()
-
-    const initialValues = {
-        email: data?.email,
-        name: data?.name,
-        username: data?.username,
-        department: data?.department ?? '',
-        jobTitle: data?.jobTitle ?? '',
-        phoneNumber: data?.phoneNumber ?? '',
-        avatar: data?.avatar ?? '',
-    }
-
-    const formik = useFormik({
-        initialValues,
-        enableReinitialize: true,
-        onSubmit(values) {
-            console.log(values)
-        },
-    })
-
-    const inputClassNames: InputProps['classNames'] = {
-        label: 'pb-0',
-        inputWrapper: 'border-[1px]',
-    }
+    const { theme, setTheme } = useTheme()
+    const { table, setTableSize } = useSettingStore()
 
     return (
-        <form onSubmit={formik.handleSubmit} className="space-y-8">
+        <div className="space-y-8">
             <div className="size-full border-[1px] border-text3 rounded-xl px-6 py-4">
                 <div className="grid grid-cols-[330px_1fr] gap-8">
                     <div>
@@ -88,28 +65,30 @@ export default function EditAppearanceForm() {
                     <div>
                         <h2 className="text-base font-semibold">Theme</h2>
                         <p className="text-xs text-text2">
-                            How theme are displayed.
+                            How the theme looks.
                         </p>
-                        <Link
-                            href={'/onboarding'}
-                            className="block mt-1 text-xs font-semibold underline text-primary"
-                            target="_blank"
-                        >
-                            View examples
-                        </Link>
                     </div>
-                    <div className="flex items-center justify-start gap-4">
-                        {appTheme.map((theme) => {
-                            const isActived = theme.id === 1
+                    <div className="flex items-center justify-start gap-6">
+                        {appTheme.map((themeI) => {
+                            const isActived = themeI.code === theme
                             return (
                                 <div
-                                    key={theme.id}
-                                    className="flex flex-col items-center gap-1"
+                                    key={themeI.id}
+                                    className="relative flex flex-col items-center gap-1 cursor-pointer"
+                                    onClick={() => setTheme(themeI.code)}
                                 >
+                                    {isActived && (
+                                        <div className="absolute -top-[5px] -right-[5px] z-1">
+                                            <Check
+                                                size={16}
+                                                className="p-0.5 rounded-full bg-primary text-white"
+                                            />
+                                        </div>
+                                    )}
                                     <Image
-                                        src={theme.thumbnail}
+                                        src={themeI.thumbnail}
                                         alt="Theme thumb"
-                                        rootClassName="!h-12 border-1 size-full rounded-sm"
+                                        rootClassName="!h-20 border-[1.5px] p-0.5 size-full rounded-sm"
                                         className="!size-full"
                                         wrapperStyle={{
                                             borderColor: isActived
@@ -118,7 +97,9 @@ export default function EditAppearanceForm() {
                                         }}
                                         preview={false}
                                     />
-                                    <p className="text-xs">{theme.title}</p>
+                                    <p className="text-xs font-medium text-text1p5">
+                                        {themeI.title}
+                                    </p>
                                 </div>
                             )
                         })}
@@ -140,31 +121,44 @@ export default function EditAppearanceForm() {
                             View examples
                         </Link>
                     </div>
+                    <div className="flex items-center justify-start gap-6">
+                        {appTableSize.map((size) => {
+                            const isActived = size.code === table.size
+                            return (
+                                <div
+                                    key={size.id}
+                                    className="relative flex flex-col items-center gap-1 cursor-pointer"
+                                    onClick={() => setTableSize(size.code)}
+                                >
+                                    {isActived && (
+                                        <div className="absolute -top-[5px] -right-[5px] z-1">
+                                            <Check
+                                                size={16}
+                                                className="p-0.5 rounded-full bg-primary text-white"
+                                            />
+                                        </div>
+                                    )}
+                                    <Image
+                                        src={size.thumbnail}
+                                        alt="Theme thumb"
+                                        rootClassName="!h-20 border-[1.5px] p-0.5 size-full rounded-sm"
+                                        className="!size-full"
+                                        wrapperStyle={{
+                                            borderColor: isActived
+                                                ? 'var(--color-primary)'
+                                                : 'transparent',
+                                        }}
+                                        preview={false}
+                                    />
+                                    <p className="text-xs font-medium text-text1p5">
+                                        {size.title}
+                                    </p>
+                                </div>
+                            )
+                        })}
+                    </div>
                 </div>
             </div>
-            <Input
-                id="email"
-                name="email"
-                label="Email"
-                labelPlacement="outside-top"
-                value={formik.values.email}
-                classNames={inputClassNames}
-                variant="bordered"
-                isDisabled
-            />
-            <div className="mt-5 flex items-center justify-end gap-4">
-                <Button
-                    type="submit"
-                    className="w-[120px] border-[1.5px]"
-                    variant="bordered"
-                    color="danger"
-                >
-                    Hủy
-                </Button>
-                <Button type="submit" className="w-[120px]" color="primary">
-                    Lưu thay đổi
-                </Button>
-            </div>
-        </form>
+        </div>
     )
 }

@@ -5,6 +5,9 @@ export const theme: ThemeConfig = {
         Table: {
             headerBg: 'hsl(0,0%,97%)',
         },
+        Tabs: {
+            horizontalMargin: '0',
+        },
         Select: {
             selectorBg: '#f4f4f5',
             optionSelectedColor: '#1b1464',

@@ -1,29 +1,9 @@
-import { getTranslations } from 'next-intl/server'
-
 import Header from '@/shared/components/layouts/Header'
 import Sidebar from '@/shared/components/layouts/Sidebar'
 
-import AdminCreateButton from './_components/AdminCreateButton'
+import ActionButton from './_components/ActionButton'
 import HeadingTitle from './_components/HeadingTitle'
 import Timmer from './_components/Timmer'
-
-export async function generateMetadata({
-    params,
-}: Readonly<{
-    params: Promise<{ locale: string }>
-}>) {
-    const { locale } = await params
-
-    const tMetadata = await getTranslations({
-        locale,
-        namespace: 'metadata.workbench',
-    })
-
-    return {
-        title: tMetadata('title'),
-        desctiption: tMetadata('description'),
-    }
-}
 
 export default async function DashboardLayout({
     children,
@@ -42,7 +22,7 @@ export default async function DashboardLayout({
                 <div className="size-full py-2.5 flex items-start justify-start gap-2">
                     <div className="space-y-5">
                         <div className="mt-2 pl-4">
-                            <AdminCreateButton />
+                            <ActionButton />
                         </div>
                         <Sidebar />
                     </div>

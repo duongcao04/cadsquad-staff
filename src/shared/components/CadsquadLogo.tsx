@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 
 import Image from 'next/image'
@@ -7,6 +9,7 @@ import { cn } from '@/lib/utils'
 
 import CSDWhiteLogo from '../../../public/logo-white.webp'
 import CSDLogo from '../../../public/logo.webp'
+import { useTheme } from 'next-themes'
 
 type Props = {
     canRedirect?: boolean
@@ -24,6 +27,8 @@ export default function CadsquadLogo({
     href = '/',
     classNames,
 }: Props) {
+    const { theme, systemTheme } = useTheme()
+
     const Wrapper = ({ children }: { children: React.ReactNode }) => {
         const wrapperClassName = cn('block w-fit', classNames?.root)
         return canRedirect ? (
@@ -33,6 +38,16 @@ export default function CadsquadLogo({
         ) : (
             <div className={wrapperClassName}>{children}</div>
         )
+    }
+
+    if (theme === 'light') {
+        logoTheme = 'default'
+    } else {
+        if (systemTheme === 'light') {
+            logoTheme = 'default'
+        } else {
+            logoTheme = 'white'
+        }
     }
 
     return (

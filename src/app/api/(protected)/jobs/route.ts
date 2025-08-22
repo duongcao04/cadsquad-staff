@@ -207,6 +207,11 @@ export async function POST(request: NextRequest) {
     const jobData = { ...body }
 
     try {
+        const jobStatus = await prisma.jobStatus.findUnique({
+            where: {
+                order: 1,
+            },
+        })
         const jobCreated = await prisma.job.create({
             data: {
                 jobNo: jobData.jobNo,
@@ -224,7 +229,7 @@ export async function POST(request: NextRequest) {
                     : null,
                 jobStatus: {
                     connect: {
-                        id: Number(jobData.jobStatusId),
+                        id: Number(jobStatus?.id),
                     },
                 },
                 jobType: {

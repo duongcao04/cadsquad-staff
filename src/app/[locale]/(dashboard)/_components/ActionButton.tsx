@@ -26,8 +26,31 @@ import UserModal from './UserModal'
 import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
 import { Variants } from 'motion/react'
 import { MotionDiv } from '@/lib/motion'
+import useAuth from '@/queries/useAuth'
 
-export default function AdminCreateButton() {
+export default function ActionButton() {
+    const { userRole } = useAuth()
+
+    if (userRole === 'ADMIN') {
+        return <AdminCreateButton />
+    }
+    if (userRole === 'ACCOUNTING') {
+        return <AccountingButton />
+    }
+    if (userRole === 'USER') {
+        return <StaffButton />
+    }
+}
+
+export function StaffButton() {
+    return <div></div>
+}
+
+export function AccountingButton() {
+    return <div></div>
+}
+
+export function AdminCreateButton() {
     const { sidebarStatus } = useUiStore()
     const {
         isOpen: isOpenJM,

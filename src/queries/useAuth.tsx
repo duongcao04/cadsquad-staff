@@ -15,6 +15,8 @@ export default function useAuth() {
         select: (res) => res.data.result,
     })
 
+    const userRole = profile.data?.role
+
     const login = async (loginData: Login) => {
         return await axiosClient
             .post('auth/login', JSON.stringify(loginData))
@@ -32,5 +34,5 @@ export default function useAuth() {
         return cookie.remove('session')
     }
 
-    return { profile, login, logout }
+    return { profile, userRole, login, logout }
 }

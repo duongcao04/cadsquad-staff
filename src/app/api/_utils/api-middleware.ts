@@ -42,6 +42,7 @@ export default async function apiMiddleware(request: NextRequest) {
         // 3. Truyền user qua headers
         const requestHeaders = new Headers(request.headers)
         requestHeaders.set('x-user', JSON.stringify(isCertificated))
+
         return NextResponse.next({
             request: {
                 headers: requestHeaders,

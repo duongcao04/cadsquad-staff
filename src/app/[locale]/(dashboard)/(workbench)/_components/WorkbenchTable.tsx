@@ -1,59 +1,28 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-
-import { Avatar, AvatarGroup, Button, Chip, Tooltip } from '@heroui/react'
-import { Image, Table, Tag } from 'antd'
-import type { TableColumnsType, TableProps } from 'antd'
-import { EyeIcon } from 'lucide-react'
-
-import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { uniqueByKey } from '@/lib/utils'
-import { useConfirmModal } from '@/shared/components/ui/ConfirmModal'
-
-import { useDetailModal } from '../@detail/actions'
-import { useJobStore } from '../store/useJobStore'
-import ActionDropdown from './ActionDropdown'
-import CountDown from './CountDown'
-import { useUsers } from '@/queries/useUser'
-import { useJobTypes } from '@/queries/useJobType'
-import { usePaymentChannels } from '@/queries/usePaymentChannel'
-import { Job } from '@/validationSchemas/job.schema'
+import React from 'react'
 import { useJobs } from '@/queries/useJob'
-import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
-import { useSettingStore } from '@/app/[locale]/settings/shared/store/useSettingStore'
-import { DataType } from '../page'
+import { Image, Table, TableColumnsType, Tag } from 'antd'
+import { DataType } from '../../onboarding/page'
+import { Avatar, AvatarGroup, Chip, Tooltip } from '@heroui/react'
+import { formatCurrencyVND } from '@/lib/formatCurrency'
+import CountDown from '../../onboarding/_components/CountDown'
+import { Job } from '@/validationSchemas/job.schema'
 
-export default function JobTable({ currentTab }: { currentTab: string }) {
-    const { jobVisibleColumns } = useJobStore()
-    /**
-     * Define states
-     */
-    const [, setDeleteJob] = useState<Job | null>(null)
-    const [currentPage, setCurrentPage] = useState(1)
-    const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
-    /**
-     * Instance hooks
-     */
-    const deleteModal = useConfirmModal()
-    const { newJobNo, setNewJobNo } = useJobStore()
-    const { table } = useSettingStore()
-    const { openModal } = useDetailModal()
+type Props = {
+    onAddTab: (record: Job) => void
+}
+export default function WorkbenchTable({ onAddTab }: Props) {
     /**
      * Get initial data
      */
-    const { data: users } = useUsers()
-    const { data: jobTypes } = useJobTypes()
-    const { data: paymentChannels } = usePaymentChannels()
     const {
         jobs,
         isLoading: loadingJobs,
         meta,
     } = useJobs({
-        tab: currentTab as TJobTab,
-        page: currentPage,
+        tab: 'active',
     })
-
     const columns: TableColumnsType<DataType> = [
         {
             title: 'Thumbnail',
@@ -72,6 +41,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                     </div>
                 )
             },
+            hidden: true,
         },
         {
             title: 'Client',
@@ -82,12 +52,6 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 compare: (a, b) => a.clientName!.localeCompare(b.clientName!),
                 multiple: 4,
             },
-            filters: uniqueByKey(jobs ?? [], 'clientName')?.map((item) => ({
-                text: `${item.clientName}`,
-                value: item?.clientName ?? '',
-            })),
-            onFilter: (value, record) =>
-                record?.clientName?.indexOf(value as string) === 0,
         },
         {
             title: 'Job No.',
@@ -98,12 +62,6 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 compare: (a, b) => a.jobNo!.localeCompare(b.jobNo!),
                 multiple: 1,
             },
-            filters: uniqueByKey(jobTypes ?? [], 'code')?.map((item) => ({
-                text: `${item.code}- ${item.name}`,
-                value: item?.id ?? '',
-            })),
-            onFilter: (value, record) =>
-                record?.jobTypeId?.toString().indexOf(value as string) === 0,
         },
         {
             title: 'Job Name',
@@ -129,6 +87,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 compare: (a, b) => a.income! - b.income!,
                 multiple: 2,
             },
+            hidden: true,
         },
         {
             title: 'Staff Cost',
@@ -160,14 +119,6 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                     ),
                 multiple: 2,
             },
-            filters: uniqueByKey(paymentChannels ?? [], 'name')?.map(
-                (item) => ({
-                    text: `${item.name}`,
-                    value: item?.name ?? '',
-                })
-            ),
-            onFilter: (value, record) =>
-                record!.paymentChannel.name!.indexOf(value as string) === 0,
         },
         {
             title: 'Due to',
@@ -230,12 +181,6 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                     </AvatarGroup>
                 )
             },
-            filters: uniqueByKey(users ?? [], 'id')?.map((item) => ({
-                text: `${item.name}`,
-                value: item?.id ?? '',
-            })),
-            onFilter: (value, record) =>
-                record?.memberAssign?.some((item) => item.id === value),
         },
         {
             title: 'Status',
@@ -247,63 +192,12 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                     {record?.jobStatus.title}
                 </Tag>
             ),
-            // filters: uniqueByKey(jobStatuses ?? [], 'id')?.map((item) => ({
-            //     text: `${item.title}`,
-            //     value: item?.id?.toString() ?? '',
-            // })),
-            onFilter: (value, record) =>
-                record?.jobStatus?.id?.toString()?.indexOf(value as string) ===
-                0,
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            width: 150,
-            fixed: 'right',
-            render: (_, record: DataType) => {
-                return (
-                    <div className="px-4 flex items-center justify-end gap-2">
-                        <Button
-                            variant="light"
-                            color="primary"
-                            onPress={() => openModal(record.jobNo!)}
-                            className="flex items-center justify-center"
-                            size="sm"
-                        >
-                            <EyeIcon size={18} className="text-text-fore2" />
-                            View
-                        </Button>
-                        <ActionDropdown
-                            data={record}
-                            setDeleteJob={setDeleteJob}
-                            onOpen={deleteModal.onOpen}
-                        />
-                    </div>
-                )
-            },
         },
     ]
-
-    const newColumns = columns.map((item) => ({
-        ...item,
-        hidden: !jobVisibleColumns.includes(item.key as keyof Job | 'action'),
-    }))
-
-    // Remove hight after 1 second
-    useEffect(() => {
-        if (newJobNo) {
-            const timeout = setTimeout(() => {
-                setNewJobNo(null)
-            }, 800)
-
-            return () => clearTimeout(timeout)
-        }
-    }, [newJobNo])
-
     return (
         <Table<DataType>
             rowKey="jobNo"
-            columns={newColumns}
+            columns={columns}
             onHeaderRow={() => {
                 return {
                     style: {
@@ -313,30 +207,9 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             }}
             onRow={(record) => {
                 return {
-                    className: `${
-                        record.jobNo === newJobNo ? 'bg-yellow-200' : ''
-                    } cursor-pointer`,
+                    className: 'cursor-pointer',
                     title: 'Double click to view',
-                    onDoubleClick: () => openModal(record.jobNo!),
-                    onClick: () => {
-                        const currentJobNo = record.jobNo!
-
-                        const foundIndex = selectedRowKeys.findIndex(
-                            (i) => i.toString() === currentJobNo
-                        )
-                        if (foundIndex === -1) {
-                            setSelectedRowKeys([
-                                ...selectedRowKeys,
-                                currentJobNo,
-                            ])
-                        } else {
-                            setSelectedRowKeys(
-                                selectedRowKeys.filter(
-                                    (i) => i.toString() !== currentJobNo
-                                )
-                            )
-                        }
-                    },
+                    onDoubleClick: () => onAddTab(record),
                 }
             }}
             dataSource={jobs?.map((prj, index) => ({
@@ -350,16 +223,8 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 current: meta?.page,
                 size: 'default',
                 total: meta?.total,
-                onChange(page) {
-                    setCurrentPage(page)
-                },
             }}
-            rowSelection={{
-                selectedRowKeys,
-                onChange: (newSelectedRowKeys: React.Key[]) =>
-                    setSelectedRowKeys(newSelectedRowKeys),
-            }}
-            size={table.size as TableProps['size']}
+            size="middle"
             rowClassName="h-8! transition duration-500"
             showSorterTooltip
         />

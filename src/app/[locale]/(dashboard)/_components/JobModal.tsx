@@ -23,6 +23,7 @@ import { usePaymentChannels } from '@/queries/usePaymentChannel'
 import { useJobStatuses } from '@/queries/useJobStatus'
 import { SEND_NOTIFICATION_API } from '../../../../lib/swr/api'
 import { useCreateJobMutation } from '../../../../queries/useJob'
+import useAuth from '../../../../queries/useAuth'
 
 const DOT_SYMBOL = '.'
 
@@ -55,6 +56,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
     /**
      * Get initial data
      */
+    const { profile } = useAuth()
     const { data: users, isLoading: loadingUsers } = useUsers()
     const { data: jobTypes, isLoading: loadingJobTypes } = useJobTypes()
     const { data: paymentChannels, isLoading: loadingPaymentChannels } =
@@ -81,7 +83,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
 
     const formik = useFormik<NewJob>({
         initialValues: {
-            createdById: authUser?.id ?? '',
+            createdById: Number(profile.data?.id),
             clientName: '',
             jobTypeId: defaultJobTypeId,
             jobNo: getJobNo,
@@ -108,6 +110,8 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     ...values,
                     jobNo: pareJobNo(jobType!.code!, jobNumber),
                 }
+
+                await createJobMutate(newJob)
 
                 values.memberAssignIds.forEach(async (recipientId) => {
                     const newNotification: NewNotification = {
