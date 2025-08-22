@@ -5,22 +5,21 @@ import React, { useMemo } from 'react'
 import useSWR from 'swr'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { getProjects } from '@/lib/swr/actions/project'
-import { PROJECT_API } from '@/lib/swr/api'
 import { IconActive } from '@/shared/components/icons/solar/IconActive'
 import { IconAssignee } from '@/shared/components/icons/solar/IconAssignee'
 import { IconCompleted } from '@/shared/components/icons/solar/IconCompleted'
 import { IconDueSoon } from '@/shared/components/icons/solar/IconDueSoon'
 import { IconMoneyIncome } from '@/shared/components/icons/solar/IconMoneyIncome'
+import { useJobs } from '@/queries/useJob'
 
 export default function ProjectAnalysis() {
-    const { data: projects } = useSWR(PROJECT_API, () => getProjects())
+    const { jobs } = useJobs()
 
     const analysis = useMemo(() => {
         return [
             {
                 title: 'Assigned projects',
-                value: `${projects?.length}`,
+                value: `${jobs?.length}`,
                 icon: IconAssignee,
                 color: '#c65808',
                 href: '',
@@ -54,7 +53,7 @@ export default function ProjectAnalysis() {
                 href: '',
             },
         ]
-    }, [projects])
+    }, [jobs])
 
     return (
         <div className="grid grid-cols-5 gap-4">

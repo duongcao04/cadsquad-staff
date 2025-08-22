@@ -3,7 +3,7 @@ import * as yup from 'yup'
 import {
     Notification as NotificationPrisma,
     UserNotification as UserNotificationPrisma,
-} from '@/generated/prisma'
+} from '@prisma/client'
 
 export type Notification = NotificationPrisma
 export type UserNotification = UserNotificationPrisma & {
@@ -14,6 +14,7 @@ export type UserNotification = UserNotificationPrisma & {
 }
 
 export const CreateNotificationSchema = yup.object().shape({
+    senderId: yup.string(),
     recipientId: yup.string().required(),
     title: yup.string().required(),
     content: yup.string().required(),

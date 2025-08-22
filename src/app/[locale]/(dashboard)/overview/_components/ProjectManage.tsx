@@ -9,12 +9,11 @@ import useSWR from 'swr'
 
 import { Link } from '@/i18n/navigation'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { getProjectByTab } from '@/lib/swr/actions/project'
-import { PROJECT_API } from '@/lib/swr/api'
 
 import CountDown from '../../onboarding/_components/CountDown'
 import { useSettingStore } from '../../../settings/shared/store/useSettingStore'
-import { Job } from '../../../../../validationSchemas/job.schema'
+import { Job } from '@/validationSchemas/job.schema'
+import { useJobs } from '@/queries/useJob'
 
 const DEFAULT_TAB = 'active'
 
@@ -24,20 +23,7 @@ type DataType = Job & {
 
 export default function ProjectManage() {
     const { table } = useSettingStore()
-
-    const {
-        data: projectData,
-        isLoading: loadingProjects,
-        isValidating: validatingProjects,
-    } = useSWR([`${PROJECT_API}?tab=${DEFAULT_TAB}`], () =>
-        getProjectByTab('active')
-    )
-
-    const { projects } = useMemo(() => {
-        return (
-            projectData ?? { projects: [], count: {} as Record<string, number> }
-        )
-    }, [projectData])
+    const { jobs } = useJobs()
 
     const columns: TableProps<DataType>['columns'] = [
         {
@@ -201,13 +187,13 @@ export default function ProjectManage() {
             <Table<DataType>
                 columns={columns}
                 rowKey="jobNo"
-                dataSource={projects?.map((prj, index) => ({
+                dataSource={jobs?.map((prj, index) => ({
                     ...prj,
                     key: prj?.id ?? index,
                 }))}
-                loading={loadingProjects && validatingProjects}
+                // loading={loadingProjects && validatingProjects}
                 pagination={false}
-                size={table.size}
+                // size={table.size}
                 rowClassName="h-8! transition duration-500"
                 showSorterTooltip
             />

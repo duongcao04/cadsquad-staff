@@ -3,6 +3,7 @@ import {
     BriefcaseBusiness,
     CircleDollarSign,
     MonitorCog,
+    Newspaper,
     Palette,
     SquareUserRound,
     Users,
@@ -73,6 +74,19 @@ export const ADMIN_SETTING_DROPDOWN = [
             },
         ],
     },
+    {
+        id: 3,
+        groupTitle: 'Cadsquad.vn settings',
+        children: [
+            {
+                id: 2.1,
+                icon: Newspaper,
+                title: 'Articles',
+                description: 'Manage, create new, edit articles and more.',
+                href: '/settings/cadsquad/articles',
+            },
+        ],
+    },
 ]
 
 export const VI_ADMIN_SETTING_DROPDOWN = [
@@ -136,6 +150,19 @@ export const VI_ADMIN_SETTING_DROPDOWN = [
                 icon: Users,
                 description: 'Quản lý người dùng, yêu cầu truy cập,...',
                 href: '/settings/admin/users',
+            },
+        ],
+    },
+    {
+        id: 3,
+        groupTitle: 'Cài đặt trang Cadsquad.vn',
+        children: [
+            {
+                id: 2.1,
+                icon: Newspaper,
+                title: 'Bài viết',
+                description: 'Quản lý, tạo mới, chỉnh sửa bài viết, ...',
+                href: '/settings/cadsquad/articles',
             },
         ],
     },

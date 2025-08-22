@@ -142,11 +142,11 @@ export default function OnboardingPage() {
                     }
                     confirmText="Delete"
                 /> */}
+                <JobTableTabs
+                    activeKey={currentTab}
+                    onChange={handleTabChange}
+                />
                 <div className="grid grid-cols-[1fr_1fr_160px] gap-3">
-                    <JobTableTabs
-                        activeKey={currentTab}
-                        onChange={handleTabChange}
-                    />
                     <Input
                         // value={keywords}
                         startContent={

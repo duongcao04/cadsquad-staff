@@ -8,8 +8,6 @@ import { useFormik } from 'formik'
 import useSWR from 'swr'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
-import { useCreateMutation } from '@/lib/swr/actions'
-import { getProjects } from '@/lib/swr/actions/project'
 import { padToFourDigits } from '@/lib/utils'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { NewNotification } from '@/validationSchemas/notification.schema'
@@ -21,7 +19,6 @@ import { useJobTypes } from '@/queries/useJobType'
 import { useUsers } from '@/queries/useUser'
 import { usePaymentChannels } from '@/queries/usePaymentChannel'
 import { useJobStatuses } from '@/queries/useJobStatus'
-import { SEND_NOTIFICATION_API } from '../../../../lib/swr/api'
 import { useCreateJobMutation } from '../../../../queries/useJob'
 import useAuth from '../../../../queries/useAuth'
 
@@ -49,9 +46,9 @@ export default function JobModal({ isOpen, onClose }: Props) {
 
     const { mutateAsync: createJobMutate, isIdle: isCreatingJob } =
         useCreateJobMutation()
-    const { trigger: createNotification } = useCreateMutation<NewNotification>(
-        SEND_NOTIFICATION_API
-    )
+    // const { trigger: createNotification } = useCreateMutation<NewNotification>(
+    //     SEND_NOTIFICATION_API
+    // )
 
     /**
      * Get initial data
@@ -120,7 +117,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                         content: `Job No. ${newJob.jobNo} have just been assigned from ${authUser?.name}. View here`,
                         image: jobStatuses?.[0].thumbnail ?? null,
                     }
-                    await createNotification(newNotification)
+                    // await createNotification(newNotification)
                 })
 
                 onClose()

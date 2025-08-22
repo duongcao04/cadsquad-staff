@@ -56,7 +56,6 @@
     "nodemailer": "^7.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "swr": "^2.3.4",
     "tailwind-merge": "^3.3.1",
     "universal-cookie": "^8.0.1",
     "use-keyboard-shortcuts": "^2.2.3",

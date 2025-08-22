@@ -8,13 +8,12 @@ import { useFormik } from 'formik'
 import useSWR from 'swr'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
-import { useCreateMutation } from '@/lib/swr/actions'
-import { SEND_NOTIFICATION_API } from '@/lib/swr/api'
 import {
     CreateNotificationSchema,
     NewNotification,
 } from '@/validationSchemas/notification.schema'
 import { useUsers } from '@/queries/useUser'
+import { useSendNotiMutation } from '@/queries/useNoties'
 
 type Props = {
     isOpen: boolean
@@ -30,10 +29,8 @@ export default function NotificationModal({ isOpen, onClose }: Props) {
 
     const [isLoading, setLoading] = useState(false)
     const { data: users } = useUsers()
-
-    const { trigger: createNotification } = useCreateMutation<NewNotification>(
-        SEND_NOTIFICATION_API
-    )
+    const { mutateAsync: sendNotiMutate, isIdle: isSendingNoti } =
+        useSendNotiMutation()
 
     const formik = useFormik<NewNotification>({
         initialValues: {
@@ -47,14 +44,14 @@ export default function NotificationModal({ isOpen, onClose }: Props) {
             try {
                 setLoading(true)
 
-                await createNotification(values)
+                await sendNotiMutate(values)
                 addToast({
-                    title: 'Send notification successfully!',
+                    title: 'Gửi thông báo thành công!',
                     color: 'success',
                 })
             } catch (error) {
                 addToast({
-                    title: 'Send notification failed!',
+                    title: 'Gửi thông báo thất bại!',
                     description: `${error}`,
                     color: 'danger',
                 })
@@ -71,7 +68,7 @@ export default function NotificationModal({ isOpen, onClose }: Props) {
             <Modal
                 open={isOpen}
                 onCancel={onClose}
-                title={<p className="text-lg capitalize">Create new User</p>}
+                title={<p className="text-lg capitalize">Send notification</p>}
                 width={{
                     xs: '90%',
                     sm: '80%',
@@ -141,7 +138,12 @@ export default function NotificationModal({ isOpen, onClose }: Props) {
 
                     <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.recipientId) && formik.errors.recipientId ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-medium text-base pr-2 ${
+                                Boolean(formik.touched.recipientId) &&
+                                formik.errors.recipientId
+                                    ? 'text-danger'
+                                    : 'text-secondary'
+                            }`}
                         >
                             Receiver
                             <span className="absolute top-0 right-0 text-danger!">
@@ -170,7 +172,7 @@ export default function NotificationModal({ isOpen, onClose }: Props) {
                                         <div className="flex items-center justify-start gap-4">
                                             <div className="size-9">
                                                 <Image
-                                                    src={opt.data.avatar}
+                                                    src={opt.data.avatar ?? ''}
                                                     alt={opt.data.name}
                                                     className="size-full rounded-full object-cover"
                                                     preview={false}

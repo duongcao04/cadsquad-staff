@@ -11,7 +11,7 @@ import {
     ROOT_DIR,
     getFileSystem,
 } from '@/app/[locale]/(dashboard)/documents/actions'
-import { FILE_SYSTEM_API } from '@/lib/swr/api'
+// import { FILE_SYSTEM_API } from '@/lib/swr/api'
 import { FILE } from '@/shared/constants/appConstant'
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileItem } from '@/validationSchemas/file.schema'

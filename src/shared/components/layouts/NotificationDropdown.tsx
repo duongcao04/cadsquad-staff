@@ -17,6 +17,7 @@ import { Notification } from '@/validationSchemas/notification.schema'
 
 import CadsquadLogo from '../CadsquadLogo'
 import { BellIcon } from '../icons/animate/BellIcon'
+import { useNoties } from '@/queries/useNoties'
 
 function NotificationCard({ data }: { data: Notification }) {
     return (
@@ -76,6 +77,10 @@ export default function NotificationDropdown() {
     //   revalidate: false,   // don't refetch from server
     // })
 
+    const { data: noties, isLoading, isFetching } = useNoties()
+
+    console.log(noties)
+
     return (
         <Dropdown placement="bottom-end">
             <DropdownTrigger>
@@ -103,7 +108,7 @@ export default function NotificationDropdown() {
                         <p className="font-semibold">Notifications</p>
                     </DropdownItem>
                 </DropdownSection>
-                {/* {isLoading && isValidating ? (
+                {isLoading && isFetching ? (
                     <DropdownSection aria-label="Loading Notifications">
                         <DropdownItem key="Loading">
                             <div className="w-full h-full grid place-items-center">
@@ -113,13 +118,11 @@ export default function NotificationDropdown() {
                     </DropdownSection>
                 ) : (
                     <DropdownSection aria-label="Notifications">
-                        {notifications && notifications.length > 0 ? (
-                            notifications.map((noti, index) => {
+                        {noties && noties.length > 0 ? (
+                            noties.map((noti, index) => {
                                 return (
                                     <DropdownItem key={noti?.id ?? index}>
-                                        <NotificationCard
-                                            data={noti.notification}
-                                        />
+                                        <NotificationCard data={noti} />
                                     </DropdownItem>
                                 )
                             })
@@ -131,7 +134,7 @@ export default function NotificationDropdown() {
                             </DropdownItem>
                         )}
                     </DropdownSection>
-                )} */}
+                )}
             </DropdownMenu>
         </Dropdown>
     )

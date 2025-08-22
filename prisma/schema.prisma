@@ -78,6 +78,8 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  sendNoties Notification[]
 }
 
 enum RoleEnum {
@@ -268,6 +270,9 @@ model Notification {
   content String
   image   String?
 
+  senderId Int?
+  sender   User? @relation(fields: [senderId], references: [id])
+
   // Notification types
   type NotificationType @default(INFO)
 
@@ -276,7 +281,8 @@ model Notification {
 
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
-  UserNotification UserNotification[]
+  userNotification UserNotification[]
+  userId           Int
 
   @@index([type])
   @@index([createdAt])
