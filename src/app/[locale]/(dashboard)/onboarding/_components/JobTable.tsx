@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { Avatar, AvatarGroup, Button, Chip, Tooltip } from '@heroui/react'
-import { Image, Table, Tag } from 'antd'
+import { addToast, Avatar, AvatarGroup, Button, Tooltip } from '@heroui/react'
+import { Image, Table, Tooltip as TooltipAnt } from 'antd'
 import type { TableColumnsType, TableProps } from 'antd'
-import { EyeIcon } from 'lucide-react'
+import { Copy, EyeIcon, Link as LinkIcon } from 'lucide-react'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { uniqueByKey } from '@/lib/utils'
@@ -16,13 +16,14 @@ import { useJobStore } from '../store/useJobStore'
 import ActionDropdown from './ActionDropdown'
 import CountDown from './CountDown'
 import { useUsers } from '@/queries/useUser'
-import { useJobTypes } from '@/queries/useJobType'
 import { usePaymentChannels } from '@/queries/usePaymentChannel'
-import { Job } from '@/validationSchemas/job.schema'
+import { Job, JobStatus } from '@/validationSchemas/job.schema'
 import { useJobs } from '@/queries/useJob'
 import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
 import { useSettingStore } from '@/app/[locale]/settings/shared/store/useSettingStore'
 import { DataType } from '../page'
+import { Link } from '@/i18n/navigation'
+import JobStatusDropdown from './JobStatusDropdown'
 
 export default function JobTable({ currentTab }: { currentTab: string }) {
     const { jobVisibleColumns } = useJobStore()
@@ -43,7 +44,6 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
      * Get initial data
      */
     const { data: users } = useUsers()
-    const { data: jobTypes } = useJobTypes()
     const { data: paymentChannels } = usePaymentChannels()
     const {
         jobs,
@@ -53,6 +53,24 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
         tab: currentTab as TJobTab,
         page: currentPage,
     })
+
+    const handleCopyJob = (job: Job) => {
+        navigator.clipboard
+            .writeText(job.jobNo!)
+            .then(() => {
+                addToast({
+                    title: 'Sao chép Job No thành công',
+                    color: 'success',
+                })
+            })
+            .catch((err) => {
+                console.log(err)
+                addToast({
+                    title: 'Sao chép Job No thất bại',
+                    color: 'danger',
+                })
+            })
+    }
 
     const columns: TableColumnsType<DataType> = [
         {
@@ -77,42 +95,63 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             title: 'Client',
             dataIndex: 'clientName',
             key: 'clientName',
-            width: '10%',
+            width: 100,
             sorter: {
                 compare: (a, b) => a.clientName!.localeCompare(b.clientName!),
                 multiple: 4,
             },
-            filters: uniqueByKey(jobs ?? [], 'clientName')?.map((item) => ({
-                text: `${item.clientName}`,
-                value: item?.clientName ?? '',
-            })),
-            onFilter: (value, record) =>
-                record?.clientName?.indexOf(value as string) === 0,
+            // filters: uniqueByKey(jobs ?? [], 'clientName')?.map((item) => ({
+            //     text: `${item.clientName}`,
+            //     value: item?.clientName ?? '',
+            // })),
+            // onFilter: (value, record) =>
+            //     record?.clientName?.indexOf(value as string) === 0,
         },
         {
             title: 'Job No.',
             dataIndex: 'jobNo',
             key: 'jobNo',
-            width: '10%',
+            width: 140,
+            render: (jobNo) => (
+                <div className="group size-full flex items-center justify-between gap-2">
+                    <Link
+                        href={{
+                            pathname: '/onboarding',
+                            query: {
+                                detail: jobNo,
+                            },
+                        }}
+                        className="!text-foreground transition duration-150 hover:!underline uppercase line-clamp-1"
+                    >
+                        {jobNo}
+                    </Link>
+
+                    <TooltipAnt placement="top" title="Copy link">
+                        <LinkIcon
+                            size={14}
+                            strokeWidth={2}
+                            className="hidden group-hover:block transition duration-150"
+                        />
+                    </TooltipAnt>
+                </div>
+            ),
             sorter: {
                 compare: (a, b) => a.jobNo!.localeCompare(b.jobNo!),
                 multiple: 1,
             },
-            filters: uniqueByKey(jobTypes ?? [], 'code')?.map((item) => ({
-                text: `${item.code}- ${item.name}`,
-                value: item?.id ?? '',
-            })),
-            onFilter: (value, record) =>
-                record?.jobTypeId?.toString().indexOf(value as string) === 0,
+            // filters: uniqueByKey(jobTypes ?? [], 'code')?.map((item) => ({
+            //     text: `${item.code}- ${item.name}`,
+            //     value: item?.id ?? '',
+            // })),
+            // onFilter: (value, record) =>
+            //     record?.jobTypeId?.toString().indexOf(value as string) === 0,
         },
         {
             title: 'Job Name',
             dataIndex: 'jobName',
             key: 'jobName',
             render: (jobName) => (
-                <p className="font-semibold uppercase line-clamp-1">
-                    {jobName}
-                </p>
+                <p className="font-semibold line-clamp-1">{jobName}</p>
             ),
             sorter: {
                 compare: (a, b) => a.jobName!.localeCompare(b.jobName!),
@@ -120,23 +159,25 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             },
         },
         {
-            title: 'Income',
+            title: <p className="text-right">Income</p>,
             dataIndex: 'income',
             key: 'income',
             width: '10%',
-            render: () => <p className="font-semibold text-red-500">$ 10</p>,
+            render: () => (
+                <p className="text-right font-semibold text-red-500">$ 10</p>
+            ),
             sorter: {
                 compare: (a, b) => a.income! - b.income!,
                 multiple: 2,
             },
         },
         {
-            title: 'Staff Cost',
+            title: <div className="text-right">Staff Cost</div>,
             dataIndex: 'staffCost',
             key: 'staffCost',
             width: '10%',
             render: (staffCost) => (
-                <p className="font-semibold text-red-500">
+                <p className="text-right font-semibold text-red-500">
                     {formatCurrencyVND(staffCost)}
                 </p>
             ),
@@ -170,24 +211,26 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 record!.paymentChannel.name!.indexOf(value as string) === 0,
         },
         {
-            title: 'Due to',
+            title: <div className="text-right">Due to</div>,
             dataIndex: 'dueAt',
             key: 'dueAt',
             width: '10%',
             render: (_, record: DataType) => {
                 return (
-                    <CountDown
-                        endedDate={record.dueAt!}
-                        options={{
-                            format: 'short',
-                            showYears: true,
-                            showMonths: true,
-                            showDays: true,
-                            showHours: true,
-                            showMinutes: true,
-                            showSeconds: true,
-                        }}
-                    />
+                    <div className="text-right">
+                        <CountDown
+                            endedDate={record.dueAt!}
+                            options={{
+                                format: 'short',
+                                showYears: true,
+                                showMonths: true,
+                                showDays: true,
+                                showHours: true,
+                                showMinutes: true,
+                                showSeconds: true,
+                            }}
+                        />
+                    </div>
                 )
             },
         },
@@ -241,38 +284,58 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             title: 'Status',
             dataIndex: 'jobStatus',
             key: 'jobStatus',
-            width: 140,
+            width: 120,
             render: (_, record: DataType) => (
-                <Tag color={record?.jobStatus.color}>
-                    {record?.jobStatus.title}
-                </Tag>
+                <div className="flex items-center justify-center">
+                    <JobStatusDropdown
+                        jobId={String(record?.id)}
+                        statusData={record?.jobStatus as JobStatus}
+                    />
+                </div>
             ),
             // filters: uniqueByKey(jobStatuses ?? [], 'id')?.map((item) => ({
             //     text: `${item.title}`,
-            //     value: item?.id?.toString() ?? '',
+            //     value: item?.id?.toString() ?? '',e
             // })),
             onFilter: (value, record) =>
                 record?.jobStatus?.id?.toString()?.indexOf(value as string) ===
                 0,
         },
         {
-            title: 'Action',
+            title: <p className="text-right px-4">Action</p>,
             key: 'action',
             width: 150,
             fixed: 'right',
             render: (_, record: DataType) => {
                 return (
-                    <div className="px-4 flex items-center justify-end gap-2">
-                        <Button
-                            variant="light"
-                            color="primary"
-                            onPress={() => openModal(record.jobNo!)}
-                            className="flex items-center justify-center"
-                            size="sm"
-                        >
-                            <EyeIcon size={18} className="text-text-fore2" />
-                            View
-                        </Button>
+                    <div className="flex items-center justify-end gap-2">
+                        <Tooltip content="View detail">
+                            <Button
+                                variant="light"
+                                color="primary"
+                                onPress={() => openModal(record.jobNo!)}
+                                className="flex items-center justify-center"
+                                size="sm"
+                                isIconOnly
+                            >
+                                <EyeIcon
+                                    size={18}
+                                    className="text-text-fore2"
+                                />
+                            </Button>
+                        </Tooltip>
+                        <Tooltip content="Copy Job No.">
+                            <Button
+                                variant="light"
+                                color="primary"
+                                onPress={() => handleCopyJob(record)}
+                                className="flex items-center justify-center"
+                                size="sm"
+                                isIconOnly
+                            >
+                                <Copy size={18} className="text-text-fore2" />
+                            </Button>
+                        </Tooltip>
                         <ActionDropdown
                             data={record}
                             setDeleteJob={setDeleteJob}
@@ -316,27 +379,25 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                     className: `${
                         record.jobNo === newJobNo ? 'bg-yellow-200' : ''
                     } cursor-pointer`,
-                    title: 'Double click to view',
-                    onDoubleClick: () => openModal(record.jobNo!),
-                    onClick: () => {
-                        const currentJobNo = record.jobNo!
+                    // onClick: () => {
+                    //     const currentJobNo = record.jobNo!
 
-                        const foundIndex = selectedRowKeys.findIndex(
-                            (i) => i.toString() === currentJobNo
-                        )
-                        if (foundIndex === -1) {
-                            setSelectedRowKeys([
-                                ...selectedRowKeys,
-                                currentJobNo,
-                            ])
-                        } else {
-                            setSelectedRowKeys(
-                                selectedRowKeys.filter(
-                                    (i) => i.toString() !== currentJobNo
-                                )
-                            )
-                        }
-                    },
+                    //     const foundIndex = selectedRowKeys.findIndex(
+                    //         (i) => i.toString() === currentJobNo
+                    //     )
+                    //     if (foundIndex === -1) {
+                    //         setSelectedRowKeys([
+                    //             ...selectedRowKeys,
+                    //             currentJobNo,
+                    //         ])
+                    //     } else {
+                    //         setSelectedRowKeys(
+                    //             selectedRowKeys.filter(
+                    //                 (i) => i.toString() !== currentJobNo
+                    //             )
+                    //         )
+                    //     }
+                    // },
                 }
             }}
             dataSource={jobs?.map((prj, index) => ({

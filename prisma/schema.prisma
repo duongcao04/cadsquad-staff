@@ -173,7 +173,7 @@ model JobStatus {
   order     Int     @unique
   icon      String?
 
-  nextStatusId Int?
+  nextStatus   Int?
   prevStatusId Int?
 
   jobs              Job[]

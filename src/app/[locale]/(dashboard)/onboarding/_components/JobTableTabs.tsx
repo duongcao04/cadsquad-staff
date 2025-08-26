@@ -15,14 +15,14 @@ type Props = { activeKey: string; onChange: (key: string) => void }
 type TabItem = Omit<TabsProps, 'title'> & { title: React.ReactNode }
 export default function JobTableTabs({ activeKey, onChange }: Props) {
     const { data: countActive } = useCountJobByTab('active')
-    const { data: countPriotiry } = useCountJobByTab('priority')
+    const { data: countPriority } = useCountJobByTab('priority')
     const { data: countDelivered } = useCountJobByTab('delivered')
     const { data: countLate } = useCountJobByTab('late')
     const { data: countCompleted } = useCountJobByTab('completed')
     const { data: countCancelled } = useCountJobByTab('cancelled')
     const counts = {
         active: countActive,
-        priority: countPriotiry,
+        priority: countPriority,
         delivered: countDelivered,
         late: countLate,
         completed: countCompleted,

@@ -35,7 +35,7 @@ type ActionGroup = {
         onClick: () => void
     }[]
 }
-const adminActons: ActionGroup[] = [
+const adminActions: ActionGroup[] = [
     {
         key: 'Assignee menu',
         groupTitle: 'Assignee',
@@ -121,7 +121,7 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                 </Button>
             </DropdownTrigger>
             <DropdownMenu aria-label="Job menu actions">
-                {adminActons.map((group) => {
+                {adminActions.map((group) => {
                     return (
                         <DropdownSection
                             key={group.key}

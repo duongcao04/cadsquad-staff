@@ -2,20 +2,12 @@
 
 import React, { useState } from 'react'
 
-import {
-    Avatar,
-    AvatarGroup,
-    Button,
-    Chip,
-    Spinner,
-    Tooltip,
-} from '@heroui/react'
-import { Drawer, Skeleton, Tag } from 'antd'
+import { Avatar, AvatarGroup, Button, Spinner, Tooltip } from '@heroui/react'
+import { Drawer, Skeleton } from 'antd'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import {
-    ArrowLeftRight,
     Banknote,
     CalendarClock,
     CalendarPlus,
@@ -34,6 +26,8 @@ import { formatCurrencyVND } from '@/lib/formatCurrency'
 import DetailTabs from './_components/DetailTabs'
 import { useDetailModal } from './actions'
 import { useJobDetail } from '@/queries/useJob'
+import JobStatusChip from '@/shared/components/customize/JobStatusChip'
+import { JobStatus } from '@/validationSchemas/job.schema'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -58,42 +52,19 @@ export default function JobDetailDrawer() {
                 ) : (
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start gap-2">
-                            <p className="max-w-[70%] line-clamp-1">{jobNo}</p>
-                            {job && (
-                                <>
-                                    <p>/</p>
-
-                                    <Tag color={job?.jobStatus.color}>
-                                        {job?.jobStatus.title}
-                                    </Tag>
-                                </>
-                            )}
+                            <p className="line-clamp-1 tracking-wide">
+                                # {jobNo}
+                            </p>
                         </div>
-                        {job && (
-                            <Button
-                                startContent={<ArrowLeftRight size={16} />}
-                                size="sm"
-                                variant="light"
-                            >
-                                Switch to
-                                <Chip
-                                    style={{
-                                        // backgroundColor: nextJobStatus?.color,
-                                        marginLeft: '5px',
-                                    }}
-                                    size="sm"
-                                >
-                                    completed
-                                </Chip>
-                            </Button>
-                        )}
                     </div>
                 )
             }
-            width={600}
+            width={700}
+            maskClosable
             classNames={{
-                mask: 'backdrop-blur-sm',
+                mask: '!backdrop-brightness-50',
             }}
+            mask={true}
             onClose={closeModal}
         >
             {isLoading && <Spinner />}
@@ -111,9 +82,11 @@ export default function JobDetailDrawer() {
                                     Status
                                 </p>
                             </div>
-                            <p className="font-semibold">
-                                {job?.jobStatus?.title}
-                            </p>
+                            {job && (
+                                <JobStatusChip
+                                    data={job?.jobStatus as JobStatus}
+                                />
+                            )}
                         </div>
                         <div className="grid grid-cols-[0.5fr_1fr]">
                             <div className="flex items-center justify-start gap-2 opacity-80">
