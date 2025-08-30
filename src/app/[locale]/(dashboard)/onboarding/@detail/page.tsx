@@ -61,9 +61,6 @@ export default function JobDetailDrawer() {
             }
             width={700}
             maskClosable
-            classNames={{
-                mask: '!backdrop-brightness-50',
-            }}
             mask={true}
             onClose={closeModal}
         >

@@ -20,7 +20,7 @@ const getJobVisibleColumns = () => {
             localStorage.getItem('job_visible_cols') ?? 'null'
         )
         if (getLocalStorage !== null) {
-            init = { ...getLocalStorage }
+            init = getLocalStorage
         }
         return init
     } else {
@@ -28,22 +28,31 @@ const getJobVisibleColumns = () => {
     }
 }
 
+const getJobFinishItems = () => {
+    if (typeof window !== 'undefined') {
+        return JSON.parse(localStorage.getItem('hide_finish_items') ?? 'true')
+    } else {
+        return true
+    }
+}
+
 export type JobStore = {
     newJobNo: string | null
-    jobVisibleColumns: Array<keyof Job | 'action'>
+    jobVisibleColumns: Array<keyof Job | 'action' | string>
+    isHideFinishItems: boolean
 }
 
 type JobAction = {
     setNewJobNo: (jobNo: string | null) => void
-    setJobVisibleColumns: (
-        jobVisibleCols: JobStore['jobVisibleColumns']
-    ) => void
+    setJobVisibleColumns: (jobVisibleCols: string[]) => void
+    setHideFinishItems: (isHidden: boolean) => void
 }
 export const useJobStore = create(
     combine<JobStore, JobAction>(
         {
             newJobNo: null,
             jobVisibleColumns: getJobVisibleColumns(),
+            isHideFinishItems: getJobFinishItems(),
         },
         (set) => ({
             setNewJobNo: (jobNo: string | null) => {
@@ -53,12 +62,29 @@ export const useJobStore = create(
                     }
                 })
             },
-            setJobVisibleColumns: (
-                jobVisibleCols: JobStore['jobVisibleColumns']
-            ) => {
+            setJobVisibleColumns: (jobVisibleCols: string[]) => {
                 set(() => {
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem(
+                            'job_visible_cols',
+                            JSON.stringify(jobVisibleCols)
+                        )
+                    }
                     return {
                         jobVisibleColumns: jobVisibleCols,
+                    }
+                })
+            },
+            setHideFinishItems: (isHidden: boolean) => {
+                set(() => {
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem(
+                            'hide_finish_items',
+                            JSON.stringify(isHidden)
+                        )
+                    }
+                    return {
+                        isHideFinishItems: isHidden,
                     }
                 })
             },

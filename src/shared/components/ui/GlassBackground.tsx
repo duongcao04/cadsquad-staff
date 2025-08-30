@@ -18,7 +18,7 @@ export default function GlassBackground({
             }}
             className="max-w-screen h-screen backdrop-blur-3xl"
         >
-            <div className="bg-background opacity-95" suppressHydrationWarning>
+            <div className="bg-background2 opacity-95" suppressHydrationWarning>
                 {children}
             </div>
         </div>

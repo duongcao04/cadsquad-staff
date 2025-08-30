@@ -9,11 +9,13 @@ import {
     Vote,
 } from 'lucide-react'
 import { useCountJobByTab } from '@/queries/useJob'
+import useAuth from '@/queries/useAuth'
 
 type Props = { activeKey: string; onChange: (key: string) => void }
 
 type TabItem = Omit<TabsProps, 'title'> & { title: React.ReactNode }
 export default function JobTableTabs({ activeKey, onChange }: Props) {
+    const { userRole } = useAuth()
     const { data: countActive } = useCountJobByTab('active')
     const { data: countPriority } = useCountJobByTab('priority')
     const { data: countDelivered } = useCountJobByTab('delivered')
@@ -127,19 +129,27 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
             ),
         },
     ]
+
+    const newTabItems =
+        userRole !== 'ADMIN'
+            ? tabItems.filter((item) => item.key !== 'cancelled')
+            : tabItems
+
     return (
         <Tabs
             aria-label="Options"
             color="primary"
             classNames={{
                 tabWrapper: 'border-[1px]',
+                tabList:
+                    'bg-background hover:shadow-xs transition duration-150',
             }}
             selectedKey={activeKey}
             onSelectionChange={(key) => {
                 onChange(key.toString())
             }}
         >
-            {tabItems.map((tab) => {
+            {newTabItems.map((tab) => {
                 return <Tab key={tab.key} title={tab.title} />
             })}
         </Tabs>

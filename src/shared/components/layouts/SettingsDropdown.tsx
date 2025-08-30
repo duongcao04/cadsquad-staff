@@ -24,8 +24,9 @@ export default function SettingsDropdown() {
     return (
         <Dropdown
             placement="bottom-end"
+            showArrow
             classNames={{
-                content: 'rounded-sm',
+                content: 'rounded-lg',
             }}
         >
             <DropdownTrigger>

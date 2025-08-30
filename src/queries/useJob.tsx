@@ -5,6 +5,7 @@ import { ApiResponse, axiosClient } from '@/lib/axios'
 import { Job, NewJob } from '@/validationSchemas/job.schema'
 import { queryClient } from '../app/providers/TanstackQueryProvider'
 import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
+import useAuth from './useAuth'
 
 type JobsResponse = {
     jobs: Job[]
@@ -31,6 +32,10 @@ export type TQueryJobParams = {
     page?: number
 }
 export const useJobs = (params?: TQueryJobParams) => {
+    const { userRole } = useAuth()
+
+    const hideCols = userRole === 'USER' ? ['income'] : []
+
     const {
         data,
         refetch,
@@ -55,6 +60,7 @@ export const useJobs = (params?: TQueryJobParams) => {
         jobs: data?.result?.jobs,
         counts: data?.result?.counts,
         meta: data?.meta,
+        hideCols,
     }
 }
 

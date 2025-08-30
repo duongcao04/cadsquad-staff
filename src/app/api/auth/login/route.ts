@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import prisma from '../../../../lib/prisma'
 
 export async function POST(request: NextRequest) {
     const body = await request.json()
@@ -36,6 +37,14 @@ export async function POST(request: NextRequest) {
             expiresAt: session?.expires_at,
             refreshToken: session?.refresh_token,
         }
+
+        // updateLastLoginAt
+        await prisma.user.update({
+            where: { uuid: session.user.id },
+            data: {
+                lastLoginAt: new Date().toISOString(),
+            },
+        })
 
         return NextResponse.json(
             { success: true, message: 'Đăng nhập thành công', result },

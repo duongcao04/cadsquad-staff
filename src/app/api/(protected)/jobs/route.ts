@@ -3,6 +3,20 @@ import prisma from '@/lib/prisma'
 import { getTabQuery, TJobTab } from './utils/getTabQuery'
 
 export async function GET(request: NextRequest) {
+    const userHeader = request.headers.get('x-user')
+    const user = userHeader ? JSON.parse(userHeader) : null
+    // 1. Get user from headers
+    if (!user) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Lấy thông tin tài khoản thất bại',
+                error: 'Unauthenticated',
+            },
+            { status: 401 }
+        )
+    }
+
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -14,6 +28,21 @@ export async function GET(request: NextRequest) {
     // 1. Get by Job No.
     if (jobNo) {
         try {
+            const getUser = await prisma.user.findUnique({
+                where: { uuid: user.sub },
+            })
+            if (!getUser) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        message: 'Xác thực không thành công',
+                        error: 'Unauthenticated',
+                    },
+                    { status: 401 }
+                )
+            }
+            console.log(getUser)
+
             const result = await prisma.job.findUnique({
                 where: {
                     jobNo: jobNo,
@@ -87,10 +116,37 @@ export async function GET(request: NextRequest) {
      * - @cancelledFilter Dự án đã hủy (delete)
      */
     try {
+        // Lấy thông tin User từ header auth
+        // - Admin xem được toàn bộ dự án
+        // - User chỉ xem được dự án của mình
+        const getUser = await prisma.user.findUnique({
+            where: { uuid: user.sub },
+        })
+        if (!getUser) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: 'Xác thực không thành công',
+                    error: 'Unauthenticated',
+                },
+                { status: 401 }
+            )
+        }
+        const getJobPermission =
+            getUser.role === 'ADMIN'
+                ? {}
+                : {
+                      memberAssign: {
+                          some: {
+                              uuid: user.sub,
+                          },
+                      },
+                  }
         const [jobs, priority, active, completed, delivered, late, cancelled] =
             await Promise.all([
                 prisma.job.findMany({
                     where: {
+                        ...getJobPermission,
                         ...getTabQuery(tab),
                         ...(search && {
                             OR: [
@@ -138,12 +194,24 @@ export async function GET(request: NextRequest) {
                     skip: (page - 1) * limit,
                     take: limit,
                 }),
-                prisma.job.count({ where: getTabQuery('priority') }),
-                prisma.job.count({ where: getTabQuery('active') }),
-                prisma.job.count({ where: getTabQuery('completed') }),
-                prisma.job.count({ where: getTabQuery('cancelled') }),
-                prisma.job.count({ where: getTabQuery('late') }),
-                prisma.job.count({ where: getTabQuery('cancelled') }),
+                prisma.job.count({
+                    where: { ...getJobPermission, ...getTabQuery('priority') },
+                }),
+                prisma.job.count({
+                    where: { ...getJobPermission, ...getTabQuery('active') },
+                }),
+                prisma.job.count({
+                    where: { ...getJobPermission, ...getTabQuery('completed') },
+                }),
+                prisma.job.count({
+                    where: { ...getJobPermission, ...getTabQuery('cancelled') },
+                }),
+                prisma.job.count({
+                    where: { ...getJobPermission, ...getTabQuery('late') },
+                }),
+                prisma.job.count({
+                    where: { ...getJobPermission, ...getTabQuery('cancelled') },
+                }),
             ])
         const counts = {
             priority,

@@ -64,7 +64,7 @@ export default function LoginForm() {
                     href={HOME}
                     className="text-blue-700 hover:underline underline-offset-2"
                 >
-                    staff.csdvietnam.com
+                    staff.cadsquad.vn
                 </Link>
             </p>
             <div className="mt-5 space-y-5">

@@ -16,8 +16,8 @@ body {
 :root {
     --primary: var(--color-primary-900);
     --secondary: var(--color-secondary-800);
-    --background: hsl(0, 0%, 97%);
-    --background2: hsl(0, 0%, 100%);
+    --background: hsl(0, 0%, 100%);
+    --background2: hsl(0, 0%, 97%);
     --foreground: hsl(0, 0%, 0%);
     --border: hsl(0, 0%, 90%);
 
@@ -36,8 +36,8 @@ body {
     .dark {
         --primary: var(--color-primary-500);
         --secondary: var(--color-secondary-500);
-        --background: hsl(240, 3%, 13%);
-        --background2: hsl(210, 4%, 10%);
+        --background: hsl(210, 4%, 10%);
+        --background2: hsl(240, 3%, 13%);
         --foreground: hsl(0, 0%, 100%);
         --border: hsl(240, 3%, 22%);
 

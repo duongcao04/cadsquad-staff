@@ -81,7 +81,7 @@ export async function PATCH(
             return NextResponse.json(
                 {
                     success: false,
-                    messgae: 'Không tìm thấy người dùng',
+                    message: 'Không tìm thấy người dùng',
                 },
                 { status: 404 }
             )
@@ -100,17 +100,17 @@ export async function PATCH(
                 message: 'Câp nhật thông tin người dùng thành công',
                 result,
             },
-            { status: 201 }
+            { status: 200 }
         )
     } catch (error) {
-        console.error('Error creating user:', error)
+        console.error('Error:', error)
         return NextResponse.json(
             {
                 success: false,
-                messgae: 'Đăng người người dùng thất bại',
+                message: 'Cập nhật thông tin người dùng thất bại',
                 error,
             },
-            { status: 409 }
+            { status: 500 }
         )
     }
 }

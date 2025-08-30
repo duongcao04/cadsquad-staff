@@ -26,7 +26,8 @@ import { Link } from '@/i18n/navigation'
 import JobStatusDropdown from './JobStatusDropdown'
 
 export default function JobTable({ currentTab }: { currentTab: string }) {
-    const { jobVisibleColumns } = useJobStore()
+    const { hideCols } = useJobs()
+    const { jobVisibleColumns, isHideFinishItems } = useJobStore()
     /**
      * Define states
      */
@@ -74,19 +75,25 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
 
     const columns: TableColumnsType<DataType> = [
         {
-            title: 'Thumbnail',
+            title: (
+                <p className="w-[60px] truncate" title="Thumbnail">
+                    Thumbnail
+                </p>
+            ),
             dataIndex: 'thumbnail',
             key: 'thumbnail',
-            width: 100,
+            width: 60,
             render: (_, record: DataType) => {
                 return (
-                    <div className="size-11 rounded-full overflow-hidden flex items-center justify-center">
-                        <Image
-                            src={record?.jobStatus?.thumbnail}
-                            alt="image"
-                            className="size-full object-cover rounded-full"
-                            preview={false}
-                        />
+                    <div className="flex items-center justify-center">
+                        <div className="size-11 rounded-full overflow-hidden">
+                            <Image
+                                src={record?.jobStatus?.thumbnail}
+                                alt="image"
+                                className="size-full object-cover rounded-full"
+                                preview={false}
+                            />
+                        </div>
                     </div>
                 )
             },
@@ -159,7 +166,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             },
         },
         {
-            title: <p className="text-right">Income</p>,
+            title: 'Income',
             dataIndex: 'income',
             key: 'income',
             width: '10%',
@@ -172,7 +179,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             },
         },
         {
-            title: <div className="text-right">Staff Cost</div>,
+            title: 'Staff Cost',
             dataIndex: 'staffCost',
             key: 'staffCost',
             width: '10%',
@@ -187,10 +194,17 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             },
         },
         {
-            title: 'Payment Channel',
+            title: (
+                <p
+                    className="text-nowrap w-[90px] truncate"
+                    title="Payment Channel"
+                >
+                    Payment Channel
+                </p>
+            ),
             dataIndex: 'paymentChannel',
             key: 'paymentChannel',
-            width: '10%',
+            width: 90,
             render: (_, record: DataType) => (
                 <p>{record.paymentChannel.name}</p>
             ),
@@ -211,7 +225,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 record!.paymentChannel.name!.indexOf(value as string) === 0,
         },
         {
-            title: <div className="text-right">Due to</div>,
+            title: 'Due to',
             dataIndex: 'dueAt',
             key: 'dueAt',
             width: '10%',
@@ -302,7 +316,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 0,
         },
         {
-            title: <p className="text-right px-4">Action</p>,
+            title: 'Action',
             key: 'action',
             width: 150,
             fixed: 'right',
@@ -349,7 +363,9 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
 
     const newColumns = columns.map((item) => ({
         ...item,
-        hidden: !jobVisibleColumns.includes(item.key as keyof Job | 'action'),
+        hidden:
+            !jobVisibleColumns.includes(item.key as keyof Job | 'action') ||
+            hideCols.includes(item.key as keyof Job | 'action'),
     }))
 
     // Remove hight after 1 second
@@ -363,17 +379,18 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
         }
     }, [newJobNo])
 
+    const jobsData = jobs?.map((prj, index) => ({
+        ...prj,
+        key: prj?.id ?? index,
+    }))
+    const dataSource = isHideFinishItems
+        ? jobsData?.filter((item) => item.jobStatus.nextStatusId)
+        : jobsData
+
     return (
         <Table<DataType>
             rowKey="jobNo"
             columns={newColumns}
-            onHeaderRow={() => {
-                return {
-                    style: {
-                        background: 'var(--color-text4)',
-                    },
-                }
-            }}
             onRow={(record) => {
                 return {
                     className: `${
@@ -400,10 +417,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                     // },
                 }
             }}
-            dataSource={jobs?.map((prj, index) => ({
-                ...prj,
-                key: prj?.id ?? index,
-            }))}
+            dataSource={dataSource}
             loading={loadingJobs}
             pagination={{
                 position: ['bottomCenter'],
