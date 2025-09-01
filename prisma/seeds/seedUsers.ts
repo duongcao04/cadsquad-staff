@@ -81,11 +81,24 @@ export const seedUsers = async (prisma: PrismaClient) => {
 
     const usersCreated = await Promise.all(
         users.map(async (userData) => {
-            const { user } = await supabase.auth.signUp({
-                email: userData.email,
-                password: 'cadsquad',
-            }).then(res => res.data)
-            console.log(user?.id, ":::", userData.email);
+            const { user } = await supabase.auth
+                .signInWithPassword({
+                    email: userData.email,
+                    password: 'cadsquad',
+                })
+                .then(async (res) => {
+                    const existUser = res.data.user
+                    if (!existUser) {
+                        await supabase.auth
+                            .signUp({
+                                email: userData.email,
+                                password: 'cadsquad',
+                            })
+                            .then((res) => res.data)
+                    }
+                    return res.data
+                })
+            console.log(user?.id, ':::', userData.email)
 
             return prisma.user.upsert({
                 where: { email: userData.email },
@@ -99,6 +112,6 @@ export const seedUsers = async (prisma: PrismaClient) => {
     console.log(`✅ Created ${usersCreated.length} users`)
     return usersCreated
 }
-    ; (async function () {
-        await seedUsers(prisma)
-    })()
+;(async function () {
+    await seedUsers(prisma)
+})()

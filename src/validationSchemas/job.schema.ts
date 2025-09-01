@@ -3,10 +3,15 @@ import * as yup from 'yup'
 import {
     JobStatus as JobStatusPrisma,
     JobType as JobTypePrisma,
-    PaymentChannel as PaymentChannelPrisma,
     Job as JobPrisma,
-    User,
+    JobActivityLog as JobActivityLogPrisma,
 } from '@prisma/client'
+import { User } from './user.schema'
+import { PaymentChannel } from './paymentChannel.schema'
+
+export type JobActivityLog = Partial<JobActivityLogPrisma> & {
+    modifiedBy: User
+}
 
 export type Job = Partial<JobPrisma> & {
     status: Partial<JobStatus>
@@ -27,13 +32,6 @@ export type JobType = Partial<JobTypePrisma> & {
     }
 }
 
-export type PaymentChannel = Partial<PaymentChannelPrisma> & {
-    jobs?: Job[]
-    _count: {
-        jobs: number
-    }
-}
-
 export const CreateJobSchema = yup.object().shape({
     sourceUrl: yup.string(),
     jobNo: yup.string().required(),
@@ -41,7 +39,6 @@ export const CreateJobSchema = yup.object().shape({
     clientName: yup.string().required(),
     memberAssignIds: yup.array(yup.string().required()).required().min(1),
     paymentChannelId: yup.string().required(),
-    createdById: yup.number().required(),
     jobTypeId: yup.string().required(),
     income: yup.number().required(),
     staffCost: yup.number().required(),

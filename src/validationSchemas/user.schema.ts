@@ -1,8 +1,9 @@
 import * as yup from 'yup'
 
-import {User as UserPrisma} from '@prisma/client'
+import { User as UserPrisma } from '@prisma/client'
 
 export type User = Partial<UserPrisma>
+
 export const CreateUserSchema = yup.object().shape({
     email: yup.string().email().required(),
     avatar: yup.string(),

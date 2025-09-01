@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { Job, NewJob } from '@/validationSchemas/job.schema'
+import { Job, JobActivityLog, NewJob } from '@/validationSchemas/job.schema'
 import { queryClient } from '../app/providers/TanstackQueryProvider'
 import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
 import useAuth from './useAuth'
@@ -94,7 +94,7 @@ export const useCountJobByTab = (tab: TJobTab) => {
 
 export const useJobDetail = (jobNo?: string) => {
     const { data, refetch, error, isLoading } = useQuery({
-        queryKey: ['jobNo', jobNo],
+        queryKey: ['jobDetail', jobNo],
         queryFn: () =>
             axiosClient.get<ApiResponse<Job>>('jobs', {
                 params: { jobNo },
@@ -105,6 +105,24 @@ export const useJobDetail = (jobNo?: string) => {
     return {
         refetch,
         job: data?.result,
+        error,
+        isLoading,
+    }
+}
+
+export const useJobActivityLogs = (id?: string) => {
+    const { data, refetch, error, isLoading } = useQuery({
+        queryKey: ['jobActivityLog', id],
+        queryFn: () =>
+            axiosClient.get<ApiResponse<JobActivityLog[]>>(
+                `jobs/${id}/activity-log`
+            ),
+        enabled: id !== null && typeof id !== 'undefined',
+        select: (res) => res.data,
+    })
+    return {
+        refetch,
+        activityLogs: data?.result,
         error,
         isLoading,
     }
@@ -137,14 +155,17 @@ export const useChangeStatusMutation = () => {
                 toStatusId?: string
             }
         }) => {
-            return axiosClient.patch(
+            return axiosClient.patch<ApiResponse<Job>>(
                 `jobs/${jobId}/change-status`,
                 changeStatusInput
             )
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobs'],
+                queryKey: ['jobDetail', data.data.result?.jobNo],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['jobActivityLog', String(data.data.result?.id)],
             })
         },
     })
@@ -162,9 +183,9 @@ export const useUpdateJobMutation = () => {
         }) => {
             return axiosClient.patch(`jobs/${jobId}`, updateJobInput)
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobs'],
+                queryKey: ['jobDetail', data.data.result?.jobNo],
             })
         },
     })
