@@ -8,6 +8,9 @@ import {
     AvatarGroup,
     Button,
     Spinner,
+    Tab,
+    TabItemProps,
+    Tabs,
     Tooltip,
 } from '@heroui/react'
 import { Drawer, Skeleton } from 'antd'
@@ -18,7 +21,6 @@ import { ArrowLeft, ChevronUp, Link2 } from 'lucide-react'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 
-import JobActivityTabs from './_components/JobActivityTabs'
 import { useDetailModal } from './actions'
 import { useChangeStatusMutation, useJobDetail } from '@/queries/useJob'
 import JobStatusChip from '@/shared/components/customize/JobStatusChip'
@@ -26,6 +28,7 @@ import { JobStatus } from '@/validationSchemas/job.schema'
 import { Link } from '@/i18n/navigation'
 import { useJobStatusDetail } from '@/queries/useJobStatus'
 import { lightenHexColor } from '@/lib/utils'
+import WorkLogTab from './_components/WorkLogTab'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -33,7 +36,7 @@ dayjs.extend(timezone)
 const DATE_FORMAT = 'DD/MM/YYYY'
 
 export default function JobDetailDrawer() {
-    const { mutateAsync: changeStatusMutation, isPending: isUpdatingStatus } =
+    const { mutateAsync: changeStatusMutation, isIdle: isUpdatingStatus } =
         useChangeStatusMutation()
     const { isOpen, closeModal, jobNo } = useDetailModal()
 
@@ -46,6 +49,15 @@ export default function JobDetailDrawer() {
     const { jobStatus: nextStatus } = useJobStatusDetail(
         job?.status.nextStatusId?.toString()
     )
+
+    const activityTabItems: TabItemProps[] = [
+        {
+            key: '1',
+            title: 'Work log',
+            children: <WorkLogTab jobId={job?.id} />,
+        },
+        { key: '2', title: 'Comments', isDisabled: true },
+    ]
 
     const handleChangeStatus = async (nextStatus: JobStatus) => {
         try {
@@ -359,7 +371,17 @@ export default function JobDetailDrawer() {
                     <hr className="mt-7 text-text3" />
                     <div className="mt-3 space-y-2">
                         <p className="text-lg font-semibold">Activity</p>
-                        <JobActivityTabs />
+                        <Tabs aria-label="Job action tabs">
+                            {activityTabItems.map((item) => {
+                                return (
+                                    <Tab
+                                        key={item.key}
+                                        title={item.title}
+                                        {...item}
+                                    />
+                                )
+                            })}
+                        </Tabs>
                     </div>
                 </>
             )}

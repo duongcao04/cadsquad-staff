@@ -5,7 +5,6 @@ import React, { useMemo, useState } from 'react'
 import { Button, Input, InputProps, NumberInput, addToast } from '@heroui/react'
 import { Image, Modal, Select } from 'antd'
 import { useFormik } from 'formik'
-import useSWR from 'swr'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { padToFourDigits } from '@/lib/utils'
@@ -19,8 +18,8 @@ import { useJobTypes } from '@/queries/useJobType'
 import { useUsers } from '@/queries/useUser'
 import { usePaymentChannels } from '@/queries/usePaymentChannel'
 import { useJobStatuses } from '@/queries/useJobStatus'
-import { useCreateJobMutation } from '../../../../queries/useJob'
-import useAuth from '../../../../queries/useAuth'
+import { useCreateJobMutation } from '@/queries/useJob'
+import useAuth from '@/queries/useAuth'
 
 const DOT_SYMBOL = '.'
 
@@ -80,7 +79,6 @@ export default function JobModal({ isOpen, onClose }: Props) {
 
     const formik = useFormik<NewJob>({
         initialValues: {
-            createdById: Number(profile.data?.id),
             clientName: '',
             jobTypeId: defaultJobTypeId,
             jobNo: getJobNo,
