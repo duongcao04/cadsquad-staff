@@ -22,6 +22,8 @@ type Props = {
     statusData: JobStatus
 }
 export default function JobStatusDropdown({ jobId, statusData }: Props) {
+    console.log(statusData)
+
     const { mutateAsync: updateJobMutate } = useUpdateJobMutation()
     const { jobStatus: nextStatus } = useJobStatusDetail(
         String(statusData.nextStatusId)
@@ -36,7 +38,7 @@ export default function JobStatusDropdown({ jobId, statusData }: Props) {
                 {
                     jobId,
                     updateJobInput: {
-                        jobStatusId: nextStatus.id,
+                        statusId: nextStatus.id,
                     },
                 },
                 {

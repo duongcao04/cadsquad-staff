@@ -124,6 +124,32 @@ export const useCreateJobMutation = () => {
     })
 }
 
+export const useChangeStatusMutation = () => {
+    return useMutation({
+        mutationKey: ['changeStatus', 'job'],
+        mutationFn: ({
+            jobId,
+            changeStatusInput,
+        }: {
+            jobId?: string
+            changeStatusInput: {
+                fromStatusId?: string
+                toStatusId?: string
+            }
+        }) => {
+            return axiosClient.patch(
+                `jobs/${jobId}/change-status`,
+                changeStatusInput
+            )
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['jobs'],
+            })
+        },
+    })
+}
+
 export const useUpdateJobMutation = () => {
     return useMutation({
         mutationKey: ['updateJob'],

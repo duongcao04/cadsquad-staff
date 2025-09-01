@@ -10,7 +10,7 @@ export const useJobStatuses = () => {
     })
 }
 
-export const useJobStatusDetail = (id: string) => {
+export const useJobStatusDetail = (id?: string) => {
     const { data, refetch, error, isLoading } = useQuery({
         queryKey: ['jobStatus', id],
         queryFn: () =>

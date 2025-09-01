@@ -88,7 +88,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                     <div className="flex items-center justify-center">
                         <div className="size-11 rounded-full overflow-hidden">
                             <Image
-                                src={record?.jobStatus?.thumbnail}
+                                src={record?.status?.thumbnail}
                                 alt="image"
                                 className="size-full object-cover rounded-full"
                                 preview={false}
@@ -303,7 +303,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 <div className="flex items-center justify-center">
                     <JobStatusDropdown
                         jobId={String(record?.id)}
-                        statusData={record?.jobStatus as JobStatus}
+                        statusData={record?.status as JobStatus}
                     />
                 </div>
             ),
@@ -312,8 +312,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             //     value: item?.id?.toString() ?? '',e
             // })),
             onFilter: (value, record) =>
-                record?.jobStatus?.id?.toString()?.indexOf(value as string) ===
-                0,
+                record?.status?.id?.toString()?.indexOf(value as string) === 0,
         },
         {
             title: 'Action',
@@ -384,7 +383,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
         key: prj?.id ?? index,
     }))
     const dataSource = isHideFinishItems
-        ? jobsData?.filter((item) => item.jobStatus.nextStatusId)
+        ? jobsData?.filter((item) => item.status.nextStatusId)
         : jobsData
 
     return (

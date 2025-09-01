@@ -10,7 +10,6 @@ export async function GET() {
             include: {
                 assignedJobs: {},
                 createdJobs: {},
-                statusChanges: {},
                 notifications: {},
                 _count: {
                     select: {

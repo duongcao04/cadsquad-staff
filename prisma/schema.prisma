@@ -64,22 +64,17 @@ model User {
   notifications UserNotification[]
   assignedJobs  Job[]              @relation("UserJobs")
 
-  fileCreated FileSystem[] @relation("CreatedFiles")
-  files       FileSystem[] @relation("VisibleToUsers")
-
-  // Status change tracking
-  statusChanges JobStatusChange[]
+  filesCreated FileSystem[] @relation("CreatedFiles")
+  files        FileSystem[] @relation("VisibleToUsers")
 
   // Job creation tracking
   createdJobs Job[] @relation("JobCreator")
 
-  // Time tracking
-  timeEntries TimeEntry[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sendNoties Notification[]
+  sendNoties     Notification[]
+  JobActivityLog JobActivityLog[]
 }
 
 enum RoleEnum {
@@ -119,7 +114,7 @@ model Job {
   statusId Int
 
   // Status change history
-  statusChanges JobStatusChange[]
+  activityLog JobActivityLog[]
 
   // Job dates
   startedAt   DateTime  @default(now())
@@ -130,8 +125,7 @@ model Job {
   priority JobPriority @default(MEDIUM)
 
   // Related data
-  files       FileSystem[]
-  timeEntries TimeEntry[]
+  files FileSystem[]
 
   deletedAt DateTime?
   createdAt DateTime  @default(now())
@@ -166,19 +160,16 @@ enum JobPriority {
 }
 
 model JobStatus {
-  id        Int     @id @default(autoincrement())
-  title     String
-  thumbnail String
-  color     String
-  order     Int     @unique
-  icon      String?
-
-  nextStatus   Int?
+  id           Int     @id @default(autoincrement())
+  title        String
+  thumbnail    String
+  color        String
+  order        Int     @unique
+  icon         String?
+  nextStatusId Int?
   prevStatusId Int?
 
-  jobs              Job[]
-  fromStatusChanges JobStatusChange[] @relation("FromStatus")
-  toStatusChanges   JobStatusChange[] @relation("ToStatus")
+  jobs Job[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -186,57 +177,35 @@ model JobStatus {
   @@index([order])
 }
 
-// Status change tracking table
-model JobStatusChange {
+model JobActivityLog {
   id Int @id @default(autoincrement())
 
   job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
   jobId Int
 
-  fromStatus   JobStatus? @relation("FromStatus", fields: [fromStatusId], references: [id])
-  fromStatusId Int?
-
-  toStatus   JobStatus @relation("ToStatus", fields: [toStatusId], references: [id])
-  toStatusId Int
+  previousValue String?
+  currentValue  String?
 
   modifiedAt   DateTime @default(now())
   modifiedBy   User     @relation(fields: [modifiedById], references: [id])
   modifiedById Int
 
-  // Optional: reason for change
-  reason String?
-
-  createdAt DateTime @default(now())
+  fieldName    String
+  activityType ACTIVITY_TYPE
+  notes        String?
 
   @@index([jobId, modifiedAt])
   @@index([modifiedById])
 }
 
-// Time tracking
-model TimeEntry {
-  id Int @id @default(autoincrement())
-
-  // Time entry belongs to user
-  user   User @relation(fields: [userId], references: [id])
-  userId Int
-
-  // Time entry belongs to job
-  job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId Int
-
-  // Time tracking
-  startTime DateTime
-  endTime   DateTime?
-  duration  Int? // in minutes
-
-  description String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([jobId])
-  @@index([startTime])
+enum ACTIVITY_TYPE {
+  CreateJob
+  ChangeStatus
+  AssignMember
+  UnassignMember
+  ChangePaymentChannel
+  UpdateInformation
+  DeleteJob
 }
 
 model UserNotification {

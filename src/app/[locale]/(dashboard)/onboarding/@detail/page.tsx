@@ -2,7 +2,14 @@
 
 import React, { useState } from 'react'
 
-import { Avatar, AvatarGroup, Button, Spinner, Tooltip } from '@heroui/react'
+import {
+    addToast,
+    Avatar,
+    AvatarGroup,
+    Button,
+    Spinner,
+    Tooltip,
+} from '@heroui/react'
 import { Drawer, Skeleton } from 'antd'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
@@ -13,10 +20,12 @@ import { formatCurrencyVND } from '@/lib/formatCurrency'
 
 import JobActivityTabs from './_components/JobActivityTabs'
 import { useDetailModal } from './actions'
-import { useJobDetail } from '@/queries/useJob'
+import { useChangeStatusMutation, useJobDetail } from '@/queries/useJob'
 import JobStatusChip from '@/shared/components/customize/JobStatusChip'
 import { JobStatus } from '@/validationSchemas/job.schema'
 import { Link } from '@/i18n/navigation'
+import { useJobStatusDetail } from '@/queries/useJobStatus'
+import { lightenHexColor } from '@/lib/utils'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -24,11 +33,53 @@ dayjs.extend(timezone)
 const DATE_FORMAT = 'DD/MM/YYYY'
 
 export default function JobDetailDrawer() {
+    const { mutateAsync: changeStatusMutation, isPending: isUpdatingStatus } =
+        useChangeStatusMutation()
     const { isOpen, closeModal, jobNo } = useDetailModal()
 
     const [showFullAssignee, setShowFullAssignee] = useState(false)
 
     const { job, isLoading, error } = useJobDetail(jobNo)
+    const { jobStatus: prevStatus } = useJobStatusDetail(
+        job?.status.prevStatusId?.toString()
+    )
+    const { jobStatus: nextStatus } = useJobStatusDetail(
+        job?.status.nextStatusId?.toString()
+    )
+
+    const handleChangeStatus = async (nextStatus: JobStatus) => {
+        try {
+            await changeStatusMutation(
+                {
+                    jobId: String(job?.id),
+                    changeStatusInput: {
+                        fromStatusId: String(job?.status.id),
+                        toStatusId: String(nextStatus.id),
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        addToast({
+                            title: 'Cập nhật trạng thái thành công',
+                            color: 'success',
+                        })
+                    },
+                    onError: () => {
+                        addToast({
+                            title: 'Cập nhật trạng thái thất bại',
+                            color: 'danger',
+                        })
+                    },
+                }
+            )
+        } catch (error) {
+            console.log(error)
+            addToast({
+                title: 'Cập nhật trạng thái thất bại',
+                color: 'danger',
+            })
+        }
+    }
 
     return (
         <Drawer
@@ -52,13 +103,63 @@ export default function JobDetailDrawer() {
             footer={
                 <div
                     style={{
-                        display: 'grid',
+                        display: job?.status.prevStatusId ? 'grid' : 'block',
                         gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                         gap: 12,
                     }}
                 >
-                    <Button color="danger">Mark as Revision</Button>
-                    <Button color="success">Mark as Completed</Button>
+                    {job?.status.prevStatusId && prevStatus && (
+                        <Button
+                            color="danger"
+                            className="w-full font-semibold font-saira"
+                            style={{
+                                color: prevStatus?.color,
+                                backgroundColor: lightenHexColor(
+                                    prevStatus?.color as string,
+                                    85
+                                ),
+                            }}
+                            onPress={() => {
+                                handleChangeStatus(prevStatus)
+                            }}
+                            isLoading={!isUpdatingStatus}
+                        >
+                            Mark as {prevStatus.title}
+                        </Button>
+                    )}
+                    {job?.status.nextStatusId && nextStatus && (
+                        <Button
+                            color="danger"
+                            className="w-full font-semibold font-saira"
+                            style={{
+                                color: nextStatus?.color,
+                                backgroundColor: lightenHexColor(
+                                    nextStatus?.color as string,
+                                    90
+                                ),
+                            }}
+                            onPress={() => {
+                                handleChangeStatus(nextStatus)
+                            }}
+                            isLoading={!isUpdatingStatus}
+                        >
+                            Mark as {nextStatus.title}
+                        </Button>
+                    )}
+                    {job && !job?.status.nextStatusId && (
+                        <Button
+                            color="danger"
+                            className="w-full !opacity-100"
+                            isDisabled
+                            style={{
+                                color: '#ffffff',
+                                backgroundColor: job?.status.color,
+                            }}
+                            isLoading={!isUpdatingStatus}
+                        >
+                            Finish at 2025/09/01 - 19:06
+                        </Button>
+                    )}
                 </div>
             }
             width={500}

@@ -60,11 +60,10 @@ export async function GET(request: NextRequest) {
                             avatar: true,
                         },
                     },
-                    jobStatus: {},
-                    statusChanges: {},
+                    status: {},
+                    activityLog: {},
                     createdBy: {},
                     jobType: {},
-                    timeEntries: {},
                     files: {},
                     _count: {
                         select: {
@@ -177,11 +176,10 @@ export async function GET(request: NextRequest) {
                                 avatar: true,
                             },
                         },
-                        jobStatus: {},
-                        statusChanges: {},
+                        status: {},
                         createdBy: {},
                         jobType: {},
-                        timeEntries: {},
+                        activityLog: {},
                         files: {},
                         _count: {
                             select: {
@@ -271,11 +269,28 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+    const userHeader = request.headers.get('x-user')
+    const user = userHeader ? JSON.parse(userHeader) : null
+    // 1. Get user from headers
+    if (!user) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Lấy thông tin tài khoản thất bại',
+                error: 'Unauthenticated',
+            },
+            { status: 401 }
+        )
+    }
+
     const body = await request.json()
     const jobData = { ...body }
 
     try {
-        const jobStatus = await prisma.jobStatus.findUnique({
+        const createdBy = await prisma.user.findUnique({
+            where: { uuid: user.sub },
+        })
+        const status = await prisma.jobStatus.findUnique({
             where: {
                 order: 1,
             },
@@ -295,9 +310,9 @@ export async function POST(request: NextRequest) {
                 completedAt: jobData.completedAt
                     ? new Date(jobData.completedAt)
                     : null,
-                jobStatus: {
+                status: {
                     connect: {
-                        id: Number(jobStatus?.id),
+                        id: Number(status?.id),
                     },
                 },
                 jobType: {
@@ -312,7 +327,7 @@ export async function POST(request: NextRequest) {
                 },
                 createdBy: {
                     connect: {
-                        id: jobData.createdById,
+                        id: createdBy?.id,
                     },
                 },
                 // Conditionally add memberAssign only if memberAssignIds exists and has items

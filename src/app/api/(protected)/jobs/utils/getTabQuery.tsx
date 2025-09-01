@@ -26,7 +26,7 @@ export const getTabQuery = (tab: TJobTab | string) => {
     const activeFilter = where
     const completedFilter = {
         ...where,
-        jobStatus: {
+        status: {
             is: {
                 title: 'Completed',
             },
@@ -34,7 +34,7 @@ export const getTabQuery = (tab: TJobTab | string) => {
     }
     const deliveredFilter = {
         ...where,
-        jobStatus: {
+        status: {
             is: {
                 title: 'Delivered',
             },
@@ -49,7 +49,7 @@ export const getTabQuery = (tab: TJobTab | string) => {
                 },
             },
             {
-                jobStatus: {
+                status: {
                     NOT: {
                         title: 'Completed',
                     },
