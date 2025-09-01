@@ -9,7 +9,6 @@ import {
     Button,
     Spinner,
     Tab,
-    TabItemProps,
     Tabs,
     Tooltip,
 } from '@heroui/react'
@@ -36,8 +35,7 @@ dayjs.extend(timezone)
 const DATE_FORMAT = 'DD/MM/YYYY'
 
 export default function JobDetailDrawer() {
-    const { mutateAsync: changeStatusMutation, isIdle: isUpdatingStatus } =
-        useChangeStatusMutation()
+    const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
     const { isOpen, closeModal, jobNo } = useDetailModal()
 
     const [showFullAssignee, setShowFullAssignee] = useState(false)
@@ -49,15 +47,6 @@ export default function JobDetailDrawer() {
     const { jobStatus: nextStatus } = useJobStatusDetail(
         job?.status.nextStatusId?.toString()
     )
-
-    const activityTabItems: TabItemProps[] = [
-        {
-            key: '1',
-            title: 'Work log',
-            children: <WorkLogTab jobId={job?.id} />,
-        },
-        { key: '2', title: 'Comments', isDisabled: true },
-    ]
 
     const handleChangeStatus = async (nextStatus: JobStatus) => {
         try {
@@ -102,7 +91,7 @@ export default function JobDetailDrawer() {
                 ) : (
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start gap-2">
-                            <p className="line-clamp-1 tracking-wide">
+                            <p className="tracking-wide line-clamp-1">
                                 {jobNo}
                             </p>
                         </div>
@@ -134,7 +123,6 @@ export default function JobDetailDrawer() {
                             onPress={() => {
                                 handleChangeStatus(prevStatus)
                             }}
-                            isLoading={!isUpdatingStatus}
                         >
                             Mark as {prevStatus.title}
                         </Button>
@@ -153,7 +141,6 @@ export default function JobDetailDrawer() {
                             onPress={() => {
                                 handleChangeStatus(nextStatus)
                             }}
-                            isLoading={!isUpdatingStatus}
                         >
                             Mark as {nextStatus.title}
                         </Button>
@@ -167,7 +154,6 @@ export default function JobDetailDrawer() {
                                 color: '#ffffff',
                                 backgroundColor: job?.status.color,
                             }}
-                            isLoading={!isUpdatingStatus}
                         >
                             Finish at 2025/09/01 - 19:06
                         </Button>
@@ -186,14 +172,14 @@ export default function JobDetailDrawer() {
                 <>
                     <div className="space-y-3">
                         <div>
-                            <p className="text-text2 text-sm">Job name</p>
+                            <p className="text-sm text-text2">Job name</p>
                             <p className="text-2xl font-semibold text-wrap">
                                 {job?.jobName}
                             </p>
                         </div>
                         <div className="grid grid-cols-3 gap-5">
                             <div>
-                                <p className="text-text2 text-sm">Income</p>
+                                <p className="text-sm text-text2">Income</p>
                                 <p className="text-base font-semibold text-wrap">
                                     {formatCurrencyVND(
                                         Number(job?.income),
@@ -203,7 +189,7 @@ export default function JobDetailDrawer() {
                                 </p>
                             </div>
                             <div>
-                                <p className="text-text2 text-sm">Staff cost</p>
+                                <p className="text-sm text-text2">Staff cost</p>
                                 <p className="text-base font-semibold text-wrap">
                                     {formatCurrencyVND(
                                         Number(job?.staffCost),
@@ -213,7 +199,7 @@ export default function JobDetailDrawer() {
                                 </p>
                             </div>
                             <div>
-                                <p className="text-text2 text-sm">
+                                <p className="text-sm text-text2">
                                     Payment Channel
                                 </p>
                                 <p className="text-base font-semibold text-wrap">
@@ -226,13 +212,13 @@ export default function JobDetailDrawer() {
                     <div className="space-y-3.5">
                         <p className="text-lg font-semibold">Details</p>
                         <div>
-                            <p className="text-text2 text-sm">Client</p>
+                            <p className="text-sm text-text2">Client</p>
                             <p className="text-base font-semibold text-wrap">
                                 {job?.clientName}
                             </p>
                         </div>
                         <div>
-                            <p className="text-text2 text-sm">Description</p>
+                            <p className="text-sm text-text2">Description</p>
                             <p className="text-sm text-wrap line-clamp-2">
                                 Lorem ipsum dolor sit amet consectetur
                                 adipisicing elit. A aspernatur voluptatibus
@@ -253,10 +239,10 @@ export default function JobDetailDrawer() {
                             </p>
                         </div>
                         <div>
-                            <p className="text-text2 text-sm">Documents (1)</p>
+                            <p className="text-sm text-text2">Documents (1)</p>
                             <Link
                                 href={String(job?.sourceUrl)}
-                                className="mt-2 flex items-center justify-start gap-2 border w-fit px-3 py-2 rounded-sm"
+                                className="flex items-center justify-start gap-2 px-3 py-2 mt-2 border rounded-sm w-fit"
                                 title="Sharepoint link"
                             >
                                 <Link2 size={20} />
@@ -265,7 +251,7 @@ export default function JobDetailDrawer() {
                         </div>
                         <div className="grid grid-cols-2 gap-5">
                             <div>
-                                <p className="text-text2 text-sm">Started at</p>
+                                <p className="text-sm text-text2">Started at</p>
                                 <p className="text-base font-semibold text-wrap">
                                     {dayjs
                                         .utc(job?.startedAt)
@@ -274,7 +260,7 @@ export default function JobDetailDrawer() {
                                 </p>
                             </div>
                             <div>
-                                <p className="text-text2 text-sm">Due at</p>
+                                <p className="text-sm text-text2">Due at</p>
                                 <p className="text-base font-semibold text-wrap">
                                     {dayjs
                                         .utc(job?.dueAt)
@@ -284,7 +270,7 @@ export default function JobDetailDrawer() {
                             </div>
                         </div>
                         <div>
-                            <p className="text-text2 text-sm">Assignee</p>
+                            <p className="text-sm text-text2">Assignee</p>
                             <div className="px-2.5 mt-3.5 w-full">
                                 {!showFullAssignee ? (
                                     <AvatarGroup
@@ -325,12 +311,12 @@ export default function JobDetailDrawer() {
                                     </AvatarGroup>
                                 ) : (
                                     <div className="grid grid-cols-[1fr_32px] gap-4">
-                                        <div className="flex items-center justify-start flex-wrap gap-x-3 gap-y-4">
+                                        <div className="flex flex-wrap items-center justify-start gap-x-3 gap-y-4">
                                             {job?.memberAssign?.map((mem) => {
                                                 return (
                                                     <div
                                                         key={mem.id}
-                                                        className="flex items-center justify-start gap-3 bg bg-border p-1 rounded-3xl pr-4"
+                                                        className="flex items-center justify-start gap-3 p-1 pr-4 bg bg-border rounded-3xl"
                                                     >
                                                         <Avatar
                                                             size="sm"
@@ -369,18 +355,13 @@ export default function JobDetailDrawer() {
                         </div>
                     </div>
                     <hr className="mt-7 text-text3" />
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-3 space-y-3">
                         <p className="text-lg font-semibold">Activity</p>
                         <Tabs aria-label="Job action tabs">
-                            {activityTabItems.map((item) => {
-                                return (
-                                    <Tab
-                                        key={item.key}
-                                        title={item.title}
-                                        {...item}
-                                    />
-                                )
-                            })}
+                            <Tab key="1" title="Work log">
+                                <WorkLogTab jobId={job?.id} />
+                            </Tab>
+                            <Tab key="2" title="Comments" isDisabled></Tab>
                         </Tabs>
                     </div>
                 </>

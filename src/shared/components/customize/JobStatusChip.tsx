@@ -16,7 +16,7 @@ export default function JobStatusChip({ data, classNames, props }: Props) {
         <Chip
             style={{
                 color: data?.color,
-                backgroundColor: lightenHexColor(data?.color as string, 85),
+                backgroundColor: lightenHexColor(data?.color ?? '#ffffff', 85),
             }}
             variant="solid"
             classNames={{

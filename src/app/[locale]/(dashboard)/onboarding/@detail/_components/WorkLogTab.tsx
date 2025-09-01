@@ -3,31 +3,12 @@
 import React from 'react'
 import { useJobActivityLogs } from '@/queries/useJob'
 import { Spinner } from '@heroui/react'
-import { useJobStatusDetail } from '@/queries/useJobStatus'
-
-function ChangeStatusLog({
-    fromStatusId,
-    toStatusId,
-}: {
-    fromStatusId?: string
-    toStatusId?: string
-}) {
-    const { jobStatus: fromStatus } = useJobStatusDetail(fromStatusId)
-    const { jobStatus: toStatus } = useJobStatusDetail(toStatusId)
-    return <div></div>
-}
+import LogCard from './cards/LogCard'
 
 type Props = {
     jobId?: number
 }
-export default function WorkLogTab({ jobId }: Props) {  
-     
-     
-     
-     
-      
-     
-     
+export default function WorkLogTab({ jobId }: Props) {
     const { activityLogs } = useJobActivityLogs(String(jobId))
 
     if (!jobId) {
@@ -35,9 +16,13 @@ export default function WorkLogTab({ jobId }: Props) {
     }
 
     return (
-        <div>
+        <div className="space-y-7">
             {activityLogs?.map((log) => {
-                return <div key={log.id}></div>
+                return (
+                    <div key={log.id}>
+                        <LogCard data={log} />
+                    </div>
+                )
             })}
         </div>
     )

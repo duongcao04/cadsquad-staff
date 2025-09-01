@@ -3,13 +3,15 @@ import * as yup from 'yup'
 import {
     JobStatus as JobStatusPrisma,
     JobType as JobTypePrisma,
-    PaymentChannel as PaymentChannelPrisma,
     Job as JobPrisma,
-    User,
     JobActivityLog as JobActivityLogPrisma,
 } from '@prisma/client'
+import { User } from './user.schema'
+import { PaymentChannel } from './paymentChannel.schema'
 
-export type JobActivityLog = Partial<JobActivityLogPrisma>
+export type JobActivityLog = Partial<JobActivityLogPrisma> & {
+    modifiedBy: User
+}
 
 export type Job = Partial<JobPrisma> & {
     status: Partial<JobStatus>
@@ -25,13 +27,6 @@ export type JobStatus = Partial<JobStatusPrisma> & {
 
 export type JobType = Partial<JobTypePrisma> & {
     jobs?: JobPrisma[]
-    _count: {
-        jobs: number
-    }
-}
-
-export type PaymentChannel = Partial<PaymentChannelPrisma> & {
-    jobs?: Job[]
     _count: {
         jobs: number
     }

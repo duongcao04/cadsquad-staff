@@ -13,6 +13,13 @@ export async function GET(
             where: {
                 jobId: Number(jobId),
             },
+            include: {
+                modifiedBy: true,
+                job: true,
+            },
+            orderBy: {
+                modifiedAt: 'desc',
+            },
         })
 
         return NextResponse.json(

@@ -164,6 +164,9 @@ export const useChangeStatusMutation = () => {
             queryClient.invalidateQueries({
                 queryKey: ['jobDetail', data.data.result?.jobNo],
             })
+            queryClient.invalidateQueries({
+                queryKey: ['jobActivityLog', data.data.result?.id],
+            })
         },
     })
 }
