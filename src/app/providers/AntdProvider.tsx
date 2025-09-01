@@ -4,15 +4,54 @@ import React from 'react'
 
 import { AntdRegistry } from '@ant-design/nextjs-registry'
 import { ConfigProvider } from 'antd'
-import { theme } from '@/styles/antd.config'
 
-
-export default function AntdProvider({ children }: { children: React.ReactNode }) {
-	return (
-		<AntdRegistry>
-			<ConfigProvider theme={theme}>
-				{children}
-			</ConfigProvider>
-		</AntdRegistry>
-	)
+export default function AntdProvider({
+    children,
+}: {
+    children: React.ReactNode
+}) {
+    return (
+        <AntdRegistry>
+            <ConfigProvider
+                theme={{
+                    components: {
+                        Table: {
+                            headerBg: 'hsl(0,0%,97%)',
+                        },
+                        Tabs: {
+                            horizontalMargin: '0',
+                        },
+                        Select: {
+                            selectorBg: '#f4f4f5',
+                            optionSelectedColor: '#1b1464',
+                            activeBorderColor: '#1b1464',
+                            hoverBorderColor: '#1b1464',
+                            borderRadiusLG: 12,
+                        },
+                        DatePicker: {
+                            colorBgContainer: '#f4f4f5',
+                            activeBorderColor: '#1b1464',
+                            hoverBorderColor: '#1b1464',
+                            borderRadiusLG: 12,
+                        },
+                    },
+                }}
+                drawer={{
+                    classNames: {
+                        wrapper: '!p-2.5 !shadow-none',
+                        content: 'rounded-lg shadow-lg',
+                        body: '!py-3 !px-5',
+                    },
+                    styles: {
+                        header: {
+                            paddingInline: 16,
+                            paddingBlock: 12,
+                        },
+                    },
+                }}
+            >
+                {children}
+            </ConfigProvider>
+        </AntdRegistry>
+    )
 }

@@ -9,14 +9,14 @@ import {
 } from '@prisma/client'
 
 export type Job = Partial<JobPrisma> & {
-    jobStatus: Partial<JobStatus>
+    status: Partial<JobStatus>
     memberAssign: User[]
     paymentChannel: PaymentChannel
 }
 
 export type JobStatus = Partial<JobStatusPrisma> & {
     _count: {
-        projects: number
+        jobs: number
     }
 }
 

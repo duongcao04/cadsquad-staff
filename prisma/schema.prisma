@@ -115,8 +115,8 @@ model Job {
   paymentChannelId Int
 
   // Status management
-  jobStatus   JobStatus @relation(fields: [jobStatusId], references: [id])
-  jobStatusId Int
+  status   JobStatus @relation(fields: [statusId], references: [id])
+  statusId Int
 
   // Status change history
   statusChanges JobStatusChange[]
@@ -137,7 +137,7 @@ model Job {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  @@index([jobStatusId])
+  @@index([statusId])
   @@index([createdById])
   @@index([priority])
 }
@@ -190,7 +190,6 @@ model JobStatus {
 model JobStatusChange {
   id Int @id @default(autoincrement())
 
-  // References
   job   Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
   jobId Int
 
@@ -200,20 +199,17 @@ model JobStatusChange {
   toStatus   JobStatus @relation("ToStatus", fields: [toStatusId], references: [id])
   toStatusId Int
 
-  // Who made the change
-  changedBy   User @relation(fields: [changedById], references: [id])
-  changedById Int
-
-  // When the change happened
-  changedAt DateTime @default(now())
+  modifiedAt   DateTime @default(now())
+  modifiedBy   User     @relation(fields: [modifiedById], references: [id])
+  modifiedById Int
 
   // Optional: reason for change
   reason String?
 
   createdAt DateTime @default(now())
 
-  @@index([jobId, changedAt])
-  @@index([changedById])
+  @@index([jobId, modifiedAt])
+  @@index([modifiedById])
 }
 
 // Time tracking

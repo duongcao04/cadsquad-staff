@@ -7,27 +7,16 @@ import { Drawer, Skeleton } from 'antd'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
-import {
-    Banknote,
-    CalendarClock,
-    CalendarPlus,
-    ChevronUp,
-    CircleDollarSign,
-    FolderIcon,
-    HandCoins,
-    Link as LinkIcon,
-    Loader,
-    Users,
-} from 'lucide-react'
-import Link from 'next/link'
+import { ArrowLeft, ChevronUp, Link2 } from 'lucide-react'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 
-import DetailTabs from './_components/DetailTabs'
+import JobActivityTabs from './_components/JobActivityTabs'
 import { useDetailModal } from './actions'
 import { useJobDetail } from '@/queries/useJob'
 import JobStatusChip from '@/shared/components/customize/JobStatusChip'
 import { JobStatus } from '@/validationSchemas/job.schema'
+import { Link } from '@/i18n/navigation'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -41,8 +30,6 @@ export default function JobDetailDrawer() {
 
     const { job, isLoading, error } = useJobDetail(jobNo)
 
-    console.log(error)
-
     return (
         <Drawer
             open={isOpen}
@@ -53,78 +40,139 @@ export default function JobDetailDrawer() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center justify-start gap-2">
                             <p className="line-clamp-1 tracking-wide">
-                                # {jobNo}
+                                {jobNo}
                             </p>
                         </div>
+                        {!isLoading && job && (
+                            <JobStatusChip data={job?.status as JobStatus} />
+                        )}
                     </div>
                 )
             }
-            width={700}
+            footer={
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                        gap: 12,
+                    }}
+                >
+                    <Button color="danger">Mark as Revision</Button>
+                    <Button color="success">Mark as Completed</Button>
+                </div>
+            }
+            width={500}
             maskClosable
             mask={true}
+            closeIcon={<ArrowLeft size={16} />}
             onClose={closeModal}
         >
             {isLoading && <Spinner />}
             {!isLoading && error && <p>{JSON.stringify(error)}</p>}
             {!isLoading && !error && (
                 <>
-                    <p className="text-2xl font-semibold text-wrap">
-                        {job?.jobName}
-                    </p>
-                    <div className="mt-7 space-y-4 text-base">
-                        <div className="grid grid-cols-[0.5fr_1fr]">
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <Loader size={16} />
-                                <p className="font-normal line-clamp-1">
-                                    Status
-                                </p>
-                            </div>
-                            {job && (
-                                <JobStatusChip
-                                    data={job?.jobStatus as JobStatus}
-                                />
-                            )}
-                        </div>
-                        <div className="grid grid-cols-[0.5fr_1fr]">
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <CalendarPlus size={16} />
-                                <p className="font-normal line-clamp-1">
-                                    Started at
-                                </p>
-                            </div>
-                            <p className="font-semibold">
-                                {dayjs
-                                    .utc(job?.startedAt)
-                                    .tz('Asia/Ho_Chi_Minh')
-                                    .format(DATE_FORMAT)}
+                    <div className="space-y-3">
+                        <div>
+                            <p className="text-text2 text-sm">Job name</p>
+                            <p className="text-2xl font-semibold text-wrap">
+                                {job?.jobName}
                             </p>
                         </div>
-                        <div className="grid grid-cols-[0.5fr_1fr]">
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <CalendarClock size={16} />
-                                <p className="font-normal line-clamp-1">
-                                    Due to
+                        <div className="grid grid-cols-3 gap-5">
+                            <div>
+                                <p className="text-text2 text-sm">Income</p>
+                                <p className="text-base font-semibold text-wrap">
+                                    {formatCurrencyVND(
+                                        Number(job?.income),
+                                        'en-US',
+                                        'USD'
+                                    )}
                                 </p>
                             </div>
-                            <p className="font-semibold">
-                                {dayjs
-                                    .utc(job?.dueAt)
-                                    .tz('Asia/Ho_Chi_Minh')
-                                    .format(DATE_FORMAT)}
+                            <div>
+                                <p className="text-text2 text-sm">Staff cost</p>
+                                <p className="text-base font-semibold text-wrap">
+                                    {formatCurrencyVND(
+                                        Number(job?.staffCost),
+                                        'vi-VN',
+                                        'VND'
+                                    )}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-text2 text-sm">
+                                    Payment Channel
+                                </p>
+                                <p className="text-base font-semibold text-wrap">
+                                    {job?.paymentChannel.name}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <hr className="my-5 text-text3" />
+                    <div className="space-y-3.5">
+                        <p className="text-lg font-semibold">Details</p>
+                        <div>
+                            <p className="text-text2 text-sm">Client</p>
+                            <p className="text-base font-semibold text-wrap">
+                                {job?.clientName}
                             </p>
                         </div>
-                        <div
-                            className={`grid grid-cols-[0.5fr_1fr] ${
-                                showFullAssignee && 'pt-1 items-start'
-                            }`}
-                        >
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <Users size={16} />
-                                <p className="font-normal line-clamp-1">
-                                    Assignee
+                        <div>
+                            <p className="text-text2 text-sm">Description</p>
+                            <p className="text-sm text-wrap line-clamp-2">
+                                Lorem ipsum dolor sit amet consectetur
+                                adipisicing elit. A aspernatur voluptatibus
+                                commodi expedita, reprehenderit voluptate unde
+                                perspiciatis odit nam. Aliquam, nemo fugit rerum
+                                iure ducimus tempora ipsum at iusto maxime!
+                                Expedita laboriosam iusto vero fuga accusamus
+                                quibusdam excepturi ratione doloribus deserunt
+                                fugit velit, saepe molestias eligendi quas
+                                voluptatibus optio odit cumque vitae, officiis
+                                molestiae eos error! Rem nam nesciunt ut?
+                                Doloremque iure eligendi tenetur numquam?
+                                Voluptatem, magnam corporis, totam ea facilis
+                                expedita voluptatum voluptates quos mollitia
+                                aliquam recusandae modi iste fuga maxime quae
+                                unde? Modi eveniet necessitatibus aspernatur
+                                laudantium veritatis?
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-text2 text-sm">Documents (1)</p>
+                            <Link
+                                href={String(job?.sourceUrl)}
+                                className="mt-2 flex items-center justify-start gap-2 border w-fit px-3 py-2 rounded-sm"
+                                title="Sharepoint link"
+                            >
+                                <Link2 size={20} />
+                                <p className="font-semibold">Sharepoint link</p>
+                            </Link>
+                        </div>
+                        <div className="grid grid-cols-2 gap-5">
+                            <div>
+                                <p className="text-text2 text-sm">Started at</p>
+                                <p className="text-base font-semibold text-wrap">
+                                    {dayjs
+                                        .utc(job?.startedAt)
+                                        .tz('Asia/Ho_Chi_Minh')
+                                        .format(DATE_FORMAT)}
                                 </p>
                             </div>
-                            <div className="w-full">
+                            <div>
+                                <p className="text-text2 text-sm">Due at</p>
+                                <p className="text-base font-semibold text-wrap">
+                                    {dayjs
+                                        .utc(job?.dueAt)
+                                        .tz('Asia/Ho_Chi_Minh')
+                                        .format(DATE_FORMAT)}
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-text2 text-sm">Assignee</p>
+                            <div className="px-2.5 mt-3.5 w-full">
                                 {!showFullAssignee ? (
                                     <AvatarGroup
                                         size="sm"
@@ -206,62 +254,11 @@ export default function JobDetailDrawer() {
                                 )}
                             </div>
                         </div>
-                        <hr className="opacity-10" />
-                        <div className="grid grid-cols-[0.5fr_1fr]">
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <Banknote size={18} />
-                                <p className="font-normal line-clamp-1">
-                                    Payment Channel
-                                </p>
-                            </div>
-                            <p className="font-semibold">ACB</p>
-                        </div>
-                        <div className="grid grid-cols-[0.5fr_1fr]">
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <CircleDollarSign size={16} />
-                                <p className="font-normal line-clamp-1">
-                                    Income
-                                </p>
-                            </div>
-                            <p className="font-semibold">
-                                {formatCurrencyVND(20, 'en-US', 'USD')}
-                            </p>
-                        </div>
-                        <div className="grid grid-cols-[0.5fr_1fr]">
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <HandCoins size={16} />
-                                <p className="font-normal line-clamp-1">
-                                    Staff Cost
-                                </p>
-                            </div>
-                            <p className="font-semibold text-lg text-danger">
-                                {formatCurrencyVND(500000, 'vi-VN', 'VND')}
-                            </p>
-                        </div>
-                        <hr className="opacity-10" />
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-start gap-2 opacity-80">
-                                <LinkIcon size={16} />
-                                <p className="font-normal line-clamp-1">
-                                    Sharepoint Link (1)
-                                </p>
-                            </div>
-                            <Link
-                                href={job?.sourceUrl ?? '#'}
-                                target="_blank"
-                                className="border border-border w-fit px-3 py-2 rounded-lg grid grid-cols-[30px_1fr] gap-4 items-center max-w-[40%]"
-                            >
-                                <FolderIcon size={30} strokeWidth={1.4} />
-                                <div>
-                                    <p className="text-sm font-medium line-clamp-1">
-                                        {job?.jobNo} - {job?.jobName}
-                                    </p>
-                                </div>
-                            </Link>
-                        </div>
-                        <div className="mt-4">
-                            <DetailTabs />
-                        </div>
+                    </div>
+                    <hr className="mt-7 text-text3" />
+                    <div className="mt-3 space-y-2">
+                        <p className="text-lg font-semibold">Activity</p>
+                        <JobActivityTabs />
                     </div>
                 </>
             )}

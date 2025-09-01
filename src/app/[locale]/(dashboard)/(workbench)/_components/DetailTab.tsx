@@ -70,9 +70,7 @@ export default function DetailTab({ jobNo }: Props) {
                     </div>
                 </div>
                 <div>
-                    <Tag color={job?.jobStatus.color}>
-                        {job?.jobStatus.title}
-                    </Tag>
+                    <Tag color={job?.status.color}>{job?.status.title}</Tag>
                     <div className="mt-5 rounded-lg border border-border p-3">
                         <h2 className="text-lg font-semibold">Detail</h2>
                         <div className="h-[1px] w-full bg-border my-2" />
