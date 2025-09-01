@@ -117,7 +117,7 @@ export const useJobActivityLogs = (id?: string) => {
             axiosClient.get<ApiResponse<JobActivityLog[]>>(
                 `jobs/${id}/activity-log`
             ),
-        enabled: id !== null && id !== undefined,
+        enabled: id !== null && typeof id !== 'undefined',
         select: (res) => res.data,
     })
     return {
@@ -165,7 +165,7 @@ export const useChangeStatusMutation = () => {
                 queryKey: ['jobDetail', data.data.result?.jobNo],
             })
             queryClient.invalidateQueries({
-                queryKey: ['jobActivityLog', data.data.result?.id],
+                queryKey: ['jobActivityLog', String(data.data.result?.id)],
             })
         },
     })

@@ -86,11 +86,11 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             render: (_, record: DataType) => {
                 return (
                     <div className="flex items-center justify-center">
-                        <div className="size-11 rounded-full overflow-hidden">
+                        <div className="overflow-hidden rounded-full size-11">
                             <Image
                                 src={record?.status?.thumbnail}
                                 alt="image"
-                                className="size-full object-cover rounded-full"
+                                className="object-cover rounded-full size-full"
                                 preview={false}
                             />
                         </div>
@@ -120,7 +120,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             key: 'jobNo',
             width: 140,
             render: (jobNo) => (
-                <div className="group size-full flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-2 group size-full">
                     <Link
                         href={{
                             pathname: '/onboarding',
@@ -137,7 +137,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                         <LinkIcon
                             size={14}
                             strokeWidth={2}
-                            className="hidden group-hover:block transition duration-150"
+                            className="hidden transition duration-150 group-hover:block"
                         />
                     </TooltipAnt>
                 </div>
@@ -171,7 +171,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             key: 'income',
             width: '10%',
             render: () => (
-                <p className="text-right font-semibold text-red-500">$ 10</p>
+                <p className="font-semibold text-right text-red-500">$ 10</p>
             ),
             sorter: {
                 compare: (a, b) => a.income! - b.income!,
@@ -184,7 +184,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             key: 'staffCost',
             width: '10%',
             render: (staffCost) => (
-                <p className="text-right font-semibold text-red-500">
+                <p className="font-semibold text-right text-red-500">
                     {formatCurrencyVND(staffCost)}
                 </p>
             ),
@@ -253,38 +253,48 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             dataIndex: 'memberAssign',
             key: 'memberAssign',
             width: '10%',
+            className: 'group cursor-default',
             render: (_, record: DataType) => {
                 const show = 4
                 return (
-                    <AvatarGroup
-                        size="sm"
-                        max={show}
-                        total={record?.memberAssign?.length - show}
-                        classNames={{
-                            base: 'max-w-full',
-                        }}
-                    >
-                        {record.memberAssign.map((mem) => {
-                            return (
-                                <Tooltip
-                                    key={mem.id}
-                                    content={mem?.name}
-                                    classNames={{
-                                        content: 'max-w-fit text-nowrap',
-                                    }}
-                                    color="secondary"
-                                >
-                                    <Avatar
-                                        src={mem?.avatar ?? ''}
-                                        classNames={{
-                                            base: 'data-[hover=true]:-translate-x-0 rtl:data-[hover=true]:translate-x-0 cursor-pointer',
-                                        }}
-                                        showFallback
-                                    />
-                                </Tooltip>
-                            )
-                        })}
-                    </AvatarGroup>
+                    <>
+                        {record.memberAssign.length === 0 ? (
+                            <button className="text-blue-600 transition duration-150 opacity-0 cursor-pointer group-hover:opacity-100 hover:underline underline-offset-2">
+                                Add assignee
+                            </button>
+                        ) : (
+                            <AvatarGroup
+                                size="sm"
+                                max={show}
+                                total={record?.memberAssign?.length - show}
+                                classNames={{
+                                    base: 'max-w-full',
+                                }}
+                            >
+                                {record.memberAssign.map((mem) => {
+                                    return (
+                                        <Tooltip
+                                            key={mem.id}
+                                            content={mem?.name}
+                                            classNames={{
+                                                content:
+                                                    'max-w-fit text-nowrap',
+                                            }}
+                                            color="secondary"
+                                        >
+                                            <Avatar
+                                                src={mem?.avatar ?? ''}
+                                                classNames={{
+                                                    base: 'data-[hover=true]:-translate-x-0 rtl:data-[hover=true]:translate-x-0 cursor-pointer',
+                                                }}
+                                                showFallback
+                                            />
+                                        </Tooltip>
+                                    )
+                                })}
+                            </AvatarGroup>
+                        )}
+                    </>
                 )
             },
             filters: uniqueByKey(users ?? [], 'id')?.map((item) => ({
