@@ -55,6 +55,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
     } = useJobs({
         tab: currentTab as TJobTab,
         page: currentPage,
+        hideFinishItems: isHideFinishItems,
     })
 
     const handleCopyJob = (job: Job) => {

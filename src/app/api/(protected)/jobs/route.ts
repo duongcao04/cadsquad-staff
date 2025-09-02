@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getTabQuery, TJobTab } from './utils/getTabQuery'
+import { Prisma } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
     const userHeader = request.headers.get('x-user')
@@ -24,6 +25,7 @@ export async function GET(request: NextRequest) {
     const jobNo = searchParams.get('jobNo')
     const tabQuery = searchParams.get('tab')
     const tab = tabQuery ?? 'active'
+    const hideFinishItems = Boolean(searchParams.get('hideFinishItems'))
 
     // 1. Get by Job No.
     if (jobNo) {
@@ -140,29 +142,38 @@ export async function GET(request: NextRequest) {
                           },
                       },
                   }
+
+        const where: Prisma.JobWhereInput = {
+            ...getJobPermission,
+            ...(Boolean(hideFinishItems) && {
+                status: {
+                    isNot: {
+                        order: 5,
+                    },
+                },
+            }),
+            ...getTabQuery(tab),
+            ...(search && {
+                OR: [
+                    {
+                        jobName: {
+                            contains: search,
+                            mode: 'insensitive' as const,
+                        },
+                    },
+                    {
+                        jobNo: {
+                            contains: search,
+                            mode: 'insensitive' as const,
+                        },
+                    },
+                ],
+            }),
+        }
         const [jobs, priority, active, completed, delivered, late, cancelled] =
             await Promise.all([
                 prisma.job.findMany({
-                    where: {
-                        ...getJobPermission,
-                        ...getTabQuery(tab),
-                        ...(search && {
-                            OR: [
-                                {
-                                    jobName: {
-                                        contains: search,
-                                        mode: 'insensitive' as const,
-                                    },
-                                },
-                                {
-                                    jobNo: {
-                                        contains: search,
-                                        mode: 'insensitive' as const,
-                                    },
-                                },
-                            ],
-                        }),
-                    },
+                    where,
                     include: {
                         paymentChannel: {},
                         memberAssign: {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { getTabQuery } from '../../../jobs/utils/getTabQuery'
 
 export async function GET(
@@ -16,6 +17,7 @@ export async function GET(
     const jobNo = searchParams.get('jobNo')
     const tabQuery = searchParams.get('tab')
     const tab = tabQuery ?? 'active'
+    const hideFinishItems = Boolean(searchParams.get('hideFinishItems'))
 
     try {
         // Lấy thông tin User từ header auth
@@ -127,32 +129,40 @@ export async function GET(
      * - @cancelledFilter Dự án đã hủy (delete)
      */
     try {
-        const [jobs, total] = await Promise.all([
-            prisma.job.findMany({
-                where: {
-                    memberAssign: {
-                        some: {
-                            id: userId,
+        const where: Prisma.JobWhereInput = {
+            memberAssign: {
+                some: {
+                    id: userId,
+                },
+            },
+            ...(Boolean(hideFinishItems) && {
+                status: {
+                    isNot: {
+                        order: 5,
+                    },
+                },
+            }),
+            ...getTabQuery(tab),
+            ...(search && {
+                OR: [
+                    {
+                        jobName: {
+                            contains: search,
+                            mode: 'insensitive' as const,
                         },
                     },
-                    ...getTabQuery(tab),
-                    ...(search && {
-                        OR: [
-                            {
-                                jobName: {
-                                    contains: search,
-                                    mode: 'insensitive' as const,
-                                },
-                            },
-                            {
-                                jobNo: {
-                                    contains: search,
-                                    mode: 'insensitive' as const,
-                                },
-                            },
-                        ],
-                    }),
-                },
+                    {
+                        jobNo: {
+                            contains: search,
+                            mode: 'insensitive' as const,
+                        },
+                    },
+                ],
+            }),
+        }
+        const [jobs, total] = await Promise.all([
+            prisma.job.findMany({
+                where,
                 include: {
                     paymentChannel: {},
                     memberAssign: {
@@ -183,30 +193,7 @@ export async function GET(
                 take: limit,
             }),
             prisma.job.count({
-                where: {
-                    memberAssign: {
-                        some: {
-                            id: userId,
-                        },
-                    },
-                    ...getTabQuery(tab),
-                    ...(search && {
-                        OR: [
-                            {
-                                jobName: {
-                                    contains: search,
-                                    mode: 'insensitive' as const,
-                                },
-                            },
-                            {
-                                jobNo: {
-                                    contains: search,
-                                    mode: 'insensitive' as const,
-                                },
-                            },
-                        ],
-                    }),
-                },
+                where,
             }),
         ])
 

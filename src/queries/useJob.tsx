@@ -9,14 +9,6 @@ import useAuth from './useAuth'
 
 type JobsResponse = {
     jobs: Job[]
-    counts?: {
-        priority: number
-        active: number
-        completed: number
-        delivered: number
-        late: number
-        cancelled: number
-    }
 }
 type PaginationMeta = {
     page: number
@@ -30,9 +22,13 @@ export type TQueryJobParams = {
     search?: string
     limit?: number
     page?: number
+    hideFinishItems?: boolean
 }
 export const useJobs = (params?: TQueryJobParams) => {
-    const { userRole } = useAuth()
+    const {
+        userRole,
+        profile: { data: user },
+    } = useAuth()
 
     const hideCols = userRole === 'USER' ? ['income'] : []
 
@@ -43,44 +39,27 @@ export const useJobs = (params?: TQueryJobParams) => {
         isFetching,
         isLoading: isFirstLoading,
     } = useQuery({
-        queryKey: ['jobs', params?.tab ?? 'active', params?.page ?? 1],
-        queryFn: () =>
-            axiosClient.get<ApiResponse<JobsResponse, PaginationMeta>>('jobs', {
-                params: params,
-            }),
-        select: (res) => res.data,
-    })
-
-    const isLoading = isFirstLoading || isFetching
-
-    return {
-        refetch,
-        isLoading,
-        error,
-        jobs: data?.result?.jobs,
-        counts: data?.result?.counts,
-        meta: data?.meta,
-        hideCols,
-    }
-}
-
-export const useJobsByUser = (userId: string, params?: TQueryJobParams) => {
-    const {
-        data,
-        refetch,
-        error,
-        isFetching,
-        isLoading: isFirstLoading,
-    } = useQuery({
-        queryKey: ['jobs', params?.tab ?? 'active', params?.page ?? 1],
-        queryFn: () =>
-            axiosClient.get<ApiResponse<JobsResponse, PaginationMeta>>(
-                `users/${userId}/jobs`,
+        queryKey: [
+            'jobs',
+            params?.tab ?? 'active',
+            params?.page ?? 1,
+            params?.hideFinishItems ?? 'false',
+        ],
+        queryFn: () => {
+            if (userRole === 'ADMIN') {
+                return axiosClient.get<
+                    ApiResponse<JobsResponse, PaginationMeta>
+                >('jobs', {
+                    params: params,
+                })
+            }
+            return axiosClient.get<ApiResponse<JobsResponse, PaginationMeta>>(
+                `users/${user?.id}/jobs`,
                 {
                     params: params,
                 }
-            ),
-        enabled: userId !== null && typeof userId !== 'undefined',
+            )
+        },
         select: (res) => res.data,
     })
 
@@ -91,8 +70,8 @@ export const useJobsByUser = (userId: string, params?: TQueryJobParams) => {
         isLoading,
         error,
         jobs: data?.result?.jobs,
-        counts: data?.result?.counts,
         meta: data?.meta,
+        hideCols,
     }
 }
 
