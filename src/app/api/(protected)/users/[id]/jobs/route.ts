@@ -17,7 +17,6 @@ export async function GET(
     const tabQuery = searchParams.get('tab')
     const tab = tabQuery ?? 'active'
 
-    let getJobPermission = {}
     try {
         // Lấy thông tin User từ header auth
         // - Admin xem được toàn bộ dự án
@@ -34,15 +33,6 @@ export async function GET(
                 },
                 { status: 401 }
             )
-        }
-        if (getUser.role !== 'ADMIN') {
-            getJobPermission = {
-                memberAssign: {
-                    some: {
-                        id: userId,
-                    },
-                },
-            }
         }
     } catch (error) {
         console.log(error)
@@ -63,7 +53,11 @@ export async function GET(
                 where: {
                     jobNo: jobNo,
                     deletedAt: null,
-                    ...getJobPermission,
+                    memberAssign: {
+                        some: {
+                            id: userId,
+                        },
+                    },
                 },
                 include: {
                     paymentChannel: {},
@@ -136,7 +130,11 @@ export async function GET(
         const [jobs, total] = await Promise.all([
             prisma.job.findMany({
                 where: {
-                    ...getJobPermission,
+                    memberAssign: {
+                        some: {
+                            id: userId,
+                        },
+                    },
                     ...getTabQuery(tab),
                     ...(search && {
                         OR: [
@@ -186,7 +184,11 @@ export async function GET(
             }),
             prisma.job.count({
                 where: {
-                    ...getJobPermission,
+                    memberAssign: {
+                        some: {
+                            id: userId,
+                        },
+                    },
                     ...getTabQuery(tab),
                     ...(search && {
                         OR: [

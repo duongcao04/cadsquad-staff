@@ -64,6 +64,38 @@ export const useJobs = (params?: TQueryJobParams) => {
     }
 }
 
+export const useJobsByUser = (userId: string, params?: TQueryJobParams) => {
+    const {
+        data,
+        refetch,
+        error,
+        isFetching,
+        isLoading: isFirstLoading,
+    } = useQuery({
+        queryKey: ['jobs', params?.tab ?? 'active', params?.page ?? 1],
+        queryFn: () =>
+            axiosClient.get<ApiResponse<JobsResponse, PaginationMeta>>(
+                `users/${userId}/jobs`,
+                {
+                    params: params,
+                }
+            ),
+        enabled: userId !== null && typeof userId !== 'undefined',
+        select: (res) => res.data,
+    })
+
+    const isLoading = isFirstLoading || isFetching
+
+    return {
+        refetch,
+        isLoading,
+        error,
+        jobs: data?.result?.jobs,
+        counts: data?.result?.counts,
+        meta: data?.meta,
+    }
+}
+
 export const useCountJobByTab = (tab: TJobTab) => {
     const {
         data,
