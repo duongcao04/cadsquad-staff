@@ -4,15 +4,11 @@ import React from 'react'
 import { useJobs } from '@/queries/useJob'
 import { Image, Table, TableColumnsType, Tag } from 'antd'
 import { DataType } from '../../onboarding/page'
-import { Avatar, AvatarGroup, Chip, Tooltip } from '@heroui/react'
+import { Avatar, AvatarGroup, Tooltip } from '@heroui/react'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import CountDown from '../../onboarding/_components/CountDown'
-import { Job } from '@/validationSchemas/job.schema'
 
-type Props = {
-    onAddTab: (record: Job) => void
-}
-export default function WorkbenchTable({ onAddTab }: Props) {
+export default function WorkbenchTable() {
     /**
      * Get initial data
      */
@@ -33,7 +29,7 @@ export default function WorkbenchTable({ onAddTab }: Props) {
                 return (
                     <div className="size-11 rounded-full overflow-hidden flex items-center justify-center">
                         <Image
-                            src={record?.jobStatus?.thumbnail}
+                            src={record?.status?.thumbnail}
                             alt="image"
                             className="size-full object-cover rounded-full"
                             preview={false}
@@ -188,9 +184,7 @@ export default function WorkbenchTable({ onAddTab }: Props) {
             key: 'jobStatus',
             width: 140,
             render: (_, record: DataType) => (
-                <Tag color={record?.jobStatus.color}>
-                    {record?.jobStatus.title}
-                </Tag>
+                <Tag color={record?.status.color}>{record?.status.title}</Tag>
             ),
         },
     ]
@@ -203,13 +197,6 @@ export default function WorkbenchTable({ onAddTab }: Props) {
                     style: {
                         background: 'var(--color-text4)',
                     },
-                }
-            }}
-            onRow={(record) => {
-                return {
-                    className: 'cursor-pointer',
-                    title: 'Double click to view',
-                    onDoubleClick: () => onAddTab(record),
                 }
             }}
             dataSource={jobs?.map((prj, index) => ({
