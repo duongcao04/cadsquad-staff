@@ -142,14 +142,14 @@ export const useJobDetail = (jobNo?: string) => {
     }
 }
 
-export const useJobActivityLogs = (id?: string) => {
+export const useJobActivityLogs = (jobId?: string) => {
     const { data, refetch, error, isLoading } = useQuery({
-        queryKey: ['jobActivityLog', id],
+        queryKey: jobId ? ['jobActivityLog', jobId] : ['jobActivityLog'],
         queryFn: () =>
             axiosClient.get<ApiResponse<JobActivityLog[]>>(
-                `jobs/${id}/activity-log`
+                `jobs/${jobId}/activity-log`
             ),
-        enabled: id !== null && typeof id !== 'undefined',
+        enabled: !!jobId,
         select: (res) => res.data,
     })
     return {
@@ -190,6 +190,35 @@ export const useChangeStatusMutation = () => {
             return axiosClient.patch<ApiResponse<Job>>(
                 `jobs/${jobId}/change-status`,
                 changeStatusInput
+            )
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({
+                queryKey: ['jobDetail', data.data.result?.jobNo],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['jobActivityLog', String(data.data.result?.id)],
+            })
+        },
+    })
+}
+
+export const useAssignMemberMutation = () => {
+    return useMutation({
+        mutationKey: ['assignMember', 'job'],
+        mutationFn: ({
+            jobId,
+            assignMemberInput,
+        }: {
+            jobId?: string
+            assignMemberInput: {
+                prevMemberIds?: string
+                updateMemberIds?: string
+            }
+        }) => {
+            return axiosClient.patch<ApiResponse<Job>>(
+                `jobs/${jobId}/assign-member`,
+                assignMemberInput
             )
         },
         onSuccess: (data) => {

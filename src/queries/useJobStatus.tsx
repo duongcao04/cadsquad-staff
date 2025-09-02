@@ -10,12 +10,12 @@ export const useJobStatuses = () => {
     })
 }
 
-export const useJobStatusDetail = (id?: string) => {
+export const useJobStatusDetail = (statusId?: string) => {
     const { data, refetch, error, isLoading } = useQuery({
-        queryKey: ['jobStatus', id],
+        queryKey: statusId ? ['jobStatus', statusId] : ['jobStatus'],
         queryFn: () =>
-            axiosClient.get<ApiResponse<JobStatus>>(`job-statuses/${id}`),
-        enabled: id !== null && id !== undefined,
+            axiosClient.get<ApiResponse<JobStatus>>(`job-statuses/${statusId}`),
+        enabled: !!statusId,
         select: (res) => res.data,
     })
     return {

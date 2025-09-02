@@ -359,7 +359,7 @@ export default function JobDetailDrawer() {
                         <p className="text-lg font-semibold">Activity</p>
                         <Tabs aria-label="Job action tabs">
                             <Tab key="1" title="Work log">
-                                <WorkLogTab jobId={job?.id} />
+                                <WorkLogTab jobId={job?.id?.toString()} />
                             </Tab>
                             <Tab key="2" title="Comments" isDisabled></Tab>
                         </Tabs>

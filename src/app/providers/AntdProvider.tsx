@@ -49,6 +49,33 @@ export default function AntdProvider({
                         },
                     },
                 }}
+                modal={{
+                    classNames: {
+                        content: 'shadow-lg',
+                    },
+                    style: {
+                        top: 80,
+                    },
+                    styles: {
+                        mask: {
+                            background: '#000000c0',
+                        },
+                        content: {
+                            borderRadius: '24px',
+                        },
+                    },
+                }}
+                select={{
+                    style: {
+                        MozOutlineRadius: 10,
+                    },
+                    styles: {
+                        root: { borderStartStartRadius: 10 },
+                    },
+                    classNames: {
+                        root: '!rounded-2xl',
+                    },
+                }}
             >
                 {children}
             </ConfigProvider>

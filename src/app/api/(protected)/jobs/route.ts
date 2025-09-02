@@ -41,7 +41,6 @@ export async function GET(request: NextRequest) {
                     { status: 401 }
                 )
             }
-            console.log(getUser)
 
             const result = await prisma.job.findUnique({
                 where: {

@@ -6,39 +6,37 @@ import {
     Dropdown,
     DropdownItem,
     DropdownMenu,
-    DropdownSection,
     DropdownTrigger,
 } from '@heroui/react'
 import React from 'react'
-import { JobStatus } from '@/validationSchemas/job.schema'
+import { Job, JobStatus } from '@/validationSchemas/job.schema'
 import { lightenHexColor } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import { useJobStatusDetail } from '@/queries/useJobStatus'
 import JobStatusChip from '@/shared/components/customize/JobStatusChip'
-import { useUpdateJobMutation } from '@/queries/useJob'
+import { useChangeStatusMutation } from '@/queries/useJob'
 
 type Props = {
-    jobId: string
+    jobData: Job
     statusData: JobStatus
 }
-export default function JobStatusDropdown({ jobId, statusData }: Props) {
-    console.log(statusData)
-
-    const { mutateAsync: updateJobMutate } = useUpdateJobMutation()
+export default function JobStatusDropdown({ jobData, statusData }: Props) {
+    const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
     const { jobStatus: nextStatus } = useJobStatusDetail(
-        String(statusData.nextStatusId)
+        statusData.nextStatusId?.toString()
     )
     const { jobStatus: prevStatus } = useJobStatusDetail(
-        String(statusData.prevStatusId)
+        statusData.prevStatusId?.toString()
     )
 
     const handleChangeStatus = async (nextStatus: JobStatus) => {
         try {
-            await updateJobMutate(
+            await changeStatusMutation(
                 {
-                    jobId,
-                    updateJobInput: {
-                        statusId: nextStatus.id,
+                    jobId: jobData.id?.toString(),
+                    changeStatusInput: {
+                        fromStatusId: jobData?.status.id?.toString(),
+                        toStatusId: nextStatus.id?.toString(),
                     },
                 },
                 {
@@ -116,14 +114,12 @@ export default function JobStatusDropdown({ jobId, statusData }: Props) {
             <DropdownMenu aria-label="Job Status Action">
                 {dropdownActions.map((item) => {
                     return (
-                        <DropdownSection key={item.key}>
-                            <DropdownItem key={item.key} onPress={item.action}>
-                                <div className="flex items-center justify-start gap-1">
-                                    Mark as
-                                    <JobStatusChip data={item.data} />
-                                </div>
-                            </DropdownItem>
-                        </DropdownSection>
+                        <DropdownItem key={item.key} onPress={item.action}>
+                            <div className="flex items-center justify-start gap-1">
+                                Mark as
+                                <JobStatusChip data={item.data} />
+                            </div>
+                        </DropdownItem>
                     )
                 })}
             </DropdownMenu>
