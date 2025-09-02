@@ -1,6 +1,6 @@
 'use client'
 
-import { Input } from '@heroui/react'
+import { Button, Input } from '@heroui/react'
 import React, { useState } from 'react'
 
 import JobTable from './_components/JobTable'
@@ -9,12 +9,14 @@ import JobTableTabs from './_components/JobTableTabs'
 import { Job } from '@/validationSchemas/job.schema'
 import FilterDropdown from './_components/FilterDropdown'
 import ViewSettingsDropdown from './_components/ViewSettingsDropdown'
-import { Search } from 'lucide-react'
+import { DownloadIcon, RefreshCcw, Search } from 'lucide-react'
+import { useJobs } from '@/queries/useJob'
 
 export type DataType = Job & {
     key: React.Key
 }
 export default function OnboardingPage() {
+    const { refetch: refreshJob, isLoading: loadingJobs } = useJobs()
     const { getSearchParam, setSearchParams, removeSearchParam } =
         useSearchParam()
     const tabQuery = getSearchParam('tab') ?? 'priority'
@@ -80,7 +82,7 @@ export default function OnboardingPage() {
                     onChange={handleTabChange}
                 />
                 <div className="flex items-center justify-between gap-5">
-                    <div className="grid grid-cols-[350px_90px_1fr] gap-2">
+                    <div className="grid grid-cols-[350px_90px_1fr] gap-3">
                         <Input
                             // value={keywords}
                             startContent={<Search size={18} />}
@@ -96,8 +98,33 @@ export default function OnboardingPage() {
                             placeholder="Tìm kiếm theo mã, tên dự án, khách hàng,..."
                         />
                         <FilterDropdown />
+                        <Button
+                            startContent={
+                                <RefreshCcw
+                                    size={14}
+                                    className={
+                                        loadingJobs ? 'animate-spin' : ''
+                                    }
+                                />
+                            }
+                            variant="bordered"
+                            className="border-1"
+                            onPress={() => refreshJob()}
+                        >
+                            Refresh
+                        </Button>
                     </div>
-                    <ViewSettingsDropdown />
+                    <div className="flex items-center justify-end gap-3">
+                        <Button
+                            color="success"
+                            variant="flat"
+                            className="font-semibold"
+                            startContent={<DownloadIcon size={14} />}
+                        >
+                            Download as CSV
+                        </Button>
+                        <ViewSettingsDropdown />
+                    </div>
                 </div>
                 <div
                     className="mt-4 size-full p-2 bg-background"

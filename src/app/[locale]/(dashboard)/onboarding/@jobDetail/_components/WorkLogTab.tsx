@@ -6,10 +6,10 @@ import { Spinner } from '@heroui/react'
 import LogCard from './cards/LogCard'
 
 type Props = {
-    jobId?: number
+    jobId?: string
 }
 export default function WorkLogTab({ jobId }: Props) {
-    const { activityLogs } = useJobActivityLogs(String(jobId))
+    const { activityLogs } = useJobActivityLogs(jobId)
 
     if (!jobId) {
         return <Spinner />

@@ -8,6 +8,16 @@ export async function GET(
     const { id } = await params
     const jobId = parseInt(id)
 
+    if (!jobId) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Lấy thông tin nhật ký hoạt động thất bại',
+            },
+            { status: 500 }
+        )
+    }
+
     try {
         const result = await prisma.jobActivityLog.findMany({
             where: {

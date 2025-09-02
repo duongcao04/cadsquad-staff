@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import React from 'react'
 
 export async function generateMetadata({
     params,
@@ -20,15 +21,18 @@ export async function generateMetadata({
 
 export default function layout({
     children,
-    detail,
+    jobDetail,
+    addMember,
 }: {
     children: React.ReactNode
-    detail: React.ReactNode
+    jobDetail: React.ReactNode
+    addMember: React.ReactNode
 }) {
     return (
         <div>
             {children}
-            {detail}
+            {jobDetail}
+            {addMember}
         </div>
     )
 }

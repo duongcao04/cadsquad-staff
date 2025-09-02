@@ -11,7 +11,7 @@ import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { uniqueByKey } from '@/lib/utils'
 import { useConfirmModal } from '@/shared/components/ui/ConfirmModal'
 
-import { useDetailModal } from '../@detail/actions'
+import { useDetailModal } from '../@jobDetail/actions'
 import { useJobStore } from '../store/useJobStore'
 import ActionDropdown from './ActionDropdown'
 import CountDown from './CountDown'
@@ -24,6 +24,7 @@ import { useSettingStore } from '@/app/[locale]/settings/shared/store/useSetting
 import { DataType } from '../page'
 import { Link } from '@/i18n/navigation'
 import JobStatusDropdown from './JobStatusDropdown'
+import { useAddMemberModal } from '../@addMember/actions'
 
 export default function JobTable({ currentTab }: { currentTab: string }) {
     const { hideCols } = useJobs()
@@ -37,6 +38,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
     /**
      * Instance hooks
      */
+    const { openModal: openAddMemberModal } = useAddMemberModal()
     const deleteModal = useConfirmModal()
     const { newJobNo, setNewJobNo } = useJobStore()
     const { table } = useSettingStore()
@@ -259,7 +261,12 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 return (
                     <>
                         {record.memberAssign.length === 0 ? (
-                            <button className="text-blue-600 transition duration-150 opacity-0 cursor-pointer group-hover:opacity-100 hover:underline underline-offset-2">
+                            <button
+                                onClick={() =>
+                                    openAddMemberModal(record.jobNo as string)
+                                }
+                                className="text-blue-600 transition duration-150 opacity-0 cursor-pointer group-hover:opacity-100 hover:underline underline-offset-2"
+                            >
                                 Add assignee
                             </button>
                         ) : (
@@ -312,7 +319,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
             render: (_, record: DataType) => (
                 <div className="flex items-center justify-center">
                     <JobStatusDropdown
-                        jobId={String(record?.id)}
+                        jobData={record}
                         statusData={record?.status as JobStatus}
                     />
                 </div>
