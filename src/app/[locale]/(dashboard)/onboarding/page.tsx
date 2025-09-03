@@ -22,11 +22,13 @@ export default function OnboardingPage() {
     const { getSearchParam, setSearchParams, removeSearchParam } =
         useSearchParam()
     const tabQuery = getSearchParam('tab') ?? 'priority'
-    const searchQuery = getSearchParam('search') ?? ''
+    const searchQuery = getSearchParam('search') ?? undefined
 
     const [currentTab, setCurrentTab] = useState(tabQuery)
     const [currentJobPage, setCurrentJobPage] = useState(1)
-    const [searchKeywords, setSearchKeywords] = useState(searchQuery)
+    const [searchKeywords, setSearchKeywords] = useState<string | undefined>(
+        searchQuery
+    )
 
     const {
         hideCols,
@@ -38,8 +40,9 @@ export default function OnboardingPage() {
         tab: currentTab as TJobTab,
         page: currentJobPage,
         search: searchKeywords,
-        hideFinishItems: isHideFinishItems,
+        hideFinishItems: Boolean(isHideFinishItems),
     })
+
     const handleTabChange = (activeKey: string) => {
         setCurrentTab(activeKey)
         if (activeKey === 'priority') {

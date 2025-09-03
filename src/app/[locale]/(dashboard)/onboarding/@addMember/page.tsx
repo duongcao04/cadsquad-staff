@@ -7,11 +7,18 @@ import { useUsers } from '@/queries/useUser'
 import { addToast, Button, Input } from '@heroui/react'
 import { useAssignMemberMutation, useJobDetail } from '@/queries/useJob'
 import envConfig from '@/config/envConfig'
+import { queryClient } from '@/app/providers/TanstackQueryProvider'
 
 export default function AddMemberModal() {
     const [memberSelected, setMemberSelected] = useState<string[]>([])
     const { isOpen, closeModal, jobNo } = useAddMemberModal()
-    const { mutateAsync: assignMemberMutate } = useAssignMemberMutation()
+    const { mutateAsync: assignMemberMutate } = useAssignMemberMutation({
+        onSuccess() {
+            queryClient.invalidateQueries({
+                queryKey: ['jobs'],
+            })
+        },
+    })
 
     const { data: users } = useUsers()
     const { job } = useJobDetail(jobNo)

@@ -6,7 +6,7 @@ import { Job, JobActivityLog, NewJob } from '@/validationSchemas/job.schema'
 import { queryClient } from '../app/providers/TanstackQueryProvider'
 import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
 import useAuth from './useAuth'
-import { TJobVisibleColumn } from '../app/[locale]/(dashboard)/onboarding/store/useJobStore'
+import { TJobVisibleColumn } from '@/app/[locale]/(dashboard)/onboarding/store/useJobStore'
 
 type JobsResponse = {
     jobs: Job[]
@@ -188,8 +188,8 @@ export const useChangeStatusMutation = () => {
     })
 }
 
-type Props = { onSuccess?: () => void }
-export const useAssignMemberMutation = ({ onSuccess }: Props) => {
+type Props = { onSuccess?: (data: ApiResponse<Job>) => void }
+export const useAssignMemberMutation = ({ onSuccess }: Props = {}) => {
     return useMutation({
         mutationKey: ['assignMember', 'job'],
         mutationFn: ({
@@ -208,13 +208,14 @@ export const useAssignMemberMutation = ({ onSuccess }: Props) => {
             )
         },
         onSuccess: (data) => {
+            const res = data.data
             queryClient.invalidateQueries({
                 queryKey: ['jobDetail', data.data.result?.jobNo],
             })
             queryClient.invalidateQueries({
                 queryKey: ['jobActivityLog', String(data.data.result?.id)],
             })
-            onSuccess?.()
+            onSuccess?.(res)
         },
     })
 }

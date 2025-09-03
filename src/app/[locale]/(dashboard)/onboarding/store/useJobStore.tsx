@@ -30,7 +30,9 @@ const getJobVisibleColumns = () => {
 
 const getJobFinishItems = () => {
     if (typeof window !== 'undefined') {
-        return JSON.parse(localStorage.getItem('hide_finish_items') ?? 'true')
+        return Boolean(
+            JSON.parse(localStorage.getItem('hide_finish_items') ?? 'true')
+        )
     } else {
         return true
     }
