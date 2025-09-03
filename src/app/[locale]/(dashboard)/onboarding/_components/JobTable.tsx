@@ -12,28 +12,39 @@ import { uniqueByKey } from '@/lib/utils'
 import { useConfirmModal } from '@/shared/components/ui/ConfirmModal'
 
 import { useDetailModal } from '../@jobDetail/actions'
-import { useJobStore } from '../store/useJobStore'
+import { TJobVisibleColumn, useJobStore } from '../store/useJobStore'
 import ActionDropdown from './ActionDropdown'
 import CountDown from './CountDown'
 import { useUsers } from '@/queries/useUser'
 import { usePaymentChannels } from '@/queries/usePaymentChannel'
 import { Job, JobStatus } from '@/validationSchemas/job.schema'
-import { useJobs } from '@/queries/useJob'
-import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
 import { useSettingStore } from '@/app/[locale]/settings/shared/store/useSettingStore'
 import { DataType } from '../page'
 import { Link } from '@/i18n/navigation'
 import JobStatusDropdown from './JobStatusDropdown'
 import { useAddMemberModal } from '../@addMember/actions'
 
-export default function JobTable({ currentTab }: { currentTab: string }) {
-    const { hideCols } = useJobs()
-    const { jobVisibleColumns, isHideFinishItems } = useJobStore()
+type Props = {
+    data: Job[]
+    visibleColumns?: TJobVisibleColumn[]
+    isLoading?: boolean
+    pagination?: TableProps['pagination']
+}
+export default function JobTable({
+    visibleColumns = ['income','clientName','jobName'],
+    isLoading = false,
+    data: jobsData,
+    pagination = {
+        position: ['bottomCenter'],
+        pageSize: 10,
+        current: 1,
+        size: 'default',
+    },
+}: Props) {
     /**
      * Define states
      */
     const [, setDeleteJob] = useState<Job | null>(null)
-    const [currentPage, setCurrentPage] = useState(1)
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     /**
      * Instance hooks
@@ -48,15 +59,6 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
      */
     const { data: users } = useUsers()
     const { data: paymentChannels } = usePaymentChannels()
-    const {
-        jobs,
-        isLoading: loadingJobs,
-        meta,
-    } = useJobs({
-        tab: currentTab as TJobTab,
-        page: currentPage,
-        hideFinishItems: isHideFinishItems,
-    })
 
     const handleCopyJob = (job: Job) => {
         navigator.clipboard
@@ -380,9 +382,7 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
 
     const newColumns = columns.map((item) => ({
         ...item,
-        hidden:
-            !jobVisibleColumns.includes(item.key as keyof Job | 'action') ||
-            hideCols.includes(item.key as keyof Job | 'action'),
+        hidden: !visibleColumns.includes(item.key as keyof Job | 'action'),
     }))
 
     // Remove hight after 1 second
@@ -396,14 +396,10 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
         }
     }, [newJobNo])
 
-    const jobsData = jobs?.map((prj, index) => ({
+    const dataSource = jobsData?.map((prj, index) => ({
         ...prj,
         key: prj?.id ?? index,
     }))
-    const dataSource = isHideFinishItems
-        ? jobsData?.filter((item) => item.status.nextStatusId)
-        : jobsData
-
     return (
         <Table<DataType>
             rowKey="jobNo"
@@ -435,17 +431,8 @@ export default function JobTable({ currentTab }: { currentTab: string }) {
                 }
             }}
             dataSource={dataSource}
-            loading={loadingJobs}
-            pagination={{
-                position: ['bottomCenter'],
-                pageSize: meta?.limit,
-                current: meta?.page,
-                size: 'default',
-                total: meta?.total,
-                onChange(page) {
-                    setCurrentPage(page)
-                },
-            }}
+            loading={isLoading}
+            pagination={pagination}
             rowSelection={{
                 selectedRowKeys,
                 onChange: (newSelectedRowKeys: React.Key[]) =>

@@ -89,7 +89,7 @@ export default function AddMemberModal() {
                     <p className="text-lg font-semibold">
                         Invite member to job #{jobNo}
                     </p>
-                    <p className="text-sm text-text2 font-normal">
+                    <p className="text-sm font-normal text-text2">
                         System will send notification them instruction.
                     </p>
                 </div>
@@ -173,7 +173,7 @@ export default function AddMemberModal() {
                     </p>
                     <div className="space-y-4">
                         {job?.memberAssign.length === 0 && (
-                            <p className="text-text2 my-8 text-center">
+                            <p className="my-8 text-center text-text2">
                                 No members have been assigned yet.
                             </p>
                         )}

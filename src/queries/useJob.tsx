@@ -6,6 +6,7 @@ import { Job, JobActivityLog, NewJob } from '@/validationSchemas/job.schema'
 import { queryClient } from '../app/providers/TanstackQueryProvider'
 import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
 import useAuth from './useAuth'
+import { TJobVisibleColumn } from '../app/[locale]/(dashboard)/onboarding/store/useJobStore'
 
 type JobsResponse = {
     jobs: Job[]
@@ -30,7 +31,7 @@ export const useJobs = (params?: TQueryJobParams) => {
         profile: { data: user },
     } = useAuth()
 
-    const hideCols = userRole === 'USER' ? ['income'] : []
+    const hideCols: TJobVisibleColumn[] = userRole === 'USER' ? ['income'] : []
 
     const {
         data,
@@ -41,9 +42,13 @@ export const useJobs = (params?: TQueryJobParams) => {
     } = useQuery({
         queryKey: [
             'jobs',
+            userRole, // Include userRole since it affects the endpoint
+            user?.id, // Include user ID for USER role queries
             params?.tab ?? 'active',
+            params?.limit ?? 10,
             params?.page ?? 1,
-            params?.hideFinishItems ?? 'false',
+            params?.search ?? '',
+            params?.hideFinishItems ?? false,
         ],
         queryFn: () => {
             if (userRole === 'ADMIN') {
@@ -60,6 +65,7 @@ export const useJobs = (params?: TQueryJobParams) => {
                 }
             )
         },
+        enabled: userRole === 'ADMIN' || !!user?.id,
         select: (res) => res.data,
     })
 
@@ -182,7 +188,8 @@ export const useChangeStatusMutation = () => {
     })
 }
 
-export const useAssignMemberMutation = () => {
+type Props = { onSuccess?: () => void }
+export const useAssignMemberMutation = ({ onSuccess }: Props) => {
     return useMutation({
         mutationKey: ['assignMember', 'job'],
         mutationFn: ({
@@ -207,6 +214,7 @@ export const useAssignMemberMutation = () => {
             queryClient.invalidateQueries({
                 queryKey: ['jobActivityLog', String(data.data.result?.id)],
             })
+            onSuccess?.()
         },
     })
 }

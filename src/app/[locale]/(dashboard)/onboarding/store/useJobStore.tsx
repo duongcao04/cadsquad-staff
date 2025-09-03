@@ -36,15 +36,16 @@ const getJobFinishItems = () => {
     }
 }
 
+export type TJobVisibleColumn = keyof Job | 'action' | 'thumbnail' | 'jobStatus'
 export type JobStore = {
     newJobNo: string | null
-    jobVisibleColumns: Array<keyof Job | 'action' | string>
+    jobVisibleColumns: Array<TJobVisibleColumn>
     isHideFinishItems: boolean
 }
 
 type JobAction = {
     setNewJobNo: (jobNo: string | null) => void
-    setJobVisibleColumns: (jobVisibleCols: string[]) => void
+    setJobVisibleColumns: (jobVisibleCols: TJobVisibleColumn[]) => void
     setHideFinishItems: (isHidden: boolean) => void
 }
 export const useJobStore = create(
@@ -62,7 +63,7 @@ export const useJobStore = create(
                     }
                 })
             },
-            setJobVisibleColumns: (jobVisibleCols: string[]) => {
+            setJobVisibleColumns: (jobVisibleCols: TJobVisibleColumn[]) => {
                 set(() => {
                     if (typeof window !== 'undefined') {
                         localStorage.setItem(
