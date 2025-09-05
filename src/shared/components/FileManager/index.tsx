@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react'
 import { Button, addToast, useDisclosure } from '@heroui/react'
 import { Empty, message } from 'antd'
 import { ArrowUp, PlusIcon } from 'lucide-react'
-import useSWR from 'swr'
 
 import {
     ROOT_DIR,
@@ -80,10 +79,7 @@ export default function FileManager({
         setCurrentPath(defaultDirectory.split(FILE.SPLASH))
     }, [])
 
-    const { data: fileSystem, isLoading } = useSWR(
-        FILE_SYSTEM_API,
-        getFileSystem
-    )
+    const { data: fileSystem, isLoading } = { data: [], isLoading: true }
     const [files, setFiles] = useState<FileItem[]>(fileSystem ?? [])
 
     const [previewModalOpen, setPreviewModalOpen] = useState(false)

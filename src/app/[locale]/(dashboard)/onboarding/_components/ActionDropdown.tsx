@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 
 import {
@@ -22,6 +24,7 @@ import {
 } from 'lucide-react'
 
 import { Job } from '@/validationSchemas/job.schema'
+import { useAddMemberModal } from '../@addMember/actions'
 
 type ActionGroup = {
     key: React.Key | null | undefined
@@ -32,80 +35,8 @@ type ActionGroup = {
         title: string
         childProps?: Omit<DropdownItemProps, 'key'>
         icon: React.ReactNode
-        onClick: () => void
     }[]
 }
-const adminActions: ActionGroup[] = [
-    {
-        key: 'Assignee menu',
-        groupTitle: 'Assignee',
-        children: [
-            {
-                key: 'assignReassign',
-                title: 'Assign / Reassign',
-                icon: <UserPlus size={14} />,
-                onClick: () => {},
-            },
-        ],
-    },
-    {
-        key: 'Job menu',
-        groupTitle: 'Job',
-        children: [
-            {
-                key: 'pin',
-                title: 'Pin Job',
-                icon: <PinIcon size={14} className="rotate-45" />,
-                onClick: () => {},
-            },
-            {
-                key: 'assignReassign',
-                title: 'Assign / Reassign',
-                icon: <UserPlus size={14} />,
-                onClick: () => {},
-            },
-            {
-                key: 'editJob',
-                title: 'Edit Job',
-                icon: <Edit size={14} />,
-                onClick: () => {},
-            },
-            {
-                key: 'duplicateJob',
-                title: 'Duplicate Job',
-                icon: <CopyIcon size={14} />,
-                onClick: () => {},
-            },
-            {
-                key: 'deleteJob',
-                title: 'Delete',
-                icon: <Trash size={14} />,
-                onClick: () => {},
-                childProps: {
-                    color: 'danger',
-                },
-            },
-        ],
-    },
-    {
-        key: 'Payment menu',
-        groupTitle: 'Payment',
-        children: [
-            {
-                key: 'updateCost',
-                title: 'Update Cost',
-                icon: <CircleDollarSign size={14} />,
-                onClick: () => {},
-            },
-            {
-                key: 'markAsPaid',
-                title: 'Mark as Paid',
-                icon: <CircleCheck size={14} />,
-                onClick: () => {},
-            },
-        ],
-    },
-]
 
 type Props = {
     setDeleteJob: React.Dispatch<React.SetStateAction<Job | null>>
@@ -113,6 +44,96 @@ type Props = {
     data: Job
 }
 export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
+    const { openModal } = useAddMemberModal()
+    const adminActions: ActionGroup[] = [
+        {
+            key: 'Assignee menu',
+            groupTitle: 'Assignee',
+            children: [
+                {
+                    key: 'assignReassign',
+                    title: 'Assign / Reassign',
+                    icon: <UserPlus size={14} />,
+                    childProps: {
+                        onPress: () => {
+                            openModal(data.jobNo as string)
+                        },
+                    },
+                },
+            ],
+        },
+        {
+            key: 'Job menu',
+            groupTitle: 'Job',
+            children: [
+                {
+                    key: 'pin',
+                    title: 'Pin Job',
+                    icon: <PinIcon size={14} className="rotate-45" />,
+                    childProps: {
+                        onPress: () => {},
+                    },
+                },
+                {
+                    key: 'assignReassign',
+                    title: 'Assign / Reassign',
+                    icon: <UserPlus size={14} />,
+                    childProps: {
+                        onPress: () => {
+                            openModal(data.jobNo as string)
+                        },
+                    },
+                },
+                {
+                    key: 'editJob',
+                    title: 'Edit Job',
+                    icon: <Edit size={14} />,
+                    childProps: {
+                        onPress: () => {},
+                    },
+                },
+                {
+                    key: 'duplicateJob',
+                    title: 'Duplicate Job',
+                    icon: <CopyIcon size={14} />,
+                    childProps: {
+                        onPress: () => {},
+                    },
+                },
+                {
+                    key: 'deleteJob',
+                    title: 'Delete',
+                    icon: <Trash size={14} />,
+                    childProps: {
+                        color: 'danger',
+                        onPress: () => {},
+                    },
+                },
+            ],
+        },
+        {
+            key: 'Payment menu',
+            groupTitle: 'Payment',
+            children: [
+                {
+                    key: 'updateCost',
+                    title: 'Update Cost',
+                    icon: <CircleDollarSign size={14} />,
+                    childProps: {
+                        onPress: () => {},
+                    },
+                },
+                {
+                    key: 'markAsPaid',
+                    title: 'Mark as Paid',
+                    icon: <CircleCheck size={14} />,
+                    childProps: {
+                        onPress: () => {},
+                    },
+                },
+            ],
+        },
+    ]
     return (
         <Dropdown>
             <DropdownTrigger>

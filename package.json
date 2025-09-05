@@ -8,11 +8,11 @@
     "url": "https://yangis.dev"
   },
   "scripts": {
-    "prisma:generate": "npx prisma generate",
     "dev": "next dev --turbopack",
-    "build": "npx prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "studio": "npx prisma generate && npx prisma studio",
     "seed": "bun ./prisma/seeds/index.ts",
     "seed:user": "bun ./prisma/seeds/seedUsers.ts",
     "seed:jobStatus": "bun ./prisma/seeds/seedJobStatuses.ts",

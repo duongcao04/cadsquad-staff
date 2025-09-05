@@ -31,7 +31,7 @@ type Props = {
     pagination?: TableProps['pagination']
 }
 export default function JobTable({
-    visibleColumns = ['income','clientName','jobName'],
+    visibleColumns = ['income', 'clientName', 'jobName'],
     isLoading = false,
     data: jobsData,
     pagination = {

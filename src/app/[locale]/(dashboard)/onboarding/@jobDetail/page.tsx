@@ -7,18 +7,22 @@ import {
     Avatar,
     AvatarGroup,
     Button,
+    Input,
+    InputProps,
+    NumberInput,
+    NumberInputProps,
     Spinner,
     Tab,
     Tabs,
+    Textarea,
+    TextAreaProps,
     Tooltip,
 } from '@heroui/react'
 import { Drawer, Skeleton } from 'antd'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
-import { ArrowLeft, ChevronUp, Link2 } from 'lucide-react'
-
-import { formatCurrencyVND } from '@/lib/formatCurrency'
+import { ArrowLeft, ChevronUp, EditIcon, Link2, PencilOff } from 'lucide-react'
 
 import { useDetailModal } from './actions'
 import { useChangeStatusMutation, useJobDetail } from '@/queries/useJob'
@@ -34,12 +38,21 @@ dayjs.extend(timezone)
 
 const DATE_FORMAT = 'DD/MM/YYYY'
 
+const description = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis temporibus minima illum dicta fugiat sunt ex quibusdam quos. Quis quisquam ipsa architecto veritatis repellat, dolor nobis veniam odit saepe magnam.
+Facilis asperiores molestiae laudantium quos commodi praesentium distinctio expedita officia voluptate repudiandae repellat, voluptates voluptatem ab voluptas deleniti dolorum. Delectus nulla officia iste soluta beatae minus aliquam exercitationem doloribus molestiae.
+Hic placeat incidunt earum. Dolorum placeat, vitae sit nam, quaerat aut ipsum voluptatibus suscipit nemo incidunt voluptates dolores dolore. Pariatur magni porro repudiandae perferendis odit? Optio modi perferendis voluptate in!`
+
 export default function JobDetailDrawer() {
-    const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
-    const { isOpen, closeModal, jobNo } = useDetailModal()
-
+    /**
+     * Instance hooks
+     */
     const [showFullAssignee, setShowFullAssignee] = useState(false)
-
+    const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
+    const { isOpen, closeModal, jobNo, isEditMode, switchMode } =
+        useDetailModal()
+    /**
+     * Fetch data
+     */
     const { job, isLoading, error } = useJobDetail(jobNo)
     const { jobStatus: prevStatus } = useJobStatusDetail(
         job?.status.prevStatusId?.toString()
@@ -47,7 +60,9 @@ export default function JobDetailDrawer() {
     const { jobStatus: nextStatus } = useJobStatusDetail(
         job?.status.nextStatusId?.toString()
     )
-
+    /**
+     * Change status action
+     */
     const handleChangeStatus = async (nextStatus: JobStatus) => {
         try {
             await changeStatusMutation(
@@ -81,6 +96,40 @@ export default function JobDetailDrawer() {
             })
         }
     }
+    /**
+     * Input props define
+     */
+    const inputProps: InputProps = {
+        classNames: isEditMode
+            ? {}
+            : {
+                  base: 'opacity-100 cursor-text',
+                  inputWrapper: '!pl-0 bg-transparent shadow-none',
+              },
+        isDisabled: !isEditMode,
+        variant: 'underlined',
+    }
+    const numberInputProps: NumberInputProps = {
+        classNames: isEditMode
+            ? {
+                  base: 'p-0 opacity-100 cursor-text',
+                  innerWrapper: '!h-6 !pb-0 bg-transparent shadow-none',
+                  mainWrapper: 'flex items-center',
+                  inputWrapper: '!h-6 !pl-0 !pt-0 flex items-center',
+              }
+            : {
+                  base: 'opacity-100 cursor-text',
+                  mainWrapper: 'flex items-center',
+                  inputWrapper: '!h-6 !p-0 pt-1 bg-transparent shadow-none',
+              },
+        isDisabled: !isEditMode,
+        hideStepper: true,
+        variant: isEditMode ? 'underlined' : 'flat',
+    }
+    const textAreaProps: TextAreaProps = {
+        classNames: {},
+        isDisabled: !isEditMode,
+    }
 
     return (
         <Drawer
@@ -90,14 +139,36 @@ export default function JobDetailDrawer() {
                     <Skeleton paragraph={{ rows: 1 }} />
                 ) : (
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center justify-start gap-2">
+                        <div className="flex items-center justify-start gap-3">
                             <p className="tracking-wide line-clamp-1">
                                 {jobNo}
                             </p>
+                            <div className="h-[20px] w-[1.3px] bg-text3" />
+                            {!isLoading && job && (
+                                <JobStatusChip
+                                    data={job?.status as JobStatus}
+                                />
+                            )}
                         </div>
-                        {!isLoading && job && (
-                            <JobStatusChip data={job?.status as JobStatus} />
-                        )}
+                        <Button
+                            isIconOnly
+                            size="sm"
+                            onPress={() => {
+                                if (isEditMode) {
+                                    switchMode('view')
+                                } else {
+                                    switchMode('edit')
+                                }
+                            }}
+                            variant="flat"
+                            color="warning"
+                        >
+                            {isEditMode ? (
+                                <PencilOff size={16} />
+                            ) : (
+                                <EditIcon size={16} />
+                            )}
+                        </Button>
                     </div>
                 )
             }
@@ -173,30 +244,52 @@ export default function JobDetailDrawer() {
                     <div className="space-y-3">
                         <div>
                             <p className="text-sm text-text2">Job name</p>
-                            <p className="text-2xl font-semibold text-wrap">
-                                {job?.jobName}
-                            </p>
+                            <Input
+                                value={job?.jobName}
+                                style={{
+                                    fontSize: 'var(--text-2xl)',
+                                    fontWeight: '500',
+                                    textWrap: 'wrap',
+                                }}
+                                {...inputProps}
+                            />
                         </div>
                         <div className="grid grid-cols-3 gap-5">
                             <div>
                                 <p className="text-sm text-text2">Income</p>
-                                <p className="text-base font-semibold text-wrap">
-                                    {formatCurrencyVND(
-                                        Number(job?.income),
-                                        'en-US',
-                                        'USD'
-                                    )}
-                                </p>
+                                <NumberInput
+                                    startContent={
+                                        <p className="text-base font-semibold">
+                                            $
+                                        </p>
+                                    }
+                                    value={parseInt(String(job?.income))}
+                                    style={{
+                                        fontSize: 'var(--text-base)',
+                                        fontWeight: '500',
+                                        textWrap: 'wrap',
+                                    }}
+                                    size="sm"
+                                    {...numberInputProps}
+                                />
                             </div>
                             <div>
                                 <p className="text-sm text-text2">Staff cost</p>
-                                <p className="text-base font-semibold text-wrap">
-                                    {formatCurrencyVND(
-                                        Number(job?.staffCost),
-                                        'vi-VN',
-                                        'VND'
-                                    )}
-                                </p>
+                                <NumberInput
+                                    startContent={
+                                        <p className="text-base font-semibold underline">
+                                            đ
+                                        </p>
+                                    }
+                                    value={parseInt(String(job?.staffCost))}
+                                    style={{
+                                        fontSize: 'var(--text-base)',
+                                        fontWeight: '500',
+                                        textWrap: 'wrap',
+                                    }}
+                                    size="sm"
+                                    {...numberInputProps}
+                                />
                             </div>
                             <div>
                                 <p className="text-sm text-text2">
@@ -213,29 +306,30 @@ export default function JobDetailDrawer() {
                         <p className="text-lg font-semibold">Details</p>
                         <div>
                             <p className="text-sm text-text2">Client</p>
-                            <p className="text-base font-semibold text-wrap">
-                                {job?.clientName}
-                            </p>
+                            <Input
+                                value={job?.clientName}
+                                style={{
+                                    fontSize: 'var(--text-base)',
+                                    fontWeight: '500',
+                                    textWrap: 'wrap',
+                                }}
+                                size="sm"
+                                {...inputProps}
+                            />
                         </div>
                         <div>
                             <p className="text-sm text-text2">Description</p>
+                            <Textarea
+                                value={description}
+                                style={{
+                                    fontSize: 'var(--text-sm)',
+                                    textWrap: 'wrap',
+                                }}
+                                maxRows={5}
+                                {...textAreaProps}
+                            />
                             <p className="text-sm text-wrap line-clamp-2">
-                                Lorem ipsum dolor sit amet consectetur
-                                adipisicing elit. A aspernatur voluptatibus
-                                commodi expedita, reprehenderit voluptate unde
-                                perspiciatis odit nam. Aliquam, nemo fugit rerum
-                                iure ducimus tempora ipsum at iusto maxime!
-                                Expedita laboriosam iusto vero fuga accusamus
-                                quibusdam excepturi ratione doloribus deserunt
-                                fugit velit, saepe molestias eligendi quas
-                                voluptatibus optio odit cumque vitae, officiis
-                                molestiae eos error! Rem nam nesciunt ut?
-                                Doloremque iure eligendi tenetur numquam?
-                                Voluptatem, magnam corporis, totam ea facilis
-                                expedita voluptatum voluptates quos mollitia
-                                aliquam recusandae modi iste fuga maxime quae
-                                unde? Modi eveniet necessitatibus aspernatur
-                                laudantium veritatis?
+                                {description}
                             </p>
                         </div>
                         <div>

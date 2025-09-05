@@ -2,8 +2,10 @@
 
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
+type ModalActionMode = 'view' | 'edit'
+
 export const useDetailModal = () => {
-    const { setSearchParams, removeSearchParam, getSearchParam } =
+    const { setSearchParams, removeSearchParams, getSearchParam } =
         useSearchParam()
 
     const openModal = (jobNo: string | number) => {
@@ -12,9 +14,17 @@ export const useDetailModal = () => {
 
     const jobNo = getSearchParam('detail') ?? undefined
     const isOpen = Boolean(jobNo)
+    const modeQuery = getSearchParam('mode') ?? 'view'
+    const actionMode: ModalActionMode = modeQuery === 'edit' ? 'edit' : 'view'
+
+    const isEditMode = actionMode === 'edit'
+
+    const switchMode = (mode: ModalActionMode) => {
+        setSearchParams({ mode: mode })
+    }
 
     const closeModal = () => {
-        removeSearchParam('detail')
+        removeSearchParams(['detail', 'mode'])
     }
 
     return {
@@ -22,5 +32,8 @@ export const useDetailModal = () => {
         closeModal,
         jobNo,
         isOpen,
+        actionMode,
+        isEditMode,
+        switchMode,
     }
 }
