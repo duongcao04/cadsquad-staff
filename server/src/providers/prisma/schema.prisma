@@ -1,0 +1,257 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator docs {
+  provider = "node node_modules/prisma-docs-generator"
+  output   = "./docs"
+}
+
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   output   = "./diagrams"
+//   mmdcPath = "node_modules/.bin"
+// }
+
+// generator yup {
+//   provider = "prisma-yup-generator"
+//   output   = "../../../../src/generated"
+// }
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String             @id @default(uuid())
+  email                String             @unique
+  username             String             @unique
+  displayName          String
+  password             String
+  avatar               String?
+  jobTitle             String?
+  department           String?
+  phoneNumber          String?
+  role                 RoleEnum           @default(USER)
+  isActive             Boolean            @default(true)
+  lastLoginAt          DateTime?
+  notifications        UserNotification[]
+  jobsAssigned         Job[]              @relation("UserJobs") // Jobs assigned 
+  jobsCreated          Job[]              @relation("JobCreator")
+  filesCreated         FileSystem[]       @relation("CreatedFiles")
+  files                FileSystem[]       @relation("UserFiles")
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  accounts             Account[]
+  notificationsCreated Notification[]
+  JobActivityLog       JobActivityLog[]
+}
+
+enum RoleEnum {
+  USER
+  ADMIN
+  ACCOUNTING
+}
+
+model Account {
+  id         String           @id @default(uuid())
+  provider   ACCOUNT_PROVIDER
+  providerId String
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerId])
+}
+
+enum ACCOUNT_PROVIDER {
+  GOOGLE
+  GITHUB
+  MICROSOFT
+  FACEBOOK
+  LOCAL
+}
+
+model FileSystem {
+  id    String   @id @default(uuid())
+  name  String
+  type  String
+  size  String
+  items Int?
+  path  String[]
+  color String?
+
+  createdById String
+  createdBy   User   @relation("CreatedFiles", fields: [createdById], references: [id])
+
+  visibleToUsers User[] @relation("UserFiles")
+
+  // Link files to jobs
+  job   Job?    @relation(fields: [jobId], references: [id])
+  jobId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdById])
+  @@index([jobId])
+}
+
+model Job {
+  id               String           @id @default(uuid())
+  no               String           @unique // Job No. example FV-0001
+  type             JobType          @relation(fields: [typeId], references: [id])
+  typeId           String
+  displayName      String
+  description      String?
+  sourceUrl        String?
+  clientName       String
+  incomeCost       Int
+  staffCost        Int
+  assignee         User[]           @relation("UserJobs") // Member assigned
+  createdBy        User             @relation("JobCreator", fields: [createdById], references: [id])
+  createdById      String
+  paymentChannel   PaymentChannel   @relation(fields: [paymentChannelId], references: [id])
+  paymentChannelId String
+  status           JobStatus        @relation(fields: [statusId], references: [id])
+  statusId         String
+  activityLog      JobActivityLog[]
+  startedAt        DateTime         @default(now())
+  priority         JobPriority      @default(MEDIUM)
+  files            FileSystem[]
+  isPinned         Boolean          @default(false)
+  isPublished      Boolean          @default(false)
+  isPaid           Boolean          @default(false)
+  dueAt            DateTime
+  completedAt      DateTime?
+  deletedAt        DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([no])
+  @@index([statusId])
+  @@index([createdById])
+  @@index([priority])
+}
+
+enum JobPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model PaymentChannel {
+  id          String  @id @default(uuid())
+  displayName String
+  hexColor    String?
+  logoUrl     String?
+  ownerName   String?
+  cardNumber  String?
+
+  jobs Job[]
+}
+
+model JobType {
+  id          String  @id @default(uuid())
+  code        String
+  displayName String
+  hexColor    String?
+  jobs        Job[]
+}
+
+model JobStatus {
+  id              String   @id @default(uuid())
+  displayName     String
+  thumbnailUrl    String?
+  hexColor        String
+  order           Int      @unique
+  icon            String?
+  nextStatusOrder Int?
+  prevStatusOrder Int?
+  jobs            Job[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([order])
+}
+
+model JobActivityLog {
+  id    String @id @default(uuid())
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId String
+
+  previousValue String?
+  currentValue  String?
+
+  modifiedAt   DateTime @default(now())
+  modifiedBy   User     @relation(fields: [modifiedById], references: [id])
+  modifiedById String
+
+  fieldName    String
+  activityType ACTIVITY_TYPE
+  notes        String?
+
+  @@index([jobId, modifiedAt])
+  @@index([modifiedById])
+}
+
+enum ACTIVITY_TYPE {
+  CreateJob
+  ChangeStatus
+  AssignMember
+  UnassignMember
+  ChangePaymentChannel
+  UpdateInformation
+  DeleteJob
+}
+
+model UserNotification {
+  id             String              @id @default(uuid())
+  user           User                @relation(fields: [userId], references: [id])
+  userId         String
+  notification   Notification        @relation(fields: [notificationId], references: [id])
+  notificationId String
+  status         NOTIFICATION_STATUS @default(UNSEEN)
+  createdAt      DateTime            @default(now())
+
+  @@index([userId, status])
+}
+
+enum NOTIFICATION_STATUS {
+  SEEN
+  UNSEEN
+}
+
+model Notification {
+  id               String             @id @default(uuid())
+  title            String?
+  content          String
+  imageUrl         String?
+  senderId         String?
+  sender           User?              @relation(fields: [senderId], references: [id])
+  type             NotificationType   @default(INFO)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  userNotification UserNotification[]
+  userId           String
+
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+  JOB_UPDATE
+  DEADLINE_REMINDER
+  STATUS_CHANGE
+}

@@ -1,0 +1,79 @@
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { PrismaService } from '../../providers/prisma/prisma.service'
+import { JobStatus } from '@prisma/client'
+import { plainToInstance } from 'class-transformer'
+import { JobStatusResponseDto } from './dto/job-status-response.dto'
+import { CreateJobStatusDto } from './dto/create-job-status.dto'
+import { UpdateJobStatusDto } from './dto/update-job-status.dto'
+
+@Injectable()
+export class JobStatusService {
+  constructor(private readonly prismaService: PrismaService) { }
+
+  /**
+   * Create a new job status.
+   */
+  async create(data: CreateJobStatusDto): Promise<JobStatus> {
+    const jobStatus = await this.prismaService.jobStatus.create({ data })
+    return plainToInstance(JobStatusResponseDto, jobStatus, {
+      excludeExtraneousValues: true,
+    }) as unknown as JobStatus
+  }
+
+  /**
+   * Retrieve all job statuses.
+   */
+  async findAll(): Promise<JobStatus[]> {
+    const jobStatuses = await this.prismaService.jobStatus.findMany({
+      orderBy: { order: 'asc' },
+    })
+    return jobStatuses.map((js) =>
+      plainToInstance(JobStatusResponseDto, js, { excludeExtraneousValues: true })
+    ) as unknown as JobStatus[]
+  }
+
+  /**
+   * Find a job status by ID.
+   */
+  async findById(jobStatusId: string): Promise<JobStatus> {
+    const jobStatus = await this.prismaService.jobStatus.findUnique({
+      where: { id: jobStatusId },
+    })
+
+    if (!jobStatus) throw new NotFoundException('Job status not found')
+
+    return plainToInstance(JobStatusResponseDto, jobStatus, {
+      excludeExtraneousValues: true,
+    }) as unknown as JobStatus
+  }
+
+  /**
+   * Update a job status by ID.
+   */
+  async update(jobStatusId: string, data: UpdateJobStatusDto): Promise<JobStatus> {
+    try {
+      const updated = await this.prismaService.jobStatus.update({
+        where: { id: jobStatusId },
+        data,
+      })
+      return plainToInstance(JobStatusResponseDto, updated, {
+        excludeExtraneousValues: true,
+      }) as unknown as JobStatus
+    } catch (error) {
+      throw new NotFoundException('Job status not found')
+    }
+  }
+
+  /**
+   * Delete a job status by ID.
+   */
+  async delete(jobStatusId: string): Promise<JobStatus> {
+    try {
+      return await this.prismaService.jobStatus.delete({
+        where: { id: jobStatusId },
+      })
+    } catch (error) {
+      throw new NotFoundException('Job status not found')
+    }
+  }
+}
