@@ -51,7 +51,21 @@ model User {
   updatedAt            DateTime           @updatedAt
   accounts             Account[]
   notificationsCreated Notification[]
-  JobActivityLog       JobActivityLog[]
+  jobActivityLog       JobActivityLog[]
+  configs              Config[]
+}
+
+model Config {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  displayName String
+  code        String   @unique()
+  value       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, code])
 }
 
 enum RoleEnum {

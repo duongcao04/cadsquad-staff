@@ -12,6 +12,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "seeds": "bun run ./src/providers/prisma/seeds/index.ts",
     "seed:user": "bun run ./src/providers/prisma/seeds/seedUser.ts",
     "seed:jobStatus": "bun run ./src/providers/prisma/seeds/seedJobStatus.ts",
     "seed:paymentChannel": "bun run ./src/providers/prisma/seeds/seedPaymentChannel.ts",

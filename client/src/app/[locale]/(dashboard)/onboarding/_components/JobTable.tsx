@@ -122,8 +122,8 @@ export default function JobTable({
         },
         {
             title: 'Job No.',
-            dataIndex: 'jobNo',
-            key: 'jobNo',
+            dataIndex: 'no',
+            key: 'no',
             width: 140,
             render: (jobNo) => (
                 <div className="flex items-center justify-between gap-2 group size-full">
@@ -161,8 +161,8 @@ export default function JobTable({
         },
         {
             title: 'Job Name',
-            dataIndex: 'jobName',
-            key: 'jobName',
+            dataIndex: 'displayName',
+            key: 'displayName',
             render: (jobName) => (
                 <p className="font-semibold line-clamp-1">{jobName}</p>
             ),
@@ -173,8 +173,8 @@ export default function JobTable({
         },
         {
             title: 'Income',
-            dataIndex: 'income',
-            key: 'income',
+            dataIndex: 'incomeCost',
+            key: 'incomeCost',
             width: '10%',
             render: () => (
                 <p className="font-semibold text-right text-red-500">$ 10</p>
@@ -256,8 +256,8 @@ export default function JobTable({
         },
         {
             title: 'Assignee',
-            dataIndex: 'memberAssign',
-            key: 'memberAssign',
+            dataIndex: 'assignee',
+            key: 'assignee',
             width: '10%',
             className: 'group cursor-default',
             render: (_, record: DataType) => {
@@ -317,8 +317,8 @@ export default function JobTable({
         },
         {
             title: 'Status',
-            dataIndex: 'jobStatus',
-            key: 'jobStatus',
+            dataIndex: 'status',
+            key: 'status',
             width: 120,
             render: (_, record: DataType) => (
                 <div className="flex items-center justify-center">

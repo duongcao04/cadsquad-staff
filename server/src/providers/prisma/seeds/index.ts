@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { fakerVI as faker } from '@faker-js/faker'
 import { seedJobStatus } from './seedJobStatus'
 import { seedPaymentChannel } from './seedPaymentChannel'
 import { seedJobType } from './seedJobType'
@@ -8,17 +7,11 @@ import { seedJob } from './seedJob'
 
 const prisma = new PrismaClient()
 
-const fakerUser = (): any => ({
-  name: faker.person.firstName() + faker.person.lastName(),
-  email: faker.internet.email(),
-  password: faker.internet.password(),
-})
-
 async function main() {
+  await seedUsers(prisma)
+  await seedJobType(prisma)
   await seedJobStatus(prisma)
   await seedPaymentChannel(prisma)
-  await seedJobType(prisma)
-  await seedUsers(prisma)
   await seedJob(prisma)
 }
 

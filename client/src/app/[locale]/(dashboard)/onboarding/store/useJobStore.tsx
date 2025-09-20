@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { combine } from 'zustand/middleware'
-import { Job } from '@/validationSchemas/job.schema'
+import { Job } from '@/types/job.type'
 
 const getJobVisibleColumns = () => {
     let init: JobStore['jobVisibleColumns'] = [
