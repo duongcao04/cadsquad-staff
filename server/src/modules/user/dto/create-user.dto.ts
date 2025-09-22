@@ -21,11 +21,11 @@ export class CreateUserDto {
 
 	@IsOptional()
 	@IsString()
-	jobTitle?: string
+	jobTitleIds?: string[]
 
 	@IsOptional()
 	@IsString()
-	department?: string
+	departmentId?: string
 
 	@IsOptional()
 	@IsString()

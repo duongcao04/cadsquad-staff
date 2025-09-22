@@ -21,7 +21,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: "http://localhost:3000", // không dùng "*"
+    origin: String(process.env.CLIENT_URL), // không dùng "*"
     credentials: true, // cho phép gửi cookie / Authorization headers
   })
   app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()))

@@ -32,7 +32,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   async getProfile(@Req() request: Request) {
     const userPayload = await request['user']
-    const user = this.userService.findById(userPayload.sub)
+    const user = this.authService.getProfile(userPayload.sub)
     return user
   }
 }

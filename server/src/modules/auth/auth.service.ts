@@ -1,16 +1,17 @@
 import {
   ConflictException,
-  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common'
 import { RegisterUserDto } from './dto/register-user.dto'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { Prisma } from '@prisma/client'
+import { Prisma, User } from '@prisma/client'
 import { LoginUserDto } from './dto/login-user.dto'
 import { BcryptService } from './bcrypt.service'
 import { TokenService } from './token.service'
+import { UserResponseDto } from '../user/dto/user-response.dto'
+import { plainToInstance } from 'class-transformer'
 
 @Injectable()
 export class AuthService {
@@ -81,6 +82,32 @@ export class AuthService {
       throw new InternalServerErrorException('Incorrect email or password', {
         description: error,
       })
+    }
+  }
+
+  /**
+     * Get user profile from token payload id
+     *
+     * @param {number} userId - The ID of the user to retrieve.
+     * @returns {Promise<User | null>} The user object retrieved from the database, or null if not found.
+     *
+     * @throws {NotFoundException} If no user is found with the provided ID.
+     */
+  async getProfile(userId: string): Promise<User | null> {
+    try {
+      const userData = await this.prismaService.user.findUnique({
+        where: { id: userId },
+        include: {
+          department: true,
+          jobTitles: true
+        }
+      })
+      const userRes = plainToInstance(UserResponseDto, userData, {
+        excludeExtraneousValues: true,
+      })
+      return userRes as unknown as User
+    } catch (error) {
+      throw new NotFoundException('User not found')
     }
   }
 }

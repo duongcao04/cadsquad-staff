@@ -21,7 +21,7 @@ export class UserResponseDto {
 	avatar?: string
 
 	@Expose()
-	jobTitle?: string
+	jobTitles?: string
 
 	@Expose()
 	department?: string

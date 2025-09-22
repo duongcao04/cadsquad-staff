@@ -1,10 +1,10 @@
 'use client'
 
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { Login } from '@/validationSchemas/auth.schema'
 import { cookie } from '@/lib/cookie'
 import { useQuery } from '@tanstack/react-query'
-import { User } from '@/validationSchemas/user.schema'
+import { LoginInput } from '@/validationSchemas/auth.schema'
+import { User } from '@/types/user.type'
 
 export const AUTH_API = '/api/auth'
 
@@ -17,10 +17,11 @@ export default function useAuth() {
 
     const userRole = profile.data?.role
 
-    const login = async (loginData: Login) => {
+    const login = async (loginInput: LoginInput) => {
         return await axiosClient
-            .post('auth/login', JSON.stringify(loginData))
+            .post('auth/login', JSON.stringify(loginInput))
             .then(async (res) => {
+                console.log(res);
                 const { accessToken: { token, expiresAt } } = res.data.result
                 // Set cookie for authentication
                 cookie.set('session', token, {

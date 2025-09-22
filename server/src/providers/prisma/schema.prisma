@@ -15,13 +15,8 @@ generator docs {
 
 // generator erd {
 //   provider = "prisma-erd-generator"
-//   output   = "./diagrams"
-//   mmdcPath = "node_modules/.bin"
-// }
-
-// generator yup {
-//   provider = "prisma-yup-generator"
-//   output   = "../../../../src/generated"
+//   theme    = "forest"
+//   output   = "../ERD.svg"
 // }
 
 datasource db {
@@ -36,8 +31,9 @@ model User {
   displayName          String
   password             String
   avatar               String?
-  jobTitle             String?
-  department           String?
+  jobTitles            JobTitle[]         @relation("UserJobTitles")
+  departmentId         String?
+  department           Department?        @relation(fields: [departmentId], references: [id])
   phoneNumber          String?
   role                 RoleEnum           @default(USER)
   isActive             Boolean            @default(true)
@@ -47,12 +43,33 @@ model User {
   jobsCreated          Job[]              @relation("JobCreator")
   filesCreated         FileSystem[]       @relation("CreatedFiles")
   files                FileSystem[]       @relation("UserFiles")
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
   accounts             Account[]
   notificationsCreated Notification[]
   jobActivityLog       JobActivityLog[]
   configs              Config[]
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}
+
+model JobTitle {
+  id          String   @id @default(uuid())
+  displayName String
+  notes       String?
+  code        String   @unique
+  users       User[]   @relation("UserJobTitles")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String?
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  displayName String
+  notes       String?
+  code        String   @unique
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Config {
@@ -144,9 +161,9 @@ model Job {
   isPaid           Boolean          @default(false)
   dueAt            DateTime
   completedAt      DateTime?
-  deletedAt        DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
+  deletedAt        DateTime?
 
   @@index([no])
   @@index([statusId])
@@ -162,22 +179,26 @@ enum JobPriority {
 }
 
 model PaymentChannel {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   displayName String
   hexColor    String?
   logoUrl     String?
   ownerName   String?
   cardNumber  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   jobs Job[]
 }
 
 model JobType {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   code        String
   displayName String
   hexColor    String?
   jobs        Job[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model JobStatus {
@@ -234,6 +255,7 @@ model UserNotification {
   notificationId String
   status         NOTIFICATION_STATUS @default(UNSEEN)
   createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
 
   @@index([userId, status])
 }
@@ -251,10 +273,10 @@ model Notification {
   senderId         String?
   sender           User?              @relation(fields: [senderId], references: [id])
   type             NotificationType   @default(INFO)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
   userNotification UserNotification[]
   userId           String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   @@index([type])
   @@index([createdAt])

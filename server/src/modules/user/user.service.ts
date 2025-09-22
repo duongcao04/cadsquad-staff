@@ -9,9 +9,33 @@ import { UpdateUserDto } from './dto/update-user.dto'
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService) { }
-
   async create(data: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.prismaService.user.create({ data })
+    const { jobTitleIds, departmentId, ...rest } = data
+
+    const user = await this.prismaService.user.create({
+      data: {
+        ...rest,
+        ...(jobTitleIds && jobTitleIds.length > 0
+          ? {
+            jobTitles: {
+              connect: jobTitleIds.map((id) => ({ id })),
+            },
+          }
+          : {}),
+        ...(departmentId
+          ? {
+            department: {
+              connect: { id: departmentId },
+            },
+          }
+          : {}),
+      },
+      include: {
+        jobTitles: true,
+        department: true,
+      },
+    })
+
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
     })
@@ -23,6 +47,7 @@ export class UserService {
       excludeExtraneousValues: true,
     })
   }
+  
   /**
    * Find a user by their unique ID.
    *
