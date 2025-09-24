@@ -14,6 +14,9 @@ export class ActivityLogService {
 	async findByJobId(jobId: string): Promise<JobActivityLog[]> {
 		const result = await this.prisma.jobActivityLog.findMany({
 			where: { jobId },
+			include: {
+				modifiedBy: true
+			},
 			orderBy: {
 				modifiedAt: 'desc',
 			},

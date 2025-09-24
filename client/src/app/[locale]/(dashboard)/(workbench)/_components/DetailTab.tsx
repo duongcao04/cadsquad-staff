@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useJobDetail } from '@/queries/useJob'
+import { useJobDetail } from '@/shared/queries/useJob'
 import { Tag } from 'antd'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'

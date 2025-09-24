@@ -76,6 +76,12 @@ export default function AntdProvider({
                         root: '!rounded-2xl',
                     },
                 }}
+                avatar={{
+                    style: {
+
+                    }
+                }}
+
             >
                 {children}
             </ConfigProvider>

@@ -4,6 +4,7 @@ import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-cha
 import { JobStatusResponseDto } from '../../job-status/dto/job-status-response.dto'
 import { JobTypeResponseDto } from '../../job-type/dto/job-type-response.dto'
 import { UserResponseDto } from '../../user/dto/user-response.dto'
+import { OmitType } from '@nestjs/swagger'
 
 export class JobResponseDto {
 	@Expose()
@@ -80,3 +81,7 @@ export class JobResponseDto {
 	@Type(() => UserResponseDto)
 	assignee: UserResponseDto[]
 }
+
+export class JobStaffResponseDto extends OmitType(JobResponseDto, [
+	'incomeCost'
+] as const) { }

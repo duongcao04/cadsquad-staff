@@ -10,7 +10,7 @@ import { IconAssignee } from '@/shared/components/icons/solar/IconAssignee'
 import { IconCompleted } from '@/shared/components/icons/solar/IconCompleted'
 import { IconDueSoon } from '@/shared/components/icons/solar/IconDueSoon'
 import { IconMoneyIncome } from '@/shared/components/icons/solar/IconMoneyIncome'
-import { useJobs } from '@/queries/useJob'
+import { useJobs } from '@/shared/queries/useJob'
 
 export default function ProjectAnalysis() {
     const { jobs } = useJobs()

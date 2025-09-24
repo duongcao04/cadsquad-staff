@@ -8,7 +8,7 @@ import { FolderIcon, FolderPlus } from 'lucide-react'
 
 import { ROOT_DIR } from '@/app/[locale]/(dashboard)/documents/actions'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
-import { useSearchParam } from '@/shared/hooks/useSearchParam'
+import { useSearchParam } from '@/hooks/useSearchParam'
 import { FileItem } from '@/validationSchemas/file.schema'
 
 const FOLDER_COLORS = [

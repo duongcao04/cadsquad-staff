@@ -1,6 +1,6 @@
 import { Image } from 'antd'
 import React from 'react'
-import useAuth from '@/queries/useAuth'
+import useAuth from '@/shared/queries/useAuth'
 import { Button, Input, InputProps } from '@heroui/react'
 import { useFormik } from 'formik'
 import { Link } from '@/i18n/navigation'

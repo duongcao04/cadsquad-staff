@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useJobs } from '@/queries/useJob'
+import { useJobs } from '@/shared/queries/useJob'
 import JobTable from '../../onboarding/_components/JobTable'
 
 export default function WorkbenchTable() {

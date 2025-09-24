@@ -13,20 +13,20 @@ import {
 } from '@heroui/react'
 import { Image } from 'antd'
 import { Bell } from 'lucide-react'
-import { Notification } from '@/validationSchemas/notification.schema'
 
 import CadsquadLogo from '../CadsquadLogo'
 import { BellIcon } from '../icons/animate/BellIcon'
-import { useNoties } from '@/queries/useNoties'
+import { useNotifications } from '@/shared/queries/useNotification'
+import { Notification } from '@/shared/interfaces/notification.interface'
 
 function NotificationCard({ data }: { data: Notification }) {
     return (
         <div className="grid grid-cols-[50px_1fr_7px] gap-3 items-center">
             <div className="w-full aspect-square">
-                {data?.image ? (
+                {data?.imageUrl ? (
                     <div className="size-full aspect-square rounded-full">
                         <Image
-                            src={data?.image}
+                            src={data?.imageUrl}
                             alt="Notification image"
                             className="size-full aspect-square rounded-full object-fit"
                             preview={false}
@@ -77,9 +77,7 @@ export default function NotificationDropdown() {
     //   revalidate: false,   // don't refetch from server
     // })
 
-    const { data: noties, isLoading, isFetching } = useNoties()
-
-    console.log(noties)
+    const { data: notifications, isLoading, isFetching } = useNotifications()
 
     return (
         <Dropdown placement="bottom-end">
@@ -118,11 +116,11 @@ export default function NotificationDropdown() {
                     </DropdownSection>
                 ) : (
                     <DropdownSection aria-label="Notifications">
-                        {noties && noties.length > 0 ? (
-                            noties.map((noti, index) => {
+                        {notifications && notifications.length > 0 ? (
+                            notifications.map((data, index) => {
                                 return (
-                                    <DropdownItem key={noti?.id ?? index}>
-                                        <NotificationCard data={noti} />
+                                    <DropdownItem key={data.id ?? index}>
+                                        <NotificationCard data={data} />
                                     </DropdownItem>
                                 )
                             })

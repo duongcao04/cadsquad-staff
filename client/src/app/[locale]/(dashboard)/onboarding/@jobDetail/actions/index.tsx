@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParam } from '@/shared/hooks/useSearchParam'
+import { useSearchParam } from '@/hooks/useSearchParam'
 
 type ModalActionMode = 'view' | 'edit'
 

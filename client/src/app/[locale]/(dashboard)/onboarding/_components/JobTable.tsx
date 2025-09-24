@@ -2,46 +2,60 @@
 
 import React, { useEffect, useState } from 'react'
 
-import { addToast, Avatar, AvatarGroup, Button, Tooltip } from '@heroui/react'
-import { Image, Table, Tooltip as TooltipAnt } from 'antd'
+import { addToast, Button, Tooltip } from '@heroui/react'
+import { Avatar, Image, Table } from 'antd'
 import type { TableColumnsType, TableProps } from 'antd'
-import { Copy, EyeIcon, Link as LinkIcon } from 'lucide-react'
+import {
+    ChevronDown,
+    ChevronsLeftRight,
+    Copy,
+    EyeIcon,
+    ListFilter,
+    ListFilterPlus,
+} from 'lucide-react'
 
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { uniqueByKey } from '@/lib/utils'
 import { useConfirmModal } from '@/shared/components/ui/ConfirmModal'
 
 import { useDetailModal } from '../@jobDetail/actions'
-import { TJobVisibleColumn, useJobStore } from '../store/useJobStore'
+import { useJobStore } from '../store/useJobStore'
 import ActionDropdown from './ActionDropdown'
 import CountDown from './CountDown'
-import { useUsers } from '@/queries/useUser'
-import { usePaymentChannels } from '@/queries/usePaymentChannel'
-import { Job } from '@/types/job.type'
-import { JobStatus } from '@/types/jobStatus.type'
+import { useUsers } from '@/shared/queries/useUser'
+import { usePaymentChannels } from '@/shared/queries/usePaymentChannel'
 import { useSettingStore } from '@/app/[locale]/settings/shared/store/useSettingStore'
 import { DataType } from '../page'
 import { Link } from '@/i18n/navigation'
 import JobStatusDropdown from './JobStatusDropdown'
 import { useAddMemberModal } from '../@addMember/actions'
+import { Job } from '@/shared/interfaces/job.interface'
+import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
+import lodash from 'lodash'
+import { IMAGE_CONSTANTS } from '@/shared/constants/image.constant'
+import { useJobColumns } from '@/shared/queries/useJob'
+import { JobColumn } from '@/shared/types/job.type'
+import { useJobTypes } from '@/shared/queries/useJobType'
+import PaidChip from '@/shared/components/customize/PaidChip'
+import { VietnamDateFormat } from '@/lib/dayjs'
+import { useJobStatuses } from '@/shared/queries/useJobStatus'
+import { SortOrder } from 'antd/es/table/interface'
+import CopyLink from './actions/CopyLink'
+import envConfig from '../../../../../config/envConfig'
 
+type TableColumns<DataType> = Array<
+    Omit<TableColumnsType<DataType>[number], 'dataIndex'> & {
+        dataIndex: JobColumn
+    }
+>
 type Props = {
     data: Job[]
-    visibleColumns?: TJobVisibleColumn[]
     isLoading?: boolean
-    pagination?: TableProps['pagination']
 }
 export default function JobTable({
-    visibleColumns = ['income', 'clientName', 'jobName'],
-    isLoading = false,
     data: jobsData,
-    pagination = {
-        position: ['bottomCenter'],
-        pageSize: 10,
-        current: 1,
-        size: 'default',
-    },
+    isLoading = false,
 }: Props) {
+    const { jobColumns: showColumns } = useJobColumns()
     /**
      * Define states
      */
@@ -60,26 +74,28 @@ export default function JobTable({
      */
     const { data: users } = useUsers()
     const { data: paymentChannels } = usePaymentChannels()
+    const { data: jobTypes } = useJobTypes()
+    const { data: jobStatuses } = useJobStatuses()
 
     const handleCopyJob = (job: Job) => {
         navigator.clipboard
             .writeText(job.no)
             .then(() => {
                 addToast({
-                    title: 'Sao chép Job No thành công',
+                    title: 'Copy job no successful',
                     color: 'success',
                 })
             })
             .catch((err) => {
                 console.log(err)
                 addToast({
-                    title: 'Sao chép Job No thất bại',
+                    title: 'Copy job no fail',
                     color: 'danger',
                 })
             })
     }
 
-    const columns: TableColumnsType<DataType> = [
+    const dataColumns: TableColumns<DataType> = [
         {
             title: (
                 <p className="w-[60px] truncate" title="Thumbnail">
@@ -88,13 +104,16 @@ export default function JobTable({
             ),
             dataIndex: 'thumbnail',
             key: 'thumbnail',
+            fixed: 'left',
             width: 60,
             render: (_, record: DataType) => {
+                const src =
+                    record.status.thumbnailUrl ?? IMAGE_CONSTANTS.loading
                 return (
                     <div className="flex items-center justify-center">
                         <div className="overflow-hidden rounded-full size-11">
                             <Image
-                                src={record.status.thumbnailUrl}
+                                src={src}
                                 alt="image"
                                 className="object-cover rounded-full size-full"
                                 preview={false}
@@ -108,23 +127,47 @@ export default function JobTable({
             title: 'Client',
             dataIndex: 'clientName',
             key: 'clientName',
-            width: 100,
+            minWidth: 120,
+            render: (_, record) => (
+                <p className="line-clamp-1">{record.clientName}</p>
+            ),
             sorter: {
                 compare: (a, b) => a.clientName!.localeCompare(b.clientName!),
                 multiple: 4,
             },
-            // filters: uniqueByKey(jobs ?? [], 'clientName')?.map((item) => ({
-            //     text: `${item.clientName}`,
-            //     value: item?.clientName ?? '',
-            // })),
-            // onFilter: (value, record) =>
-            //     record?.clientName?.indexOf(value as string) === 0,
+            filters: lodash.uniqBy(jobsData, 'clientName')?.map((item) => ({
+                text: `${item.clientName}`,
+                value: item?.clientName ?? '',
+            })),
+            onFilter: (value, record) =>
+                record?.clientName?.indexOf(value as string) === 0,
+        },
+
+        {
+            title: 'Job Type',
+            dataIndex: 'type',
+            key: 'type',
+            minWidth: 120,
+            render: (_, record) => (
+                <p className="line-clamp-1">{record.type.displayName}</p>
+            ),
+            sorter: {
+                compare: (a, b) => a.no!.localeCompare(b.no!),
+                multiple: 1,
+            },
+            filters: lodash.uniqBy(jobTypes, 'code')?.map((item) => ({
+                text: item.displayName,
+                value: item?.id ?? '',
+            })),
+            onFilter: (value, record) =>
+                record.type.id.toString().indexOf(value as string) === 0,
         },
         {
             title: 'Job No.',
             dataIndex: 'no',
             key: 'no',
-            width: 140,
+            fixed: 'left',
+            minWidth: 120,
             render: (jobNo) => (
                 <div className="flex items-center justify-between gap-2 group size-full">
                     <Link
@@ -139,32 +182,23 @@ export default function JobTable({
                         {jobNo}
                     </Link>
 
-                    <TooltipAnt placement="top" title="Copy link">
-                        <LinkIcon
-                            size={14}
-                            strokeWidth={2}
-                            className="hidden transition duration-150 group-hover:block"
-                        />
-                    </TooltipAnt>
+                    <CopyLink value={envConfig.NEXT_PUBLIC_URL + '/' + `onboarding?detail=${jobNo}`} />
                 </div>
             ),
             sorter: {
                 compare: (a, b) => a.no!.localeCompare(b.no!),
                 multiple: 1,
             },
-            // filters: uniqueByKey(jobTypes ?? [], 'code')?.map((item) => ({
-            //     text: `${item.code}- ${item.name}`,
-            //     value: item?.id ?? '',
-            // })),
-            // onFilter: (value, record) =>
-            //     record?.jobTypeId?.toString().indexOf(value as string) === 0,
         },
         {
             title: 'Job Name',
             dataIndex: 'displayName',
             key: 'displayName',
-            render: (jobName) => (
-                <p className="font-semibold line-clamp-1">{jobName}</p>
+            minWidth: 300,
+            render: (displayName) => (
+                <p className="font-semibold line-clamp-1" title={displayName}>
+                    {displayName}
+                </p>
             ),
             sorter: {
                 compare: (a, b) => a.displayName.localeCompare(b.displayName),
@@ -175,7 +209,7 @@ export default function JobTable({
             title: 'Income',
             dataIndex: 'incomeCost',
             key: 'incomeCost',
-            width: '10%',
+            minWidth: 130,
             render: () => (
                 <p className="font-semibold text-right text-red-500">$ 10</p>
             ),
@@ -188,7 +222,7 @@ export default function JobTable({
             title: 'Staff Cost',
             dataIndex: 'staffCost',
             key: 'staffCost',
-            width: '10%',
+            minWidth: 130,
             render: (staffCost) => (
                 <p className="font-semibold text-right text-red-500">
                     {formatCurrencyVND(staffCost)}
@@ -200,19 +234,14 @@ export default function JobTable({
             },
         },
         {
-            title: (
-                <p
-                    className="text-nowrap w-[90px] truncate"
-                    title="Payment Channel"
-                >
-                    Payment Channel
-                </p>
-            ),
+            title: 'Payment Channel',
             dataIndex: 'paymentChannel',
             key: 'paymentChannel',
-            width: 90,
+            minWidth: 200,
             render: (_, record: DataType) => (
-                <p>{record.paymentChannel.displayName}</p>
+                <p className="line-clamp-1">
+                    {record.paymentChannel.displayName}
+                </p>
             ),
             sorter: {
                 compare: (a: DataType, b: DataType) =>
@@ -221,23 +250,40 @@ export default function JobTable({
                     ),
                 multiple: 2,
             },
-            filters: uniqueByKey(paymentChannels ?? [], 'name')?.map(
-                (item) => ({
-                    text: `${item.name}`,
-                    value: item?.name ?? '',
-                })
-            ),
+            filters: lodash
+                .uniqBy(paymentChannels, 'displayName')
+                .map((item) => ({
+                    text: `${item.displayName}`,
+                    value: item.displayName ?? '',
+                })),
             onFilter: (value, record) =>
-                record!.paymentChannel.displayName.indexOf(value as string) === 0,
+                record.paymentChannel.displayName.indexOf(value as string) ===
+                0,
+        },
+        {
+            title: 'Attachments',
+            dataIndex: 'attachmentUrls',
+            key: 'attachmentUrls',
+            minWidth: 140,
+            render: (_, record) => (
+                <div>
+                    {!record.attachmentUrls ||
+                        record.attachmentUrls.length === 0 ? (
+                        <p></p>
+                    ) : (
+                        <p>{record.attachmentUrls.length} attachments</p>
+                    )}
+                </div>
+            ),
         },
         {
             title: 'Due to',
             dataIndex: 'dueAt',
             key: 'dueAt',
-            width: '10%',
+            minWidth: 170,
             render: (_, record: DataType) => {
                 return (
-                    <div className="text-right">
+                    <div className="text-right line-clamp-1">
                         <CountDown
                             endedDate={record.dueAt!}
                             options={{
@@ -258,12 +304,18 @@ export default function JobTable({
             title: 'Assignee',
             dataIndex: 'assignee',
             key: 'assignee',
-            width: '10%',
+            minWidth: 150,
             className: 'group cursor-default',
             render: (_, record: DataType) => {
-                const show = 4
+                const count = 4
                 return (
-                    <>
+                    <div
+                        onClick={() => {
+                            openAddMemberModal(record.no)
+                        }}
+                        className="cursor-pointer w-fit"
+                        title="View assignee"
+                    >
                         {record.assignee.length === 0 ? (
                             <button
                                 onClick={() =>
@@ -274,46 +326,59 @@ export default function JobTable({
                                 Add assignee
                             </button>
                         ) : (
-                            <AvatarGroup
-                                size="sm"
-                                max={show}
-                                total={record.assignee.length - show}
-                                classNames={{
-                                    base: 'max-w-full',
+                            <Avatar.Group
+                                max={{
+                                    count: count,
+                                    style: {
+                                        color: 'var(--color-primary)',
+                                        backgroundColor:
+                                            'var(--color-primary-50)',
+                                    },
+                                    popover: {
+                                        styles: {
+                                            body: {
+                                                borderRadius: '16px',
+                                            },
+                                        },
+                                    },
                                 }}
                             >
-                                {record.assignee.map((mem) => {
+                                {record.assignee.map((member) => {
                                     return (
-                                        <Tooltip
-                                            key={mem.id}
-                                            content={mem?.displayName}
-                                            classNames={{
-                                                content:
-                                                    'max-w-fit text-nowrap',
-                                            }}
-                                            color="secondary"
-                                        >
-                                            <Avatar
-                                                src={mem?.avatar ?? ''}
-                                                classNames={{
-                                                    base: 'data-[hover=true]:-translate-x-0 rtl:data-[hover=true]:translate-x-0 cursor-pointer',
-                                                }}
-                                                showFallback
-                                            />
-                                        </Tooltip>
+                                        <Avatar
+                                            key={member.id}
+                                            src={member.avatar}
+                                        />
                                     )
                                 })}
-                            </AvatarGroup>
+                            </Avatar.Group>
                         )}
-                    </>
+                    </div>
                 )
             },
-            filters: uniqueByKey(users ?? [], 'id')?.map((item) => ({
-                text: `${item.name}`,
-                value: item?.id ?? '',
+            filters: lodash.uniqBy(users, 'id').map((item) => ({
+                text: `${item.displayName}`,
+                value: item.id ?? '',
             })),
             onFilter: (value, record) =>
                 record.assignee.some((item) => item.id === value),
+        },
+        {
+            title: 'Payment Status',
+            dataIndex: 'isPaid',
+            key: 'isPaid',
+            width: 120,
+            className: 'group cursor-default',
+            render: (_, record: DataType) => {
+                return (
+                    <PaidChip
+                        status={record.isPaid ? 'paid' : 'unpaid'}
+                        classNames={{
+                            base: 'w-full',
+                        }}
+                    />
+                )
+            },
         },
         {
             title: 'Status',
@@ -321,23 +386,58 @@ export default function JobTable({
             key: 'status',
             width: 120,
             render: (_, record: DataType) => (
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center z-0">
                     <JobStatusDropdown
                         jobData={record}
-                        statusData={record?.status as JobStatus}
+                        statusData={record.status as JobStatus}
                     />
                 </div>
             ),
-            // filters: uniqueByKey(jobStatuses ?? [], 'id')?.map((item) => ({
-            //     text: `${item.title}`,
-            //     value: item?.id?.toString() ?? '',e
-            // })),
+            filters: lodash.uniqBy(jobStatuses, 'id')?.map((item) => ({
+                text: `${item.displayName}`,
+                value: item?.id?.toString() ?? '',
+            })),
             onFilter: (value, record) =>
                 record?.status?.id?.toString()?.indexOf(value as string) === 0,
         },
         {
+            title: 'Completed at',
+            dataIndex: 'completedAt',
+            key: 'completedAt',
+            minWidth: 120,
+            render: (_, record: DataType) => (
+                <div>
+                    {record?.completedAt &&
+                        VietnamDateFormat(record.completedAt)}
+                </div>
+            ),
+        },
+        {
+            title: 'Created at',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            minWidth: 100,
+            render: (_, record: DataType) => (
+                <div>
+                    {record?.createdAt && VietnamDateFormat(record.createdAt)}
+                </div>
+            ),
+        },
+        {
+            title: 'Last modify',
+            dataIndex: 'updatedAt',
+            key: 'updatedAt',
+            minWidth: 100,
+            render: (_, record: DataType) => (
+                <div>
+                    {record?.updatedAt && VietnamDateFormat(record.updatedAt)}
+                </div>
+            ),
+        },
+        {
             title: 'Action',
             key: 'action',
+            dataIndex: 'action',
             width: 150,
             fixed: 'right',
             render: (_, record: DataType) => {
@@ -381,11 +481,6 @@ export default function JobTable({
         },
     ]
 
-    const newColumns = columns.map((item) => ({
-        ...item,
-        hidden: !visibleColumns.includes(item.key as keyof Job | 'action'),
-    }))
-
     // Remove hight after 1 second
     useEffect(() => {
         if (newJobNo) {
@@ -401,46 +496,64 @@ export default function JobTable({
         ...prj,
         key: prj?.id ?? index,
     }))
+
+    const finalColumns = dataColumns.map((item) => ({
+        ...item,
+        hidden: !showColumns?.includes(item.key as JobColumn),
+        filterIcon: (filtered: boolean) => {
+            return <>
+                {!filtered ? <ListFilterPlus size={14} className='text-text2 transition duration-100' /> : <ListFilter size={14} className='text-primary transition duration-100' />}
+            </>
+        },
+        sortIcon: (props: { sortOrder: SortOrder }) => {
+            const { sortOrder } = props
+            return (
+                <>
+                    {sortOrder ? (
+                        <ChevronDown
+                            size={14}
+                            className="transition duration-150 text-text2"
+                            style={{
+                                transform:
+                                    sortOrder === 'ascend'
+                                        ? 'rotate(0deg)'
+                                        : 'rotate(180deg)',
+                            }}
+                        />
+                    ) : (
+                        <ChevronsLeftRight
+                            size={14}
+                            className="rotate-90 text-text2"
+                        />
+                    )}
+                </>
+            )
+        },
+    }))
     return (
         <Table<DataType>
             rowKey="no"
-            columns={newColumns}
+            columns={finalColumns}
             onRow={(record) => {
                 return {
                     className: `${record.no === newJobNo ? 'bg-yellow-200' : ''
                         } cursor-pointer`,
-                    // onClick: () => {
-                    //     const currentJobNo = record.no!
-
-                    //     const foundIndex = selectedRowKeys.findIndex(
-                    //         (i) => i.toString() === currentJobNo
-                    //     )
-                    //     if (foundIndex === -1) {
-                    //         setSelectedRowKeys([
-                    //             ...selectedRowKeys,
-                    //             currentJobNo,
-                    //         ])
-                    //     } else {
-                    //         setSelectedRowKeys(
-                    //             selectedRowKeys.filter(
-                    //                 (i) => i.toString() !== currentJobNo
-                    //             )
-                    //         )
-                    //     }
-                    // },
                 }
             }}
             dataSource={dataSource}
             loading={isLoading}
-            pagination={pagination}
             rowSelection={{
                 selectedRowKeys,
                 onChange: (newSelectedRowKeys: React.Key[]) =>
                     setSelectedRowKeys(newSelectedRowKeys),
             }}
+            pagination={false}
             size={table.size as TableProps['size']}
-            rowClassName="h-8! transition duration-500"
-            showSorterTooltip
+            rowClassName="transition duration-500"
+            scroll={{ x: 'max-content', y: 61 * 8 + 20 }}
+            style={{
+                minHeight: 61 * 8 + 20
+            }}
         />
     )
 }

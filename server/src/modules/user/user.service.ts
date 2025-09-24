@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { User } from '@prisma/client'
+import { RoleEnum, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { UserResponseDto } from './dto/user-response.dto'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -41,13 +41,20 @@ export class UserService {
     })
   }
 
+  async getUserRole(userId: string): Promise<RoleEnum> {
+    const user = await this.prismaService.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      throw new NotFoundException("User not found")
+    }
+    return user.role
+  }
   async findAll(): Promise<UserResponseDto[]> {
     const users = await this.prismaService.user.findMany()
     return plainToInstance(UserResponseDto, users, {
       excludeExtraneousValues: true,
     })
   }
-  
+
   /**
    * Find a user by their unique ID.
    *

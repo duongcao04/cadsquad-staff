@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Skeleton } from 'antd'
-import useAuth from '@/queries/useAuth'
+import useAuth from '@/shared/queries/useAuth'
 import EditAppearanceForm from './_components/EditAppearanceForm'
 
 export default function AppearancePage() {

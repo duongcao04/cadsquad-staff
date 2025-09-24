@@ -1,16 +1,11 @@
 import { create } from 'zustand'
 import { combine } from 'zustand/middleware'
-import { Job } from '@/types/job.type'
+import { JobColumn } from '@/shared/types/job.type'
 
 const getJobVisibleColumns = () => {
     let init: JobStore['jobVisibleColumns'] = [
         'clientName',
-        'jobNo',
-        'jobName',
-        'memberAssign',
         'paymentChannel',
-        'jobStatus',
-        'income',
         'staffCost',
         'dueAt',
         'action',
@@ -38,16 +33,15 @@ const getJobFinishItems = () => {
     }
 }
 
-export type TJobVisibleColumn = keyof Job | 'action' | 'thumbnail' | 'jobStatus'
 export type JobStore = {
     newJobNo: string | null
-    jobVisibleColumns: Array<TJobVisibleColumn>
+    jobVisibleColumns: Array<JobColumn>
     isHideFinishItems: boolean
 }
 
 type JobAction = {
     setNewJobNo: (jobNo: string | null) => void
-    setJobVisibleColumns: (jobVisibleCols: TJobVisibleColumn[]) => void
+    setJobVisibleColumns: (showColumns: Array<JobColumn>) => void
     setHideFinishItems: (isHidden: boolean) => void
 }
 export const useJobStore = create(
@@ -65,16 +59,16 @@ export const useJobStore = create(
                     }
                 })
             },
-            setJobVisibleColumns: (jobVisibleCols: TJobVisibleColumn[]) => {
+            setJobVisibleColumns: (showColumns: Array<JobColumn>) => {
                 set(() => {
                     if (typeof window !== 'undefined') {
                         localStorage.setItem(
                             'job_visible_cols',
-                            JSON.stringify(jobVisibleCols)
+                            JSON.stringify(showColumns)
                         )
                     }
                     return {
-                        jobVisibleColumns: jobVisibleCols,
+                        jobVisibleColumns: showColumns,
                     }
                 })
             },

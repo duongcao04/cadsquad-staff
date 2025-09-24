@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { JobStatus } from '@/types/jobStatus.type'
 import { cn, lightenHexColor } from '@/lib/utils'
 import { Chip, ChipProps } from '@heroui/react'
+import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
 
 type Props = {
     data: JobStatus

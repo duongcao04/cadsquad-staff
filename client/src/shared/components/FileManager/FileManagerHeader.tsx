@@ -22,7 +22,7 @@ import {
 import { useDebouncedValue } from '@/hooks/useDebounce'
 
 import { ROOT_DIR } from '@/app/[locale]/(dashboard)/documents/actions'
-import { useSearchParam } from '@/shared/hooks/useSearchParam'
+import { useSearchParam } from '@/hooks/useSearchParam'
 
 import { useFileStore } from './store/useFileStore'
 

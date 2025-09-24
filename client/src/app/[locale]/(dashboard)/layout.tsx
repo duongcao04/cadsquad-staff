@@ -22,7 +22,7 @@ export default async function DashboardLayout({
                 <div className="size-full py-2.5 flex items-start justify-start gap-2">
                     <div className="space-y-5">
                         <div className="mt-2 pl-4">
-                            {/* <ActionButton /> */}
+                            <ActionButton />
                         </div>
                         <Sidebar />
                     </div>

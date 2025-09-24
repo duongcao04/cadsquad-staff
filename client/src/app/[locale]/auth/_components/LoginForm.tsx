@@ -8,9 +8,9 @@ import { Eye, EyeOff } from 'lucide-react'
 
 import envConfig from '@/config/envConfig'
 import { Link, useRouter } from '@/i18n/navigation'
-import useAuth from '@/queries/useAuth'
-import { useSearchParam } from '@/shared/hooks/useSearchParam'
-import { LoginSchema } from '@/validationSchemas/auth.schema'
+import useAuth from '@/shared/queries/useAuth'
+import { useSearchParam } from '@/hooks/useSearchParam'
+import { LoginInputSchema } from '@/shared/validationSchemas/auth.schema'
 
 const HOME = envConfig.NEXT_PUBLIC_URL as string
 
@@ -29,7 +29,7 @@ export default function LoginForm() {
             email: '',
             password: '',
         },
-        validationSchema: LoginSchema,
+        validationSchema: LoginInputSchema,
         onSubmit: async (values) => {
             try {
                 console.log(values);

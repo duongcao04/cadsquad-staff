@@ -2,7 +2,7 @@ import { Exclude, Expose, Type } from 'class-transformer'
 import { RoleEnum } from '@prisma/client'
 
 export class UserResponseDto {
-	@Exclude()
+	@Expose()
 	id: string
 
 	@Exclude()

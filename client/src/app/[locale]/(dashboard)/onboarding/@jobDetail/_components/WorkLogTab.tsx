@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useJobActivityLogs } from '@/queries/useJob'
+import { useJobActivityLogs } from '@/shared/queries/useJob'
 import { Spinner } from '@heroui/react'
 import LogCard from './cards/LogCard'
 

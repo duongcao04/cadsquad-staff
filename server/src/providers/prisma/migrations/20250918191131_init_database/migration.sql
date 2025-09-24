@@ -8,7 +8,7 @@ CREATE TYPE "public"."ACCOUNT_PROVIDER" AS ENUM ('GOOGLE', 'GITHUB', 'MICROSOFT'
 CREATE TYPE "public"."JobPriority" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 
 -- CreateEnum
-CREATE TYPE "public"."ACTIVITY_TYPE" AS ENUM ('CreateJob', 'ChangeStatus', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'UpdateInformation', 'DeleteJob');
+CREATE TYPE "public"."ActivityType" AS ENUM ('CreateJob', 'ChangeStatus', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'UpdateInformation', 'DeleteJob');
 
 -- CreateEnum
 CREATE TYPE "public"."NOTIFICATION_STATUS" AS ENUM ('SEEN', 'UNSEEN');
@@ -151,7 +151,7 @@ CREATE TABLE "public"."JobActivityLog" (
     "modifiedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "modifiedById" TEXT NOT NULL,
     "fieldName" TEXT NOT NULL,
-    "activityType" "public"."ACTIVITY_TYPE" NOT NULL,
+    "activityType" "public"."ActivityType" NOT NULL,
     "notes" TEXT,
 
     CONSTRAINT "JobActivityLog_pkey" PRIMARY KEY ("id")

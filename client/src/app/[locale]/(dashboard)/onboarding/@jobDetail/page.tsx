@@ -19,24 +19,18 @@ import {
     Tooltip,
 } from '@heroui/react'
 import { Drawer, Skeleton } from 'antd'
-import dayjs from 'dayjs'
-import timezone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
 import { ArrowLeft, ChevronUp, EditIcon, Link2, PencilOff } from 'lucide-react'
 
 import { useDetailModal } from './actions'
-import { useChangeStatusMutation, useJobDetail } from '@/queries/useJob'
+import { useChangeStatusMutation, useJobByNo } from '@/shared/queries/useJob'
 import JobStatusChip from '@/shared/components/customize/JobStatusChip'
-import { JobStatus } from '@/types/jobStatus.type'
-import { Link } from '@/i18n/navigation'
-import { useJobStatusDetail } from '@/queries/useJobStatus'
+import { useJobStatusByOrder } from '@/shared/queries/useJobStatus'
 import { lightenHexColor } from '@/lib/utils'
 import WorkLogTab from './_components/WorkLogTab'
+import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
+import { VietnamDateFormat } from '@/lib/dayjs'
+import { Link } from '../../../../../i18n/navigation'
 
-dayjs.extend(utc)
-dayjs.extend(timezone)
-
-const DATE_FORMAT = 'DD/MM/YYYY'
 
 const description = `Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis temporibus minima illum dicta fugiat sunt ex quibusdam quos. Quis quisquam ipsa architecto veritatis repellat, dolor nobis veniam odit saepe magnam.
 Facilis asperiores molestiae laudantium quos commodi praesentium distinctio expedita officia voluptate repudiandae repellat, voluptates voluptatem ab voluptas deleniti dolorum. Delectus nulla officia iste soluta beatae minus aliquam exercitationem doloribus molestiae.
@@ -53,12 +47,14 @@ export default function JobDetailDrawer() {
     /**
      * Fetch data
      */
-    const { job, isLoading, error } = useJobDetail(jobNo)
-    const { jobStatus: prevStatus } = useJobStatusDetail(
-        job?.status.prevStatusId?.toString()
+    const { job, isLoading, error } = useJobByNo(jobNo)
+    const { jobStatus: prevStatus } = useJobStatusByOrder(
+        job?.status.prevStatusOrder
     )
-    const { jobStatus: nextStatus } = useJobStatusDetail(
-        job?.status.nextStatusId?.toString()
+    console.log(job);
+
+    const { jobStatus: nextStatus } = useJobStatusByOrder(
+        job?.status.nextStatusOrder
     )
     /**
      * Change status action
@@ -175,19 +171,19 @@ export default function JobDetailDrawer() {
             footer={
                 <div
                     style={{
-                        display: job?.status.prevStatusId ? 'grid' : 'block',
+                        display: job?.status.prevStatusOrder ? 'grid' : 'block',
                         gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                         gap: 12,
                     }}
                 >
-                    {job?.status.prevStatusId && prevStatus && (
+                    {job?.status.prevStatusOrder && prevStatus && (
                         <Button
                             color="danger"
                             className="w-full font-semibold font-saira"
                             style={{
-                                color: prevStatus?.color,
+                                color: prevStatus?.hexColor,
                                 backgroundColor: lightenHexColor(
-                                    prevStatus?.hexColor as string,
+                                    prevStatus?.hexColor,
                                     85
                                 ),
                             }}
@@ -195,17 +191,17 @@ export default function JobDetailDrawer() {
                                 handleChangeStatus(prevStatus)
                             }}
                         >
-                            Mark as {prevStatus.title}
+                            Mark as {prevStatus.displayName}
                         </Button>
                     )}
-                    {job?.status.nextStatusId && nextStatus && (
+                    {job?.status.nextStatusOrder && nextStatus && (
                         <Button
                             color="danger"
                             className="w-full font-semibold font-saira"
                             style={{
-                                color: nextStatus?.color,
+                                color: nextStatus?.hexColor,
                                 backgroundColor: lightenHexColor(
-                                    nextStatus?.color as string,
+                                    nextStatus?.hexColor,
                                     90
                                 ),
                             }}
@@ -213,17 +209,17 @@ export default function JobDetailDrawer() {
                                 handleChangeStatus(nextStatus)
                             }}
                         >
-                            Mark as {nextStatus.title}
+                            Mark as {nextStatus.displayName}
                         </Button>
                     )}
-                    {job && !job?.status.nextStatusId && (
+                    {job && !job?.status.nextStatusOrder && (
                         <Button
                             color="danger"
                             className="w-full !opacity-100"
                             isDisabled
                             style={{
                                 color: '#ffffff',
-                                backgroundColor: job?.status.color,
+                                backgroundColor: job?.status.hexColor,
                             }}
                         >
                             Finish at 2025/09/01 - 19:06
@@ -245,7 +241,7 @@ export default function JobDetailDrawer() {
                         <div>
                             <p className="text-sm text-text2">Job name</p>
                             <Input
-                                value={job?.jobName}
+                                value={job?.displayName}
                                 style={{
                                     fontSize: 'var(--text-2xl)',
                                     fontWeight: '500',
@@ -263,7 +259,7 @@ export default function JobDetailDrawer() {
                                             $
                                         </p>
                                     }
-                                    value={parseInt(String(job?.income))}
+                                    value={parseInt(String(job?.incomeCost))}
                                     style={{
                                         fontSize: 'var(--text-base)',
                                         fontWeight: '500',
@@ -296,7 +292,7 @@ export default function JobDetailDrawer() {
                                     Payment Channel
                                 </p>
                                 <p className="text-base font-semibold text-wrap">
-                                    {job?.paymentChannel.name}
+                                    {job?.paymentChannel.displayName}
                                 </p>
                             </div>
                         </div>
@@ -332,34 +328,35 @@ export default function JobDetailDrawer() {
                                 {description}
                             </p>
                         </div>
-                        <div>
-                            <p className="text-sm text-text2">Documents (1)</p>
-                            <Link
-                                href={String(job?.sourceUrl)}
-                                className="flex items-center justify-start gap-2 px-3 py-2 mt-2 border rounded-sm w-fit"
-                                title="Sharepoint link"
-                            >
-                                <Link2 size={20} />
-                                <p className="font-semibold">Sharepoint link</p>
-                            </Link>
+                        <div className='space-y-1'>
+                            <p className="text-sm text-text2">Attachments ({job?.attachmentUrls?.length ?? 0})</p>
+                            {job?.attachmentUrls?.length ? (
+                                job.attachmentUrls.map((att, idx) => (
+                                    <Link
+                                        key={idx}
+                                        href={att}
+                                        className="flex items-center justify-start gap-2 px-3 py-2 mt-2 border rounded-sm w-fit"
+                                        title="Sharepoint link"
+                                    >
+                                        <Link2 size={20} />
+                                        <p className="font-semibold">Sharepoint link</p>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p>No attachments available.</p>
+                            )}
                         </div>
                         <div className="grid grid-cols-2 gap-5">
                             <div>
                                 <p className="text-sm text-text2">Started at</p>
                                 <p className="text-base font-semibold text-wrap">
-                                    {dayjs
-                                        .utc(job?.startedAt)
-                                        .tz('Asia/Ho_Chi_Minh')
-                                        .format(DATE_FORMAT)}
+                                    {job?.startedAt && VietnamDateFormat(job.startedAt)}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-sm text-text2">Due at</p>
                                 <p className="text-base font-semibold text-wrap">
-                                    {dayjs
-                                        .utc(job?.dueAt)
-                                        .tz('Asia/Ho_Chi_Minh')
-                                        .format(DATE_FORMAT)}
+                                    {job?.dueAt && VietnamDateFormat(job.dueAt)}
                                 </p>
                             </div>
                         </div>
@@ -371,8 +368,8 @@ export default function JobDetailDrawer() {
                                         size="sm"
                                         max={5}
                                         total={
-                                            job?.memberAssign &&
-                                            job?.memberAssign.length - 5
+                                            job?.assignee &&
+                                            job?.assignee.length - 5
                                         }
                                         isBordered
                                         classNames={{
@@ -382,11 +379,11 @@ export default function JobDetailDrawer() {
                                             setShowFullAssignee(true)
                                         }
                                     >
-                                        {job?.memberAssign?.map((mem) => {
+                                        {job?.assignee?.map((mem) => {
                                             return (
                                                 <Tooltip
                                                     key={mem.id}
-                                                    content={mem?.name}
+                                                    content={mem?.displayName}
                                                     classNames={{
                                                         content:
                                                             'max-w-fit text-nowrap',
@@ -406,7 +403,7 @@ export default function JobDetailDrawer() {
                                 ) : (
                                     <div className="grid grid-cols-[1fr_32px] gap-4">
                                         <div className="flex flex-wrap items-center justify-start gap-x-3 gap-y-4">
-                                            {job?.memberAssign?.map((mem) => {
+                                            {job?.assignee?.map((mem) => {
                                                 return (
                                                     <div
                                                         key={mem.id}
@@ -422,7 +419,7 @@ export default function JobDetailDrawer() {
                                                             showFallback
                                                         />
                                                         <p className="text-sm">
-                                                            {mem.name}
+                                                            {mem.displayName}
                                                         </p>
                                                     </div>
                                                 )

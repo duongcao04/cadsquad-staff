@@ -13,7 +13,7 @@ import { formatCurrencyVND } from '@/lib/formatCurrency'
 import CountDown from '../../onboarding/_components/CountDown'
 import { useSettingStore } from '../../../settings/shared/store/useSettingStore'
 import { Job } from '@/validationSchemas/job.schema'
-import { useJobs } from '@/queries/useJob'
+import { useJobs } from '@/shared/queries/useJob'
 
 const DEFAULT_TAB = 'active'
 

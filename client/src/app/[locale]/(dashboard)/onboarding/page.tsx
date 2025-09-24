@@ -1,27 +1,28 @@
 'use client'
 
-import { Button, Input } from '@heroui/react'
+import { Button, Input, Pagination } from '@heroui/react'
 import React, { useState } from 'react'
 
 import JobTable from './_components/JobTable'
-import { useSearchParam } from '@/shared/hooks/useSearchParam'
+import { useSearchParam } from '@/hooks/useSearchParam'
 import JobTableTabs from './_components/JobTableTabs'
-import { Job } from '@/types/job.type'
 import FilterDropdown from './_components/FilterDropdown'
 import ViewSettingsDropdown from './_components/ViewSettingsDropdown'
 import { DownloadIcon, RefreshCcw, Search } from 'lucide-react'
-import { useJobs } from '@/queries/useJob'
+import { useJobs } from '@/shared/queries/useJob'
 import { useJobStore } from './store/useJobStore'
-import { TJobTab } from '@/app/api/(protected)/jobs/utils/getTabQuery'
+import { Job } from '@/shared/interfaces/job.interface'
+import { JobTabEnum } from '@/shared/enums/jobTab.enum'
+import { Select } from 'antd'
 
 export type DataType = Job & {
     key: React.Key
 }
 export default function OnboardingPage() {
-    const { jobVisibleColumns, isHideFinishItems } = useJobStore()
+    const { isHideFinishItems } = useJobStore()
     const { getSearchParam, setSearchParams, removeSearchParam } =
         useSearchParam()
-    const tabQuery = getSearchParam('tab') ?? 'priority'
+    const tabQuery = getSearchParam('tab') ?? JobTabEnum.PRIORITY
     const searchQuery = getSearchParam('search') ?? undefined
 
     const [currentTab, setCurrentTab] = useState(tabQuery)
@@ -31,13 +32,12 @@ export default function OnboardingPage() {
     )
 
     const {
-        hideCols,
         jobs,
+        paginate,
         refetch: refreshJobs,
         isLoading: loadingJobs,
-        meta,
     } = useJobs({
-        tab: currentTab as TJobTab,
+        tab: currentTab as JobTabEnum,
         page: currentJobPage,
         search: searchKeywords,
         hideFinishItems: Boolean(isHideFinishItems),
@@ -104,6 +104,18 @@ export default function OnboardingPage() {
                         <ViewSettingsDropdown />
                     </div>
                 </div>
+                <div className='w-full flex items-center justify-between px-2'>
+                    <p className='text-sm text-text2'>Total {paginate?.total} items</p>
+                    <div className='flex items-center justify-end gap-2'>
+                        <p className='text-sm text-text2'>Rows per page</p>
+                        <Select
+                            size='small'
+                            defaultValue="5"
+                            style={{ width: 50 }}
+                            options={[{ label: "5", value: 5 }, { label: "10", value: 10 }, { label: "15", value: 15 }]}
+                        />
+                    </div>
+                </div>
                 <div
                     className="p-2 mt-4 size-full bg-background"
                     style={{
@@ -111,18 +123,18 @@ export default function OnboardingPage() {
                     }}
                 >
                     <JobTable
-                        visibleColumns={jobVisibleColumns.concat(hideCols)}
                         isLoading={loadingJobs}
-                        data={jobs}
-                        pagination={{
-                            pageSize: meta?.limit,
-                            current: currentJobPage,
-                            total: meta?.total,
-                            onChange: (page) => {
-                                setCurrentJobPage(page)
-                            },
-                        }}
+                        data={jobs as Job[]}
                     />
+                </div>
+                <div className='w-full flex items-center justify-center'>
+                    <Pagination color="primary" showControls total={paginate?.totalPages ?? 1} page={paginate?.page} classNames={{
+                        item: "cursor-pointer",
+                        next: "cursor-pointer",
+                        prev: "cursor-pointer",
+                    }} onChange={(page) => {
+                        setCurrentJobPage(page)
+                    }} />
                 </div>
             </div>
         </div>

@@ -1,4 +1,4 @@
-import { ACTIVITY_TYPE } from '@prisma/client'
+import { ActivityType } from '@prisma/client'
 import { IsString, IsOptional, IsNotEmpty } from 'class-validator'
 
 export class CreateActivityLogDto {
@@ -24,7 +24,7 @@ export class CreateActivityLogDto {
 
 	@IsString()
 	@IsNotEmpty()
-	activityType: ACTIVITY_TYPE
+	activityType: ActivityType
 
 	@IsOptional()
 	@IsString()

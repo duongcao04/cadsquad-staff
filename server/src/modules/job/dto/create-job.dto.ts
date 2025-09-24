@@ -28,8 +28,8 @@ export class CreateJobDto {
 	description?: string
 
 	@IsOptional()
-	@IsUrl({}, { message: 'sourceUrl must be a valid URL' })
-	sourceUrl?: string
+	@IsString()
+	attachmentUrls?: string
 
 	@IsString()
 	@IsNotEmpty()

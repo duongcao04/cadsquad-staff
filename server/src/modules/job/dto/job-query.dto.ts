@@ -1,11 +1,7 @@
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 import { JobTabEnum } from "../enums/job-tab.enum";
 
 export class JobQueryDto {
-	@IsOptional()
-	@IsString()
-	jobNo?: string
-
 	@IsOptional()
 	@IsString()
 	tab?: JobTabEnum = JobTabEnum.ACTIVE

@@ -1,21 +1,22 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { ACTIVITY_TYPE, Job } from '@prisma/client'
+import { ActivityType, Job, Prisma } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
-import { JobResponseDto } from './dto/job-response.dto'
+import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
 import { CreateJobDto } from './dto/create-job.dto'
-import { UpdateJobDto } from './dto/update-job.dto'
 import { ChangeStatusDto } from './dto/change-status.dto'
-import { ActivityLogService } from './activity-log.service'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { JobQueryDto } from './dto/job-query.dto'
 import { PaginationMeta } from '../../common/interfaces/pagination-meta.interface'
 import { JobTabEnum } from './enums/job-tab.enum'
 import dayjs from 'dayjs'
+import { UserService } from '../user/user.service'
+import { ConfigService } from '../config/config.service'
+import { userConfigCode } from '../../common/constants/user-config-code.constant'
 
 @Injectable()
 export class JobService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService, private readonly userService: UserService, private readonly configService: ConfigService) { }
 
   /**
    * Create a new job.
@@ -29,6 +30,11 @@ export class JobService {
           ? {
             connect: data.assigneeIds.map((id) => ({ id })),
           }
+          : undefined,
+        attachmentUrls: data.attachmentUrls
+          ? Array.isArray(data.attachmentUrls)
+            ? data.attachmentUrls
+            : [data.attachmentUrls]
           : undefined,
       },
       include: {
@@ -44,51 +50,69 @@ export class JobService {
     }) as unknown as Job
   }
 
+
+  async getColumns(userId: string) {
+    const allColumns = ['no', 'thumbnail', 'type', 'displayName', 'description', 'attachmentUrls', 'clientName', 'incomeCost', 'staffCost', 'assignee', 'paymentChannel', 'status', 'isPaid', 'dueAt', 'completedAt', 'createdAt', 'updatedAt', 'action']
+    const userRole = await this.userService.getUserRole(userId)
+    const showColumns = await this.configService.findByCode(
+      userId,
+      userConfigCode.JOB_SHOW_COLUMNS
+    )
+
+    const finalColumns = showColumns ? JSON.parse(showColumns.value) : allColumns
+
+    return userRole !== 'ADMIN'
+      ? finalColumns.filter((key: keyof Job) => key !== 'incomeCost')
+      : finalColumns
+  }
+
   /**
    * Find all jobs with relations.
    */
   async findAll(userId: string, query: JobQueryDto): Promise<{ data: Job[], paginate: PaginationMeta }> {
     const { page = '1', hideFinishItems, limit = '10', search, tab = JobTabEnum.ACTIVE } = query
-    const jobs = await this.prisma.job.findMany({
-      where: {
-        ...(Boolean(hideFinishItems) && {
-          status: {
-            isNot: {
-              order: 5,
+
+    const where: Prisma.JobWhereInput = {
+      ...(Boolean(hideFinishItems) && {
+        status: {
+          isNot: {
+            order: 5,
+          },
+        },
+      }),
+      ...this.queryTab(tab),
+      ...(search && {
+        OR: [
+          {
+            displayName: {
+              contains: search,
+              mode: 'insensitive' as const,
             },
           },
-        }),
-        ...this.queryTab(tab),
-        ...(search && {
-          OR: [
-            {
+          {
+            no: {
+              contains: search,
+              mode: 'insensitive' as const,
+            },
+          },
+          {
+            type: {
               displayName: {
                 contains: search,
                 mode: 'insensitive' as const,
               },
-            },
-            {
-              no: {
+              code: {
                 contains: search,
                 mode: 'insensitive' as const,
-              },
+              }
             },
-            {
-              type: {
-                displayName: {
-                  contains: search,
-                  mode: 'insensitive' as const,
-                },
-                code: {
-                  contains: search,
-                  mode: 'insensitive' as const,
-                }
-              },
-            },
-          ],
-        }),
-        assignee: { some: { id: userId } },
-      },
+          },
+        ],
+      }),
+      assignee: { some: { id: userId } },
+    }
+    const jobs = await this.prisma.job.findMany({
+      where,
       include: {
         type: true,
         assignee: true,
@@ -100,16 +124,22 @@ export class JobService {
       skip: (parseInt(page) - 1) * parseInt(limit),
       take: parseInt(limit),
     })
+    const countTotal = await this.prisma.job.count({ where })
+
+    const isAdmin = await this.userService.getUserRole(userId) === 'ADMIN'
+    const responseDto = isAdmin ? JobResponseDto : JobStaffResponseDto
+
     const data = jobs.map((j) =>
-      plainToInstance(JobResponseDto, j, { excludeExtraneousValues: true })
+      plainToInstance(responseDto, j, { excludeExtraneousValues: true })
     ) as unknown as Job[]
+
     return {
       data,
       paginate: {
         limit: parseInt(limit),
         page: parseInt(page),
-        total: data.length,
-        totalPages: Math.ceil(data.length / parseInt(limit))
+        total: countTotal,
+        totalPages: Math.ceil(countTotal / parseInt(limit))
       }
     }
   }
@@ -185,13 +215,18 @@ export class JobService {
           return activeFilter
       }
     }
-
   }
 
   /**
    * Find job by ID.
    */
   async findByJobNo(userId: string, jobNo: string): Promise<Job> {
+    if (!jobNo) {
+      throw new BadRequestException("Job no is invalid")
+    }
+    if (!userId) {
+      throw new UnauthorizedException()
+    }
     const job = await this.prisma.job.findUnique({
       where: { no: jobNo, assignee: { some: { id: userId } } },
       include: {
@@ -200,6 +235,11 @@ export class JobService {
         createdBy: true,
         paymentChannel: true,
         status: true,
+        activityLog: {
+          include: {
+            modifiedBy: true,
+          }
+        }
       },
     })
 
@@ -290,7 +330,7 @@ export class JobService {
             currentValue: data.toStatusId,
             modifiedById: modifierId,
             fieldName: 'status',
-            activityType: ACTIVITY_TYPE.ChangeStatus,
+            activityType: ActivityType.ChangeStatus,
           },
         })
       })
@@ -331,9 +371,60 @@ export class JobService {
       // 3. Create activity log
       await tx.jobActivityLog.create({
         data: {
-          activityType: ACTIVITY_TYPE.AssignMember,
+          activityType: ActivityType.AssignMember,
           previousValue: data.prevMemberIds,
           currentValue: data.updateMemberIds,
+          fieldName: 'Assignee',
+          modifiedById: modifierId,
+          jobId,
+        },
+      })
+
+      return { id: jobId }
+    })
+  }
+
+  async removeMember(jobId: string, modifierId: string, memberId: string): Promise<{ id: string }> {
+    if (!jobId) {
+      throw new BadRequestException('Job ID invalid')
+    }
+    if (!memberId) {
+      throw new BadRequestException('Member ID invalid')
+    }
+
+    return await this.prisma.$transaction(async (tx) => {
+
+      // 1. Find job
+      const job = await tx.job.findUnique({
+        where: { id: jobId },
+        select: { statusId: true, assignee: { select: { id: true } } },
+      })
+      if (!job) throw new NotFoundException('Job not found')
+
+      // check if member exists in assignee list
+      const prevMemberIds = job.assignee.map((m) => m.id)
+      if (!prevMemberIds.includes(memberId)) {
+        throw new NotFoundException('Member not assigned to this job')
+      }
+
+      // 2. Update job - remove the member
+      await tx.job.update({
+        where: { id: jobId },
+        data: {
+          assignee: {
+            disconnect: { id: memberId },
+          },
+        },
+      })
+
+      // 3. Create activity log
+      const updatedMemberIds = prevMemberIds.filter((id) => id !== memberId)
+
+      await tx.jobActivityLog.create({
+        data: {
+          activityType: ActivityType.AssignMember,
+          previousValue: JSON.stringify(prevMemberIds),
+          currentValue: JSON.stringify(updatedMemberIds),
           fieldName: 'Assignee',
           modifiedById: modifierId,
           jobId,

@@ -30,7 +30,7 @@ import NotificationDropdown from './NotificationDropdown'
 import SearchModal from './SearchModal'
 import { MotionButton } from '@/lib/motion'
 import { Variants } from 'motion/react'
-import useAuth from '@/queries/useAuth'
+import useAuth from '@/shared/queries/useAuth'
 import SettingsDropdown from './SettingsDropdown'
 
 const { Header: AntHeader } = Layout

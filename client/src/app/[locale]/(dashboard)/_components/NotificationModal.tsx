@@ -11,8 +11,8 @@ import {
     CreateNotificationSchema,
     NewNotification,
 } from '@/validationSchemas/notification.schema'
-import { useUsers } from '@/queries/useUser'
-import { useSendNotiMutation } from '@/queries/useNoties'
+import { useUsers } from '@/shared/queries/useUser'
+import { useSendNotiMutation } from '@/shared/queries/useNotification'
 
 type Props = {
     isOpen: boolean

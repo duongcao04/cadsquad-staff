@@ -8,8 +8,8 @@ import {
     Truck,
     Vote,
 } from 'lucide-react'
-import { useCountJobByTab } from '@/queries/useJob'
-import useAuth from '@/queries/useAuth'
+import { useCountJobByTab } from '@/shared/queries/useJob'
+import useAuth from '@/shared/queries/useAuth'
 
 type Props = { activeKey: string; onChange: (key: string) => void }
 

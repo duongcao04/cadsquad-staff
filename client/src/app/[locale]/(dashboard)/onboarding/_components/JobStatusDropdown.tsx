@@ -11,11 +11,11 @@ import {
 import React from 'react'
 import { lightenHexColor } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
-import { useJobStatusDetail } from '@/queries/useJobStatus'
+import { useJobStatusByOrder } from '@/shared/queries/useJobStatus'
 import JobStatusChip from '@/shared/components/customize/JobStatusChip'
-import { useChangeStatusMutation } from '@/queries/useJob'
-import { JobStatus } from '@/types/jobStatus.type'
-import { Job } from '@/types/job.type'
+import { useChangeStatusMutation } from '@/shared/queries/useJob'
+import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
+import { Job } from '@/shared/interfaces/job.interface'
 
 type Props = {
     jobData: Job
@@ -23,11 +23,11 @@ type Props = {
 }
 export default function JobStatusDropdown({ jobData, statusData }: Props) {
     const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
-    const { jobStatus: nextStatus } = useJobStatusDetail(
-        statusData.nextStatusOrder?.toString()
+    const { jobStatus: nextStatus } = useJobStatusByOrder(
+        statusData.nextStatusOrder
     )
-    const { jobStatus: prevStatus } = useJobStatusDetail(
-        statusData.prevStatusId?.toString()
+    const { jobStatus: prevStatus } = useJobStatusByOrder(
+        statusData.prevStatusOrder
     )
 
     const handleChangeStatus = async (nextStatus: JobStatus) => {
@@ -87,13 +87,19 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
             placement="bottom"
             size="sm"
             isTriggerDisabled={dropdownActions.length === 0}
+            classNames={{
+                base: "!z-0",
+                content: "!z-0",
+                backdrop: "!z-0",
+                trigger: "!z-0"
+            }}
         >
             <DropdownTrigger className="opacity-100">
                 <Chip
                     style={{
-                        color: statusData?.color,
+                        color: statusData.hexColor,
                         backgroundColor: lightenHexColor(
-                            statusData?.hexColor as string,
+                            statusData.hexColor as string,
                             85
                         ),
                     }}
@@ -105,7 +111,7 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                     }}
                 >
                     <div className="flex items-center justify-between gap-2">
-                        <p>{statusData?.title}</p>
+                        <p>{statusData.displayName}</p>
                         {dropdownActions.length > 0 && (
                             <ChevronDown size={14} />
                         )}

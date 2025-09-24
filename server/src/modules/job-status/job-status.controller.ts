@@ -24,6 +24,13 @@ export class JobStatusController {
     return this.jobStatusService.findAll()
   }
 
+  @Get('/order/:orderNum')
+  @HttpCode(200)
+  @ResponseMessage('Get job status detail successfully')
+  async findByOrder(@Param('orderNum') orderNum: string) {
+    return this.jobStatusService.findByOrder(parseInt(orderNum))
+  }
+
   @Get(':id')
   @HttpCode(200)
   @ResponseMessage('Get job status detail successfully')

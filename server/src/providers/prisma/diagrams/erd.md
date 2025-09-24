@@ -28,7 +28,7 @@ URGENT URGENT
     
 
 
-        ACTIVITY_TYPE {
+        ActivityType {
             CreateJob CreateJob
 ChangeStatus ChangeStatus
 AssignMember AssignMember
@@ -165,7 +165,7 @@ STATUS_CHANGE STATUS_CHANGE
     String currentValue "❓"
     DateTime modifiedAt 
     String fieldName 
-    ACTIVITY_TYPE activityType 
+    ActivityType activityType 
     String notes "❓"
     }
   
@@ -211,7 +211,7 @@ STATUS_CHANGE STATUS_CHANGE
     "Job" o|--|| "JobPriority" : "enum:priority"
     "JobActivityLog" o|--|| "Job" : "job"
     "JobActivityLog" o|--|| "User" : "modifiedBy"
-    "JobActivityLog" o|--|| "ACTIVITY_TYPE" : "enum:activityType"
+    "JobActivityLog" o|--|| "ActivityType" : "enum:activityType"
     "UserNotification" o|--|| "User" : "user"
     "UserNotification" o|--|| "Notification" : "notification"
     "UserNotification" o|--|| "NOTIFICATION_STATUS" : "enum:status"

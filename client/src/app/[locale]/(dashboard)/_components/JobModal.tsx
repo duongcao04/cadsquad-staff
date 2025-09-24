@@ -9,17 +9,16 @@ import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { padToFourDigits } from '@/lib/utils'
 import { useAuthStore } from '@/lib/zustand/useAuthStore'
-import { NewNotification } from '@/validationSchemas/notification.schema'
-import { CreateJobSchema, NewJob } from '@/validationSchemas/job.schema'
 
 import { useJobStore } from '../onboarding/store/useJobStore'
 import DateTimePicker from './form-fields/DateTimePicker'
-import { useJobTypes } from '@/queries/useJobType'
-import { useUsers } from '@/queries/useUser'
-import { usePaymentChannels } from '@/queries/usePaymentChannel'
-import { useJobStatuses } from '@/queries/useJobStatus'
-import { useCreateJobMutation } from '@/queries/useJob'
-import useAuth from '@/queries/useAuth'
+import { useJobTypes } from '@/shared/queries/useJobType'
+import { useUsers } from '@/shared/queries/useUser'
+import { usePaymentChannels } from '@/shared/queries/usePaymentChannel'
+import { useJobStatuses } from '@/shared/queries/useJobStatus'
+import { useCreateJobMutation } from '@/shared/queries/useJob'
+import useAuth from '@/shared/queries/useAuth'
+import { CreateJobSchema } from '@/shared/validationSchemas/job.schema'
 
 const DOT_SYMBOL = '.'
 
@@ -69,19 +68,19 @@ export default function JobModal({ isOpen, onClose }: Props) {
         return ''
     }, [jobTypes, loadingJobTypes])
 
-    const getJobNo = useMemo(() => {
-        if (!loadingJobTypes && jobTypes) {
-            const jobNumber = jobTypes[0]?._count.jobs + 1
-            return jobNumber.toString().padStart(4, '0')
-        }
-        return ''
-    }, [jobTypes, loadingJobTypes])
+    // const getJobNo = useMemo(() => {
+    //     if (!loadingJobTypes && jobTypes) {
+    //         const jobNumber = jobTypes[0 + 1
+    //         return jobNumber.toString().padStart(4, '0')
+    //     }
+    //     return ''
+    // }, [jobTypes, loadingJobTypes])
 
     const formik = useFormik<NewJob>({
         initialValues: {
             clientName: '',
             jobTypeId: defaultJobTypeId,
-            jobNo: getJobNo,
+            jobNo: '',
             jobName: '',
             sourceUrl: '',
             startedAt: '',
@@ -203,12 +202,11 @@ export default function JobModal({ isOpen, onClose }: Props) {
                 <div className="py-8 space-y-4 border-t border-border">
                     <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${
-                                Boolean(formik.touched.dueAt) &&
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) &&
                                 formik.errors.dueAt
-                                    ? 'text-danger'
-                                    : 'text-primary'
-                            }`}
+                                ? 'text-danger'
+                                : 'text-primary'
+                                }`}
                         >
                             Job No.
                             <span className="absolute top-0 right-0 text-danger!">
@@ -340,12 +338,11 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     />
                     <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${
-                                Boolean(formik.touched.memberAssignIds) &&
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssignIds) &&
                                 formik.errors.memberAssignIds
-                                    ? 'text-danger'
-                                    : 'text-primary'
-                            }`}
+                                ? 'text-danger'
+                                : 'text-primary'
+                                }`}
                         >
                             Member Assign
                             <span className="absolute top-0 right-0 text-danger!">
@@ -358,7 +355,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 options={users?.map((usr) => {
                                     return {
                                         ...usr,
-                                        label: usr?.name,
+                                        label: usr?.displayName,
                                         value: usr?.id,
                                     }
                                 })}
@@ -379,13 +376,13 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                                         opt.data.avatar ??
                                                         'https://avatar.iran.liara.run/public/boy?username=cadsquad'
                                                     }
-                                                    alt={opt.data.name}
+                                                    alt={opt.data.displayName}
                                                     className="size-full rounded-full object-cover"
                                                     preview={false}
                                                 />
                                             </div>
                                             <p className="font-normal">
-                                                {opt.data.name}
+                                                {opt.data.displayName}
                                             </p>
                                         </div>
                                     )
@@ -410,12 +407,11 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     </div>
                     <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${
-                                Boolean(formik.touched.dueAt) &&
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.dueAt) &&
                                 formik.errors.dueAt
-                                    ? 'text-danger'
-                                    : 'text-primary'
-                            }`}
+                                ? 'text-danger'
+                                : 'text-primary'
+                                }`}
                         >
                             Delivery
                             <span className="absolute top-0 right-0 text-danger!">
@@ -507,12 +503,11 @@ export default function JobModal({ isOpen, onClose }: Props) {
                     />
                     <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-medium text-base pr-2 ${
-                                Boolean(formik.touched.memberAssignIds) &&
+                            className={`relative text-right font-medium text-base pr-2 ${Boolean(formik.touched.memberAssignIds) &&
                                 formik.errors.memberAssignIds
-                                    ? 'text-danger'
-                                    : 'text-primary'
-                            }`}
+                                ? 'text-danger'
+                                : 'text-primary'
+                                }`}
                         >
                             Payment Channel
                             <span className="absolute top-0 right-0 text-danger!">
@@ -525,7 +520,7 @@ export default function JobModal({ isOpen, onClose }: Props) {
                                 options={paymentChannels?.map((channel) => {
                                     return {
                                         ...channel,
-                                        label: channel?.name,
+                                        label: channel?.displayName,
                                         value: channel?.id?.toString(),
                                     }
                                 })}

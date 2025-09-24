@@ -48,6 +48,21 @@ export class JobStatusService {
   }
 
   /**
+   * Find a job status by Order number.
+   */
+  async findByOrder(orderNum: number): Promise<JobStatus> {
+    const jobStatus = await this.prismaService.jobStatus.findUnique({
+      where: { order: orderNum },
+    })
+
+    if (!jobStatus) throw new NotFoundException('Job status not found')
+
+    return plainToInstance(JobStatusResponseDto, jobStatus, {
+      excludeExtraneousValues: true,
+    }) as unknown as JobStatus
+  }
+
+  /**
    * Update a job status by ID.
    */
   async update(jobStatusId: string, data: UpdateJobStatusDto): Promise<JobStatus> {

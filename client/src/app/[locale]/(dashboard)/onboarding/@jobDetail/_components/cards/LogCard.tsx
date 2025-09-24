@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useState } from 'react'
-import { JobActivityLog, JobStatus } from '@/validationSchemas/job.schema'
 import localizedFormat from 'dayjs/plugin/localizedFormat'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Image } from 'antd'
 import dayjs from 'dayjs'
-import { useJobStatusDetail } from '@/queries/useJobStatus'
+import { useJobStatusDetail } from '@/shared/queries/useJobStatus'
 import JobStatusChip from '@/shared/components/customize/JobStatusChip'
 import { MoveRight } from 'lucide-react'
+import { JobActivityLog } from '@/shared/interfaces/jobActivityLog.interface'
 
 dayjs.extend(localizedFormat)
 dayjs.extend(relativeTime)
@@ -24,9 +24,9 @@ function ChangeStatusLog({
     const { jobStatus: toStatus } = useJobStatusDetail(toStatusId)
     return (
         <div className="flex items-center justify-start gap-4">
-            {fromStatus && <JobStatusChip data={fromStatus as JobStatus} />}
+            {fromStatus && <JobStatusChip data={fromStatus} />}
             <MoveRight />
-            {toStatusId && <JobStatusChip data={toStatus as JobStatus} />}
+            {toStatus && <JobStatusChip data={toStatus} />}
         </div>
     )
 }
@@ -61,7 +61,7 @@ export default function LogCard({ data }: Props) {
             <div>
                 <p>
                     <span className="font-semibold">
-                        {data?.modifiedBy?.name}
+                        {data?.modifiedBy?.displayName}
                     </span>{' '}
                     change the{' '}
                     <span className="font-semibold">{data?.fieldName}</span>

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import UpdateAccountForm from './_components/UpdateAccountForm'
-import useAuth from '@/queries/useAuth'
+import useAuth from '@/shared/queries/useAuth'
 import { Skeleton } from '@heroui/react'
 
 export default function SettingAccountPage() {

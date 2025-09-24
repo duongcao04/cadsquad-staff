@@ -3,7 +3,7 @@
 import React from 'react'
 import ChangePasswordForm from './_components/ChangePasswordForm'
 import { Skeleton } from 'antd'
-import useAuth from '@/queries/useAuth'
+import useAuth from '@/shared/queries/useAuth'
 
 export default function SecurityPage() {
     const {

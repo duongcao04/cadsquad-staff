@@ -67,6 +67,15 @@ export class ConfigController {
     return this.configService.update(userPayload.sub, id, dto)
   }
 
+  @Patch('code/:code')
+  @HttpCode(200)
+  @ResponseMessage('Update config by code successfully')
+  @UseGuards(AuthGuard)
+  updateByCode(@Req() request: Request, @Param('code') code: string, @Body() dto: UpdateConfigDto) {
+    const userPayload: TokenPayload = request['user']
+    return this.configService.updateByCode(userPayload.sub, code, dto)
+  }
+
   @Delete(':id')
   @HttpCode(200)
   @ResponseMessage('Delete config successfully')

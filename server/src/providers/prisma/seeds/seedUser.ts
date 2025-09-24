@@ -110,7 +110,7 @@ export const seedUsers = async (prisma: PrismaClient) => {
 }
 
 async function main() {
-  await fakerUsers(prisma)
+  // await fakerUsers(prisma)
   await seedUsers(prisma)
 }
 

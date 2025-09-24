@@ -57,6 +57,7 @@ export default function CadsquadLogo({
                 alt="CSD Logo"
                 className={cn('object-contain w-fit', classNames?.logo)}
                 quality={100}
+                suppressHydrationWarning
             />
         </Wrapper>
     )

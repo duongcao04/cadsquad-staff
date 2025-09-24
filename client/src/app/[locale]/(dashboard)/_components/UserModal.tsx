@@ -9,8 +9,8 @@ import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { supabase } from '@/lib/supabase/client'
 import { capitalize, removeVietnameseTones } from '@/lib/utils'
-import { CreateUserSchema, NewUser } from '@/validationSchemas/user.schema'
-import { RoleEnum } from '@/enums/role.enum'
+import { RoleEnum } from '@/shared/enums/role.enum'
+import { CreateUserSchema } from '@/shared/validationSchemas/user.schema'
 
 type Props = {
     isOpen: boolean
@@ -26,7 +26,7 @@ export default function UserModal({ isOpen, onClose }: Props) {
         },
     ])
 
-    const formik = useFormik<NewUser>({
+    const formik = useFormik({
         initialValues: {
             name: '',
             avatar: '',
@@ -41,41 +41,41 @@ export default function UserModal({ isOpen, onClose }: Props) {
             try {
                 setLoading(true)
 
-                // TODO: For test mode
-                // Please fix: Send invation to email -> Email verify and create account after that.
-                const { data: authData, error } = await supabase.auth.signUp({
-                    email: values.email,
-                    password: 'cadsquaddotvn',
-                })
+                // // TODO: For test mode
+                // // Please fix: Send invation to email -> Email verify and create account after that.
+                // // const { data: authData, error } = await supabase.auth.signUp({
+                // //     email: values.email,
+                // //     password: 'cadsquaddotvn',
+                // // })
 
-                if (error) {
-                    throw new Error(`${error}`)
-                }
+                // if (error) {
+                //     throw new Error(`${error}`)
+                // }
 
-                const newUser = {
-                    ...values,
-                    id: authData.session?.user.id as string,
-                    avatar:
-                        values.avatar!.length === 0
-                            ? `https://ui-avatars.com/api/?name=${removeVietnameseTones(values.name.replaceAll(' ', '+'))}`
-                            : values.avatar,
-                }
+                // const newUser = {
+                //     ...values,
+                //     id: authData.session?.user.id as string,
+                //     avatar:
+                //         values.avatar!.length === 0
+                //             ? `https://ui-avatars.com/api/?name=${removeVietnameseTones(values.name.replaceAll(' ', '+'))}`
+                //             : values.avatar,
+                // }
 
-                const res = await fetch('/api/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newUser),
-                })
-                const data = await res.json()
+                // const res = await fetch('/api/users', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(newUser),
+                // })
+                // const data = await res.json()
 
-                if (res.status === 201) {
-                    addToast({
-                        title: 'Create user successfully!',
-                        color: 'success',
-                    })
-                } else {
-                    throw new Error(data)
-                }
+                // if (res.status === 201) {
+                //     addToast({
+                //         title: 'Create user successfully!',
+                //         color: 'success',
+                //     })
+                // } else {
+                //     throw new Error(data)
+                // }
             } catch (error) {
                 addToast({
                     title: 'Create user failed!',

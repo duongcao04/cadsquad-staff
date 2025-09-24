@@ -27,10 +27,25 @@ export class JobController {
   @UseGuards(AuthGuard)
   async findAll(@Req() request: Request, @Query() query: JobQueryDto) {
     const userPayload: TokenPayload = await request['user']
-    if (query.jobNo) {
-      return this.jobService.findByJobNo(userPayload.sub, query.jobNo)
-    }
     return this.jobService.findAll(userPayload.sub, query)
+  }
+
+  @Get("no/:jobNo")
+  @HttpCode(200)
+  @ResponseMessage('Get job by no successfully')
+  @UseGuards(AuthGuard)
+  async findByNo(@Req() request: Request, @Param('jobNo') jobNo: string) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.findByJobNo(userPayload.sub, jobNo)
+  }
+
+  @Get('columns')
+  @HttpCode(200)
+  @ResponseMessage('Get columns successfully')
+  @UseGuards(AuthGuard)
+  async getColumns(@Req() request: Request) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.getColumns(userPayload.sub)
   }
 
   @Get(':id')
@@ -67,6 +82,15 @@ export class JobController {
   async assignMember(@Req() request: Request, @Param('id') id: string, @Body() data: UpdateJobMembersDto) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.updateMembers(id, userPayload.sub, data)
+  }
+
+  @Patch(':id/member/:memberId/remove')
+  @HttpCode(200)
+  @ResponseMessage('Remove member successfully')
+  @UseGuards(AuthGuard)
+  async removeMember(@Req() request: Request, @Param('id') id: string, @Param('memberId') memberId: string) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.removeMember(id, userPayload.sub, memberId)
   }
 
   @Delete(':id')

@@ -3,11 +3,12 @@
 import { Image, Modal, Select } from 'antd'
 import React, { useState } from 'react'
 import { useAddMemberModal } from './actions'
-import { useUsers } from '@/queries/useUser'
+import { useUsers } from '@/shared/queries/useUser'
 import { addToast, Button, Input } from '@heroui/react'
-import { useAssignMemberMutation, useJobDetail } from '@/queries/useJob'
+import { useAssignMemberMutation, useJobByNo, useRemoveMemberMutation } from '@/shared/queries/useJob'
 import envConfig from '@/config/envConfig'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { X } from 'lucide-react'
 
 export default function AddMemberModal() {
     const [memberSelected, setMemberSelected] = useState<string[]>([])
@@ -19,12 +20,16 @@ export default function AddMemberModal() {
             })
         },
     })
+    const { mutateAsync: removeMemberMutate } = useRemoveMemberMutation()
 
     const { data: users } = useUsers()
-    const { job } = useJobDetail(jobNo)
+    const { job } = useJobByNo(jobNo)
+
+    console.log(job);
+
 
     const JOB_DETAIL_URL =
-        envConfig.NEXT_PUBLIC_URL + `onboarding?detail=${jobNo}`
+        envConfig.NEXT_PUBLIC_URL + `/onboarding?detail=${jobNo}`
 
     const handleCopy = (text: string) => {
         navigator.clipboard
@@ -51,7 +56,7 @@ export default function AddMemberModal() {
                     jobId: String(job?.id),
                     assignMemberInput: {
                         prevMemberIds: JSON.stringify(
-                            job?.memberAssign.map((mem) => mem.id)
+                            job?.assignee.map((mem) => mem.id)
                         ),
                         updateMemberIds: JSON.stringify(updateMemberIds),
                     },
@@ -114,7 +119,7 @@ export default function AddMemberModal() {
             <div className="px-2">
                 <div className="space-y-1.5">
                     <p className="font-semibold text-text2">Invite users</p>
-                    <div className="grid grid-cols-[1fr_100px] gap-5">
+                    <div className="grid grid-cols-[1fr_100px] gap-4">
                         <Select
                             mode="multiple"
                             style={{ width: '100%' }}
@@ -125,7 +130,7 @@ export default function AddMemberModal() {
                                 return {
                                     ...user,
                                     value: user.id,
-                                    label: user.name,
+                                    label: user.displayName,
                                 }
                             })}
                             filterOption={(input, option) =>
@@ -138,7 +143,7 @@ export default function AddMemberModal() {
                                 (option?.username ?? '')
                                     .toLowerCase()
                                     .includes(input.toLowerCase()) ||
-                                (option?.department ?? '')
+                                (option?.department?.displayName ?? '')
                                     .toLowerCase()
                                     .includes(input.toLowerCase())
                             }
@@ -168,6 +173,7 @@ export default function AddMemberModal() {
                             onPress={async () => {
                                 handleAssignMember(memberSelected)
                             }}
+                            color='primary'
                         >
                             Send invites
                         </Button>
@@ -176,17 +182,17 @@ export default function AddMemberModal() {
                 <hr className="mt-6 mb-4 text-text3" />
                 <div className="space-y-2.5">
                     <p className="font-semibold text-text2">
-                        Members ({job?.memberAssign?.length})
+                        Members ({job?.assignee?.length})
                     </p>
-                    <div className="space-y-4">
-                        {job?.memberAssign.length === 0 && (
+                    <div className="space-y-1.5 max-h-[430px] overflow-y-auto -mx-2">
+                        {job?.assignee.length === 0 && (
                             <p className="my-8 text-center text-text2">
                                 No members have been assigned yet.
                             </p>
                         )}
-                        {job?.memberAssign?.map((mem) => {
+                        {job?.assignee?.map((mem) => {
                             return (
-                                <div key={mem.id}>
+                                <div key={mem.username} className='group flex items-center justify-between px-2 py-1.5 hover:bg-text3 rounded-md'>
                                     <div className="flex items-center justify-start gap-4">
                                         <Image
                                             src={mem?.avatar as string}
@@ -197,13 +203,21 @@ export default function AddMemberModal() {
                                         />
                                         <div>
                                             <p className="font-semibold">
-                                                {mem?.name}
+                                                {mem?.displayName}
                                             </p>
                                             <p className="text-text2 !font-normal">
                                                 {mem?.email}
                                             </p>
                                         </div>
                                     </div>
+                                    <Button isIconOnly size='sm' color='danger' className='hidden group-hover:flex' title='Remove' onClick={() => {
+                                        removeMemberMutate({
+                                            jobId: job.id,
+                                            memberId: mem.id
+                                        })
+                                    }}>
+                                        <X size={14} />
+                                    </Button>
                                 </div>
                             )
                         })}
@@ -218,7 +232,7 @@ export default function AddMemberModal() {
                             isDisabled
                             className="!opacity-70"
                         />
-                        <Button onPress={() => handleCopy(JOB_DETAIL_URL)}>
+                        <Button color='primary' className='text-white' onPress={() => handleCopy(JOB_DETAIL_URL)}>
                             Copy
                         </Button>
                     </div>
