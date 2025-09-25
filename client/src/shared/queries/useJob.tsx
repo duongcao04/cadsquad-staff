@@ -3,23 +3,22 @@ import { ApiResponse, axiosClient } from '@/lib/axios'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { Job } from '@/shared/interfaces/job.interface'
 import { JobActivityLog } from '@/shared/interfaces/jobActivityLog.interface'
-import { CreateJobInput, JobQueryInput } from '@/shared/validationSchemas/job.schema'
+import {
+    CreateJobInput,
+    JobQueryInput,
+} from '@/shared/validationSchemas/job.schema'
 import { JobTabEnum } from '@/shared/enums/jobTab.enum'
 import { jobApi } from '@/app/api/job.api'
 
-export const useJobs = (params: JobQueryInput = {
-    hideFinishItems: false,
-    page: 1,
-    limit: 10,
-    tab: JobTabEnum.ACTIVE
-}) => {
-    const {
-        hideFinishItems,
-        page,
-        limit,
-        search,
-        tab
-    } = params
+export const useJobs = (
+    params: JobQueryInput = {
+        hideFinishItems: 0,
+        page: 1,
+        limit: 10,
+        tab: JobTabEnum.ACTIVE,
+    }
+) => {
+    const { hideFinishItems, page, limit, search, tab } = params
 
     const {
         data,
@@ -34,7 +33,7 @@ export const useJobs = (params: JobQueryInput = {
             `limit=${limit}`,
             `page=${page}`,
             `keywords=${search}`,
-            `hideFinishItems=${hideFinishItems}`,
+            `isHideFinishItems=${hideFinishItems}`,
         ],
         queryFn: () => {
             return jobApi.findAll(params)
@@ -54,8 +53,7 @@ export const useJobs = (params: JobQueryInput = {
 export const useJobColumns = () => {
     const { data: jobColumns } = useQuery({
         queryKey: ['jobs', 'columns'],
-        queryFn: () =>
-            jobApi.columns(),
+        queryFn: () => jobApi.columns(),
         select: (res) => res.data.result,
     })
     return { jobColumns }
@@ -88,7 +86,6 @@ export const useCountJobByTab = (tab: JobTabEnum) => {
         data,
     }
 }
-
 
 export const useJobByNo = (jobNo?: string) => {
     const { data, refetch, error, isLoading } = useQuery({
@@ -222,7 +219,6 @@ export const useAssignMemberMutation = ({ onSuccess }: Props = {}) => {
         },
     })
 }
-
 
 export const useRemoveMemberMutation = () => {
     return useMutation({

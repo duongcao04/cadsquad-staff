@@ -70,17 +70,17 @@ export class JobService {
    * Find all jobs with relations.
    */
   async findAll(userId: string, query: JobQueryDto): Promise<{ data: Job[], paginate: PaginationMeta }> {
-    const { page = '1', hideFinishItems, limit = '10', search, tab = JobTabEnum.ACTIVE } = query
+    const { page = '1', hideFinishItems = '0', limit = '10', search, tab = JobTabEnum.ACTIVE } = query
+
+    const queryByTab = await this.queryTab(tab)
 
     const where: Prisma.JobWhereInput = {
-      ...(Boolean(hideFinishItems) && {
-        status: {
-          isNot: {
-            order: 5,
-          },
-        },
-      }),
-      ...this.queryTab(tab),
+      ...(Boolean(parseInt(hideFinishItems))
+        ? {
+          status: { isNot: { order: 5 } },
+        }
+        : {}),
+      ...queryByTab,
       ...(search && {
         OR: [
           {
@@ -111,6 +111,7 @@ export class JobService {
       }),
       assignee: { some: { id: userId } },
     }
+
     const jobs = await this.prisma.job.findMany({
       where,
       include: {
@@ -165,7 +166,7 @@ export class JobService {
         ...where,
         status: {
           is: {
-            title: 'Completed',
+            displayName: 'Completed',
           },
         },
       }
@@ -173,7 +174,7 @@ export class JobService {
         ...where,
         status: {
           is: {
-            title: 'Delivered',
+            displayName: 'Delivered',
           },
         },
       }
@@ -188,7 +189,7 @@ export class JobService {
           {
             status: {
               NOT: {
-                title: 'Completed',
+                displayName: 'Completed',
               },
             },
           },

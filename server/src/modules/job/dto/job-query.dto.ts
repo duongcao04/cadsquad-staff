@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsOptional, IsString } from "class-validator";
 import { JobTabEnum } from "../enums/job-tab.enum";
 
 export class JobQueryDto {
@@ -12,7 +12,7 @@ export class JobQueryDto {
 
 	@IsOptional()
 	@IsString()
-	hideFinishItems?: boolean = false
+	hideFinishItems?: string = '0'
 
 	@IsOptional()
 	@IsString()

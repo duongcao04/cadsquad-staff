@@ -16,6 +16,7 @@ import {
     VI_ADMIN_SETTING_DROPDOWN,
 } from '../../constants/adminSettingDropdown'
 import { useLocale } from 'next-intl'
+import { Link } from '../../../i18n/navigation'
 
 export default function SettingsDropdown() {
     const locale = useLocale()
@@ -59,13 +60,17 @@ export default function SettingsDropdown() {
                                                 <item.icon size={18} />
                                             </div>
                                         }
-                                        href={item.href}
-                                        hrefLang={locale}
                                     >
-                                        <p>{item.title}</p>
-                                        <p className="text-xs text-text2">
-                                            {item.description}
-                                        </p>
+                                        <Link
+                                            href={item.href}
+                                            className="block size-full"
+                                            passHref
+                                        >
+                                            <p>{item.title}</p>
+                                            <p className="text-xs text-text2">
+                                                {item.description}
+                                            </p>
+                                        </Link>
                                     </DropdownItem>
                                 )
                             })}

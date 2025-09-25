@@ -4,7 +4,7 @@ import { Button } from '@heroui/react'
 import { Modal, Progress } from 'antd'
 import { CloudUpload } from 'lucide-react'
 
-import { ROOT_DIR } from '@/app/[locale]/(dashboard)/documents/actions'
+import { ROOT_DIR } from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { FileItem } from '@/validationSchemas/file.schema'
 

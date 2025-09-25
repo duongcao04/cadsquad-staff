@@ -1,6 +1,7 @@
 
-import { axiosClient } from '@/lib/axios'
+import { ApiResponse, axiosClient } from '@/lib/axios'
 import { LoginUserDto, RegisterUserDto } from '@/shared/interfaces/auth.interface'
+import { User } from '@/shared/interfaces/user.interface'
 
 export const authApi = {
 	register: (data: RegisterUserDto) => {
@@ -10,6 +11,6 @@ export const authApi = {
 		return axiosClient.post('/auth/login', data)
 	},
 	getProfile: () => {
-		return axiosClient.get('/auth/profile')
+		return axiosClient.get<ApiResponse<User>>('/auth/profile')
 	},
 }

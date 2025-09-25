@@ -80,7 +80,7 @@ export type UpdateJobInput = yup.InferType<typeof UpdateJobSchema>
 export const JobQuerySchema = yup.object({
     tab: yup.string().optional(),
     search: yup.string().optional(),
-    hideFinishItems: yup.boolean().optional(),
+    hideFinishItems: yup.number().optional(),
     limit: yup.number().optional(),
     page: yup.number().optional(),
 });

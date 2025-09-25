@@ -9,7 +9,7 @@ import { ArrowUp, PlusIcon } from 'lucide-react'
 import {
     ROOT_DIR,
     getFileSystem,
-} from '@/app/[locale]/(dashboard)/documents/actions'
+} from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
 // import { FILE_SYSTEM_API } from '@/lib/swr/api'
 import { FILE } from '@/shared/constants/appConstant'
 import { useSearchParam } from '@/hooks/useSearchParam'

@@ -2,7 +2,9 @@ const allJobColumns = ['no', 'type', 'thumbnail', 'displayName', 'description', 
 
 export const CONFIG_CONSTANTS = {
 	keys: {
-		jobShowColumns: "job-show-columns"
+		// Job table
+		jobShowColumns: "job-show-columns",
+		hideFinishItems: 'onboarding-activeTab-hide-finish-items'
 	},
 	values: {
 		allJobColumns: {
