@@ -437,7 +437,7 @@ export default function JobDetailDrawer() {
                             className="w-fit h-fit rounded-md"
                             isLoaded={!isLoading}
                         >
-                            <p className="text-lg font-semibold">Details</p>
+                            <p className="text-lg font-medium">Job details</p>
                         </Skeleton>
                         <div>
                             <Skeleton

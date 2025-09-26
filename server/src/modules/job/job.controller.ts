@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, Req, Query } from '@nestjs/common'
 import { JobService } from './job.service'
 import { CreateJobDto } from './dto/create-job.dto'
-import { AuthGuard } from '../auth/auth.guard'
+import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { ChangeStatusDto } from './dto/change-status.dto'
 import { ActivityLogService } from './activity-log.service'
@@ -16,7 +16,7 @@ export class JobController {
   @Post()
   @HttpCode(201)
   @ResponseMessage('Insert new job successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async create(@Body() createJobDto: CreateJobDto) {
     return this.jobService.create(createJobDto)
   }
@@ -24,7 +24,7 @@ export class JobController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of job successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async findAll(@Req() request: Request, @Query() query: JobQueryDto) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.findAll(userPayload.sub, query)
@@ -33,7 +33,7 @@ export class JobController {
   @Get("no/:jobNo")
   @HttpCode(200)
   @ResponseMessage('Get job by no successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async findByNo(@Req() request: Request, @Param('jobNo') jobNo: string) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.findByJobNo(userPayload.sub, jobNo)
@@ -42,7 +42,7 @@ export class JobController {
   @Get('columns')
   @HttpCode(200)
   @ResponseMessage('Get columns successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async getColumns(@Req() request: Request) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.getColumns(userPayload.sub)
@@ -69,7 +69,7 @@ export class JobController {
   @Patch(':id/change-status')
   @HttpCode(200)
   @ResponseMessage('Change job status successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async changeStatus(@Req() request: Request, @Param('id') id: string, @Body() data: ChangeStatusDto) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.changeStatus(id, userPayload.sub, data)
@@ -78,7 +78,7 @@ export class JobController {
   @Patch(':id/assign-member')
   @HttpCode(200)
   @ResponseMessage('Update job assignee successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async assignMember(@Req() request: Request, @Param('id') id: string, @Body() data: UpdateJobMembersDto) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.updateMembers(id, userPayload.sub, data)
@@ -87,7 +87,7 @@ export class JobController {
   @Patch(':id/member/:memberId/remove')
   @HttpCode(200)
   @ResponseMessage('Remove member successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async removeMember(@Req() request: Request, @Param('id') id: string, @Param('memberId') memberId: string) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.removeMember(id, userPayload.sub, memberId)
@@ -96,7 +96,7 @@ export class JobController {
   @Delete(':id')
   @HttpCode(200)
   @ResponseMessage('Delete job successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   async remove(@Param('id') id: string) {
     return this.jobService.delete(id)
   }

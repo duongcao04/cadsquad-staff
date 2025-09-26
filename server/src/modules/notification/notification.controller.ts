@@ -12,7 +12,7 @@ import {
 import { NotificationService } from './notification.service'
 import { CreateNotificationDto } from './dto/create-notification.dto'
 import { UpdateNotificationDto } from './dto/update-notification.dto'
-import { AuthGuard } from '../auth/auth.guard'
+import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 
 @Controller('notifications')
@@ -21,7 +21,7 @@ export class NotificationController {
 
   @Post()
   @HttpCode(201)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @ResponseMessage('Create notification successfully')
   async create(@Body() createNotificationDto: CreateNotificationDto) {
     return this.notificationService.create(createNotificationDto)
@@ -43,7 +43,7 @@ export class NotificationController {
 
   @Patch(':id')
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @ResponseMessage('Update notification successfully')
   async update(
     @Param('id') id: string,
@@ -54,7 +54,7 @@ export class NotificationController {
 
   @Delete(':id')
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @ResponseMessage('Delete notification successfully')
   async remove(@Param('id') id: string) {
     return this.notificationService.delete(id)

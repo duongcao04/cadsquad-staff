@@ -1,14 +1,15 @@
 'use client'
 
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { ApiResponse, axiosClient } from '@/lib/axios'
+import { axiosClient } from '@/lib/axios'
 import { User } from '@/shared/interfaces/user.interface'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { userApi } from '@/app/api/user.api'
 
 export const useUsers = () => {
     return useQuery({
         queryKey: ['users'],
-        queryFn: () => axiosClient.get<ApiResponse<User[]>>('users'),
+        queryFn: () => userApi.findAll(),
         select: (res) => res.data.result,
     })
 }

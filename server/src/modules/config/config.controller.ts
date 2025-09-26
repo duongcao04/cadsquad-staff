@@ -14,7 +14,7 @@ import {
 import { ConfigService } from './config.service'
 import { CreateConfigDto } from './dto/create-config.dto'
 import { UpdateConfigDto } from './dto/update-config.dto'
-import { AuthGuard } from '../auth/auth.guard'
+import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 
@@ -25,7 +25,7 @@ export class ConfigController {
   @Post()
   @HttpCode(201)
   @ResponseMessage('Config created successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   create(@Req() request: Request, @Body() dto: CreateConfigDto) {
     const userPayload: TokenPayload = request['user']
     return this.configService.create(userPayload.sub, dto)
@@ -34,7 +34,7 @@ export class ConfigController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of configs successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   findAll(@Req() request: Request) {
     const userPayload: TokenPayload = request['user']
     return this.configService.findAll(userPayload.sub)
@@ -43,7 +43,7 @@ export class ConfigController {
   @Get(':id')
   @HttpCode(200)
   @ResponseMessage('Get config detail successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   findOne(@Req() request: Request, @Param('id') id: string) {
     const userPayload: TokenPayload = request['user']
     return this.configService.findById(userPayload.sub, id)
@@ -52,7 +52,7 @@ export class ConfigController {
   @Get('code/:code')
   @HttpCode(200)
   @ResponseMessage('Get config by code successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   findByCode(@Req() request: Request, @Param('code') code: string) {
     const userPayload: TokenPayload = request['user']
     return this.configService.findByCode(userPayload.sub, code)
@@ -61,7 +61,7 @@ export class ConfigController {
   @Patch(':id')
   @HttpCode(200)
   @ResponseMessage('Update config successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   update(@Req() request: Request, @Param('id') id: string, @Body() dto: UpdateConfigDto) {
     const userPayload: TokenPayload = request['user']
     return this.configService.update(userPayload.sub, id, dto)
@@ -70,7 +70,7 @@ export class ConfigController {
   @Patch('code/:code')
   @HttpCode(200)
   @ResponseMessage('Update config by code successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   updateByCode(@Req() request: Request, @Param('code') code: string, @Body() dto: UpdateConfigDto) {
     const userPayload: TokenPayload = request['user']
     return this.configService.updateByCode(userPayload.sub, code, dto)
@@ -79,7 +79,7 @@ export class ConfigController {
   @Delete(':id')
   @HttpCode(200)
   @ResponseMessage('Delete config successfully')
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   remove(@Req() request: Request, @Param('id') id: string) {
     const userPayload: TokenPayload = request['user']
     return this.configService.delete(userPayload.sub, id)

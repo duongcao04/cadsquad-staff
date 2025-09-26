@@ -12,7 +12,7 @@ import {
 import { UserService } from './user.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { AuthGuard } from '../auth/auth.guard'
+import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 
 @Controller('users')
@@ -21,7 +21,7 @@ export class UserController {
 
   @Post()
   @HttpCode(201)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @ResponseMessage('Create user successfully')
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto)
@@ -43,7 +43,7 @@ export class UserController {
 
   @Patch(':id')
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @ResponseMessage('Update user successfully')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto)
@@ -51,7 +51,7 @@ export class UserController {
 
   @Delete(':id')
   @HttpCode(200)
-  @UseGuards(AuthGuard)
+  @UseGuards(JwtGuard)
   @ResponseMessage('Delete user successfully')
   async remove(@Param('id') id: string) {
     return this.userService.delete(id)

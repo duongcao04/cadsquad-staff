@@ -1,10 +1,9 @@
 import { CanActivate, ExecutionContext, Injectable, SetMetadata, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
 import { TokenService } from './token.service';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class JwtGuard implements CanActivate {
   constructor(private tokenService: TokenService) { }
 
   async canActivate(

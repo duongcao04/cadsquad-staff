@@ -70,7 +70,7 @@ export default function SettingSidebar() {
                     </Button>
                 </Link>
                 <h1 className="overflow-hidden text-sm font-semibold leading-5 text-nowrap">
-                    Personal Settings
+                    Settings
                 </h1>
             </div>
             {perSettingNav.map((group) => {
