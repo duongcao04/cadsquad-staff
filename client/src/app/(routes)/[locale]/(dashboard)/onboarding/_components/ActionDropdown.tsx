@@ -23,8 +23,8 @@ import {
     UserPlus,
 } from 'lucide-react'
 
-import { useAddMemberModal } from '../@addMember/actions'
 import { Job } from '@/shared/interfaces/job.interface'
+import { useAddMemberModal } from '@/shared/actions/useAddMemberModal'
 
 type ActionGroup = {
     key: React.Key | null | undefined
@@ -71,7 +71,7 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                     title: 'Pin Job',
                     icon: <PinIcon size={14} className="rotate-45" />,
                     childProps: {
-                        onPress: () => { },
+                        onPress: () => {},
                     },
                 },
                 {
@@ -89,7 +89,7 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                     title: 'Edit Job',
                     icon: <Edit size={14} />,
                     childProps: {
-                        onPress: () => { },
+                        onPress: () => {},
                     },
                 },
                 {
@@ -97,7 +97,7 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                     title: 'Duplicate Job',
                     icon: <CopyIcon size={14} />,
                     childProps: {
-                        onPress: () => { },
+                        onPress: () => {},
                     },
                 },
                 {
@@ -106,7 +106,7 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                     icon: <Trash size={14} />,
                     childProps: {
                         color: 'danger',
-                        onPress: () => { },
+                        onPress: () => {},
                     },
                 },
             ],
@@ -120,7 +120,7 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                     title: 'Update Cost',
                     icon: <CircleDollarSign size={14} />,
                     childProps: {
-                        onPress: () => { },
+                        onPress: () => {},
                     },
                 },
                 {
@@ -128,7 +128,7 @@ export default function ActionDropdown({ data, setDeleteJob, onOpen }: Props) {
                     title: 'Mark as Paid',
                     icon: <CircleCheck size={14} />,
                     childProps: {
-                        onPress: () => { },
+                        onPress: () => {},
                     },
                 },
             ],

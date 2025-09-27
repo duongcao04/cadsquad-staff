@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useJobs } from '@/shared/queries/useJob'
-import JobTable from '../onboarding/_components/JobTable'
+import JobTable from '../../../../../shared/components/tables/JobTable'
 
 export default function WorkbenchPage() {
     /**

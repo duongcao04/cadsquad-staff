@@ -9,17 +9,24 @@ type Props = {
     data: JobStatus
     classNames?: ChipProps['classNames']
     props?: ChipProps
+    childrenRender?: (status: JobStatus) => React.ReactNode
 }
-
-export default function JobStatusChip({ data, classNames, props }: Props) {
+export default function JobStatusChip({
+    data,
+    classNames,
+    props,
+    childrenRender,
+}: Props) {
     return (
         <Chip
             style={{
-                color: data.hexColor,
+                color: data?.hexColor ? data.hexColor : '#ffffff',
                 backgroundColor: lightenHexColor(
-                    data?.hexColor ?? '#ffffff',
-                    85
+                    data?.hexColor ? data.hexColor : '#ffffff',
+                    90
                 ),
+                border: '1px solid',
+                borderColor: data?.hexColor ? data.hexColor : '#ffffff',
             }}
             variant="solid"
             classNames={{
@@ -31,7 +38,7 @@ export default function JobStatusChip({ data, classNames, props }: Props) {
             }}
             {...props}
         >
-            {data.displayName}
+            {!childrenRender ? data?.displayName : childrenRender(data)}
         </Chip>
     )
 }

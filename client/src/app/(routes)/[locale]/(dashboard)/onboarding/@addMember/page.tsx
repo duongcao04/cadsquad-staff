@@ -2,13 +2,13 @@
 
 import { Image, Modal, Select } from 'antd'
 import React, { useState } from 'react'
-import { useAddMemberModal } from './actions'
 import { useUsers } from '@/shared/queries/useUser'
 import { addToast, Button, Input } from '@heroui/react'
 import { useAssignMemberMutation, useJobByNo, useRemoveMemberMutation } from '@/shared/queries/useJob'
 import envConfig from '@/config/envConfig'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { X } from 'lucide-react'
+import { useAddMemberModal } from '@/shared/actions/useAddMemberModal'
 
 export default function AddMemberModal() {
     const [memberSelected, setMemberSelected] = useState<string[]>([])

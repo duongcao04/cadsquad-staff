@@ -3,7 +3,7 @@
 import { Button, Input, Pagination, Select, SelectItem } from '@heroui/react'
 import React, { useState } from 'react'
 
-import JobTable from './_components/JobTable'
+import JobTable from '../../../../../shared/components/tables/JobTable'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import JobTableTabs from './_components/JobTableTabs'
 import FilterDropdown from './_components/FilterDropdown'

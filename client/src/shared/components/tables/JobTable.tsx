@@ -17,17 +17,14 @@ import {
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { useConfirmModal } from '@/shared/components/ui/ConfirmModal'
 
-import { useDetailModal } from '../@jobDetail/actions'
-import { useJobStore } from '../store/useJobStore'
-import ActionDropdown from './ActionDropdown'
-import CountDown from './CountDown'
+import { useJobStore } from '@/app/(routes)/[locale]/(dashboard)/onboarding/store/useJobStore'
+import ActionDropdown from '@/app/(routes)/[locale]/(dashboard)/onboarding/_components/ActionDropdown'
+import CountDown from '@/app/(routes)/[locale]/(dashboard)/onboarding/_components/CountDown'
 import { useUsers } from '@/shared/queries/useUser'
 import { usePaymentChannels } from '@/shared/queries/usePaymentChannel'
-import { useSettingStore } from '@/app/(routes)/[locale]/settings/shared/store/useSettingStore'
-import { DataType } from '../page'
+import { DataType } from '@/app/(routes)/[locale]/(dashboard)/onboarding/page'
 import { Link } from '@/i18n/navigation'
 import JobStatusDropdown from '@/shared/components/dropdowns/JobStatusDropdown'
-import { useAddMemberModal } from '../@addMember/actions'
 import { Job } from '@/shared/interfaces/job.interface'
 import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
 import lodash from 'lodash'
@@ -38,9 +35,11 @@ import PaidChip from '@/shared/components/chips/PaidChip'
 import { VietnamDateFormat } from '@/lib/dayjs'
 import { useJobStatuses } from '@/shared/queries/useJobStatus'
 import { SortOrder } from 'antd/es/table/interface'
-import CopyLink from './actions/CopyLink'
+import CopyLink from '@/app/(routes)/[locale]/(dashboard)/onboarding/_components/actions/CopyLink'
 import envConfig from '@/config/envConfig'
-import SwitchCurrency from './SwitchCurrency'
+import SwitchCurrency from '@/app/(routes)/[locale]/(dashboard)/onboarding/_components/SwitchCurrency'
+import { useDetailModal } from '@/shared/actions/useDetailModal'
+import { useAddMemberModal } from '@/shared/actions/useAddMemberModal'
 
 type TableColumns<DataType> = Array<
     Omit<TableColumnsType<DataType>[number], 'dataIndex'> & {
@@ -70,7 +69,6 @@ export default function JobTable({
     const { openModal: openAddMemberModal } = useAddMemberModal()
     const deleteModal = useConfirmModal()
     const { newJobNo, setNewJobNo } = useJobStore()
-    const { table } = useSettingStore()
     const { openModal } = useDetailModal()
     /**
      * Get initial data
@@ -101,20 +99,20 @@ export default function JobTable({
     const dataColumns: TableColumns<DataType> = [
         {
             title: (
-                <p className="w-[60px] truncate" title="Thumbnail">
+                <p className="w-[44px] truncate" title="Thumbnail">
                     Thumbnail
                 </p>
             ),
             dataIndex: 'thumbnail',
             key: 'thumbnail',
             fixed: 'left',
-            width: 60,
+            width: 44,
             render: (_, record: DataType) => {
                 const src =
                     record.status.thumbnailUrl ?? IMAGE_CONSTANTS.loading
                 return (
                     <div className="flex items-center justify-center">
-                        <div className="overflow-hidden rounded-full size-11">
+                        <div className="overflow-hidden rounded-full size-10">
                             <Image
                                 src={src}
                                 alt="image"
@@ -180,7 +178,7 @@ export default function JobTable({
                                 detail: jobNo,
                             },
                         }}
-                        className="!text-foreground transition duration-150 hover:!underline uppercase line-clamp-1"
+                        className="!text-text1 link uppercase hover:medium"
                     >
                         {jobNo}
                     </Link>
@@ -204,10 +202,21 @@ export default function JobTable({
             dataIndex: 'displayName',
             key: 'displayName',
             minWidth: 300,
-            render: (displayName) => (
-                <p className="font-semibold line-clamp-1" title={displayName}>
-                    {displayName}
-                </p>
+            render: (displayName, record: DataType) => (
+                <button className="link">
+                    <Link
+                        href={{
+                            pathname: '/onboarding',
+                            query: {
+                                detail: record?.no,
+                            },
+                        }}
+                        title={displayName}
+                        className="!text-text1 link font-semibold line-clamp-1"
+                    >
+                        {displayName}
+                    </Link>
+                </button>
             ),
             sorter: {
                 compare: (a, b) => a.displayName.localeCompare(b.displayName),
@@ -261,50 +270,6 @@ export default function JobTable({
             })),
             onFilter: (value, record) =>
                 record?.status?.id?.toString()?.indexOf(value as string) === 0,
-        },
-        {
-            title: 'Payment Status',
-            dataIndex: 'isPaid',
-            key: 'isPaid',
-            width: 120,
-            className: 'group cursor-default',
-            render: (_, record: DataType) => {
-                return (
-                    <PaidChip
-                        status={record.isPaid ? 'paid' : 'unpaid'}
-                        classNames={{
-                            base: 'w-full',
-                        }}
-                    />
-                )
-            },
-        },
-        {
-            title: 'Payment Channel',
-            dataIndex: 'paymentChannel',
-            key: 'paymentChannel',
-            minWidth: 200,
-            render: (_, record: DataType) => (
-                <p className="line-clamp-1">
-                    {record.paymentChannel.displayName}
-                </p>
-            ),
-            sorter: {
-                compare: (a: DataType, b: DataType) =>
-                    a.paymentChannel.displayName.localeCompare(
-                        b.paymentChannel.displayName
-                    ),
-                multiple: 2,
-            },
-            filters: lodash
-                .uniqBy(paymentChannels, 'displayName')
-                .map((item) => ({
-                    text: `${item.displayName}`,
-                    value: item.displayName ?? '',
-                })),
-            onFilter: (value, record) =>
-                record.paymentChannel.displayName.indexOf(value as string) ===
-                0,
         },
         {
             title: 'Attachments',
@@ -367,7 +332,7 @@ export default function JobTable({
                                 onClick={() =>
                                     openAddMemberModal(record.no as string)
                                 }
-                                className="text-blue-600 transition duration-150 opacity-0 cursor-pointer group-hover:opacity-100 hover:underline underline-offset-2"
+                                className="link"
                             >
                                 Add assignee
                             </button>
@@ -408,6 +373,50 @@ export default function JobTable({
             })),
             onFilter: (value, record) =>
                 record.assignee.some((item) => item.id === value),
+        },
+        {
+            title: 'Payment Status',
+            dataIndex: 'isPaid',
+            key: 'isPaid',
+            width: 120,
+            className: 'group cursor-default',
+            render: (_, record: DataType) => {
+                return (
+                    <PaidChip
+                        status={record.isPaid ? 'paid' : 'unpaid'}
+                        classNames={{
+                            base: 'w-full',
+                        }}
+                    />
+                )
+            },
+        },
+        {
+            title: 'Payment Channel',
+            dataIndex: 'paymentChannel',
+            key: 'paymentChannel',
+            minWidth: 200,
+            render: (_, record: DataType) => (
+                <p className="line-clamp-1">
+                    {record.paymentChannel.displayName}
+                </p>
+            ),
+            sorter: {
+                compare: (a: DataType, b: DataType) =>
+                    a.paymentChannel.displayName.localeCompare(
+                        b.paymentChannel.displayName
+                    ),
+                multiple: 2,
+            },
+            filters: lodash
+                .uniqBy(paymentChannels, 'displayName')
+                .map((item) => ({
+                    text: `${item.displayName}`,
+                    value: item.displayName ?? '',
+                })),
+            onFilter: (value, record) =>
+                record.paymentChannel.displayName.indexOf(value as string) ===
+                0,
         },
         {
             title: 'Completed at',
@@ -559,7 +568,7 @@ export default function JobTable({
                 return {
                     className: `${
                         record.no === newJobNo ? 'bg-yellow-200' : ''
-                    } cursor-pointer`,
+                    }`,
                 }
             }}
             dataSource={dataSource}
@@ -570,7 +579,7 @@ export default function JobTable({
                     setSelectedRowKeys(newSelectedRowKeys),
             }}
             pagination={false}
-            size={table.size as TableProps['size']}
+            size={'small'}
             rowClassName="transition duration-500"
             scroll={tableOptions.scroll}
         />

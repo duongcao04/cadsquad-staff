@@ -30,6 +30,8 @@ body {
     --text-fore1: var(--background);
     --text-fore2: hsl(0, 0%, 40%);
     --text-fore3: hsl(0, 0%, 10%);
+
+    --color-link: #0000f7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -50,6 +52,8 @@ body {
         --text-fore1: var(--background);
         --text-fore2: hsl(216, 4%, 80%);
         --text-fore3: hsl(0, 0%, 90%);
+
+        --color-link: #1535c1;
     }
 }
 
@@ -72,5 +76,12 @@ body {
 
     @variant xl {
         padding-inline: 20px;
+    }
+}
+
+
+@layer utilities {
+    .link {
+        @apply no-underline text-text1 cursor-pointer transition duration-100 !hover:text-link;
     }
 }

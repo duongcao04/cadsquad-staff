@@ -30,12 +30,10 @@ export const useJobStatusDetail = (statusId?: string) => {
 
 export const useJobStatusByOrder = (orderNumber?: number | null) => {
     const { data, refetch, error, isLoading } = useQuery({
-        queryKey: orderNumber
-            ? ['job-statuses', 'order', orderNumber]
-            : ['job-statuses'],
+        queryKey: orderNumber ? ['job-statuses', 'order', orderNumber] : [],
         queryFn: () => {
             if (!orderNumber) {
-                return
+                return null
             }
             return jobStatusApi.findByOrder(orderNumber)
         },

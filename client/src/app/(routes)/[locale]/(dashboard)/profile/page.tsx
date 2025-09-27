@@ -4,7 +4,7 @@ import React from 'react'
 
 import { Card } from 'antd'
 
-import ProjectTable from '../onboarding/_components/JobTable'
+import ProjectTable from '../../../../../shared/components/tables/JobTable'
 import ProfileCard from './_components/ProfileCard'
 
 export default function ProfilePage() {

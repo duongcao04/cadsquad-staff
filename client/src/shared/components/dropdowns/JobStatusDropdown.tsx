@@ -2,16 +2,18 @@
 
 import {
     addToast,
-    Chip,
     Dropdown,
     DropdownItem,
     DropdownMenu,
+    DropdownSection,
     DropdownTrigger,
 } from '@heroui/react'
 import React from 'react'
-import { lightenHexColor } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
-import { useJobStatusByOrder } from '@/shared/queries/useJobStatus'
+import {
+    useJobStatusByOrder,
+    useJobStatuses,
+} from '@/shared/queries/useJobStatus'
 import JobStatusChip from '@/shared/components/chips/JobStatusChip'
 import { useChangeStatusMutation } from '@/shared/queries/useJob'
 import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
@@ -29,6 +31,7 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
     const { jobStatus: prevStatus } = useJobStatusByOrder(
         statusData.prevStatusOrder
     )
+    const { data: jobStatuses } = useJobStatuses()
 
     const handleChangeStatus = async (nextStatus: JobStatus) => {
         try {
@@ -64,71 +67,104 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
         }
     }
 
-    const actions: { key: string; data: JobStatus; action: () => void }[] = [
+    console.log(jobStatuses)
+
+    const actions: { key: string; data?: JobStatus; action: () => void }[] = [
         {
-            key: 'next',
-            data: nextStatus as JobStatus,
+            key: 'nextStatusOrder',
+            data: nextStatus,
             action: () => {
                 handleChangeStatus(nextStatus as JobStatus)
             },
         },
         {
-            key: 'prev',
-            data: prevStatus as JobStatus,
+            key: 'prevStatusOrder',
+            data: prevStatus,
             action: () => {
                 handleChangeStatus(prevStatus as JobStatus)
             },
         },
     ]
-    const dropdownActions = actions.filter((item) => item.data)
+    const dropdownActions = actions.filter(
+        (item) => typeof item.data !== 'undefined'
+    )
+
+    // const forceActions =
 
     return (
         <Dropdown
-            placement="bottom"
+            placement="bottom-start"
             size="sm"
-            isTriggerDisabled={dropdownActions.length === 0}
             classNames={{
-                base: "!z-0",
-                content: "!z-0",
-                backdrop: "!z-0",
-                trigger: "!z-0"
+                base: '!z-0',
+                content: '!z-0',
+                backdrop: '!z-0',
+                trigger: '!z-0',
             }}
         >
             <DropdownTrigger className="opacity-100">
-                <Chip
-                    style={{
-                        color: statusData.hexColor,
-                        backgroundColor: lightenHexColor(
-                            statusData.hexColor as string,
-                            85
-                        ),
-                    }}
-                    variant="solid"
-                    classNames={{
-                        base: '!w-[120px]',
-                        content:
-                            'uppercase text-xs font-semibold font-saira !w-[120px] text-nowrap line-clamp-1',
-                    }}
-                >
-                    <div className="flex items-center justify-between gap-2">
-                        <p>{statusData.displayName}</p>
-                        {dropdownActions.length > 0 && (
-                            <ChevronDown size={14} />
-                        )}
-                    </div>
-                </Chip>
+                <button className="cursor-pointer">
+                    <JobStatusChip
+                        data={statusData}
+                        classNames={{
+                            base: '!w-[120px]',
+                            content:
+                                'uppercase text-xs font-semibold font-saira !w-[120px] text-nowrap line-clamp-1',
+                        }}
+                        childrenRender={(statusData) => {
+                            return (
+                                <div className="flex items-center justify-between gap-2">
+                                    <p>{statusData.displayName}</p>
+                                    <ChevronDown size={14} />
+                                </div>
+                            )
+                        }}
+                    />
+                </button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Job Status Action">
-                {dropdownActions.map((item) => {
-                    return (
-                        <DropdownItem key={item.key} onPress={item.action}>
-                            <div className="flex items-center justify-start gap-1">
-                                Mark as
-                                <JobStatusChip data={item.data} />
-                            </div>
+            <DropdownMenu
+                aria-label="Change status action"
+                disabledKeys={['notFoundItems']}
+            >
+                <DropdownSection title="Quick change" showDivider>
+                    {dropdownActions.map((item) => {
+                        return (
+                            <DropdownItem key={item.key} onPress={item.action}>
+                                {item.data && (
+                                    <div className="flex items-center justify-start gap-1">
+                                        Mark as
+                                        <JobStatusChip data={item.data} />
+                                    </div>
+                                )}
+                            </DropdownItem>
+                        )
+                    })}
+                </DropdownSection>
+                <DropdownSection title="Force change">
+                    {!jobStatuses ? (
+                        <DropdownItem key={'notFoundItems'}>
+                            <p className="text-xs text-center">
+                                Không tìm thấy danh sách trạng thái
+                            </p>
                         </DropdownItem>
-                    )
-                })}
+                    ) : (
+                        jobStatuses.map((item) => {
+                            return (
+                                <DropdownItem
+                                    key={item.id}
+                                    onPress={() => {
+                                        handleChangeStatus(item as JobStatus)
+                                    }}
+                                >
+                                    <div className="flex items-center justify-start gap-1">
+                                        Mark as
+                                        <JobStatusChip data={item} />
+                                    </div>
+                                </DropdownItem>
+                            )
+                        })
+                    )}
+                </DropdownSection>
             </DropdownMenu>
         </Dropdown>
     )

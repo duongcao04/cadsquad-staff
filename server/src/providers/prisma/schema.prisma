@@ -283,4 +283,4 @@ enum NotificationType {
   JOB_UPDATE
   DEADLINE_REMINDER
   STATUS_CHANGE
-}
+} 

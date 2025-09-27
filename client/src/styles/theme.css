@@ -13,6 +13,8 @@
     --color-text-fore1: var(--text-fore1);
     --color-text-fore2: var(--text-fore2);
     --color-text-fore3: var(--text-fore3);
+
+    --color-link: var(--color-link);
 }
 
 @theme inline {
