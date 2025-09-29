@@ -29,7 +29,7 @@ export default function layout({
     addMember: React.ReactNode
 }) {
     return (
-        <div>
+        <div className="size-full">
             {children}
             {jobDetail}
             {addMember}

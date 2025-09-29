@@ -18,7 +18,7 @@ type Props = {
     isOpen: boolean
     onClose: () => void
 }
-export default function NotificationModal({ isOpen, onClose }: Props) {
+export default function CreateNotificationModal({ isOpen, onClose }: Props) {
     useKeyboardShortcuts([
         {
             keys: ['escape'],

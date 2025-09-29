@@ -56,7 +56,7 @@ export default function JobTable({
     data: jobsData,
     isLoading = false,
     showColumns,
-    tableOptions = { scroll: { x: 'max-content', y: 61 * 8 + 20 } },
+    tableOptions = { scroll: { x: 'max-content', y: '100%' } },
 }: Props) {
     /**
      * Define states
@@ -143,7 +143,6 @@ export default function JobTable({
             onFilter: (value, record) =>
                 record?.clientName?.indexOf(value as string) === 0,
         },
-
         {
             title: 'Job Type',
             dataIndex: 'type',
@@ -164,7 +163,11 @@ export default function JobTable({
                 record.type.id.toString().indexOf(value as string) === 0,
         },
         {
-            title: 'Job No.',
+            title: (
+                <p className="truncate" title="Job no.">
+                    Job no.
+                </p>
+            ),
             dataIndex: 'no',
             key: 'no',
             fixed: 'left',
@@ -198,7 +201,11 @@ export default function JobTable({
             },
         },
         {
-            title: 'Job Name',
+            title: (
+                <p className="truncate" title="Job name">
+                    Job name
+                </p>
+            ),
             dataIndex: 'displayName',
             key: 'displayName',
             minWidth: 300,
@@ -224,7 +231,11 @@ export default function JobTable({
             },
         },
         {
-            title: 'Income',
+            title: (
+                <p className="truncate" title="Income">
+                    Income
+                </p>
+            ),
             dataIndex: 'incomeCost',
             key: 'incomeCost',
             minWidth: 130,
@@ -237,7 +248,11 @@ export default function JobTable({
             },
         },
         {
-            title: 'Staff Cost',
+            title: (
+                <p className="truncate" title="Staff cost">
+                    Staff cost
+                </p>
+            ),
             dataIndex: 'staffCost',
             key: 'staffCost',
             minWidth: 130,
@@ -252,7 +267,11 @@ export default function JobTable({
             },
         },
         {
-            title: 'Status',
+            title: (
+                <p className="truncate" title="Status">
+                    Status
+                </p>
+            ),
             dataIndex: 'status',
             key: 'status',
             width: 120,
@@ -272,7 +291,11 @@ export default function JobTable({
                 record?.status?.id?.toString()?.indexOf(value as string) === 0,
         },
         {
-            title: 'Attachments',
+            title: (
+                <p className="truncate" title="Attachments">
+                    Attachments
+                </p>
+            ),
             dataIndex: 'attachmentUrls',
             key: 'attachmentUrls',
             minWidth: 140,
@@ -288,7 +311,11 @@ export default function JobTable({
             ),
         },
         {
-            title: 'Due to',
+            title: (
+                <p className="truncate" title="Due to">
+                    Due to
+                </p>
+            ),
             dataIndex: 'dueAt',
             key: 'dueAt',
             minWidth: 170,
@@ -312,7 +339,11 @@ export default function JobTable({
             },
         },
         {
-            title: 'Assignee',
+            title: (
+                <p className="truncate" title="Assignee">
+                    Assignee
+                </p>
+            ),
             dataIndex: 'assignee',
             key: 'assignee',
             minWidth: 150,
@@ -375,7 +406,11 @@ export default function JobTable({
                 record.assignee.some((item) => item.id === value),
         },
         {
-            title: 'Payment Status',
+            title: (
+                <p className="truncate" title="Payment status">
+                    Payment status
+                </p>
+            ),
             dataIndex: 'isPaid',
             key: 'isPaid',
             width: 120,
@@ -392,7 +427,11 @@ export default function JobTable({
             },
         },
         {
-            title: 'Payment Channel',
+            title: (
+                <p className="truncate" title="Payment channel">
+                    Payment channel
+                </p>
+            ),
             dataIndex: 'paymentChannel',
             key: 'paymentChannel',
             minWidth: 200,
@@ -419,7 +458,11 @@ export default function JobTable({
                 0,
         },
         {
-            title: 'Completed at',
+            title: (
+                <p className="truncate" title="Completed at">
+                    Completed at
+                </p>
+            ),
             dataIndex: 'completedAt',
             key: 'completedAt',
             minWidth: 120,
@@ -431,7 +474,11 @@ export default function JobTable({
             ),
         },
         {
-            title: 'Created at',
+            title: (
+                <p className="truncate" title="Created at">
+                    Created at
+                </p>
+            ),
             dataIndex: 'createdAt',
             key: 'createdAt',
             minWidth: 100,
@@ -442,7 +489,11 @@ export default function JobTable({
             ),
         },
         {
-            title: 'Last modify',
+            title: (
+                <p className="truncate" title="Last modified">
+                    Last modified
+                </p>
+            ),
             dataIndex: 'updatedAt',
             key: 'updatedAt',
             minWidth: 100,
@@ -453,7 +504,11 @@ export default function JobTable({
             ),
         },
         {
-            title: 'Action',
+            title: (
+                <p className="truncate" title="Actions">
+                    Actions
+                </p>
+            ),
             key: 'action',
             dataIndex: 'action',
             width: 150,
@@ -561,27 +616,29 @@ export default function JobTable({
         },
     }))
     return (
-        <Table<DataType>
-            rowKey="no"
-            columns={finalColumns}
-            onRow={(record) => {
-                return {
-                    className: `${
-                        record.no === newJobNo ? 'bg-yellow-200' : ''
-                    }`,
-                }
-            }}
-            dataSource={dataSource}
-            loading={isLoading}
-            rowSelection={{
-                selectedRowKeys,
-                onChange: (newSelectedRowKeys: React.Key[]) =>
-                    setSelectedRowKeys(newSelectedRowKeys),
-            }}
-            pagination={false}
-            size={'small'}
-            rowClassName="transition duration-500"
-            scroll={tableOptions.scroll}
-        />
+        <>
+            <Table<DataType>
+                rowKey="no"
+                columns={finalColumns}
+                onRow={(record) => {
+                    return {
+                        className: `${
+                            record.no === newJobNo ? 'bg-yellow-200' : ''
+                        }`,
+                    }
+                }}
+                dataSource={dataSource}
+                loading={isLoading}
+                rowSelection={{
+                    selectedRowKeys,
+                    onChange: (newSelectedRowKeys: React.Key[]) =>
+                        setSelectedRowKeys(newSelectedRowKeys),
+                }}
+                pagination={false}
+                size={'small'}
+                rowClassName="size-full !bg-background transition duration-500"
+                scroll={tableOptions.scroll}
+            />
+        </>
     )
 }

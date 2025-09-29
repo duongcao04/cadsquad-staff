@@ -89,8 +89,6 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
         (item) => typeof item.data !== 'undefined'
     )
 
-    // const forceActions =
-
     return (
         <Dropdown
             placement="bottom-start"

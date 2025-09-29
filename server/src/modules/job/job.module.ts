@@ -5,9 +5,10 @@ import { AuthModule } from '../auth/auth.module';
 import { ActivityLogService } from './activity-log.service';
 import { UserModule } from '../user/user.module';
 import { ConfigModule } from '../config/config.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [AuthModule, UserModule, ConfigModule],
+  imports: [AuthModule, UserModule, ConfigModule, NotificationModule],
   controllers: [JobController],
   providers: [JobService, ActivityLogService],
   exports: [JobService, ActivityLogService],

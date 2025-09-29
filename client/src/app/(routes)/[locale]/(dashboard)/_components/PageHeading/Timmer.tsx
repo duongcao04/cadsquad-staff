@@ -23,9 +23,12 @@ const Timmer: React.FC = () => {
     // })
 
     return (
-        <div className="text-sm font-arial flex flex-col text-right">
+        <div className="font-arial flex flex-col text-right">
             <span className="text-xs text-text2">Viet Nam</span>
-            <span className="font-medium" suppressHydrationWarning>
+            <span
+                className="-mt-0.5 text-lg font-semibold"
+                suppressHydrationWarning
+            >
                 {timeString}
             </span>
         </div>

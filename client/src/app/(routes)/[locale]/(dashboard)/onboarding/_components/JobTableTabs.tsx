@@ -44,7 +44,9 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
                     <span>Priority</span>
                     {priorityPaginate?.total ? (
                         Number(priorityPaginate?.total) > 0 && (
-                            <p className="w-fit text-xs">{priorityPaginate?.total}</p>
+                            <p className="w-fit text-xs">
+                                {priorityPaginate?.total}
+                            </p>
                         )
                     ) : (
                         <></>
@@ -60,7 +62,9 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
                     <span>Active</span>
                     {activePaginate?.total ? (
                         activePaginate?.total > 0 && (
-                            <p className="w-fit text-xs">{activePaginate?.total}</p>
+                            <p className="w-fit text-xs">
+                                {activePaginate?.total}
+                            </p>
                         )
                     ) : (
                         <></>
@@ -76,7 +80,9 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
                     <span>Late</span>
                     {latePaginate?.total ? (
                         latePaginate?.total > 0 && (
-                            <p className="w-fit text-xs">{latePaginate?.total}</p>
+                            <p className="w-fit text-xs">
+                                {latePaginate?.total}
+                            </p>
                         )
                     ) : (
                         <></>
@@ -92,7 +98,9 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
                     <span>Delivered</span>
                     {deliveredPaginate?.total ? (
                         deliveredPaginate?.total > 0 && (
-                            <p className="w-fit text-xs">{deliveredPaginate?.total}</p>
+                            <p className="w-fit text-xs">
+                                {deliveredPaginate?.total}
+                            </p>
                         )
                     ) : (
                         <></>
@@ -108,7 +116,9 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
                     <span>Completed</span>
                     {completedPaginate?.total ? (
                         completedPaginate?.total > 0 && (
-                            <p className="w-fit text-xs">{completedPaginate?.total}</p>
+                            <p className="w-fit text-xs">
+                                {completedPaginate?.total}
+                            </p>
                         )
                     ) : (
                         <></>
@@ -124,7 +134,9 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
                     <span>Cancelled</span>
                     {cancelledPaginate?.total ? (
                         cancelledPaginate?.total > 0 && (
-                            <p className="w-fit text-xs">{cancelledPaginate?.total}</p>
+                            <p className="w-fit text-xs">
+                                {cancelledPaginate?.total}
+                            </p>
                         )
                     ) : (
                         <></>
@@ -148,6 +160,7 @@ export default function JobTableTabs({ activeKey, onChange }: Props) {
                 tabList:
                     'bg-background hover:shadow-xs transition duration-150',
             }}
+            size="sm"
             selectedKey={activeKey}
             onSelectionChange={(key) => {
                 onChange(key.toString())

@@ -1,14 +1,12 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ApiResponse, axiosClient } from '@/lib/axios'
-import { PaymentChannel } from '@/shared/interfaces/paymentChannel.interface'
+import { paymentChannelApi } from '@/app/api/paymentChannel.api'
 
 export const usePaymentChannels = () => {
     return useQuery({
         queryKey: ['paymentChannels'],
-        queryFn: () =>
-            axiosClient.get<ApiResponse<PaymentChannel[]>>('payment-channels'),
+        queryFn: () => paymentChannelApi.findAll(),
         select: (res) => res.data.result,
     })
 }

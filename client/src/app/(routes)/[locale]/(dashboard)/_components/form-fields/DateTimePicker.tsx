@@ -5,15 +5,14 @@ import { Button, DatePicker, TimeRangePickerProps } from 'antd'
 import { RangePickerProps } from 'antd/es/date-picker'
 import dayjs, { type Dayjs } from 'dayjs'
 import { FormikProps } from 'formik'
-
-import { NewProject } from '@/validationSchemas/job.schema'
+import { CreateJobInput } from '@/shared/validationSchemas/job.schema'
 
 const { RangePicker } = DatePicker
 
 const dateFormat = 'YYYY/MM/DD'
 
 type Props = {
-    form: FormikProps<NewProject>
+    form: FormikProps<CreateJobInput>
 }
 
 export default function DateTimePicker({ form }: Props) {

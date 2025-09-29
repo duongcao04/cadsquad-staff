@@ -16,7 +16,7 @@ type Props = {
     isOpen: boolean
     onClose: () => void
 }
-export default function UserModal({ isOpen, onClose }: Props) {
+export default function CreateUserModal({ isOpen, onClose }: Props) {
     const [isLoading, setLoading] = useState(false)
 
     useKeyboardShortcuts([

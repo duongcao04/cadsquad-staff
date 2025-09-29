@@ -18,22 +18,24 @@ export default function AntdProvider({
                     theme={{
                         components: {
                             Table: {
-                                headerBg: 'hsl(0,0%,97%)',
+                                headerBg: 'var(--color-background2)',
                             },
                             Tabs: {
                                 horizontalMargin: '0',
                             },
                             Select: {
-                                selectorBg: '#f4f4f5',
-                                optionSelectedColor: '#1b1464',
-                                activeBorderColor: '#1b1464',
-                                hoverBorderColor: '#1b1464',
-                                borderRadiusLG: 12,
+                                selectorBg: 'var(--color-background)',
+                                optionSelectedColor: 'var(--color-primary)',
+                                activeBorderColor: 'var(--color-primary)',
+                                hoverBorderColor: 'var(--color-primary)',
+                                borderRadius: 12,
+                                controlPaddingHorizontal: 20,
+                                controlHeight: 38,
                             },
                             DatePicker: {
-                                colorBgContainer: '#f4f4f5',
-                                activeBorderColor: '#1b1464',
-                                hoverBorderColor: '#1b1464',
+                                colorBgContainer: 'var(--color-background)',
+                                activeBorderColor: 'var(--color-primary)',
+                                hoverBorderColor: 'var(--color-primary)',
                                 borderRadiusLG: 12,
                             },
                         },
@@ -72,10 +74,14 @@ export default function AntdProvider({
                             MozOutlineRadius: 10,
                         },
                         styles: {
-                            root: { borderStartStartRadius: 10 },
+                            root: {
+                                borderStartStartRadius: 10,
+                                backgroundColor:
+                                    'var(--color-background) !important',
+                            },
                         },
                         classNames: {
-                            root: '!rounded-2xl',
+                            root: '!rounded-2xl !bg-background',
                         },
                     }}
                     avatar={{
@@ -87,7 +93,31 @@ export default function AntdProvider({
                          * Table styles
                          */}
                         <style jsx global>{`
+                            :where(
+                                    .css-dev-only-do-not-override-1qhywnf
+                                ).ant-table-wrapper {
+                                height: 100% !important;
+                            }
+                            :where(
+                                    .css-dev-only-do-not-override-1qhywnf
+                                ).ant-spin-nested-loading {
+                                height: 100% !important;
+                            }
+                            :where(
+                                    .css-dev-only-do-not-override-1qhywnf
+                                ).ant-spin-nested-loading
+                                .ant-spin-container {
+                                height: 100% !important;
+                            }
+                            :where(
+                                    .css-dev-only-do-not-override-1qhywnf
+                                ).ant-table-wrapper
+                                .ant-table {
+                                height: 100% !important;
+                            }
+
                             .ant-table-container {
+                                height: 100% !important;
                                 padding: 14px !important;
                             }
                             :where(
@@ -103,14 +133,26 @@ export default function AntdProvider({
                                 .ant-table
                                 .ant-table-title,
                             :where(
-                                    .css-dev-only-do-not-override-175gf9i
+                                    .css-dev-only-do-not-override-1qhywnf
+                                ).ant-table-wrapper
+                                .ant-table
+                                .ant-table-title,
+                            :where(
+                                    .css-dev-only-do-not-override-1qhywnf
                                 ).ant-table-wrapper
                                 .ant-table
                                 .ant-table-header {
                                 border-radius: 14px !important;
                                 box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
                             }
+                            .ant-table-wrapper .ant-table-column-title {
+                                display: -webkit-box;
+                                -webkit-line-clamp: 1; /* số dòng muốn giới hạn */
+                                -webkit-box-orient: vertical;
+                                overflow: hidden;
+                            }
                             .ant-table-body {
+                                height: calc(100% - 53px) !important;
                                 margin-right: -8px !important;
                                 margin-bottom: -8px !important;
 

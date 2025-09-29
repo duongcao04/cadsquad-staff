@@ -1,13 +1,12 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ApiResponse, axiosClient } from '@/lib/axios'
-import { JobType } from '@/shared/interfaces/jobType.interface'
+import { jobTypeApi } from '@/app/api/jobType.api'
 
 export const useJobTypes = () => {
     return useQuery({
         queryKey: ['jobTypes'],
-        queryFn: () => axiosClient.get<ApiResponse<JobType[]>>('job-types'),
+        queryFn: () => jobTypeApi.findAll(),
         select: (res) => res.data.result,
     })
 }

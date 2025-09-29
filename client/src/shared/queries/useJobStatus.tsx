@@ -1,13 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { ApiResponse, axiosClient } from '@/lib/axios'
-import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
 import { jobStatusApi } from '@/app/api/jobStatus.api'
 
 export const useJobStatuses = () => {
     return useQuery({
         queryKey: ['job-statuses'],
-        queryFn: () =>
-            axiosClient.get<ApiResponse<JobStatus[]>>('job-statuses'),
+        queryFn: () => jobStatusApi.findAll(),
         select: (res) => res.data.result,
     })
 }
@@ -15,10 +12,14 @@ export const useJobStatuses = () => {
 export const useJobStatusDetail = (statusId?: string) => {
     const { data, refetch, error, isLoading } = useQuery({
         queryKey: statusId ? ['job-statuses', statusId] : ['job-statuses'],
-        queryFn: () =>
-            axiosClient.get<ApiResponse<JobStatus>>(`job-statuses/${statusId}`),
+        queryFn: () => {
+            if (!statusId) {
+                return undefined
+            }
+            return jobStatusApi.findOne(statusId)
+        },
         enabled: !!statusId,
-        select: (res) => res.data.result,
+        select: (res) => res?.data.result,
     })
     return {
         refetch,
@@ -33,7 +34,7 @@ export const useJobStatusByOrder = (orderNumber?: number | null) => {
         queryKey: orderNumber ? ['job-statuses', 'order', orderNumber] : [],
         queryFn: () => {
             if (!orderNumber) {
-                return null
+                return undefined
             }
             return jobStatusApi.findByOrder(orderNumber)
         },

@@ -82,6 +82,6 @@ body {
 
 @layer utilities {
     .link {
-        @apply no-underline text-text1 cursor-pointer transition duration-100 !hover:text-link;
+        @apply no-underline text-text1 cursor-pointer transition duration-100 hover:!text-link;
     }
 }

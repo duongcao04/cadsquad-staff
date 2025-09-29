@@ -1,7 +1,6 @@
 'use client'
 
 import {
-    Button,
     Dropdown,
     DropdownItem,
     DropdownMenu,
@@ -24,6 +23,7 @@ import {
     useUpdateConfigByCodeMutation,
 } from '@/shared/queries/useConfig'
 import { CONFIG_CONSTANTS } from '@/shared/constants/config.constant'
+import { HeroButton } from '@/shared/components/customize/HeroButton'
 
 export default function ViewSettingsDropdown() {
     const { isOpen, onClose, onOpen } = useDisclosure()
@@ -46,14 +46,9 @@ export default function ViewSettingsDropdown() {
                 }}
             >
                 <DropdownTrigger className="hidden sm:flex">
-                    <Button
-                        variant="bordered"
-                        className="border-[1px] bg-background"
-                        isIconOnly
-                        title="View settings"
-                    >
+                    <HeroButton isIconOnly title="View settings">
                         <SlidersHorizontal size={16} />
-                    </Button>
+                    </HeroButton>
                 </DropdownTrigger>
                 <DropdownMenu
                     disallowEmptySelection

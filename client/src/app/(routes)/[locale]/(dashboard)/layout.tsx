@@ -2,8 +2,6 @@ import Header from '@/shared/components/layouts/Header'
 import Sidebar from '@/shared/components/layouts/Sidebar'
 
 import ActionButton from './_components/ActionButton'
-import HeadingTitle from './_components/HeadingTitle'
-import Timmer from './_components/Timmer'
 
 export default async function DashboardLayout({
     children,
@@ -17,23 +15,16 @@ export default async function DashboardLayout({
             </div>
             {/* Height for header */}
             <div className="h-[56px]" />
-            {/*  */}
             <main className="max-w-screen">
-                <div className="size-full py-2.5 flex items-start justify-start gap-2">
-                    <div className="space-y-5">
+                <div className="size-full flex items-start justify-start gap-2">
+                    <div className="space-y-5 py-2.5">
                         <div className="mt-2 pl-4">
                             <ActionButton />
                         </div>
                         <Sidebar />
                     </div>
-                    <div className="rounded-md size-full h-[calc(100vh-56px-20px)] max-h-[calc(100vh-56px-20px)]  overflow-hidden">
-                        <div className="flex items-center justify-between pr-3">
-                            <HeadingTitle />
-                            <Timmer />
-                        </div>
-                        <div className="h-[calc(100vh-56px-20px-20px-36px)] max-h-[calc(100vh-56px-20px-20px-36px)] mt-4 mb-2.5 pr-2.5 overflow-y-auto overflow-x-hidden">
-                            {children}
-                        </div>
+                    <div className="size-full h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] pr-3.5 overflow-y-auto overflow-x-hidden">
+                        {children}
                     </div>
                 </div>
             </main>

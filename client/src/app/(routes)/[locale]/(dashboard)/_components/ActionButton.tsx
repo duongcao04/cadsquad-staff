@@ -20,13 +20,12 @@ import { IconFolderColorful } from '@/shared/components/icons/IconFolderColorful
 import { IconPeopleColorful } from '@/shared/components/icons/IconPeopleColorful'
 import { IconWorkColorful } from '@/shared/components/icons/IconWorkColorful'
 
-import JobModal from './JobModal'
-import NotificationModal from './NotificationModal'
-import UserModal from './UserModal'
 import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
 import { Variants } from 'motion/react'
 import { MotionDiv } from '@/lib/motion'
 import useAuth from '@/shared/queries/useAuth'
+import CreateJobModal from '@/shared/components/modals/CreateJobModal'
+import CreateUserModal from '@/shared/components/modals/CreateUserModal'
 
 export default function ActionButton() {
     const { userRole } = useAuth()
@@ -110,8 +109,8 @@ export function AdminCreateButton() {
             whileHover="hover"
             className="w-fit"
         >
-            <JobModal isOpen={isOpenJM} onClose={onCloseJM} />
-            <UserModal isOpen={isOpenUM} onClose={onCloseUm} />
+            <CreateJobModal isOpen={isOpenJM} onClose={onCloseJM} />
+            {/* <CreateUserModal isOpen={isOpenUM} onClose={onCloseUm} /> */}
             {/* <NotificationModal isOpen={isOpenNM} onClose={onCloseNM} /> */}
             <Dropdown>
                 <DropdownTrigger className="w-fit">

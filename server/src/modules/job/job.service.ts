@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { ActivityType, Job, Prisma } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
@@ -13,53 +19,100 @@ import dayjs from 'dayjs'
 import { UserService } from '../user/user.service'
 import { ConfigService } from '../config/config.service'
 import { userConfigCode } from '../../common/constants/user-config-code.constant'
+import { NotificationService } from '../notification/notification.service'
+import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 
 @Injectable()
 export class JobService {
-  constructor(private readonly prisma: PrismaService, private readonly userService: UserService, private readonly configService: ConfigService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+    private readonly notificationService: NotificationService,
+  ) { }
 
   /**
    * Create a new job.
    */
   async create(data: CreateJobDto): Promise<Job> {
-    const job = await this.prisma.job.create({
-      data: {
-        ...data,
-        priority: data.priority as Job['priority'], // Ensure correct enum type
-        assignee: data.assigneeIds
-          ? {
-            connect: data.assigneeIds.map((id) => ({ id })),
-          }
-          : undefined,
-        attachmentUrls: data.attachmentUrls
-          ? Array.isArray(data.attachmentUrls)
-            ? data.attachmentUrls
-            : [data.attachmentUrls]
-          : undefined,
-      },
-      include: {
-        type: true,
-        assignee: true,
-        createdBy: true,
-        paymentChannel: true,
-        status: true,
-      },
+    const result = await this.prisma.$transaction(async (tx) => {
+      const job = await tx.job.create({
+        data: {
+          ...data,
+          priority: data.priority as Job['priority'], // Ensure correct enum type
+          assignee: data.assigneeIds
+            ? {
+              connect: data.assigneeIds.map((id) => ({ id })),
+            }
+            : undefined,
+          attachmentUrls: data.attachmentUrls
+            ? Array.isArray(data.attachmentUrls)
+              ? data.attachmentUrls
+              : [data.attachmentUrls]
+            : undefined,
+        },
+        include: {
+          type: true,
+          assignee: true,
+          createdBy: true,
+          paymentChannel: true,
+          status: true,
+        },
+      })
+
+      // 2. Create notifications for each assignee
+      const notifications = data.assigneeIds?.map((memberId) => {
+        const notification: CreateNotificationDto = {
+          userId: memberId,
+          title: 'New Job Assignment',
+          content: `You have been assigned to job #${job.no} - ${job.displayName}.`,
+          type: "JOB_UPDATE",
+          imageUrl: job.status.thumbnailUrl ?? undefined
+        }
+        return notification
+      })
+      await tx.notification.createMany({
+        data: notifications ?? [],
+      });
+
+      return job
     })
-    return plainToInstance(JobResponseDto, job, {
+
+    return plainToInstance(JobResponseDto, result, {
       excludeExtraneousValues: true,
     }) as unknown as Job
   }
 
-
   async getColumns(userId: string) {
-    const allColumns = ['no', 'thumbnail', 'type', 'displayName', 'description', 'attachmentUrls', 'clientName', 'incomeCost', 'staffCost', 'assignee', 'paymentChannel', 'status', 'isPaid', 'dueAt', 'completedAt', 'createdAt', 'updatedAt', 'action']
+    const allColumns = [
+      'no',
+      'thumbnail',
+      'type',
+      'displayName',
+      'description',
+      'attachmentUrls',
+      'clientName',
+      'incomeCost',
+      'staffCost',
+      'assignee',
+      'paymentChannel',
+      'status',
+      'isPaid',
+      'dueAt',
+      'completedAt',
+      'createdAt',
+      'updatedAt',
+      'action',
+    ]
     const userRole = await this.userService.getUserRole(userId)
     const showColumns = await this.configService.findByCode(
       userId,
-      userConfigCode.JOB_SHOW_COLUMNS
+      userConfigCode.JOB_SHOW_COLUMNS,
     )
 
-    const finalColumns = showColumns ? JSON.parse(showColumns.value) : allColumns
+    const finalColumns = showColumns
+      ? JSON.parse(showColumns.value)
+      : allColumns
 
     return userRole !== 'ADMIN'
       ? finalColumns.filter((key: keyof Job) => key !== 'incomeCost')
@@ -69,8 +122,17 @@ export class JobService {
   /**
    * Find all jobs with relations.
    */
-  async findAll(userId: string, query: JobQueryDto): Promise<{ data: Job[], paginate: PaginationMeta }> {
-    const { page = '1', hideFinishItems = '0', limit = '10', search, tab = JobTabEnum.ACTIVE } = query
+  async findAll(
+    userId: string,
+    query: JobQueryDto,
+  ): Promise<{ data: Job[]; paginate: PaginationMeta }> {
+    const {
+      page = '1',
+      hideFinishItems = '0',
+      limit = '10',
+      search,
+      tab = JobTabEnum.ACTIVE,
+    } = query
 
     const queryByTab = await this.queryTab(tab)
 
@@ -104,7 +166,7 @@ export class JobService {
               code: {
                 contains: search,
                 mode: 'insensitive' as const,
-              }
+              },
             },
           },
         ],
@@ -127,11 +189,11 @@ export class JobService {
     })
     const countTotal = await this.prisma.job.count({ where })
 
-    const isAdmin = await this.userService.getUserRole(userId) === 'ADMIN'
+    const isAdmin = (await this.userService.getUserRole(userId)) === 'ADMIN'
     const responseDto = isAdmin ? JobResponseDto : JobStaffResponseDto
 
     const data = jobs.map((j) =>
-      plainToInstance(responseDto, j, { excludeExtraneousValues: true })
+      plainToInstance(responseDto, j, { excludeExtraneousValues: true }),
     ) as unknown as Job[]
 
     return {
@@ -140,8 +202,8 @@ export class JobService {
         limit: parseInt(limit),
         page: parseInt(page),
         total: countTotal,
-        totalPages: Math.ceil(countTotal / parseInt(limit))
-      }
+        totalPages: Math.ceil(countTotal / parseInt(limit)),
+      },
     }
   }
 
@@ -223,7 +285,7 @@ export class JobService {
    */
   async findByJobNo(userId: string, jobNo: string): Promise<Job> {
     if (!jobNo) {
-      throw new BadRequestException("Job no is invalid")
+      throw new BadRequestException('Job no is invalid')
     }
     if (!userId) {
       throw new UnauthorizedException()
@@ -239,8 +301,8 @@ export class JobService {
         activityLog: {
           include: {
             modifiedBy: true,
-          }
-        }
+          },
+        },
       },
     })
 
@@ -304,7 +366,11 @@ export class JobService {
   //   }
   // }
 
-  async changeStatus(jobId: string, modifierId: string, data: ChangeStatusDto): Promise<{ id: string }> {
+  async changeStatus(
+    jobId: string,
+    modifierId: string,
+    data: ChangeStatusDto,
+  ): Promise<{ id: string }> {
     if (!jobId) {
       throw new BadRequestException('Job ID invalid')
     }
@@ -341,7 +407,11 @@ export class JobService {
     }
   }
 
-  async updateMembers(jobId: string, modifierId: string, data: UpdateJobMembersDto): Promise<{ id: string }> {
+  async updateMembers(
+    jobId: string,
+    modifierId: string,
+    data: UpdateJobMembersDto,
+  ): Promise<{ id: string }> {
     if (!jobId) {
       throw new BadRequestException('Job ID invalid')
     }
@@ -385,7 +455,11 @@ export class JobService {
     })
   }
 
-  async removeMember(jobId: string, modifierId: string, memberId: string): Promise<{ id: string }> {
+  async removeMember(
+    jobId: string,
+    modifierId: string,
+    memberId: string,
+  ): Promise<{ id: string }> {
     if (!jobId) {
       throw new BadRequestException('Job ID invalid')
     }
@@ -394,7 +468,6 @@ export class JobService {
     }
 
     return await this.prisma.$transaction(async (tx) => {
-
       // 1. Find job
       const job = await tx.job.findUnique({
         where: { id: jobId },
@@ -446,7 +519,7 @@ export class JobService {
         data: { deletedAt: new Date() },
       })
       return {
-        id: deleted.id
+        id: deleted.id,
       }
     } catch (error) {
       throw new NotFoundException('Job not found')

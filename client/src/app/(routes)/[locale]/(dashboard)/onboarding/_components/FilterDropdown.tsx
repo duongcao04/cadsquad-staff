@@ -1,5 +1,4 @@
 import {
-    Button,
     Dropdown,
     DropdownItem,
     DropdownMenu,
@@ -8,18 +7,18 @@ import {
 } from '@heroui/react'
 import { Funnel } from 'lucide-react'
 import React from 'react'
+import { HeroButton } from '@/shared/components/customize/HeroButton'
 
 export default function FilterDropdown() {
     return (
-        <Dropdown placement="bottom-start" showArrow>
+        <Dropdown placement="bottom-end" showArrow size="sm">
             <DropdownTrigger>
-                <Button
+                <HeroButton
                     variant="bordered"
-                    className="border-[1px] bg-background"
                     startContent={<Funnel size={14} />}
                 >
                     Filter
-                </Button>
+                </HeroButton>
             </DropdownTrigger>
             <DropdownMenu aria-label="Link Actions">
                 <DropdownSection title="Filter">
