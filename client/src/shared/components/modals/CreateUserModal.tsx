@@ -102,6 +102,7 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
                     xl: '50%',
                     xxl: '50%',
                 }}
+                style={{ top: 50 }}
                 classNames={{
                     mask: 'backdrop-blur-sm',
                 }}
@@ -187,7 +188,14 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
                     />
                     <div className="grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-semibold text-base pr-2 ${(Boolean(formik.touched.department) && formik.errors.department) || (Boolean(formik.touched.jobTitle) && formik.errors.jobTitle) ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-semibold text-base pr-2 ${
+                                (Boolean(formik.touched.department) &&
+                                    formik.errors.department) ||
+                                (Boolean(formik.touched.jobTitle) &&
+                                    formik.errors.jobTitle)
+                                    ? 'text-danger'
+                                    : 'text-secondary'
+                            }`}
                         >
                             Poisition Details
                             <span className="absolute top-0 right-0 text-danger!">
@@ -241,7 +249,12 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
                     </div>
                     <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
                         <p
-                            className={`relative text-right font-semibold text-base pr-2 ${Boolean(formik.touched.role) && formik.errors.role ? 'text-danger' : 'text-secondary'}`}
+                            className={`relative text-right font-semibold text-base pr-2 ${
+                                Boolean(formik.touched.role) &&
+                                formik.errors.role
+                                    ? 'text-danger'
+                                    : 'text-secondary'
+                            }`}
                         >
                             Select Role
                         </p>

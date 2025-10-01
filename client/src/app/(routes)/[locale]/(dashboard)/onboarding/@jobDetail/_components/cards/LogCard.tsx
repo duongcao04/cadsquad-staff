@@ -1,17 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
-import localizedFormat from 'dayjs/plugin/localizedFormat'
-import relativeTime from 'dayjs/plugin/relativeTime'
+import React from 'react'
 import { Image } from 'antd'
-import dayjs from 'dayjs'
 import { useJobStatusDetail } from '@/shared/queries/useJobStatus'
 import JobStatusChip from '@/shared/components/chips/JobStatusChip'
 import { MoveRight } from 'lucide-react'
 import { JobActivityLog } from '@/shared/interfaces/jobActivityLog.interface'
-
-dayjs.extend(localizedFormat)
-dayjs.extend(relativeTime)
+import SwitchDateFormat from '@/shared/components/buttons/SwitchDateFormat'
 
 function ChangeStatusLog({
     fromStatusId,
@@ -35,7 +30,6 @@ type Props = {
     data: JobActivityLog
 }
 export default function LogCard({ data }: Props) {
-    const [dateFormat, setDateFormat] = useState<'short' | 'full'>('short')
     function renderSwitch() {
         switch (data.activityType) {
             case 'ChangeStatus':
@@ -66,25 +60,9 @@ export default function LogCard({ data }: Props) {
                     change the{' '}
                     <span className="font-semibold">{data?.fieldName}</span>
                 </p>
-                <button
-                    onClick={() => {
-                        if (dateFormat === 'full') {
-                            setDateFormat('short')
-                        } else {
-                            setDateFormat('full')
-                        }
-                    }}
-                    className="cursor-pointer"
-                >
-                    {dateFormat === 'full' ? (
-                        <>
-                            {dayjs(data.modifiedAt).format('LL')} at{' '}
-                            {dayjs(data.modifiedAt).format('LT')}
-                        </>
-                    ) : (
-                        <>{dayjs().to(dayjs(data.modifiedAt))}</>
-                    )}
-                </button>
+
+                <SwitchDateFormat data={data.modifiedAt} />
+
                 <div className="mt-4">{renderSwitch()}</div>
             </div>
         </div>

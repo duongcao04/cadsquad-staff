@@ -28,7 +28,7 @@ export class CreateJobDto {
 	description?: string
 
 	@IsOptional()
-	@IsString()
+	@IsArray()
 	attachmentUrls?: string
 
 	@IsString()
@@ -48,14 +48,12 @@ export class CreateJobDto {
 	@IsUUID()
 	createdById: string
 
+	@IsOptional()
 	@IsUUID()
 	paymentChannelId: string
 
-	@IsUUID()
-	statusId: string
-
 	@IsOptional()
-	@IsDateString()
+	@IsString()
 	startedAt?: Date
 
 	@IsOptional()
@@ -74,14 +72,14 @@ export class CreateJobDto {
 	@IsBoolean()
 	isPaid?: boolean
 
-	@IsDateString()
+	@IsString()
 	dueAt: Date
 
 	@IsOptional()
-	@IsDateString()
+	@IsString()
 	completedAt?: Date
 
 	@IsOptional()
-	@IsDateString()
+	@IsString()
 	deletedAt?: Date
 }

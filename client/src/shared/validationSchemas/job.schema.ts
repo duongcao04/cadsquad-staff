@@ -14,10 +14,7 @@ export const CreateJobSchema = yup.object({
     description: yup
         .string()
         .optional(),
-    sourceUrl: yup
-        .string()
-        .url("sourceUrl must be a valid URL")
-        .optional(),
+    attachmentUrls: yup.array(yup.string().required()).optional(),
     clientName: yup
         .string()
         .required("Client name is required"),
@@ -38,16 +35,10 @@ export const CreateJobSchema = yup.object({
         .uuid("Invalid createdById format")
         .required("CreatedById is required"),
     paymentChannelId: yup
-        .string()
-        .uuid("Invalid paymentChannelId format")
-        .required("PaymentChannelId is required"),
-    statusId: yup
-        .string()
-        .uuid("Invalid statusId format")
-        .required("StatusId is required"),
+        .string().nullable(),
     startedAt: yup
         .date()
-        .optional(),
+        .min(new Date(), "Start date cannot be in the past"),
     priority: yup
         .string()
         .oneOf(["LOW", "MEDIUM", "HIGH", "URGENT"], "Priority must be one of: LOW, MEDIUM, HIGH, URGENT")
@@ -63,7 +54,6 @@ export const CreateJobSchema = yup.object({
         .optional(),
     dueAt: yup
         .date()
-        .required("Due date is required")
         .min(new Date(), "Due date cannot be in the past"),
     completedAt: yup
         .date()

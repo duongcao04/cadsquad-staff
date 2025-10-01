@@ -1,34 +1,59 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { CommentService } from './comment.service';
-import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  UseGuards,
+} from '@nestjs/common'
+import { CommentService } from './comment.service'
+import { CreateCommentDto } from './dto/create-comment.dto'
+import { UpdateCommentDto } from './dto/update-comment.dto'
+import { JwtGuard } from '../auth/jwt.guard'
+import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 
-@Controller('comment')
+@Controller('comments')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(private readonly commentService: CommentService) { }
 
   @Post()
-  create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.create(createCommentDto);
+  @HttpCode(201)
+  @ResponseMessage('Insert new comment successfully')
+  @UseGuards(JwtGuard)
+  async create(@Body() createCommentDto: CreateCommentDto) {
+    return this.commentService.create(createCommentDto)
   }
 
-  @Get()
-  findAll() {
-    return this.commentService.findAll();
+  @Get('job/:jobId')
+  @HttpCode(200)
+  @ResponseMessage('Get list of comments for job successfully')
+  async findAllByJob(@Param('jobId') jobId: string) {
+    return this.commentService.findAllByJob(jobId)
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commentService.findOne(+id);
+  @HttpCode(200)
+  @ResponseMessage('Get comment detail successfully')
+  async findOne(@Param('id') id: string) {
+    return this.commentService.findById(id)
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
-    return this.commentService.update(+id, updateCommentDto);
+  @HttpCode(200)
+  @ResponseMessage('Update comment successfully')
+  @UseGuards(JwtGuard)
+  async update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
+    return this.commentService.update(id, updateCommentDto)
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commentService.remove(+id);
+  @HttpCode(200)
+  @ResponseMessage('Delete comment successfully')
+  @UseGuards(JwtGuard)
+  async remove(@Param('id') id: string) {
+    return this.commentService.delete(id)
   }
 }

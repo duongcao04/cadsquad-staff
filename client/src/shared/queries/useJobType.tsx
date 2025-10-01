@@ -10,3 +10,23 @@ export const useJobTypes = () => {
         select: (res) => res.data.result,
     })
 }
+
+export const useJobTypeDetail = (typeId?: string) => {
+    const { data, refetch, error, isLoading } = useQuery({
+        queryKey: typeId ? ['jobTypes', typeId] : ['jobTypes'],
+        queryFn: () => {
+            if (!typeId) {
+                return undefined
+            }
+            return jobTypeApi.findOne(typeId)
+        },
+        enabled: !!typeId,
+        select: (res) => res?.data.result,
+    })
+    return {
+        refetch,
+        jobType: data,
+        error,
+        isLoading,
+    }
+}

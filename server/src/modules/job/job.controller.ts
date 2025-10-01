@@ -8,6 +8,7 @@ import { ActivityLogService } from './activity-log.service'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { JobQueryDto } from './dto/job-query.dto'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
+import { UpdateJobDto } from './dto/update-job.dto'
 
 @Controller('jobs')
 export class JobController {
@@ -62,10 +63,11 @@ export class JobController {
     return this.activityLogService.findByJobId(id)
   }
 
-  // @Patch(':id')
-  // async update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
-  //   return this.jobService.update(id, updateJobDto)
-  // }
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
+    return this.jobService.update(id, updateJobDto)
+  }
+  
   @Patch(':id/change-status')
   @HttpCode(200)
   @ResponseMessage('Change job status successfully')

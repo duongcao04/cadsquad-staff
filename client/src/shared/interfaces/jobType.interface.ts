@@ -34,4 +34,6 @@ export interface JobType {
 	 * @type {Job[]}
 	 */
 	jobs: Job[]
+
+	_count?: Record<string, string>
 }

@@ -76,6 +76,7 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                     xl: '50%',
                     xxl: '50%',
                 }}
+                style={{ top: 50 }}
                 classNames={{
                     mask: 'backdrop-blur-sm',
                 }}

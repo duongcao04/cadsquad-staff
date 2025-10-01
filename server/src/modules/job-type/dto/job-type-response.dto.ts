@@ -12,4 +12,7 @@ export class JobTypeResponseDto {
 
 	@Expose()
 	hexColor?: string
+
+	@Expose()
+	_count: Record<string, unknown>
 }

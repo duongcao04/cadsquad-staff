@@ -10,9 +10,10 @@ import { JobStatusModule } from './modules/job-status/job-status.module'
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module'
 import { NotificationModule } from './modules/notification/notification.module'
 import { ConfigModule } from './modules/config/config.module'
+import { CommentModule } from './modules/comment/comment.module'
 
 @Module({
-  imports: [PrismaModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, ConfigModule],
+  imports: [PrismaModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, ConfigModule, CommentModule],
   controllers: [AppController],
   providers: [AppService],
 })

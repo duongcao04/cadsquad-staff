@@ -1,0 +1,121 @@
+'use client'
+
+import React, { useState } from 'react'
+import {
+    DatePicker,
+    RadioGroup,
+    Radio,
+    ButtonGroup,
+    Button,
+    cn,
+    DateValue,
+} from '@heroui/react'
+import {
+    startOfWeek,
+    startOfMonth,
+    getLocalTimeZone,
+    today,
+} from '@internationalized/date'
+import { useLocale, useDateFormatter } from '@react-aria/i18n'
+
+type Props = {
+    label: string
+    defaultValue?: DateValue
+    onChange?: (value: DateValue) => void
+}
+export default function HeroDatePicker({
+    label,
+    defaultValue = today(getLocalTimeZone()),
+    onChange,
+}: Props) {
+    const { locale } = useLocale()
+    const formatter = useDateFormatter({ dateStyle: 'full' })
+    const [value, setValue] = useState<DateValue>(defaultValue)
+
+    const now = today(getLocalTimeZone())
+    const nextWeek = startOfWeek(now.add({ weeks: 1 }), locale)
+    const nextMonth = startOfMonth(now.add({ months: 1 }))
+
+    const CustomRadio = (props) => {
+        const { children, ...otherProps } = props
+
+        return (
+            <Radio
+                {...otherProps}
+                classNames={{
+                    base: cn(
+                        'flex-none m-0 h-8 bg-content1 hover:bg-content2 items-center justify-between',
+                        'cursor-pointer rounded-full border-2 border-default-200/60',
+                        'data-[selected=true]:border-primary'
+                    ),
+                    label: 'text-tiny text-default-500',
+                    labelWrapper: 'px-1 m-0',
+                    wrapper: 'hidden',
+                }}
+            >
+                {children}
+            </Radio>
+        )
+    }
+
+    return (
+        <div className="flex flex-col gap-4 w-full max-w-sm">
+            <DatePicker
+                CalendarBottomContent={
+                    <RadioGroup
+                        aria-label="Date precision"
+                        classNames={{
+                            base: 'w-full pb-2',
+                            wrapper:
+                                '-my-2.5 py-2.5 px-3 gap-1 flex-nowrap max-w-[380px] overflow-x-auto',
+                        }}
+                        defaultValue="exact_dates"
+                        orientation="horizontal"
+                    >
+                        <CustomRadio value="exact_dates">
+                            Exact dates
+                        </CustomRadio>
+                        <CustomRadio value="1_day">1 day</CustomRadio>
+                        <CustomRadio value="1_month">1 month</CustomRadio>
+                    </RadioGroup>
+                }
+                CalendarTopContent={
+                    <ButtonGroup
+                        fullWidth
+                        className="px-3 pb-2 pt-3 bg-content1 [&>button]:text-default-500 [&>button]:border-default-200/60"
+                        radius="full"
+                        size="sm"
+                        variant="bordered"
+                    >
+                        <Button onPress={() => onChange?.(now)}>Today</Button>
+                        <Button onPress={() => onChange?.(nextWeek)}>
+                            Next week
+                        </Button>
+                        <Button onPress={() => onChange?.(nextMonth)}>
+                            Next month
+                        </Button>
+                    </ButtonGroup>
+                }
+                calendarProps={{
+                    focusedValue: value,
+                    onFocusChange(date) {
+                        onChange?.(date)
+                    },
+                    nextButtonProps: {
+                        variant: 'bordered',
+                    },
+                    prevButtonProps: {
+                        variant: 'bordered',
+                    },
+                }}
+                label={label}
+                value={value}
+                onChange={(value) => {
+                    const dateValue = value as unknown as DateValue
+                    setValue(dateValue)
+                    onChange?.(dateValue)
+                }}
+            />
+        </div>
+    )
+}

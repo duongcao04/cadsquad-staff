@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { removeLocaleFromPathname, routing } from '@/i18n/routing'
 
 // Public routes that don't require authentication
-export const publicRoutes = ['auth']
+export const publicRoutes = ['/auth']
 
 // Create the internationalization middleware
 const intlMiddleware = createIntlMiddleware(routing)
@@ -13,12 +13,11 @@ function isPublicRoute(pathname: string): boolean {
     const pathWithoutLocale = removeLocaleFromPathname(pathname)
     return publicRoutes.some(
         (route) =>
-            pathWithoutLocale === route || pathWithoutLocale.startsWith(route)
+            pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
     )
 }
 
 export default async function middleware(request: NextRequest) {
-    // Get current pathname
     const { pathname } = request.nextUrl
 
     // - Extract locale from pathname or use default
@@ -30,6 +29,7 @@ export default async function middleware(request: NextRequest) {
     const sessionCookie = request.cookies.get('session')?.value
 
     function redirectToAuth() {
+        // nếu đang ở /auth thì cho qua
         if (removeLocaleFromPathname(pathname) === '/auth') {
             return NextResponse.next()
         }
@@ -42,12 +42,11 @@ export default async function middleware(request: NextRequest) {
     if (!isPublicRoute(pathname)) {
         if (!sessionCookie) {
             return redirectToAuth()
-        } else {
-            return NextResponse.next()
         }
+        return intlMiddleware(request) // vẫn apply i18n
     }
 
-    // Fallback → apply i18n middleware
+    // Public route → apply i18n middleware luôn
     return intlMiddleware(request)
 }
 

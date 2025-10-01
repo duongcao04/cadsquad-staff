@@ -42,6 +42,13 @@ export class JobTypeService {
   async findById(jobTypeId: string): Promise<JobType> {
     const jobType = await this.prismaService.jobType.findUnique({
       where: { id: jobTypeId },
+      include: {
+        _count: {
+          select: {
+            jobs: {}
+          }
+        }
+      }
     })
 
     if (!jobType) {

@@ -3,9 +3,7 @@
 import { Button } from '@heroui/react'
 import React, { useState } from 'react'
 
-import JobTable from '@/shared/components/tables/JobTable'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import JobTableTabs from './_components/JobTableTabs'
 import { DownloadIcon } from 'lucide-react'
 import { useJobColumns, useJobs } from '@/shared/queries/useJob'
 import { Job } from '@/shared/interfaces/job.interface'
@@ -13,8 +11,10 @@ import { JobTabEnum } from '@/shared/enums/jobTab.enum'
 import { useConfigByCode } from '@/shared/queries/useConfig'
 import { CONFIG_CONSTANTS } from '@/shared/constants/config.constant'
 import PageHeading from '../_components/PageHeading'
-import DefaultPanel from './_components/panels/DefaultPanel'
-import PaginationPanel from './_components/panels/PaginationPanel'
+import DefaultPanel from './components/panels/DefaultPanel'
+import PaginationPanel from './components/panels/PaginationPanel'
+import JobTable from './components/tables/JobTable'
+import JobTableTabs from './components/JobTableTabs'
 
 export type DataType = Job & {
     key: React.Key
@@ -95,6 +95,7 @@ export default function OnboardingPage() {
                         paginationProps={{
                             total: paginate?.totalPages ?? 1,
                             page: paginate?.page,
+                            totalItems: paginate?.total,
                             classNames: {
                                 item: 'cursor-pointer',
                                 next: 'cursor-pointer',
@@ -110,6 +111,7 @@ export default function OnboardingPage() {
                                 setItemsPerPage(parseInt(key))
                             },
                         }}
+                        isLoading={loadingJobs}
                     />
                 </div>
             </div>

@@ -21,6 +21,7 @@ import { ConfigService } from '../config/config.service'
 import { userConfigCode } from '../../common/constants/user-config-code.constant'
 import { NotificationService } from '../notification/notification.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
+import { UpdateJobDto } from './dto/update-job.dto'
 
 @Injectable()
 export class JobService {
@@ -35,20 +36,24 @@ export class JobService {
    * Create a new job.
    */
   async create(data: CreateJobDto): Promise<Job> {
+    const { assigneeIds, ...jobData } = data
     const result = await this.prisma.$transaction(async (tx) => {
+      const statusId = await this.prisma.jobStatus.findUnique({ where: { order: 1 } }).then(res => res?.id ?? '')
+
       const job = await tx.job.create({
         data: {
-          ...data,
-          priority: data.priority as Job['priority'], // Ensure correct enum type
-          assignee: data.assigneeIds
+          ...jobData,
+          priority: jobData.priority as Job['priority'], // Ensure correct enum type
+          statusId: statusId,
+          assignee: assigneeIds
             ? {
-              connect: data.assigneeIds.map((id) => ({ id })),
+              connect: assigneeIds.map((id) => ({ id })),
             }
             : undefined,
-          attachmentUrls: data.attachmentUrls
-            ? Array.isArray(data.attachmentUrls)
-              ? data.attachmentUrls
-              : [data.attachmentUrls]
+          attachmentUrls: jobData.attachmentUrls
+            ? Array.isArray(jobData.attachmentUrls)
+              ? jobData.attachmentUrls
+              : [jobData.attachmentUrls]
             : undefined,
         },
         include: {
@@ -61,7 +66,7 @@ export class JobService {
       })
 
       // 2. Create notifications for each assignee
-      const notifications = data.assigneeIds?.map((memberId) => {
+      const notifications = assigneeIds?.map((memberId) => {
         const notification: CreateNotificationDto = {
           userId: memberId,
           title: 'New Job Assignment',
@@ -223,7 +228,12 @@ export class JobService {
           lt: dayAfterTomorrow, // trước ngày kia, tức là chỉ trong 2 ngày gần nhất (nay + mai)
         },
       }
-      const activeFilter = where
+      const activeFilter = {
+        ...where,
+        dueAt: {
+          gte: today,
+        },
+      }
       const completedFilter = {
         ...where,
         status: {
@@ -298,6 +308,7 @@ export class JobService {
         createdBy: true,
         paymentChannel: true,
         status: true,
+        comment: true,
         activityLog: {
           include: {
             modifiedBy: true,
@@ -335,36 +346,32 @@ export class JobService {
     }) as unknown as Job
   }
 
-  // /**
-  //  * Update job by ID.
-  //  */
-  // async update(jobId: string, data: UpdateJobDto): Promise<Job> {
-  //   try {
-  //     const updated = await this.prisma.job.update({
-  //       where: { id: jobId },
-  //       data: {
-  //         ...data,
-  //         assignee: data.assigneeIds
-  //           ? {
-  //             set: data.assigneeIds.map((id) => ({ id })), // reset relations
-  //           }
-  //           : undefined,
-  //       },
-  //       include: {
-  //         type: true,
-  //         assignee: true,
-  //         createdBy: true,
-  //         paymentChannel: true,
-  //         status: true,
-  //       },
-  //     })
-  //     return plainToInstance(JobResponseDto, updated, {
-  //       excludeExtraneousValues: true,
-  //     }) as unknown as Job
-  //   } catch (error) {
-  //     throw new NotFoundException('Job not found')
-  //   }
-  // }
+  /**
+   * Update job by ID.
+   */
+  async update(jobId: string, data: UpdateJobDto): Promise<Job> {
+    try {
+      const { typeId, ...restData } = data
+      const updated = await this.prisma.job.update({
+        where: { id: jobId },
+        data: {
+          ...restData,
+        },
+        include: {
+          type: true,
+          assignee: true,
+          createdBy: true,
+          paymentChannel: true,
+          status: true,
+        },
+      })
+      return plainToInstance(JobResponseDto, updated, {
+        excludeExtraneousValues: true,
+      }) as unknown as Job
+    } catch (error) {
+      throw new NotFoundException('Job not found')
+    }
+  }
 
   async changeStatus(
     jobId: string,

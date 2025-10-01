@@ -59,7 +59,6 @@ export const useUpdateConfigByCodeMutation = () => {
             data: UpdateConfigInput
         }) => configApi.updateByCode(code, data),
         onSuccess: (_, { code }) => {
-            queryClient.invalidateQueries({ queryKey: ['configs'] })
             queryClient.invalidateQueries({
                 queryKey: ['configs', 'code', code],
             })

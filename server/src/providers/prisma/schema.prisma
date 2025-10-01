@@ -49,6 +49,27 @@ model User {
   configs             Config[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
+  Comment             Comment[]
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  content String
+  jobId   String
+  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parentId String? // Hỗ trợ reply comment
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 model JobTitle {
@@ -66,6 +87,7 @@ model Department {
   displayName String
   notes       String?
   code        String   @unique
+  hexColor    String?
   users       User[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -163,6 +185,7 @@ model Job {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
+  comment          Comment[]
 
   @@index([no])
   @@index([statusId])
@@ -283,4 +306,4 @@ enum NotificationType {
   JOB_UPDATE
   DEADLINE_REMINDER
   STATUS_CHANGE
-} 
+}

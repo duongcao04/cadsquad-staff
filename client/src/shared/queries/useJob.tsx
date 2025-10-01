@@ -9,6 +9,7 @@ import {
 } from '@/shared/validationSchemas/job.schema'
 import { JobTabEnum } from '@/shared/enums/jobTab.enum'
 import { jobApi } from '@/app/api/job.api'
+import { CONFIG_CONSTANTS } from '../constants/config.constant'
 
 export const useJobs = (
     params: JobQueryInput = {
@@ -52,7 +53,7 @@ export const useJobs = (
 
 export const useJobColumns = () => {
     const { data: jobColumns } = useQuery({
-        queryKey: ['jobs', 'columns'],
+        queryKey: ['configs', 'code', CONFIG_CONSTANTS.keys.jobShowColumns],
         queryFn: () => jobApi.columns(),
         select: (res) => res.data.result,
     })
@@ -249,7 +250,7 @@ export const useRemoveMemberMutation = () => {
     })
 }
 
-export const useUpdateJobMutation = () => {
+export const useUpdateJobMutation = (onSucess?: () => void) => {
     return useMutation({
         mutationKey: ['updateJob'],
         mutationFn: ({
@@ -263,8 +264,12 @@ export const useUpdateJobMutation = () => {
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobDetail', data.data.result?.jobNo],
+                queryKey: ['jobs', 'no', data.data.result?.no],
             })
+            queryClient.invalidateQueries({
+                queryKey: ['jobs', 'id', data.data.result?.id],
+            })
+            onSucess?.()
         },
     })
 }

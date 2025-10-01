@@ -57,10 +57,7 @@ const Header = () => {
     const { isOpen, onClose, onOpen } = useDisclosure()
     const [isLoading, setLoading] = useState(false)
 
-    const {
-        profile: { data },
-        logout,
-    } = useAuth()
+    const { profile, logout } = useAuth()
 
     useKeyboardShortcuts([
         {
@@ -78,7 +75,7 @@ const Header = () => {
                 color: 'success',
             })
             router.push({
-                pathname: `${locale}/auth`,
+                pathname: '/auth',
                 query: { redirect: pathname },
             })
         } catch (error) {
@@ -227,7 +224,7 @@ const Header = () => {
                                 className="cursor-pointer"
                                 color="danger"
                                 icon={<User size={18} />}
-                                src={data?.avatar ?? ''}
+                                src={profile?.avatar ?? ''}
                                 classNames={{
                                     base: '!size-6',
                                 }}
@@ -246,14 +243,14 @@ const Header = () => {
                                     <UserComp
                                         avatarProps={{
                                             size: 'sm',
-                                            src: data?.avatar ?? '',
+                                            src: profile?.avatar ?? '',
                                         }}
                                         classNames={{
                                             name: 'text-default-600',
                                             description: 'text-default-500',
                                         }}
-                                        name={data?.name}
-                                        description={`@${data?.username}`}
+                                        name={profile?.displayName}
+                                        description={`@${profile?.username}`}
                                     />
                                 </DropdownItem>
                                 <DropdownItem

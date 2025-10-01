@@ -67,8 +67,6 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
         }
     }
 
-    console.log(jobStatuses)
-
     const actions: { key: string; data?: JobStatus; action: () => void }[] = [
         {
             key: 'nextStatusOrder',
