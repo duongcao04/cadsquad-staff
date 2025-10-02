@@ -30,6 +30,12 @@ export interface Department {
 	code: string
 
 	/**
+	 * A color for department. Hex code like #000000
+	 * @type {string}
+	 */
+	hexColor?: string
+
+	/**
 	 * A list of users who are members of this department.
 	 * @type {User[]}
 	 */

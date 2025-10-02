@@ -93,9 +93,6 @@ export default function OnboardingPage() {
                 <div className="h-[52px]">
                     <PaginationPanel
                         paginationProps={{
-                            total: paginate?.totalPages ?? 1,
-                            page: paginate?.page,
-                            totalItems: paginate?.total,
                             classNames: {
                                 item: 'cursor-pointer',
                                 next: 'cursor-pointer',
@@ -105,11 +102,9 @@ export default function OnboardingPage() {
                                 setCurrentJobPage(page)
                             },
                         }}
-                        limitItems={{
-                            limitValue: itemsPerPage.toString(),
-                            onChange(key) {
-                                setItemsPerPage(parseInt(key))
-                            },
+                        paginate={paginate}
+                        onChangeItemsPerPage={(key) => {
+                            setItemsPerPage(parseInt(key))
                         }}
                         isLoading={loadingJobs}
                     />

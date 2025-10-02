@@ -509,7 +509,6 @@ export function jobColumns(
                                         `onboarding?detail=${record.no}`
                                     }
                                     variant="ghost"
-                                    suppressHydrationWarning
                                 />
                             </Button>
                         </Tooltip>

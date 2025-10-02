@@ -56,9 +56,21 @@ export default function CommentForm({
                 className="size-10 rounded-full"
             />
             <div className="w-full space-y-3">
-                <p className="pt-1 font-medium text-base">
-                    {isReply ? 'Reply' : 'Add a comment'}
-                </p>
+                <div className="w-full flex items-center justify-between gap-2">
+                    <p className="pt-1 font-medium text-base">
+                        {isReply ? 'Reply' : 'Add a comment'}
+                    </p>
+                    <HeroButton
+                        color="blue"
+                        variant="solid"
+                        onPress={() => {
+                            handleComment(commentValue)
+                        }}
+                        isLoading={isLoading}
+                    >
+                        Submit
+                    </HeroButton>
+                </div>
                 <div className="w-full">
                     <QuillEditor
                         defaultValue={commentValue}
@@ -66,18 +78,6 @@ export default function CommentForm({
                             setCommentValue(value)
                         }}
                     />
-                    <div className="mt-2 flex items-center justify-end gap-3">
-                        <HeroButton
-                            color="blue"
-                            variant="solid"
-                            onPress={() => {
-                                handleComment(commentValue)
-                            }}
-                            isLoading={isLoading}
-                        >
-                            Comment
-                        </HeroButton>
-                    </div>
                 </div>
             </div>
         </div>

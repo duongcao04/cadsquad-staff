@@ -26,6 +26,7 @@ import { MotionDiv } from '@/lib/motion'
 import useAuth from '@/shared/queries/useAuth'
 import CreateJobModal from '@/shared/components/modals/CreateJobModal'
 import CreateUserModal from '@/shared/components/modals/CreateUserModal'
+import CreateNotificationModal from '@/shared/components/modals/CreateNotificationModal'
 
 export default function ActionButton() {
     const { userRole } = useAuth()
@@ -110,8 +111,8 @@ export function AdminCreateButton() {
             className="w-fit"
         >
             <CreateJobModal isOpen={isOpenJM} onClose={onCloseJM} />
-            {/* <CreateUserModal isOpen={isOpenUM} onClose={onCloseUm} /> */}
-            {/* <NotificationModal isOpen={isOpenNM} onClose={onCloseNM} /> */}
+            <CreateUserModal isOpen={isOpenUM} onClose={onCloseUm} />
+            <CreateNotificationModal isOpen={isOpenNM} onClose={onCloseNM} />
             <Dropdown>
                 <DropdownTrigger className="w-fit">
                     <Button

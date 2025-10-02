@@ -6,6 +6,7 @@ import {
     Skeleton,
 } from '@heroui/react'
 import React from 'react'
+import { Paginate } from '@/shared/interfaces/paginate.interface'
 
 const limitValues = [
     { key: '10', label: '10' },
@@ -15,40 +16,42 @@ const limitValues = [
 ]
 
 type Props = {
-    paginationProps: { totalItems?: number } & PaginationProps
-    limitItems?: {
-        limitValue?: string
-        onChange?: (key: string) => void
-    }
+    paginate?: Paginate
+    paginationProps: Omit<PaginationProps, 'total' | 'page'>
+    onChangeItemsPerPage?: (key: string) => void
     isLoading?: boolean
 }
 export default function PaginationPanel({
-    paginationProps,
-    limitItems = {
-        limitValue: '10',
+    paginate = {
+        limit: 10,
+        page: 1,
+        totalPages: 1,
+        total: 1,
     },
+    paginationProps,
+    onChangeItemsPerPage,
     isLoading = false,
 }: Props) {
-    const { totalItems = 10, page = 1 } = paginationProps
-    const showingFrom =
-        page * parseInt(limitItems.limitValue ?? '') -
-        parseInt(limitItems.limitValue ?? '') +
-        1
-    const showingTo =
-        page * parseInt(limitItems.limitValue ?? '') > totalItems
-            ? totalItems
-            : page * parseInt(limitItems.limitValue ?? '')
+    const { page, limit, total, totalPages } = paginate
+    const showingFrom = page * limit - limit + 1
+    const showingTo = page * limit > total ? total : page * limit
 
     return (
         <div className="size-full flex items-center justify-between">
-            <Pagination color="primary" {...paginationProps} showControls />
+            <Pagination
+                color="primary"
+                {...paginationProps}
+                showControls
+                total={totalPages}
+                page={page}
+            />
             <div className="min-w-[450px] h-full flex items-center justify-end gap-3">
                 <Skeleton
                     className="inline-block w-fit h-fit rounded-md"
                     isLoaded={!isLoading}
                 >
                     <p className="text-sm text-text2">
-                        Showing {showingFrom} - {showingTo} of {totalItems}
+                        Showing {showingFrom} - {showingTo} of {total}
                     </p>
                 </Skeleton>
                 <div className="h-5 w-[1px] bg-text3" />
@@ -58,14 +61,12 @@ export default function PaginationPanel({
                         aria-label="Listings Per page"
                         items={limitValues}
                         selectedKeys={
-                            limitItems.limitValue
-                                ? [limitItems.limitValue]
-                                : [limitValues[0].key]
+                            limit ? [`${limit}`] : [limitValues[0].key]
                         }
                         size="sm"
                         className="min-w-[70px]"
                         onSelectionChange={(keys) => {
-                            limitItems?.onChange?.(String(keys.currentKey))
+                            onChangeItemsPerPage?.(String(keys.currentKey))
                         }}
                     >
                         {(value) => <SelectItem>{value.label}</SelectItem>}

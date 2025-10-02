@@ -99,7 +99,6 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
             }
         },
     })
-    console.log(formik.values)
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -415,8 +414,8 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
                     <div className="w-full grid grid-cols-[140px_1fr] gap-3 items-center">
                         <p
                             className={`text-right font-medium text-base ${
-                                Boolean(formik.touched.assigneeIds) &&
-                                formik.errors.assigneeIds
+                                Boolean(formik.touched.paymentChannelId) &&
+                                formik.errors.paymentChannelId
                                     ? 'text-danger'
                                     : 'text-primary'
                             }`}

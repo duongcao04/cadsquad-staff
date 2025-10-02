@@ -21,10 +21,10 @@ export class UserResponseDto {
 	avatar?: string
 
 	@Expose()
-	jobTitles?: string
+	jobTitles?: unknown
 
 	@Expose()
-	department?: string
+	department?: unknown
 
 	@Expose()
 	phoneNumber?: string

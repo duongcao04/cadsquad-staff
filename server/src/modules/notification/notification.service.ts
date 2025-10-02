@@ -17,9 +17,12 @@ export class NotificationService {
     })
   }
 
-  async findAll(): Promise<NotificationResponseDto[]> {
+  async findAll(userId: string): Promise<NotificationResponseDto[]> {
     const notifications = await this.prisma.notification.findMany({
       orderBy: { createdAt: 'desc' },
+      where: {
+        userId
+      }
     })
     return plainToInstance(NotificationResponseDto, notifications, {
       excludeExtraneousValues: true,

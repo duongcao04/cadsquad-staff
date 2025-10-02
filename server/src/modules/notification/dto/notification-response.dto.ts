@@ -18,6 +18,9 @@ export class NotificationResponseDto {
 	senderId?: string
 
 	@Expose()
+	status: string
+
+	@Expose()
 	type: NotificationType
 
 	@Expose()

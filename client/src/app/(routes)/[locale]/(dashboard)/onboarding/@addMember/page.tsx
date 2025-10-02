@@ -4,7 +4,11 @@ import { Image, Modal, Select } from 'antd'
 import React, { useState } from 'react'
 import { useUsers } from '@/shared/queries/useUser'
 import { addToast, Button, Input } from '@heroui/react'
-import { useAssignMemberMutation, useJobByNo, useRemoveMemberMutation } from '@/shared/queries/useJob'
+import {
+    useAssignMemberMutation,
+    useJobByNo,
+    useRemoveMemberMutation,
+} from '@/shared/queries/useJob'
 import envConfig from '@/config/envConfig'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { X } from 'lucide-react'
@@ -145,14 +149,20 @@ export default function AddMemberModal() {
                                     .includes(input.toLowerCase())
                             }
                             optionRender={(option) => {
+                                const departmentColor = option.data.department
+                                    ? option.data.department?.hexColor
+                                    : 'transparent'
                                 return (
-                                    <div className="flex items-center justify-start gap-4">
+                                    <div className="flex items-center justify-start gap-4 !p-0">
                                         <Image
                                             src={option.data.avatar as string}
                                             alt="user avatar"
                                             rootClassName="!size-10 rounded-full"
-                                            className="!size-full rounded-full"
+                                            className="!size-full rounded-full p-[1px] border-2"
                                             preview={false}
+                                            style={{
+                                                borderColor: departmentColor,
+                                            }}
                                         />
                                         <div>
                                             <p className="font-semibold">
@@ -170,7 +180,7 @@ export default function AddMemberModal() {
                             onPress={async () => {
                                 handleAssignMember(memberSelected)
                             }}
-                            color='primary'
+                            color="primary"
                         >
                             Send invites
                         </Button>
@@ -189,7 +199,10 @@ export default function AddMemberModal() {
                         )}
                         {job?.assignee?.map((mem) => {
                             return (
-                                <div key={mem.username} className='group flex items-center justify-between px-2 py-1.5 hover:bg-text3 rounded-md'>
+                                <div
+                                    key={mem.username}
+                                    className="group flex items-center justify-between px-2 py-1.5 hover:bg-text3 rounded-md"
+                                >
                                     <div className="flex items-center justify-start gap-4">
                                         <Image
                                             src={mem?.avatar as string}
@@ -207,12 +220,19 @@ export default function AddMemberModal() {
                                             </p>
                                         </div>
                                     </div>
-                                    <Button isIconOnly size='sm' color='danger' className='hidden group-hover:flex' title='Remove' onClick={() => {
-                                        removeMemberMutate({
-                                            jobId: job.id,
-                                            memberId: mem.id
-                                        })
-                                    }}>
+                                    <Button
+                                        isIconOnly
+                                        size="sm"
+                                        color="danger"
+                                        className="hidden group-hover:flex"
+                                        title="Remove"
+                                        onClick={() => {
+                                            removeMemberMutate({
+                                                jobId: job.id,
+                                                memberId: mem.id,
+                                            })
+                                        }}
+                                    >
                                         <X size={14} />
                                     </Button>
                                 </div>
@@ -229,7 +249,11 @@ export default function AddMemberModal() {
                             isDisabled
                             className="!opacity-70"
                         />
-                        <Button color='primary' className='text-white' onPress={() => handleCopy(JOB_DETAIL_URL)}>
+                        <Button
+                            color="primary"
+                            className="text-white"
+                            onPress={() => handleCopy(JOB_DETAIL_URL)}
+                        >
                             Copy
                         </Button>
                     </div>

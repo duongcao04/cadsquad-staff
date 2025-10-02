@@ -3,9 +3,9 @@ import * as yup from 'yup'
 export const CreateUserSchema = yup.object().shape({
     email: yup.string().email().required(),
     avatar: yup.string(),
-    name: yup.string().required(),
-    jobTitle: yup.string().required(),
-    department: yup.string().required(),
+    displayName: yup.string().required(),
+    jobTitleIds: yup.array(yup.string().required()).optional(),
+    departmentId: yup.string().optional(),
     phoneNumber: yup.string(),
 
     // Optional enum validation
@@ -15,3 +15,6 @@ export const CreateUserSchema = yup.object().shape({
         .default('USER'),
 })
 export type CreateUserInput = yup.InferType<typeof CreateUserSchema>
+
+export const UpdateUserSchema = CreateUserSchema.partial()
+export type UpdateUserInput = yup.InferType<typeof UpdateUserSchema>

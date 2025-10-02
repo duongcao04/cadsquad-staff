@@ -356,6 +356,11 @@ export class JobService {
         where: { id: jobId },
         data: {
           ...restData,
+          attachmentUrls: data.attachmentUrls
+            ? Array.isArray(data.attachmentUrls)
+              ? data.attachmentUrls
+              : [data.attachmentUrls]
+            : undefined,
         },
         include: {
           type: true,

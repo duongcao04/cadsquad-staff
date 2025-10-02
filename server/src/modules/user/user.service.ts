@@ -5,16 +5,25 @@ import { plainToInstance } from 'class-transformer'
 import { UserResponseDto } from './dto/user-response.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { removeVietnameseAccent } from '../../utils/removeVietnameseAccent'
+import { BcryptService } from '../auth/bcrypt.service'
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) { }
+  constructor(private readonly prismaService: PrismaService, private readonly bcryptService: BcryptService) { }
   async create(data: CreateUserDto): Promise<UserResponseDto> {
     const { jobTitleIds, departmentId, ...rest } = data
-
+    const username = data.username ? data.username :
+      removeVietnameseAccent(data.displayName.toLowerCase()) +
+      Date.now()
+    const password = data.password ? await this.bcryptService.hash(data.password) : ''
+    const avatar = data.avatar ? data.avatar : `https://ui-avatars.com/api/?name=${data.displayName.replaceAll(" ", "+")}&background=random`
     const user = await this.prismaService.user.create({
       data: {
         ...rest,
+        password,
+        avatar,
+        username,
         ...(jobTitleIds && jobTitleIds.length > 0
           ? {
             jobTitles: {
@@ -49,7 +58,12 @@ export class UserService {
     return user.role
   }
   async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.prismaService.user.findMany()
+    const users = await this.prismaService.user.findMany({
+      include: {
+        department: {},
+        jobTitles: {}
+      }
+    })
     return plainToInstance(UserResponseDto, users, {
       excludeExtraneousValues: true,
     })

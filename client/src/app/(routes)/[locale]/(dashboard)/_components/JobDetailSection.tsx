@@ -148,7 +148,12 @@ export default function JobDetailSection({ isEditMode = false, jobNo }: Props) {
                     <CommentForm jobId={job?.id as string} />
                 </div>
                 <div className="col-span-1 w-full">
-                    <JobDetailPanel data={job as Job} isLoading={isLoading} />
+                    <div className="sticky top-[20px]">
+                        <JobDetailPanel
+                            data={job as Job}
+                            isLoading={isLoading}
+                        />
+                    </div>
                 </div>
             </div>
         </>

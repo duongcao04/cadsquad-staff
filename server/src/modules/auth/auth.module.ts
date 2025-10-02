@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { forwardRef, Global, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PrismaService } from '../../providers/prisma/prisma.service';
@@ -11,7 +11,7 @@ import { AzureStrategy } from './core/azure.strategy';
 
 @Global()
 @Module({
-  imports: [UserModule, JwtModule.register({
+  imports: [forwardRef(() => UserModule), JwtModule.register({
     global: true,
     secret: String(process.env.JWT_SECRET_KEY),
     signOptions: { expiresIn: Number(process.env.JWT_EXPIRES_AT) },

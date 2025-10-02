@@ -44,6 +44,9 @@ export class JobResponseDto {
 	priority: string
 
 	@Expose()
+	attachmentUrls: string[]
+
+	@Expose()
 	startedAt: Date
 
 	@Expose()

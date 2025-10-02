@@ -1,18 +1,30 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo } from 'react'
 
-import { Button, Input, Textarea, addToast } from '@heroui/react'
-import { Image, Modal, Select } from 'antd'
+import { Button, InputProps, Textarea, addToast } from '@heroui/react'
+import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
-import {
-    CreateNotificationSchema,
-    NewNotification,
-} from '@/validationSchemas/notification.schema'
 import { useUsers } from '@/shared/queries/useUser'
-import { useSendNotiMutation } from '@/shared/queries/useNotification'
+import {
+    CreateNotificationInput,
+    CreateNotificationInputSchema,
+} from '@/shared/validationSchemas/notification.schema'
+import { NotificationType } from '@/shared/enums/notificationType.enum'
+import HeroInput from '../customize/HeroInput'
+import { HeroSelect, HeroSelectItem } from '../customize/HeroSelect'
+import { capitalize } from 'lodash'
+import useAuth from '@/shared/queries/useAuth'
+import { useSendNotificationMutation } from '@/shared/queries/useNotification'
+
+export const notificationModalInputClassNames: InputProps['classNames'] = {
+    base: 'grid grid-cols-[140px_1fr] gap-3',
+    inputWrapper:
+        'w-full border-[1px] bg-background shadow-none !placeholder:italic',
+    label: 'text-right font-medium text-base',
+}
 
 type Props = {
     isOpen: boolean
@@ -26,41 +38,71 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
         },
     ])
 
-    const [isLoading, setLoading] = useState(false)
-    const { data: users } = useUsers()
-    const { mutateAsync: sendNotiMutate, isIdle: isSendingNoti } =
-        useSendNotiMutation()
+    const { data: users, isLoading: loadingUsers } = useUsers()
+    const { profile } = useAuth()
 
-    const formik = useFormik<NewNotification>({
-        initialValues: {
+    const {
+        mutateAsync: sendNotificationMutate,
+        isPending: isSendingNotification,
+    } = useSendNotificationMutation()
+
+    const notificationTypeList = Object.entries(NotificationType).map((i) => {
+        return {
+            ...i,
+            label: capitalize(i[1].toLowerCase().replaceAll('_', ' ')),
+            value: i[0],
+        }
+    })
+
+    const initialValues = useMemo<CreateNotificationInput>(
+        () => ({
             content: '',
-            recipientId: null as unknown as string,
+            type: NotificationType.INFO,
+            userIds: [],
+            senderId: profile?.id ?? '',
             title: '',
-            image: null,
-        },
-        validationSchema: CreateNotificationSchema,
+            imageUrl: '',
+        }),
+        [profile?.id]
+    )
+
+    const formik = useFormik<CreateNotificationInput>({
+        initialValues,
+        validationSchema: CreateNotificationInputSchema,
         onSubmit: async (values) => {
             try {
-                setLoading(true)
+                if (values.userIds?.length) {
+                    // map các userId thành mảng promise
+                    const sendAll = values.userIds.map((userId) =>
+                        sendNotificationMutate({
+                            content: values.content,
+                            type: values.type,
+                            imageUrl: values.imageUrl,
+                            senderId: values.senderId,
+                            title: values.title,
+                            userId,
+                        })
+                    )
 
-                await sendNotiMutate(values)
-                addToast({
-                    title: 'Gửi thông báo thành công!',
-                    color: 'success',
-                })
+                    // chờ tất cả promise hoàn thành
+                    await Promise.all(sendAll)
+
+                    addToast({
+                        title: 'Gửi thông báo thành công!',
+                        color: 'success',
+                    })
+                }
             } catch (error) {
                 addToast({
                     title: 'Gửi thông báo thất bại!',
                     description: `${error}`,
                     color: 'danger',
                 })
-            } finally {
-                setLoading(false)
             }
         },
     })
 
-    console.log(formik.errors)
+    console.log(formik.values)
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -85,7 +127,7 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                         <div className="flex items-center justify-end gap-4">
                             <Button
                                 variant="light"
-                                color="secondary"
+                                color="primary"
                                 className="px-14"
                                 onPress={() => {
                                     onClose()
@@ -95,8 +137,8 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                                 Cancel
                             </Button>
                             <Button
-                                isLoading={isLoading}
-                                color="secondary"
+                                isLoading={isSendingNotification}
+                                color="primary"
                                 className="px-16"
                                 onPress={() => {
                                     formik.handleSubmit()
@@ -110,22 +152,18 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                 }}
             >
                 <div className="py-8 space-y-4 border-t border-border">
-                    <Input
+                    <HeroInput
                         isRequired
                         id="title"
                         name="title"
-                        label="Subject"
+                        label="Title"
                         placeholder="e.g. Sample notification for sample issue"
-                        color="secondary"
+                        color="primary"
                         variant="faded"
                         value={formik.values.title}
                         onChange={formik.handleChange}
                         labelPlacement="outside-left"
-                        classNames={{
-                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
-                        }}
+                        classNames={notificationModalInputClassNames}
                         isInvalid={
                             Boolean(formik.touched.title) &&
                             Boolean(formik.errors.title)
@@ -133,67 +171,150 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                         errorMessage={
                             Boolean(formik.touched.title) && formik.errors.title
                         }
-                        size="lg"
+                        size="md"
                     />
 
-                    <div className="w-full grid grid-cols-[0.25fr_1fr] gap-3 items-center">
+                    <div className="grid grid-cols-[140px_1fr] gap-3 items-center">
                         <p
                             className={`relative text-right font-medium text-base pr-2 ${
-                                Boolean(formik.touched.recipientId) &&
-                                formik.errors.recipientId
+                                Boolean(formik.touched.userIds) &&
+                                formik.errors.userIds
                                     ? 'text-danger'
-                                    : 'text-secondary'
+                                    : 'text-primary'
                             }`}
                         >
-                            Receiver
+                            Receivers
+                            <span className="absolute top-0 right-0 text-danger!">
+                                *
+                            </span>
+                        </p>
+                        <HeroSelect
+                            isLoading={loadingUsers}
+                            id="userIds"
+                            name="userIds"
+                            placeholder="Select one or more receiver"
+                            size="md"
+                            selectionMode="multiple"
+                            selectedKeys={formik.values.userIds}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                const valueArr = value
+                                    .split(',')
+                                    .filter((i) => i !== '')
+
+                                formik.setFieldValue('userIds', valueArr)
+                                formik.setFieldTouched('userIds', true, false)
+                            }}
+                            classNames={{
+                                base: 'overflow-hidden',
+                            }}
+                            renderValue={(selectedItems) => {
+                                return (
+                                    <ul className="flex line-clamp-1 truncate">
+                                        {selectedItems.map((user) => {
+                                            const item = users?.find(
+                                                (d) => d.id === user.key
+                                            )
+                                            if (!item)
+                                                return (
+                                                    <span
+                                                        className="text-gray-400"
+                                                        key={user.key}
+                                                    >
+                                                        Select one department
+                                                    </span>
+                                                )
+                                            return (
+                                                <p key={user.key}>
+                                                    {item.displayName}
+                                                    {item.id !==
+                                                        selectedItems[
+                                                            selectedItems.length -
+                                                                1
+                                                        ].key && (
+                                                        <span className="pr-1">
+                                                            ,
+                                                        </span>
+                                                    )}
+                                                </p>
+                                            )
+                                        })}
+                                    </ul>
+                                )
+                            }}
+                        >
+                            {users?.map((usr) => {
+                                const departmentColor = usr.department
+                                    ? usr.department?.hexColor
+                                    : 'transparent'
+                                return (
+                                    <HeroSelectItem key={usr.id}>
+                                        <div className="flex items-center justify-start gap-4">
+                                            <div className="size-9">
+                                                <Image
+                                                    src={usr.avatar as string}
+                                                    alt="user avatar"
+                                                    rootClassName="!size-10 rounded-full"
+                                                    className="!size-full rounded-full p-[1px] border-2"
+                                                    preview={false}
+                                                    style={{
+                                                        borderColor:
+                                                            departmentColor,
+                                                    }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <p className="font-normal">
+                                                    {usr.displayName}
+                                                </p>
+                                                <p className="text-text2">
+                                                    {usr.email}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </HeroSelectItem>
+                                )
+                            })}
+                        </HeroSelect>
+                    </div>
+
+                    <div className="w-full grid grid-cols-[140px_1fr] gap-3 items-center">
+                        <p
+                            className={`relative text-right font-medium text-base pr-2 ${
+                                Boolean(formik.touched.type) &&
+                                formik.errors.type
+                                    ? 'text-danger'
+                                    : 'text-primary'
+                            }`}
+                        >
+                            Select type
                             <span className="absolute top-0 right-0 text-danger!">
                                 *
                             </span>
                         </p>
                         <div className="flex flex-col w-full">
-                            <Select
-                                options={users?.map((usr) => {
-                                    return {
-                                        ...usr,
-                                        label: usr?.name,
-                                        value: usr?.id,
-                                    }
-                                })}
-                                placeholder="Select receiver"
-                                size="large"
-                                showSearch
-                                filterOption={(input, option) =>
-                                    (option?.label ?? '')
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase())
-                                }
-                                optionRender={(opt) => {
-                                    return (
-                                        <div className="flex items-center justify-start gap-4">
-                                            <div className="size-9">
-                                                <Image
-                                                    src={opt.data.avatar ?? ''}
-                                                    alt={opt.data.name}
-                                                    className="size-full rounded-full object-cover"
-                                                    preview={false}
-                                                />
-                                            </div>
-                                            <p className="font-normal">
-                                                {opt.data.name}
-                                            </p>
-                                        </div>
-                                    )
+                            <HeroSelect
+                                id="type"
+                                name="type"
+                                placeholder="Select role permission for this user"
+                                size="md"
+                                selectedKeys={[formik.values.type]}
+                                onChange={(e) => {
+                                    const value = e.target.value
+                                    formik.setFieldValue('type', value)
+                                    formik.setFieldTouched('type', true, false)
                                 }}
-                                styles={{}}
-                                onChange={(value) => {
-                                    formik.setFieldValue('recipientId', value)
-                                }}
-                                value={formik.values.recipientId}
-                            />
-                            {Boolean(formik.touched.recipientId) &&
-                                Boolean(formik.errors.recipientId) && (
+                            >
+                                {notificationTypeList?.map((type) => (
+                                    <HeroSelectItem key={type.value}>
+                                        {type.label}
+                                    </HeroSelectItem>
+                                ))}
+                            </HeroSelect>
+                            {Boolean(formik.touched.type) &&
+                                Boolean(formik.errors.type) && (
                                     <p className="mt-1 text-xs text-danger">
-                                        {formik.errors.recipientId}
+                                        {formik.errors.type}
                                     </p>
                                 )}
                         </div>
@@ -205,15 +326,16 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                         name="content"
                         label="Message"
                         placeholder="Enter message here ..."
-                        color="secondary"
+                        color="primary"
                         variant="faded"
                         value={formik.values.content}
                         onChange={formik.handleChange}
                         labelPlacement="outside-left"
                         classNames={{
-                            base: 'grid grid-cols-[0.25fr_1fr] gap-3',
-                            inputWrapper: 'w-full',
-                            label: 'text-right font-medium text-base',
+                            base: 'grid grid-cols-[140px_1fr] gap-3 items-start',
+                            inputWrapper:
+                                'w-full border-[1px] bg-background shadow-none !placeholder:italic',
+                            label: 'pt-3 text-right font-medium text-base',
                         }}
                         isInvalid={
                             Boolean(formik.touched.content) &&

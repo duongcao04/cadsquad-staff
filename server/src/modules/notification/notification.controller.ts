@@ -8,18 +8,20 @@ import {
   Delete,
   HttpCode,
   UseGuards,
+  Req,
 } from '@nestjs/common'
 import { NotificationService } from './notification.service'
 import { CreateNotificationDto } from './dto/create-notification.dto'
 import { UpdateNotificationDto } from './dto/update-notification.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { TokenPayload } from '../auth/dto/token-payload.dto'
 
 @Controller('notifications')
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) { }
 
-  @Post()
+  @Post('/send')
   @HttpCode(201)
   @UseGuards(JwtGuard)
   @ResponseMessage('Create notification successfully')
@@ -30,8 +32,10 @@ export class NotificationController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of notifications successfully')
-  async findAll() {
-    return this.notificationService.findAll()
+  @UseGuards(JwtGuard)
+  async findAll(@Req() request: Request) {
+    const userPayload: TokenPayload = await request['user']
+    return this.notificationService.findAll(userPayload.sub)
   }
 
   @Get(':id')

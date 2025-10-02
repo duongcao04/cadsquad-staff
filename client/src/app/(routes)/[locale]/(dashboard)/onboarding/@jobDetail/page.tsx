@@ -3,7 +3,6 @@
 import React from 'react'
 import { useDetailModal } from '@/shared/actions/useDetailModal'
 import JobDetailSection from '../../_components/JobDetailSection'
-import useAuth from '@/shared/queries/useAuth'
 import { useJobStatusByOrder } from '@/shared/queries/useJobStatus'
 import { useChangeStatusMutation, useJobByNo } from '@/shared/queries/useJob'
 import {
@@ -18,7 +17,6 @@ import { Drawer } from 'antd'
 import { Clock9, X } from 'lucide-react'
 import PaidChip from '@/shared/components/chips/PaidChip'
 import JobStatusChip from '@/shared/components/chips/JobStatusChip'
-import { RoleEnum } from '@/shared/enums/role.enum'
 import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
 import { lightenHexColor } from '@/lib/utils'
 import ActionsDropdown from './_components/dropdowns/ActionsDropdown'
@@ -32,12 +30,11 @@ export default function JobDetailView() {
     const locale = useLocale()
     const { jobNo, isOpen, isEditMode } = useDetailModal()
     const { job, isLoading } = useJobByNo(jobNo)
-    const { userRole } = useAuth()
     /**
      * Instance hooks
      */
     const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
-    const { switchMode, closeModal } = useDetailModal()
+    const { closeModal } = useDetailModal()
     /**
      * Fetch data
      */
@@ -127,7 +124,7 @@ export default function JobDetailView() {
                             </div>
                         </div>
                         <div className="w-full flex items-center justify-end gap-2">
-                            {userRole === RoleEnum.ADMIN && (
+                            {/* {userRole === RoleEnum.ADMIN && (
                                 <Button
                                     size="sm"
                                     onPress={() => {
@@ -141,7 +138,7 @@ export default function JobDetailView() {
                                 >
                                     <p className="text-sm font-medium">Edit</p>
                                 </Button>
-                            )}
+                            )} */}
                             <Tooltip content="Copy link">
                                 <Button
                                     variant="light"

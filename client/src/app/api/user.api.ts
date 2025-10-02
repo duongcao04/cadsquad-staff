@@ -1,6 +1,6 @@
 
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { CreateUserInput } from '@/shared/validationSchemas/user.schema'
+import { CreateUserInput, UpdateUserInput } from '@/shared/validationSchemas/user.schema'
 import { User } from '@/shared/interfaces/user.interface'
 
 export const userApi = {
@@ -13,7 +13,7 @@ export const userApi = {
 	findOne: (id: string) => {
 		return axiosClient.get<ApiResponse<User>>(`/users/${id}`)
 	},
-	update: (id: string, data) => {
+	update: (id: string, data: UpdateUserInput) => {
 		return axiosClient.patch(`/users/${id}`, data)
 	},
 	remove: (id: string) => {
