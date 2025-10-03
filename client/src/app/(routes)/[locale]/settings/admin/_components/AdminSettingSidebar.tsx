@@ -77,13 +77,13 @@ export default function AdminSettingSidebar() {
                             {group.groupTitle}
                         </p>
                         {group.children.map((item) => {
-                            const isActived = pathname === item.href
+                            const isActivated = pathname === item.href
                             return (
                                 <MotionDiv
                                     key={item.id}
                                     initial="init"
-                                    whileHover={isActived ? 'active' : 'hover'}
-                                    animate={isActived ? 'active' : 'animate'}
+                                    whileHover={isActivated ? 'active' : 'hover'}
+                                    animate={isActivated ? 'active' : 'animate'}
                                     className="size-full"
                                 >
                                     <Link

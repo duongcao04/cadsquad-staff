@@ -36,14 +36,14 @@ export default function EditAppearanceForm() {
                     </div>
                     <div className="flex items-center justify-start gap-3 flex-wrap">
                         {THEME_COLORS.map((item, idx) => {
-                            const isActived = THEME_COLORS[0] === item
+                            const isActivated = THEME_COLORS[0] === item
 
                             return (
                                 <div
                                     key={idx}
                                     className="p-[2px] border-2 rounded-lg"
                                     style={{
-                                        borderColor: isActived
+                                        borderColor: isActivated
                                             ? item
                                             : 'transparent',
                                     }}
@@ -70,14 +70,14 @@ export default function EditAppearanceForm() {
                     </div>
                     <div className="flex items-center justify-start gap-6">
                         {appTheme.map((themeI) => {
-                            const isActived = themeI.code === theme
+                            const isActivated = themeI.code === theme
                             return (
                                 <div
                                     key={themeI.id}
                                     className="relative flex flex-col items-center gap-1 cursor-pointer"
                                     onClick={() => setTheme(themeI.code)}
                                 >
-                                    {isActived && (
+                                    {isActivated && (
                                         <div className="absolute -top-[5px] -right-[5px] z-1">
                                             <Check
                                                 size={16}
@@ -91,7 +91,7 @@ export default function EditAppearanceForm() {
                                         rootClassName="!h-20 border-[1.5px] p-0.5 size-full rounded-sm"
                                         className="!size-full"
                                         wrapperStyle={{
-                                            borderColor: isActived
+                                            borderColor: isActivated
                                                 ? 'var(--color-primary)'
                                                 : 'transparent',
                                         }}
@@ -123,14 +123,14 @@ export default function EditAppearanceForm() {
                     </div>
                     <div className="flex items-center justify-start gap-6">
                         {appTableSize.map((size) => {
-                            const isActived = size.code === table.size
+                            const isActivated = size.code === table.size
                             return (
                                 <div
                                     key={size.id}
                                     className="relative flex flex-col items-center gap-1 cursor-pointer"
                                     onClick={() => setTableSize(size.code)}
                                 >
-                                    {isActived && (
+                                    {isActivated && (
                                         <div className="absolute -top-[5px] -right-[5px] z-1">
                                             <Check
                                                 size={16}
@@ -144,7 +144,7 @@ export default function EditAppearanceForm() {
                                         rootClassName="!h-20 border-[1.5px] p-0.5 size-full rounded-sm"
                                         className="!size-full"
                                         wrapperStyle={{
-                                            borderColor: isActived
+                                            borderColor: isActivated
                                                 ? 'var(--color-primary)'
                                                 : 'transparent',
                                         }}

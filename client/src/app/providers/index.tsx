@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import TanstackQueryProvider from './TanstackQueryProvider'
 import AntdProvider from './AntdProvider'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import MuiLocalizationProvider from './MuiLocalizationProvider'
 
 type Props = {
     children: React.ReactNode
@@ -24,21 +25,23 @@ export function AppProvider({ children, locale, messages }: Props) {
                 defaultTheme="light"
                 enableSystem={true}
             >
-                <AntdProvider>
-                    <HeroUIProvider>
-                        <TanstackQueryProvider>
-                            <ToastProvider
-                                placement="bottom-center"
-                                regionProps={{
-                                    classNames: {
-                                        base: '!z-[10000]',
-                                    },
-                                }}
-                            />
-                            {children}
-                        </TanstackQueryProvider>
-                    </HeroUIProvider>
-                </AntdProvider>
+                <MuiLocalizationProvider>
+                    <AntdProvider>
+                        <HeroUIProvider>
+                            <TanstackQueryProvider>
+                                <ToastProvider
+                                    placement="bottom-center"
+                                    regionProps={{
+                                        classNames: {
+                                            base: '!z-[10000]',
+                                        },
+                                    }}
+                                />
+                                {children}
+                            </TanstackQueryProvider>
+                        </HeroUIProvider>
+                    </AntdProvider>
+                </MuiLocalizationProvider>
             </NextThemesProvider>
         </NextIntlClientProvider>
     )
