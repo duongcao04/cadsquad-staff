@@ -19,14 +19,14 @@ export const ADMIN_SETTING_DROPDOWN = [
                 icon: SquareUserRound,
                 title: 'Account settings',
                 description: 'Manage language and other personal preferences.',
-                href: '/settings/personal/account',
+                href: '/settings/account',
             },
             {
                 id: 1.2,
                 title: 'Appearance',
                 icon: Palette,
                 description: 'Manage how your public dashboard looks and feels',
-                href: '/settings/personal/appearance',
+                href: '/settings/appearance',
             },
             {
                 id: 1.3,
@@ -34,7 +34,7 @@ export const ADMIN_SETTING_DROPDOWN = [
                 icon: BellIcon,
                 description:
                     'Manage email and in-product notification from site.',
-                href: '/settings/personal/notifications',
+                href: '/settings/notifications',
             },
         ],
     },
@@ -99,14 +99,14 @@ export const VI_ADMIN_SETTING_DROPDOWN = [
                 icon: SquareUserRound,
                 title: 'Thông tin cá nhân',
                 description: 'Quản lý ngôn ngữ và các tùy chọn cá nhân khác.',
-                href: '/settings/personal/account',
+                href: '/settings/account',
             },
             {
                 id: 1.2,
                 title: 'Giao diện',
                 icon: Palette,
                 description: 'Quản lý cách bảng điều khiển công khai hiển thị.',
-                href: '/settings/personal/appearance',
+                href: '/settings/appearance',
             },
             {
                 id: 1.3,
@@ -114,7 +114,7 @@ export const VI_ADMIN_SETTING_DROPDOWN = [
                 icon: BellIcon,
                 description:
                     'Quản lý email và thông báo trong sản phẩm từ hệ thống.',
-                href: '/settings/personal/notifications',
+                href: '/settings/notifications',
             },
         ],
     },

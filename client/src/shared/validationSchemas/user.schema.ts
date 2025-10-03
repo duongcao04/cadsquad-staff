@@ -3,6 +3,8 @@ import * as yup from 'yup'
 export const CreateUserSchema = yup.object().shape({
     email: yup.string().email().required(),
     avatar: yup.string(),
+    username: yup.string().optional(),
+    password: yup.string().optional(),
     displayName: yup.string().required(),
     jobTitleIds: yup.array(yup.string().required()).optional(),
     departmentId: yup.string().optional(),

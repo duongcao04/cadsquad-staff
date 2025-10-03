@@ -26,6 +26,7 @@ import SwitchCurrency from '../components/SwitchCurrency'
 import { SortOrder } from 'antd/es/table/interface'
 import { CopyButton } from '@/shared/components/ui/copy-button'
 import DueToField from '../components/data-fields/DueToField'
+import { DefaultJobStatusCode } from '../../../../../../shared/enums/default-job-status-code.enum'
 
 export type JobWithKey = Job & {
     key: React.Key
@@ -271,7 +272,15 @@ export function jobColumns(
             render: (_, record: JobWithKey) => {
                 return (
                     <div className="text-right line-clamp-1">
-                        <DueToField data={record.dueAt} />
+                        <DueToField
+                            data={record.dueAt}
+                            disableCountdown={
+                                record.status.code ===
+                                    DefaultJobStatusCode.FINISH ||
+                                record.status.code ===
+                                    DefaultJobStatusCode.COMPLETED
+                            }
+                        />
                     </div>
                 )
             },
@@ -500,6 +509,7 @@ export function jobColumns(
                                 className="flex items-center justify-center"
                                 size="sm"
                                 isIconOnly
+                                disableRipple
                             >
                                 <CopyButton
                                     slot="p"

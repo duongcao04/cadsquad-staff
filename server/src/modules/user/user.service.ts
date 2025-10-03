@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { RoleEnum, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
@@ -7,6 +7,7 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { removeVietnameseAccent } from '../../utils/removeVietnameseAccent'
 import { BcryptService } from '../auth/bcrypt.service'
+import { UpdatePasswordDto } from './dto/update-password.dto'
 
 @Injectable()
 export class UserService {
@@ -48,6 +49,63 @@ export class UserService {
     return plainToInstance(UserResponseDto, user, {
       excludeExtraneousValues: true,
     })
+  }
+
+  async updatePassword(userId: string, dto: UpdatePasswordDto): Promise<{ message: string }> {
+    const { oldPassword, newPassword, newConfirmPassword } = dto
+
+    // check user tồn tại
+    const user = await this.prismaService.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      throw new NotFoundException('User not found')
+    }
+
+    // check old password
+    const isMatch = await this.bcryptService.compare(oldPassword, user.password)
+    if (!isMatch) {
+      throw new BadRequestException('Old password is incorrect')
+    }
+
+    // check new === confirm
+    if (newPassword !== newConfirmPassword) {
+      throw new BadRequestException('New password and confirm password do not match')
+    }
+
+    // check new khác old
+    const isSameAsOld = await this.bcryptService.compare(newPassword, user.password)
+    if (isSameAsOld) {
+      throw new BadRequestException('New password must be different from old password')
+    }
+
+    // hash và update
+    const hashedPassword = await this.bcryptService.hash(newPassword)
+    await this.prismaService.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    })
+
+    return { message: 'Password updated successfully' }
+  }
+
+  async checkUsernameValid(username: string) {
+    if (
+      username.toLocaleLowerCase() === 'admin' ||
+      username.toLocaleLowerCase() === 'cadsquadadmin' ||
+      username.toLocaleLowerCase() === 'admin-cadsquad' ||
+      username.toLocaleLowerCase() === 'cadsquad-admin'
+    ) {
+      return {
+        isValid: 0
+      }
+    }
+    const existingUsername = await this.prismaService.user.findUnique({
+      where: {
+        username
+      }
+    })
+    return {
+      isValid: Boolean(existingUsername) ? 0 : 1
+    }
   }
 
   async getUserRole(userId: string): Promise<RoleEnum> {

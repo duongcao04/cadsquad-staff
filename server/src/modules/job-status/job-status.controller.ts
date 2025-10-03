@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, Req } from '@nestjs/common'
 import { JobStatusService } from './job-status.service'
 import { CreateJobStatusDto } from './dto/create-job-status.dto'
 import { UpdateJobStatusDto } from './dto/update-job-status.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { TokenPayload } from '../auth/dto/token-payload.dto'
 
 @Controller('job-statuses')
 export class JobStatusController {
@@ -29,6 +30,15 @@ export class JobStatusController {
   @ResponseMessage('Get job status detail successfully')
   async findByOrder(@Param('orderNum') orderNum: string) {
     return this.jobStatusService.findByOrder(parseInt(orderNum))
+  }
+
+  @Get('/code/:statusCode/jobs')
+  @HttpCode(200)
+  @ResponseMessage('Get jobs by status code successfully')
+  @UseGuards(JwtGuard)
+  async findJobsByStatusCode(@Req() request: Request, @Param('statusCode') statusCode: string) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobStatusService.findJobsByStatusCode(userPayload.sub, userPayload.role, statusCode)
   }
 
   @Get(':id')

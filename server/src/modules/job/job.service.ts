@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { ActivityType, Job, Prisma } from '@prisma/client'
+import { ActivityType, Job, Prisma, RoleEnum } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
 import { CreateJobDto } from './dto/create-job.dto'
@@ -38,7 +38,9 @@ export class JobService {
   async create(data: CreateJobDto): Promise<Job> {
     const { assigneeIds, ...jobData } = data
     const result = await this.prisma.$transaction(async (tx) => {
-      const statusId = await this.prisma.jobStatus.findUnique({ where: { order: 1 } }).then(res => res?.id ?? '')
+      const statusId = await this.prisma.jobStatus
+        .findUnique({ where: { order: 1 } })
+        .then((res) => res?.id ?? '')
 
       const job = await tx.job.create({
         data: {
@@ -71,14 +73,14 @@ export class JobService {
           userId: memberId,
           title: 'New Job Assignment',
           content: `You have been assigned to job #${job.no} - ${job.displayName}.`,
-          type: "JOB_UPDATE",
-          imageUrl: job.status.thumbnailUrl ?? undefined
+          type: 'JOB_UPDATE',
+          imageUrl: job.status.thumbnailUrl ?? undefined,
         }
         return notification
       })
       await tx.notification.createMany({
         data: notifications ?? [],
-      });
+      })
 
       return job
     })
@@ -129,6 +131,7 @@ export class JobService {
    */
   async findAll(
     userId: string,
+    userRole: RoleEnum,
     query: JobQueryDto,
   ): Promise<{ data: Job[]; paginate: PaginationMeta }> {
     const {
@@ -141,6 +144,13 @@ export class JobService {
 
     const queryByTab = await this.queryTab(tab)
 
+    const queryPermission =
+      userRole === RoleEnum.ADMIN
+        ? {}
+        : {
+          assignee: { some: { id: userId } },
+        }
+
     const where: Prisma.JobWhereInput = {
       ...(Boolean(parseInt(hideFinishItems))
         ? {
@@ -148,6 +158,7 @@ export class JobService {
         }
         : {}),
       ...queryByTab,
+      ...queryPermission,
       ...(search && {
         OR: [
           {
@@ -176,7 +187,6 @@ export class JobService {
           },
         ],
       }),
-      assignee: { some: { id: userId } },
     }
 
     const jobs = await this.prisma.job.findMany({
@@ -223,10 +233,28 @@ export class JobService {
 
       const priorityFilter = {
         ...where,
-        dueAt: {
-          gte: today,
-          lt: dayAfterTomorrow, // trước ngày kia, tức là chỉ trong 2 ngày gần nhất (nay + mai)
-        },
+        AND: [
+          {
+            dueAt: {
+              gte: today,
+              lt: dayAfterTomorrow, // trước ngày kia, tức là chỉ trong 2 ngày gần nhất (nay + mai)
+            },
+          },
+          {
+            status: {
+              NOT: {
+                code: 'completed',
+              },
+            },
+          },
+          {
+            status: {
+              NOT: {
+                code: 'finish',
+              },
+            },
+          },
+        ],
       }
       const activeFilter = {
         ...where,
@@ -238,7 +266,7 @@ export class JobService {
         ...where,
         status: {
           is: {
-            displayName: 'Completed',
+            code: 'completed',
           },
         },
       }
@@ -246,7 +274,7 @@ export class JobService {
         ...where,
         status: {
           is: {
-            displayName: 'Delivered',
+            code: 'delivered',
           },
         },
       }
@@ -261,7 +289,14 @@ export class JobService {
           {
             status: {
               NOT: {
-                displayName: 'Completed',
+                code: 'completed',
+              },
+            },
+          },
+          {
+            status: {
+              NOT: {
+                code: 'finish',
               },
             },
           },
@@ -293,15 +328,27 @@ export class JobService {
   /**
    * Find job by ID.
    */
-  async findByJobNo(userId: string, jobNo: string): Promise<Job> {
+  async findByJobNo(
+    userId: string,
+    userRole: RoleEnum,
+    jobNo: string,
+  ): Promise<Job> {
     if (!jobNo) {
       throw new BadRequestException('Job no is invalid')
     }
     if (!userId) {
       throw new UnauthorizedException()
     }
+
+    const queryPermission =
+      userRole === RoleEnum.ADMIN
+        ? {}
+        : {
+          assignee: { some: { id: userId } },
+        }
+
     const job = await this.prisma.job.findUnique({
-      where: { no: jobNo, assignee: { some: { id: userId } } },
+      where: { no: jobNo, ...queryPermission },
       include: {
         type: true,
         assignee: true,

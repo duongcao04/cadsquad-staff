@@ -1,5 +1,5 @@
 import { FILE } from '@/shared/constants/appConstant'
-import { FileItem } from '@/validationSchemas/file.schema'
+import { FileItem } from '@/shared/components/FileManager'
 
 export const ROOT_DIR = 'root'
 

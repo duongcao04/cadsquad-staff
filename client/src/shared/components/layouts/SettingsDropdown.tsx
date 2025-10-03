@@ -14,14 +14,15 @@ import { SettingsGearIcon } from '../icons/animate/SettingsGearIcon'
 import {
     ADMIN_SETTING_DROPDOWN,
     VI_ADMIN_SETTING_DROPDOWN,
-} from '../../constants/adminSettingDropdown'
+} from '@/shared/constants/adminSettingDropdown'
 import { useLocale } from 'next-intl'
-import { Link } from '../../../i18n/navigation'
+import { Link } from '@/i18n/navigation'
 
 export default function SettingsDropdown() {
     const locale = useLocale()
     const dropdownData =
         locale === 'vi' ? VI_ADMIN_SETTING_DROPDOWN : ADMIN_SETTING_DROPDOWN
+
     return (
         <Dropdown
             placement="bottom-end"

@@ -2,6 +2,7 @@
 import { ApiResponse, axiosClient } from '@/lib/axios'
 import { CreateUserInput, UpdateUserInput } from '@/shared/validationSchemas/user.schema'
 import { User } from '@/shared/interfaces/user.interface'
+import { UpdatePasswordInput } from '../../shared/validationSchemas/auth.schema'
 
 export const userApi = {
 	create: (data: CreateUserInput) => {
@@ -9,6 +10,12 @@ export const userApi = {
 	},
 	findAll: () => {
 		return axiosClient.get<ApiResponse<User[]>>('/users')
+	},
+	checkUsernameValid: (username: string) => {
+		return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(`/users/username/${username}`)
+	},
+	updatePassword: (data: UpdatePasswordInput) => {
+		return axiosClient.patch<ApiResponse<{ message: string }>>('/users/update-password', data)
 	},
 	findOne: (id: string) => {
 		return axiosClient.get<ApiResponse<User>>(`/users/${id}`)

@@ -171,6 +171,7 @@ CREATE TABLE "public"."JobType" (
 CREATE TABLE "public"."JobStatus" (
     "id" TEXT NOT NULL,
     "displayName" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
     "thumbnailUrl" TEXT,
     "hexColor" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
@@ -206,6 +207,7 @@ CREATE TABLE "public"."Notification" (
     "content" TEXT NOT NULL,
     "imageUrl" TEXT,
     "senderId" TEXT,
+    "redirectUrl" TEXT,
     "type" "public"."NotificationType" NOT NULL DEFAULT 'INFO',
     "status" "public"."NotificationStatus" NOT NULL DEFAULT 'UNSEEN',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -285,6 +287,9 @@ CREATE INDEX "Job_createdById_idx" ON "public"."Job"("createdById");
 
 -- CreateIndex
 CREATE INDEX "Job_priority_idx" ON "public"."Job"("priority");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "JobStatus_code_key" ON "public"."JobStatus"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "JobStatus_order_key" ON "public"."JobStatus"("order");

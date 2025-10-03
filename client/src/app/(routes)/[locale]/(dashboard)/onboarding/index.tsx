@@ -1,3 +1,5 @@
 import JobTable from './components/tables/JobTable'
+import JobDetailView from './@jobDetail/page'
+import { jobColumns } from './columns/jobColumns'
 
-export { JobTable }
+export { JobTable, JobDetailView, jobColumns }

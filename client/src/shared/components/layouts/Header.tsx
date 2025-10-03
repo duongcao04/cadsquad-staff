@@ -17,7 +17,6 @@ import {
 } from '@heroui/react'
 import { Layout } from 'antd'
 import { LogOut, Search, User, UserCircle } from 'lucide-react'
-import { useLocale } from 'next-intl'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import AppLoader from '@/app/(routes)/[locale]/loading'
@@ -50,7 +49,6 @@ const buttonVariants: Variants = {
 }
 
 const Header = () => {
-    const locale = useLocale()
     const router = useRouter()
     const pathname = usePathname()
 
@@ -237,8 +235,9 @@ const Header = () => {
                                 <DropdownItem
                                     key="profile"
                                     className="h-14 gap-2 opacity-100"
-                                    hrefLang={locale}
-                                    href="/profile"
+                                    onClick={() => {
+                                        router.push('/profile')
+                                    }}
                                 >
                                     <UserComp
                                         avatarProps={{
@@ -254,16 +253,18 @@ const Header = () => {
                                     />
                                 </DropdownItem>
                                 <DropdownItem
-                                    key="onBoarding"
-                                    hrefLang={locale}
-                                    href="/overview"
+                                    key="overview"
+                                    onClick={() => {
+                                        router.push('/overview')
+                                    }}
                                 >
                                     Overview
                                 </DropdownItem>
                                 <DropdownItem
                                     key="settings"
-                                    hrefLang={locale}
-                                    href="/settings/personal"
+                                    onClick={() => {
+                                        router.push('/setting')
+                                    }}
                                 >
                                     Account settings
                                 </DropdownItem>
@@ -273,8 +274,9 @@ const Header = () => {
                                 <DropdownItem
                                     key="helpCenter"
                                     startContent={<UserCircle size={16} />}
-                                    href="/help-center"
-                                    hrefLang={locale}
+                                    onClick={() => {
+                                        router.push('/help-center')
+                                    }}
                                 >
                                     Help center
                                 </DropdownItem>

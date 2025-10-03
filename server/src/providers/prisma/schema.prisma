@@ -226,6 +226,7 @@ model JobType {
 model JobStatus {
   id              String   @id @default(uuid())
   displayName     String
+  code            String   @unique
   thumbnailUrl    String?
   hexColor        String
   order           Int      @unique
@@ -277,13 +278,14 @@ model Notification {
   userId String
   user   User   @relation("UserNotifications", fields: [userId], references: [id])
 
-  title    String?
-  content  String
-  imageUrl String?
-  senderId String?
-  sender   User?              @relation("UserSendedNotifications", fields: [senderId], references: [id])
-  type     NotificationType   @default(INFO)
-  status   NotificationStatus @default(UNSEEN)
+  title       String?
+  content     String
+  imageUrl    String?
+  senderId    String?
+  redirectUrl String?
+  sender      User?              @relation("UserSendedNotifications", fields: [senderId], references: [id])
+  type        NotificationType   @default(INFO)
+  status      NotificationStatus @default(UNSEEN)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

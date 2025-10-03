@@ -2,8 +2,6 @@
 
 import React, { useMemo } from 'react'
 
-import useSWR from 'swr'
-
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { IconActive } from '@/shared/components/icons/solar/IconActive'
 import { IconAssignee } from '@/shared/components/icons/solar/IconAssignee'

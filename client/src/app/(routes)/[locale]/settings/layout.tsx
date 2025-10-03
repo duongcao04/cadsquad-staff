@@ -1,23 +1,4 @@
-import { getTranslations } from 'next-intl/server'
 import Header from '@/shared/components/layouts/Header'
-
-export async function generateMetadata({
-    params,
-}: Readonly<{
-    params: Promise<{ locale: string }>
-}>) {
-    const { locale } = await params
-
-    const tMetadata = await getTranslations({
-        locale,
-        namespace: 'metadata.settings',
-    })
-
-    return {
-        title: tMetadata('title'),
-        desctiption: tMetadata('description'),
-    }
-}
 
 export default async function SettingsLayout({
     children,

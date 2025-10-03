@@ -4,20 +4,17 @@ import { Button } from '@heroui/react'
 import { Modal, Progress } from 'antd'
 import { CloudUpload } from 'lucide-react'
 
-import { ROOT_DIR } from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
-import { useSearchParam } from '@/hooks/useSearchParam'
-import { FileItem } from '@/validationSchemas/file.schema'
+import { FileItem } from '@/shared/components/FileManager'
 
 type Props = {
     isOpen: boolean
     onClose: () => void
     setFiles: React.Dispatch<React.SetStateAction<FileItem[]>>
 }
-export default function UploadModal({ isOpen, onClose, setFiles }: Props) {
-    const { getSearchParam } = useSearchParam()
+export default function UploadModal({ isOpen, onClose }: Props) {
+    // const { getSearchParam } = useSearchParam()
 
-    const dirQuery = getSearchParam('directory') ?? ROOT_DIR
-    const currentPath = dirQuery.split('-')
+    // const dirQuery = getSearchParam('directory') ?? ROOT_DIR
 
     const [uploadProgress, setUploadProgress] = useState(0)
     const [uploadingFile, setUploadingFile] = useState('')
@@ -33,27 +30,27 @@ export default function UploadModal({ isOpen, onClose, setFiles }: Props) {
                     clearInterval(interval)
 
                     // Add the new file to the list
-                    const newFile: FileItem = {
-                        id: Date.now().toString(),
-                        name: fileName,
-                        type: fileName.endsWith('.pdf')
-                            ? 'pdf'
-                            : fileName.endsWith('.jpg') ||
-                                fileName.endsWith('.png')
-                              ? 'image'
-                              : fileName.endsWith('.docx') ||
-                                  fileName.endsWith('.txt')
-                                ? 'document'
-                                : fileName.endsWith('.js') ||
-                                    fileName.endsWith('.ts')
-                                  ? 'code'
-                                  : 'other',
-                        size: '1.2 MB',
-                        modified: Date.now(),
-                        path: currentPath,
-                    }
+                    // // const newFile: FileItem = {
+                    // //     id: Date.now().toString(),
+                    // //     name: fileName,
+                    // //     type: fileName.endsWith('.pdf')
+                    // //         ? 'pdf'
+                    // //         : fileName.endsWith('.jpg') ||
+                    // //             fileName.endsWith('.png')
+                    // //           ? 'image'
+                    // //           : fileName.endsWith('.docx') ||
+                    // //               fileName.endsWith('.txt')
+                    // //             ? 'document'
+                    // //             : fileName.endsWith('.js') ||
+                    // //                 fileName.endsWith('.ts')
+                    // //               ? 'code'
+                    // //               : 'other',
+                    // //     size: '1.2 MB',
+                    // //     modified: Date.now(),
+                    // //     path: currentPath,
+                    // // }
 
-                    setFiles((prev) => [...prev, newFile])
+                    // setFiles((prev) => [...prev, newFile])
                     onClose()
                     setUploadingFile('')
                     // message.success('File uploaded successfully!')

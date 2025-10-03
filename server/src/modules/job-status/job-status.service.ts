@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { JobStatus } from '@prisma/client'
+import { Job, JobStatus, RoleEnum } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { JobStatusResponseDto } from './dto/job-status-response.dto'
 import { CreateJobStatusDto } from './dto/create-job-status.dto'
 import { UpdateJobStatusDto } from './dto/update-job-status.dto'
+import { JobResponseDto } from '../job/dto/job-response.dto'
 
 @Injectable()
 export class JobStatusService {
@@ -45,6 +46,33 @@ export class JobStatusService {
     return plainToInstance(JobStatusResponseDto, jobStatus, {
       excludeExtraneousValues: true,
     }) as unknown as JobStatus
+  }
+
+  /**
+   * Find all jobs by status code :statusCode
+   */
+  async findJobsByStatusCode(userId: string, userRole: RoleEnum, statusCode: string): Promise<Job[]> {
+    const queryPermission = userRole === RoleEnum.ADMIN ? {
+    } : {
+      assignee: { some: { id: userId } },
+    }
+    const jobs = await this.prismaService.job.findMany({
+      where: {
+        status: {
+          code: statusCode
+        },
+        ...queryPermission
+      },
+      include: {
+        status: true
+      }
+    })
+
+    if (!jobs) throw new NotFoundException('Job not found')
+
+    return plainToInstance(JobResponseDto, jobs, {
+      excludeExtraneousValues: true,
+    }) as unknown as Job[]
   }
 
   /**

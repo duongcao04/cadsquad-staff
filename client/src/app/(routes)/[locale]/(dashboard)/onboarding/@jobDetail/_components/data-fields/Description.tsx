@@ -2,13 +2,8 @@
 
 import TextClamp from '@/shared/components/texts/TextClamp'
 import { Job } from '@/shared/interfaces/job.interface'
-import { useUpdateJobMutation } from '@/shared/queries/useJob'
-import {
-    Skeleton,
-    useDisclosure,
-} from '@heroui/react'
+import { Skeleton } from '@heroui/react'
 import { Settings } from 'lucide-react'
-import { useState } from 'react'
 
 const Description = ({
     isLoading = false,
@@ -17,12 +12,6 @@ const Description = ({
     isLoading: boolean
     data: Job
 }) => {
-    const { mutateAsync: updateJobMutation, isPending: isUpdating } =
-        useUpdateJobMutation()
-    const { isOpen, onClose, onOpen } = useDisclosure({
-        id: 'Description',
-    })
-    const [value, setValue] = useState(data?.clientName)
     return (
         <div className="w-full">
             <Skeleton className="w-full h-fit rounded-md" isLoaded={!isLoading}>

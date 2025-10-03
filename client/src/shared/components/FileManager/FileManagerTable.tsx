@@ -20,10 +20,8 @@ import {
     Trash,
 } from 'lucide-react'
 
-import { FileItem } from '@/validationSchemas/file.schema'
-
+import { FileItem } from '@/shared/components/FileManager'
 import { formatDate } from './actions/formatDate'
-import { getFileIcon } from './actions/getFileIcon'
 import { useFileStore } from './store/useFileStore'
 
 type Props = {
@@ -86,7 +84,7 @@ export default function FileManagerTable({
                     className="flex items-center gap-3 cursor-pointer"
                     onClick={() => handleFileAction('open', record)}
                 >
-                    {getFileIcon(record.type, record.color!)}
+                    {/* {getFileIcon(record?.type, record.color!)} */}
                     <span className="font-medium">{text}</span>
                 </div>
             ),

@@ -28,7 +28,7 @@ export const CreateJobSchema = yup.object({
         .required("Staff cost is required"),
     assigneeIds: yup
         .array()
-        .of(yup.string().uuid("Each assignee must be a valid UUID"))
+        .of(yup.string().required())
         .optional(),
     createdById: yup
         .string()

@@ -6,9 +6,7 @@ import useAuth from '@/shared/queries/useAuth'
 import EditAppearanceForm from './_components/EditAppearanceForm'
 
 export default function AppearancePage() {
-    const {
-        profile: { isLoading },
-    } = useAuth()
+    const { loadingProfile } = useAuth()
 
     return (
         <div className="w-full mt-4 space-y-6">
@@ -18,10 +16,10 @@ export default function AppearancePage() {
                     Change how your public dashboard looks and feels
                 </p>
             </div>
-            {isLoading && (
+            {loadingProfile && (
                 <Skeleton className="w-full h-[400px] rounded-xl"></Skeleton>
             )}
-            {!isLoading && <EditAppearanceForm />}
+            {!loadingProfile && <EditAppearanceForm />}
         </div>
     )
 }

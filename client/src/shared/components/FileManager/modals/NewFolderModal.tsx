@@ -7,9 +7,8 @@ import { Modal } from 'antd'
 import { FolderIcon, FolderPlus } from 'lucide-react'
 
 import { ROOT_DIR } from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
-import { useAuthStore } from '@/lib/zustand/useAuthStore'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { FileItem } from '@/validationSchemas/file.schema'
+import { FileItem } from '..'
 
 const FOLDER_COLORS = [
     '#1b1464',
@@ -32,7 +31,6 @@ type Props = {
 }
 export default function NewFolderModal({ isOpen, onClose, setFiles }: Props) {
     const { getSearchParam } = useSearchParam()
-    const { authUser } = useAuthStore()
 
     const dirQuery = getSearchParam('directory') ?? ROOT_DIR
     const currentPath = dirQuery.split('_')
@@ -51,9 +49,7 @@ export default function NewFolderModal({ isOpen, onClose, setFiles }: Props) {
             const newFolder: FileItem = {
                 id: Date.now().toString(),
                 name: newFolderName,
-                color: folderColor,
                 visibleToUsers: [],
-                createdById: authUser.id!,
                 type: 'folder',
                 size: '',
                 items: 0,

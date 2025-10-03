@@ -4,7 +4,7 @@ import { FolderOutlined } from '@ant-design/icons'
 import { Button, List, Modal, Typography } from 'antd'
 
 import { useFileStore } from '@/shared/components/FileManager/store/useFileStore'
-import { FileItem } from '@/validationSchemas/file.schema'
+import { FileItem } from '@/shared/components/FileManager'
 
 const { Title, Text } = Typography
 

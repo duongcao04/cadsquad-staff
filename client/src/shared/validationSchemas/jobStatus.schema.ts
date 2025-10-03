@@ -5,6 +5,7 @@ export const CreateJobStatusInputSchema = yup.object({
   thumbnailUrl: yup.string().url().optional(),
   hexColor: yup.string().matches(/^#([0-9A-Fa-f]{6})$/, 'Must be a valid hex color').required('Hex color is required'),
   order: yup.number().integer().required('Order is required'),
+  code: yup.string().optional(),
   icon: yup.string().optional(),
   nextStatusOrder: yup.number().integer().optional(),
   prevStatusOrder: yup.number().integer().optional(),

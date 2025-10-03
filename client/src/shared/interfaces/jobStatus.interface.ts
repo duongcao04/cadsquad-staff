@@ -36,6 +36,12 @@ export interface JobStatus {
 	order: number
 
 	/**
+	 * The unique code.
+	 * @type {number}
+	 */
+	code: string
+
+	/**
 	 * An optional icon identifier to be displayed with the status.
 	 * @type {string | null | undefined}
 	 */

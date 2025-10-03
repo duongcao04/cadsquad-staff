@@ -4,9 +4,9 @@ import { compare, hash } from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-import { User } from '@/validationSchemas/user.schema'
 import envConfig from '@/config/envConfig'
 import { constants } from '@/shared/constants'
+import { User } from '@/shared/interfaces/user.interface'
 
 const key = new TextEncoder().encode(envConfig.NEXT_PUBLIC_SUPABASE_JWT_KEY)
 const SALT_ROUNDS = 10
@@ -105,12 +105,12 @@ export async function logoutSession(user: User) {
         expires: new Date(Date.now()).toISOString(),
     }
     const encryptedSession = await signToken(session)
-    ;(await cookies()).set('session', encryptedSession, {
-        expires: new Date(Date.now()),
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-    })
+        ; (await cookies()).set('session', encryptedSession, {
+            expires: new Date(Date.now()),
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+        })
 }
 
 // TODO: add refresh token for expand work session

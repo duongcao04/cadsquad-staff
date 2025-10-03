@@ -1,6 +1,5 @@
 import React from 'react'
 
-type Props = {}
-export default function BulkActionPanel({}: Props) {
+export default function BulkActionPanel() {
     return <div>BulkSelectedAction</div>
 }

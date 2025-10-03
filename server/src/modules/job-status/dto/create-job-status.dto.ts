@@ -27,6 +27,10 @@ export class CreateJobStatusDto {
 	@IsNotEmpty()
 	order: number
 
+	@IsString()
+	@IsNotEmpty()
+	code: string
+
 	@IsOptional()
 	@IsString()
 	icon?: string

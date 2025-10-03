@@ -32,7 +32,7 @@ export default function LoginForm() {
         validationSchema: LoginInputSchema,
         onSubmit: async (values) => {
             try {
-                console.log(values);
+                console.log(values)
 
                 setLoading(true)
                 await login(values)

@@ -28,7 +28,7 @@ export class JobController {
   @UseGuards(JwtGuard)
   async findAll(@Req() request: Request, @Query() query: JobQueryDto) {
     const userPayload: TokenPayload = await request['user']
-    return this.jobService.findAll(userPayload.sub, query)
+    return this.jobService.findAll(userPayload.sub, userPayload.role, query)
   }
 
   @Get("no/:jobNo")
@@ -37,7 +37,7 @@ export class JobController {
   @UseGuards(JwtGuard)
   async findByNo(@Req() request: Request, @Param('jobNo') jobNo: string) {
     const userPayload: TokenPayload = await request['user']
-    return this.jobService.findByJobNo(userPayload.sub, jobNo)
+    return this.jobService.findByJobNo(userPayload.sub, userPayload.role, jobNo)
   }
 
   @Get('columns')
@@ -67,7 +67,7 @@ export class JobController {
   async update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
     return this.jobService.update(id, updateJobDto)
   }
-  
+
   @Patch(':id/change-status')
   @HttpCode(200)
   @ResponseMessage('Change job status successfully')

@@ -2,11 +2,12 @@
 
 import {
     addToast,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownSection,
-    DropdownTrigger,
+    Button,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    Tab,
+    Tabs,
 } from '@heroui/react'
 import React from 'react'
 import { ChevronDown } from 'lucide-react'
@@ -18,6 +19,7 @@ import JobStatusChip from '@/shared/components/chips/JobStatusChip'
 import { useChangeStatusMutation } from '@/shared/queries/useJob'
 import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
 import { Job } from '@/shared/interfaces/job.interface'
+import { lightenHexColor } from '../../../lib/utils'
 
 type Props = {
     jobData: Job
@@ -88,17 +90,18 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
     )
 
     return (
-        <Dropdown
+        <Popover
             placement="bottom-start"
             size="sm"
             classNames={{
                 base: '!z-0',
-                content: '!z-0',
+                content: '!z-0 py-2 w-[300px]',
                 backdrop: '!z-0',
                 trigger: '!z-0',
             }}
+            showArrow={true}
         >
-            <DropdownTrigger className="opacity-100">
+            <PopoverTrigger className="opacity-100">
                 <button className="cursor-pointer">
                     <JobStatusChip
                         data={statusData}
@@ -117,51 +120,122 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                         }}
                     />
                 </button>
-            </DropdownTrigger>
-            <DropdownMenu
-                aria-label="Change status action"
-                disabledKeys={['notFoundItems']}
-            >
-                <DropdownSection title="Quick change" showDivider>
-                    {dropdownActions.map((item) => {
-                        return (
-                            <DropdownItem key={item.key} onPress={item.action}>
-                                {item.data && (
-                                    <div className="flex items-center justify-start gap-1">
-                                        Mark as
-                                        <JobStatusChip data={item.data} />
-                                    </div>
-                                )}
-                            </DropdownItem>
-                        )
-                    })}
-                </DropdownSection>
-                <DropdownSection title="Force change">
-                    {!jobStatuses ? (
-                        <DropdownItem key={'notFoundItems'}>
+            </PopoverTrigger>
+            <PopoverContent aria-label="Change status action">
+                <Tabs
+                    aria-label="Job status change tabs"
+                    fullWidth
+                    classNames={{
+                        base: 'size-full',
+                        panel: 'size-full',
+                    }}
+                >
+                    <Tab key="photos" title="Quick change">
+                        <div className="size-full space-y-2.5">
+                            {dropdownActions.map((item) => {
+                                return (
+                                    <Button
+                                        key={item.key}
+                                        className="w-full"
+                                        style={{
+                                            backgroundColor: lightenHexColor(
+                                                item.data?.hexColor
+                                                    ? item.data?.hexColor
+                                                    : '#ffffff',
+                                                90
+                                            ),
+                                        }}
+                                        onPress={item.action}
+                                    >
+                                        {item.data && (
+                                            <div className="flex items-center justify-start gap-2">
+                                                <div
+                                                    className="size-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor: item
+                                                            .data?.hexColor
+                                                            ? item.data
+                                                                  ?.hexColor
+                                                            : '#ffffff',
+                                                    }}
+                                                />
+                                                <p
+                                                    className="font-semibold"
+                                                    style={{
+                                                        color: item.data
+                                                            ?.hexColor
+                                                            ? item.data
+                                                                  ?.hexColor
+                                                            : '#ffffff',
+                                                    }}
+                                                >
+                                                    {item.data.displayName}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </Button>
+                                )
+                            })}
+                        </div>
+                    </Tab>
+                    <Tab key="music" title="Force change">
+                        <p className="text-text2 text-xs">Mark status as</p>
+                        <hr className="mt-2 mb-3 text-text3" />
+                        {!jobStatuses ? (
                             <p className="text-xs text-center">
                                 Không tìm thấy danh sách trạng thái
                             </p>
-                        </DropdownItem>
-                    ) : (
-                        jobStatuses.map((item) => {
-                            return (
-                                <DropdownItem
-                                    key={item.id}
-                                    onPress={() => {
-                                        handleChangeStatus(item as JobStatus)
-                                    }}
-                                >
-                                    <div className="flex items-center justify-start gap-1">
-                                        Mark as
-                                        <JobStatusChip data={item} />
-                                    </div>
-                                </DropdownItem>
-                            )
-                        })
-                    )}
-                </DropdownSection>
-            </DropdownMenu>
-        </Dropdown>
+                        ) : (
+                            <div className="size-full space-y-2.5">
+                                {jobStatuses.map((item) => {
+                                    return (
+                                        <Button
+                                            key={item.id}
+                                            className="w-full"
+                                            style={{
+                                                backgroundColor:
+                                                    lightenHexColor(
+                                                        item?.hexColor
+                                                            ? item?.hexColor
+                                                            : '#ffffff',
+                                                        90
+                                                    ),
+                                            }}
+                                            onPress={() => {
+                                                handleChangeStatus(item)
+                                            }}
+                                        >
+                                            {item && (
+                                                <div className="flex items-center justify-start gap-2">
+                                                    <div
+                                                        className="size-2 rounded-full"
+                                                        style={{
+                                                            backgroundColor:
+                                                                item?.hexColor
+                                                                    ? item?.hexColor
+                                                                    : '#ffffff',
+                                                        }}
+                                                    />
+                                                    <p
+                                                        className="font-semibold"
+                                                        style={{
+                                                            color: item?.hexColor
+                                                                ? item?.hexColor
+                                                                : '#ffffff',
+                                                        }}
+                                                    >
+                                                        {item.displayName}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </Button>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </Tab>
+                </Tabs>
+            </PopoverContent>
+        </Popover>
     )
 }

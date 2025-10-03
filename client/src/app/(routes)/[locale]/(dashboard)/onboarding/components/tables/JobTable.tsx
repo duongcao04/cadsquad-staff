@@ -5,8 +5,6 @@ import React, { useEffect, useState } from 'react'
 import type { TableProps } from 'antd'
 import { Table } from 'antd'
 
-import { useConfirmModal } from '@/shared/components/ui/ConfirmModal'
-
 import { DataType } from '@/app/(routes)/[locale]/(dashboard)/onboarding/page'
 import { useJobStore } from '@/app/(routes)/[locale]/(dashboard)/onboarding/store/useJobStore'
 import { useAddMemberModal } from '@/shared/actions/useAddMemberModal'
@@ -36,13 +34,13 @@ export default function JobTable({
     /**
      * Define states
      */
-    const [, setDeleteJob] = useState<Job | null>(null)
+    // const [, setDeleteJob] = useState<Job | null>(null)
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
     /**
      * Instance hooks
      */
     const { openModal: openAddMemberModal } = useAddMemberModal()
-    const deleteModal = useConfirmModal()
+    // const deleteModal = useConfirmModal()
     const { newJobNo, setNewJobNo } = useJobStore()
     const { openModal } = useDetailModal()
     /**

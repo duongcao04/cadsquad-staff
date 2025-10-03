@@ -5,7 +5,11 @@ import { axiosClient } from '@/lib/axios'
 import { User } from '@/shared/interfaces/user.interface'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { userApi } from '@/app/api/user.api'
-import { CreateUserInput } from '../validationSchemas/user.schema'
+import {
+    CreateUserInput,
+    UpdateUserInput,
+} from '@/shared/validationSchemas/user.schema'
+import { UpdatePasswordInput } from '@/shared/validationSchemas/auth.schema'
 
 export const useUsers = () => {
     return useQuery({
@@ -23,13 +27,31 @@ export const useUpdateUserMutation = () => {
             updateUserInput,
         }: {
             userId?: string
-            updateUserInput: Partial<User>
+            updateUserInput: UpdateUserInput
         }) => {
             return axiosClient.patch(`users/${userId}`, updateUserInput)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ['jobs'],
+                queryKey: ['profile'],
+            })
+        },
+    })
+}
+
+export const useUpdatePasswordMutation = () => {
+    return useMutation({
+        mutationKey: ['updatePassword'],
+        mutationFn: ({
+            updatePasswordInput,
+        }: {
+            updatePasswordInput: UpdatePasswordInput
+        }) => {
+            return userApi.updatePassword(updatePasswordInput)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['profile'],
             })
         },
     })

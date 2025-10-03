@@ -3,6 +3,7 @@
 import React from 'react'
 import { useJobs } from '@/shared/queries/useJob'
 import { JobTable } from '../onboarding'
+import PageHeading from '../_components/PageHeading'
 
 export default function WorkbenchPage() {
     /**
@@ -14,24 +15,29 @@ export default function WorkbenchPage() {
         hideFinishItems: 1,
     })
     return (
-        <div className="size-full">
-            <JobTable
-                isLoading={loadingJobs}
-                data={jobs!}
-                showColumns={[
-                    'thumbnail',
-                    'no',
-                    'displayName',
-                    'staffCost',
-                    'assignee',
-                    'attachmentUrls',
-                    'isPaid',
-                    'dueAt',
-                    'status',
-                    'action',
-                ]}
-                tableOptions={{ scroll: { x: 'max-content', y: 61 * 11 + 20 } }}
-            />
-        </div>
+        <>
+            <PageHeading title="Workbench" />
+            <div className="w-full h-[calc(100%-54px-12px)]">
+                <JobTable
+                    isLoading={loadingJobs}
+                    data={jobs!}
+                    showColumns={[
+                        'thumbnail',
+                        'no',
+                        'displayName',
+                        'staffCost',
+                        'assignee',
+                        'attachmentUrls',
+                        'isPaid',
+                        'dueAt',
+                        'status',
+                        'action',
+                    ]}
+                    tableOptions={{
+                        scroll: { x: 'max-content', y: 61 * 11 + 20 },
+                    }}
+                />
+            </div>
+        </>
     )
 }

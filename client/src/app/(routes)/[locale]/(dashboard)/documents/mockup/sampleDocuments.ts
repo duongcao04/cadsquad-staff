@@ -1,4 +1,4 @@
-import { FileItem } from '@/validationSchemas/file.schema'
+import { FileItem } from "@/shared/components/FileManager";
 
 export const sampleFiles: FileItem[] = [
     {

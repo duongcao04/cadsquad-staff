@@ -1,34 +1,69 @@
+'use client'
+
 import { Image } from 'antd'
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import useAuth from '@/shared/queries/useAuth'
-import { Button, Input, InputProps, Skeleton } from '@heroui/react'
+import { addToast, Button, Input, InputProps, Skeleton } from '@heroui/react'
 import { useFormik } from 'formik'
 import { Link } from '@/i18n/navigation'
+import { UpdateUserInput } from '@/shared/validationSchemas/user.schema'
+import { useUpdateUserMutation } from '@/shared/queries/useUser'
+import { userApi } from '@/app/api/user.api'
 
-export default function UpdateAccountForm({
-    isLoading,
-}: {
-    isLoading: boolean
-}) {
-    const {
-        profile: { data },
-    } = useAuth()
+export default function UpdateAccountForm() {
+    const { mutateAsync: updateUserMutate, isPending: isUpdatingUser } =
+        useUpdateUserMutation()
+    const { profile, loadingProfile } = useAuth()
+    const [usernameValid, setUsernameValid] = useState(true)
 
-    const initialValues = {
-        email: data?.email,
-        name: data?.displayName,
-        username: data?.username,
-        department: data?.department?.displayName ?? '',
-        jobTitle: data?.jobTitles ?? '',
-        phoneNumber: data?.phoneNumber ?? '',
-        avatar: data?.avatar ?? '',
+    const getPhoneNumber = (phoneNum: string) => {
+        if (phoneNum.startsWith('0')) {
+            return phoneNum.replace('0', '')
+        }
+        if (phoneNum.startsWith('+84')) {
+            return phoneNum.replace('+84', '')
+        }
+        return phoneNum
     }
+    const initialValues = useMemo<UpdateUserInput>(
+        () => ({
+            avatar: profile?.avatar ?? '',
+            departmentId: profile?.department?.id ?? '',
+            username: profile?.username ?? '',
+            email: profile?.email ?? '',
+            jobTitleIds: profile?.jobTitles.map((i) => i.id) ?? [],
+            displayName: profile?.displayName ?? '',
+            phoneNumber: getPhoneNumber(profile?.phoneNumber ?? ''),
+        }),
+        [profile]
+    )
 
-    const formik = useFormik({
+    const formik = useFormik<UpdateUserInput>({
         initialValues,
         enableReinitialize: true,
         onSubmit(values) {
-            console.log(values)
+            try {
+                const updateInput = {
+                    username: values.username,
+                    email: values.email,
+                    displayName: values.displayName,
+                    phoneNumber: `0${values.phoneNumber}`,
+                }
+                updateUserMutate({
+                    userId: profile?.id,
+                    updateUserInput: updateInput,
+                })
+                addToast({
+                    title: 'Cập nhật thông tin thành công',
+                    color: 'success',
+                })
+            } catch (error) {
+                console.log(error)
+                addToast({
+                    title: 'Đã xảy ra lỗi',
+                    color: 'danger',
+                })
+            }
         },
     })
 
@@ -46,7 +81,7 @@ export default function UpdateAccountForm({
                         <div className="space-y-4">
                             <div className="space-y-1.5">
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
                                     <p className="text-text1p5 text-sm">
@@ -54,7 +89,7 @@ export default function UpdateAccountForm({
                                     </p>
                                 </Skeleton>
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-full h-fit rounded-md"
                                 >
                                     <Input
@@ -69,7 +104,7 @@ export default function UpdateAccountForm({
                             </div>
                             <div className="space-y-1.5">
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
                                     <p className="text-text1p5 text-sm">
@@ -77,22 +112,22 @@ export default function UpdateAccountForm({
                                     </p>
                                 </Skeleton>
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-full h-fit rounded-md"
                                 >
                                     <Input
-                                        id="name"
-                                        name="name"
+                                        id="displayName"
+                                        name="displayName"
                                         classNames={inputClassNames}
                                         variant="bordered"
-                                        value={formik.values.name}
+                                        value={formik.values.displayName}
                                         onChange={formik.handleChange}
                                     />
                                 </Skeleton>
                             </div>
                             <div className="space-y-1.5">
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
                                     <p className="text-text1p5 text-sm">
@@ -100,7 +135,7 @@ export default function UpdateAccountForm({
                                     </p>
                                 </Skeleton>
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-full h-fit rounded-md"
                                 >
                                     <Input
@@ -110,13 +145,28 @@ export default function UpdateAccountForm({
                                         classNames={inputClassNames}
                                         variant="bordered"
                                         value={formik.values.username}
-                                        onChange={formik.handleChange}
+                                        onChange={async (e) => {
+                                            const value = e.target.value
+                                            formik.setFieldValue(
+                                                'username',
+                                                value
+                                            )
+                                            const isValid = await userApi
+                                                .checkUsernameValid(value)
+                                                .then(
+                                                    (res) =>
+                                                        res.data.result?.isValid
+                                                )
+                                            setUsernameValid(Boolean(isValid))
+                                        }}
+                                        isInvalid={!usernameValid}
+                                        errorMessage={'Username đã tồn tại'}
                                     />
                                 </Skeleton>
                             </div>
                             <div className="space-y-1.5">
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
                                     <p className="text-text1p5 text-sm">
@@ -124,7 +174,7 @@ export default function UpdateAccountForm({
                                     </p>
                                 </Skeleton>
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-full h-fit rounded-md"
                                 >
                                     <Input
@@ -132,14 +182,14 @@ export default function UpdateAccountForm({
                                         name="department"
                                         classNames={inputClassNames}
                                         variant="bordered"
-                                        value={formik.values.department}
-                                        onChange={formik.handleChange}
+                                        value={profile?.department?.displayName}
+                                        isDisabled
                                     />
                                 </Skeleton>
                             </div>
                             <div className="space-y-1.5">
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
                                     <p className="text-text1p5 text-sm">
@@ -147,7 +197,7 @@ export default function UpdateAccountForm({
                                     </p>
                                 </Skeleton>
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-full h-fit rounded-md"
                                 >
                                     <Input
@@ -155,14 +205,15 @@ export default function UpdateAccountForm({
                                         name="jobTitle"
                                         classNames={inputClassNames}
                                         variant="bordered"
-                                        value={formik.values.jobTitle[0]}
+                                        // value={formik.values.jobTitle[0]}
                                         onChange={formik.handleChange}
+                                        isDisabled
                                     />
                                 </Skeleton>
                             </div>
                             <div className="space-y-1.5">
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
                                     <p className="text-text1p5 text-sm">
@@ -170,7 +221,7 @@ export default function UpdateAccountForm({
                                     </p>
                                 </Skeleton>
                                 <Skeleton
-                                    isLoaded={!isLoading}
+                                    isLoaded={!loadingProfile}
                                     className="w-full h-fit rounded-md"
                                 >
                                     <Input
@@ -190,7 +241,7 @@ export default function UpdateAccountForm({
                         <div className="flex flex-col items-center gap-6">
                             <Skeleton
                                 className="w-full aspect-square rounded-full"
-                                isLoaded={!isLoading}
+                                isLoaded={!loadingProfile}
                             >
                                 <Image
                                     src={formik.values.avatar}
@@ -205,6 +256,9 @@ export default function UpdateAccountForm({
                                 size="sm"
                                 className="px-8"
                                 color="primary"
+                                onPress={() => {
+                                    alert('Tính năng đang được phát triển')
+                                }}
                             >
                                 Chọn ảnh
                             </Button>
@@ -212,13 +266,18 @@ export default function UpdateAccountForm({
                     </div>
                 </div>
             </div>
-            <Button type="submit" className="px-8" color="primary">
+            <Button
+                type="submit"
+                className="px-8"
+                color="primary"
+                isLoading={isUpdatingUser}
+            >
                 Cập nhật
             </Button>
             <p className="text-sm">
                 Đổi mật khẩu, nhấn vào{' '}
                 <Link
-                    href={'/settings/personal/security'}
+                    href={'/settings/security'}
                     className="text-primary-600 underline"
                 >
                     đây

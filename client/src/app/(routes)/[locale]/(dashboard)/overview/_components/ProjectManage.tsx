@@ -1,165 +1,36 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React from 'react'
 
-import { Avatar, AvatarGroup, Button, Chip, Tooltip } from '@heroui/react'
-import { Table, TableProps } from 'antd'
+import { Button } from '@heroui/react'
+import { Table } from 'antd'
 import { ChevronRight } from 'lucide-react'
-import useSWR from 'swr'
 
 import { Link } from '@/i18n/navigation'
-import { formatCurrencyVND } from '@/lib/formatCurrency'
 
-import CountDown from '../../onboarding/_components/CountDown'
-import { useSettingStore } from '../../../settings/shared/store/useSettingStore'
-import { Job } from '@/validationSchemas/job.schema'
 import { useJobs } from '@/shared/queries/useJob'
-
-const DEFAULT_TAB = 'active'
+import { Job } from '@/shared/interfaces/job.interface'
+import { jobColumns } from '../../onboarding'
+import { useJobStatuses } from '@/shared/queries/useJobStatus'
+import { useJobTypes } from '@/shared/queries/useJobType'
+import { usePaymentChannels } from '@/shared/queries/usePaymentChannel'
+import { useUsers } from '@/shared/queries/useUser'
+import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
+import { JobType } from '@/shared/interfaces/jobType.interface'
+import { PaymentChannel } from '@/shared/interfaces/paymentChannel.interface'
+import { User } from '@/shared/interfaces/user.interface'
 
 type DataType = Job & {
     key: React.Key
 }
 
 export default function ProjectManage() {
-    const { table } = useSettingStore()
     const { jobs } = useJobs()
+    const { data: jobStatuses } = useJobStatuses()
+    const { data: jobTypes } = useJobTypes()
+    const { data: paymentChannels } = usePaymentChannels()
+    const { data: users } = useUsers()
 
-    const columns: TableProps<DataType>['columns'] = [
-        {
-            title: 'Job No.',
-            dataIndex: 'jobNo',
-            key: 'jobNo',
-            width: '10%',
-            sorter: {
-                compare: (a, b) => a.jobNo!.localeCompare(b.jobNo!),
-                multiple: 1,
-            },
-        },
-        {
-            title: 'Job Name',
-            dataIndex: 'jobName',
-            key: 'jobName',
-            render: (jobName) => (
-                <p className="font-semibold uppercase line-clamp-1">
-                    {jobName}
-                </p>
-            ),
-            sorter: {
-                compare: (a, b) => a.jobName!.localeCompare(b.jobName!),
-                multiple: 3,
-            },
-        },
-        {
-            title: 'Income',
-            dataIndex: 'income',
-            key: 'income',
-            width: '10%',
-            render: () => (
-                <p className="text-base font-semibold text-red-500">$ 10</p>
-            ),
-            sorter: {
-                compare: (a, b) => a.income! - b.income!,
-                multiple: 2,
-            },
-        },
-        {
-            title: 'Staff Cost',
-            dataIndex: 'staffCost',
-            key: 'staffCost',
-            width: '10%',
-            render: (staffCost) => (
-                <p className="text-base font-semibold text-red-500">
-                    {formatCurrencyVND(staffCost)}
-                </p>
-            ),
-            sorter: {
-                compare: (a, b) => a.staffCost! - b.staffCost!,
-                multiple: 2,
-            },
-        },
-        {
-            title: 'Due to',
-            dataIndex: 'dueAt',
-            key: 'dueAt',
-            width: '10%',
-            render: (_, record: DataType) => {
-                return (
-                    <CountDown
-                        endedDate={record.dueAt!}
-                        options={{
-                            format: 'short',
-                            showYears: true,
-                            showMonths: true,
-                            showDays: true,
-                            showMinutes: true,
-                            showSeconds: true,
-                        }}
-                    />
-                )
-            },
-        },
-        {
-            title: 'Assignee',
-            dataIndex: 'memberAssign',
-            key: 'memberAssign',
-            width: '10%',
-            render: (_, record: DataType) => {
-                const show = 4
-                return (
-                    <AvatarGroup
-                        size="sm"
-                        max={show}
-                        total={record?.memberAssign?.length - show}
-                        classNames={{
-                            base: 'max-w-full',
-                        }}
-                    >
-                        {record.memberAssign.map((mem) => {
-                            return (
-                                <Tooltip
-                                    key={mem.id}
-                                    content={mem?.name}
-                                    classNames={{
-                                        content: 'max-w-fit text-nowrap',
-                                    }}
-                                    color="secondary"
-                                >
-                                    <Avatar
-                                        src={mem?.avatar ?? ''}
-                                        classNames={{
-                                            base: 'data-[hover=true]:-translate-x-0 rtl:data-[hover=true]:translate-x-0 cursor-pointer',
-                                        }}
-                                        showFallback
-                                    />
-                                </Tooltip>
-                            )
-                        })}
-                    </AvatarGroup>
-                )
-            },
-        },
-        {
-            title: 'Status',
-            dataIndex: 'jobStatus',
-            key: 'jobStatus',
-            width: 140,
-            render: (_, record: DataType) => (
-                <Chip
-                    style={{
-                        backgroundColor: record.jobStatus.color,
-                    }}
-                    classNames={{
-                        base: 'block max-w-[140px] flex items-center justify-start',
-                        content:
-                            'block max-w-[140px] uppercase text-sm font-semibold tracking-wide text-center',
-                    }}
-                >
-                    {record.jobStatus.title}
-                </Chip>
-            ),
-        },
-    ]
     return (
         <div
             className="p-2 rounded-2xl h-full border border-gray-100"
@@ -185,7 +56,17 @@ export default function ProjectManage() {
                 </Link>
             </div>
             <Table<DataType>
-                columns={columns}
+                columns={jobColumns(
+                    {
+                        jobs: jobs as Job[],
+                        jobStatuses: jobStatuses as JobStatus[],
+                        jobTypes: jobTypes as JobType[],
+                        paymentChannels: paymentChannels as PaymentChannel[],
+                        users: users as User[],
+                    },
+                    {},
+                    {}
+                )}
                 rowKey="jobNo"
                 dataSource={jobs?.map((prj, index) => ({
                     ...prj,

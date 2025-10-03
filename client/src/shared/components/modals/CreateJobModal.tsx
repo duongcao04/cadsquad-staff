@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react'
 
 import { Button, Input, InputProps, NumberInput, addToast } from '@heroui/react'
-import { Image, Modal, Select } from 'antd'
+import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 
 import { useUsers } from '@/shared/queries/useUser'
@@ -19,6 +19,7 @@ import useAuth from '@/shared/queries/useAuth'
 import { useJobStore } from '@/app/(routes)/[locale]/(dashboard)/onboarding/store/useJobStore'
 import { useCreateJobMutation } from '@/shared/queries/useJob'
 import InsertDatePicker from '@/app/(routes)/[locale]/(dashboard)/_components/formFields/InsertDatePicker'
+import { HeroSelect, HeroSelectItem } from '../customize/HeroSelect'
 
 export const jobModalInputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -347,9 +348,9 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
                                 )}
                         </div>
                     </div>
-                    <div className="w-full grid grid-cols-[140px_1fr] gap-3 items-center">
+                    <div className="grid grid-cols-[140px_1fr] gap-3 items-center">
                         <p
-                            className={`text-right font-medium text-base ${
+                            className={`text-right font-medium text-base pr-2 ${
                                 Boolean(formik.touched.assigneeIds) &&
                                 formik.errors.assigneeIds
                                     ? 'text-danger'
@@ -358,62 +359,102 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
                         >
                             Member assign
                         </p>
-                        <div className="flex flex-col w-full">
-                            <Select
-                                loading={loadingUsers}
-                                options={users?.map((usr) => {
-                                    return {
-                                        ...usr,
-                                        label: usr?.displayName,
-                                        value: usr?.id,
-                                    }
-                                })}
-                                placeholder="Select one or more member"
-                                size="middle"
-                                showSearch
-                                filterOption={(input, option) =>
-                                    (option?.label ?? '')
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase())
-                                }
-                                optionRender={(opt) => {
-                                    return (
+                        <HeroSelect
+                            isLoading={loadingUsers}
+                            id="assigneeIds"
+                            name="assigneeIds"
+                            placeholder="Select one or more member"
+                            size="md"
+                            selectionMode="multiple"
+                            selectedKeys={formik.values.assigneeIds}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                const valueArr = value
+                                    .split(',')
+                                    .filter((i) => i !== '')
+
+                                formik.setFieldValue('assigneeIds', valueArr)
+                                formik.setFieldTouched(
+                                    'assigneeIds',
+                                    true,
+                                    false
+                                )
+                            }}
+                            classNames={{
+                                base: 'overflow-hidden',
+                            }}
+                            renderValue={(selectedItems) => {
+                                return (
+                                    <ul className="flex line-clamp-1 truncate">
+                                        {selectedItems.map((user) => {
+                                            const item = users?.find(
+                                                (d) => d.id === user.key
+                                            )
+                                            if (!item)
+                                                return (
+                                                    <span
+                                                        className="text-gray-400"
+                                                        key={user.key}
+                                                    >
+                                                        Select one
+                                                    </span>
+                                                )
+                                            return (
+                                                <p key={user.key}>
+                                                    {item.displayName}
+                                                    {item.id !==
+                                                        selectedItems[
+                                                            selectedItems.length -
+                                                                1
+                                                        ].key && (
+                                                        <span className="pr-1">
+                                                            ,
+                                                        </span>
+                                                    )}
+                                                </p>
+                                            )
+                                        })}
+                                    </ul>
+                                )
+                            }}
+                        >
+                            {users?.map((usr) => {
+                                const departmentColor = usr.department
+                                    ? usr.department?.hexColor
+                                    : 'transparent'
+                                return (
+                                    <HeroSelectItem key={usr.id}>
                                         <div className="flex items-center justify-start gap-4">
                                             <div className="size-9">
                                                 <Image
-                                                    src={
-                                                        opt.data.avatar ??
-                                                        'https://avatar.iran.liara.run/public/boy?username=cadsquad'
-                                                    }
-                                                    alt={opt.data.displayName}
-                                                    className="size-full rounded-full object-cover"
+                                                    src={usr.avatar as string}
+                                                    alt="user avatar"
+                                                    rootClassName="!size-10 rounded-full"
+                                                    className="!size-full rounded-full p-[1px] border-2"
                                                     preview={false}
+                                                    style={{
+                                                        borderColor:
+                                                            departmentColor,
+                                                    }}
                                                 />
                                             </div>
-                                            <p className="font-normal">
-                                                {opt.data.displayName}
-                                            </p>
+                                            <div>
+                                                <p className="font-normal">
+                                                    {usr.displayName}
+                                                </p>
+                                                <p className="text-text2">
+                                                    {usr.email}
+                                                </p>
+                                            </div>
                                         </div>
-                                    )
-                                }}
-                                styles={{}}
-                                mode="multiple"
-                                onChange={(value) => {
-                                    formik.setFieldValue('assigneeIds', value)
-                                }}
-                                value={formik.values.assigneeIds}
-                            />
-                            {Boolean(formik.touched.assigneeIds) &&
-                                Boolean(formik.errors.assigneeIds) && (
-                                    <p className="mt-1 text-xs text-danger">
-                                        {formik.errors.assigneeIds}
-                                    </p>
-                                )}
-                        </div>
+                                    </HeroSelectItem>
+                                )
+                            })}
+                        </HeroSelect>
                     </div>
-                    <div className="w-full grid grid-cols-[140px_1fr] gap-3 items-center">
+                    <div className="grid grid-cols-[140px_1fr] gap-3 items-center">
                         <p
-                            className={`text-right font-medium text-base ${
+                            className={`text-right font-semibold text-base pr-2 ${
                                 Boolean(formik.touched.paymentChannelId) &&
                                 formik.errors.paymentChannelId
                                     ? 'text-danger'
@@ -422,33 +463,56 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
                         >
                             Payment channel
                         </p>
-                        <div className="flex flex-col w-full">
-                            <Select
-                                loading={loadingPaymentChannels}
-                                options={paymentChannels?.map((channel) => {
-                                    return {
-                                        ...channel,
-                                        label: channel?.displayName,
-                                        value: channel?.id?.toString(),
-                                    }
-                                })}
-                                placeholder="Select one Payment channel"
-                                size="middle"
-                                onChange={(value) => {
-                                    formik.setFieldValue(
-                                        'paymentChannelId',
-                                        value
+                        <HeroSelect
+                            isLoading={loadingPaymentChannels}
+                            id="paymentChannelId"
+                            name="paymentChannelId"
+                            placeholder="Select one payment channel"
+                            size="md"
+                            selectedKeys={
+                                formik.values.paymentChannelId
+                                    ? [formik.values.paymentChannelId]
+                                    : []
+                            }
+                            onChange={(e) => {
+                                const value = e.target.value
+                                formik.setFieldValue('paymentChannelId', value)
+                                formik.setFieldTouched(
+                                    'paymentChannelId',
+                                    true,
+                                    false
+                                )
+                            }}
+                            renderValue={(selectedItems) => {
+                                const item = paymentChannels?.find(
+                                    (d) => d.id === selectedItems[0].key
+                                )
+                                if (!item)
+                                    return (
+                                        <span className="text-gray-400">
+                                            Select one payment channel
+                                        </span>
                                     )
-                                }}
-                                value={formik.values.paymentChannelId}
-                            />
-                            {Boolean(formik.touched.paymentChannelId) &&
-                                Boolean(formik.errors.paymentChannelId) && (
-                                    <p className="mt-1 text-xs text-danger">
-                                        {formik.errors.paymentChannelId}
-                                    </p>
-                                )}
-                        </div>
+                                return <span>{item.displayName}</span>
+                            }}
+                        >
+                            {paymentChannels?.map((paymentChannel) => (
+                                <HeroSelectItem key={paymentChannel.id}>
+                                    <div className="flex items-center justify-start gap-2">
+                                        <div
+                                            className="size-2 rounded-full"
+                                            style={{
+                                                backgroundColor:
+                                                    paymentChannel.hexColor
+                                                        ? paymentChannel.hexColor
+                                                        : 'transparent',
+                                            }}
+                                        />
+                                        <p>{paymentChannel.displayName}</p>
+                                    </div>
+                                </HeroSelectItem>
+                            ))}
+                        </HeroSelect>
                     </div>
                 </div>
             </Modal>

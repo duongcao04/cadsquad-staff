@@ -4,9 +4,8 @@ import { Button, Checkbox } from '@heroui/react'
 import { Dropdown } from 'antd'
 import { EllipsisVerticalIcon } from 'lucide-react'
 
-import { FileItem } from '@/validationSchemas/file.schema'
+import { FileItem } from '@/shared/components/FileManager'
 
-import { getFileIcon } from './actions/getFileIcon'
 import { useFileStore } from './store/useFileStore'
 
 type Props = {
@@ -38,7 +37,7 @@ export default function GridFileManager({ filteredFiles }: Props) {
                         // onClick={() => handleFileAction('open', file)}
                     >
                         <div className="mb-2 text-4xl">
-                            {getFileIcon(file.type, file.color!)}
+                            {/* {getFileIcon(file.type, file.color!)} */}
                         </div>
                         <div className="text-center">
                             <p className="font-medium truncate w-full max-w-[120px] text-sm">

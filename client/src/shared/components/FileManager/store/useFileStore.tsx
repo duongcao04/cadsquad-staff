@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { combine } from 'zustand/middleware'
 
-import { FileItem } from '@/validationSchemas/file.schema'
+import { FileItem } from '@/shared/components/FileManager'
 
 type FileState = {
     activeFile: FileItem | null

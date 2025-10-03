@@ -17,6 +17,9 @@ export class JobStatusResponseDto {
 	order: number
 
 	@Expose()
+	code: string
+
+	@Expose()
 	icon?: string
 
 	@Expose()

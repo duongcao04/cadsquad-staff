@@ -42,7 +42,7 @@ type Props = {
     onDeleteJob: (jobNo: string) => void
     data: Job
 }
-export default function ActionDropdown({ data, onDeleteJob }: Props) {
+export default function ActionDropdown({ data }: Props) {
     const { openModal } = useAddMemberModal()
     const adminActions: ActionGroup[] = [
         {

@@ -8,7 +8,11 @@ import { RoleEnum } from '@/shared/enums/role.enum'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 
 export default function useAuth() {
-    const { data: profile } = useQuery({
+    const {
+        data: profile,
+        isLoading: loadingProfile,
+        isFetching: fetchingProfile,
+    } = useQuery({
         queryKey: ['profile'],
         queryFn: () => authApi.getProfile(),
         select: (res) => res.data.result,
@@ -40,5 +44,11 @@ export default function useAuth() {
         }
     }
 
-    return { profile, userRole, login, logout }
+    return {
+        profile,
+        loadingProfile: loadingProfile || fetchingProfile,
+        userRole,
+        login,
+        logout,
+    }
 }

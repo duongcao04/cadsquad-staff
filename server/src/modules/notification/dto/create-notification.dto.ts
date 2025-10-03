@@ -17,6 +17,10 @@ export class CreateNotificationDto {
 	@IsString()
 	senderId?: string
 
+	@IsOptional()
+	@IsString()
+	redirectUrl?: string
+
 	@IsEnum(NotificationType)
 	type: NotificationType
 

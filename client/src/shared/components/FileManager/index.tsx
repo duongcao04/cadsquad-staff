@@ -6,14 +6,10 @@ import { Button, addToast, useDisclosure } from '@heroui/react'
 import { Empty, message } from 'antd'
 import { ArrowUp, PlusIcon } from 'lucide-react'
 
-import {
-    ROOT_DIR,
-    getFileSystem,
-} from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
+import { ROOT_DIR } from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
 // import { FILE_SYSTEM_API } from '@/lib/swr/api'
 import { FILE } from '@/shared/constants/appConstant'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { FileItem } from '@/validationSchemas/file.schema'
 
 import BulkActionsToolbar from './BulkActionsToolbar'
 import FileManagerHeader from './FileManagerHeader'
@@ -25,6 +21,21 @@ import NewFolderModal from './modals/NewFolderModal'
 import RenameModal from './modals/RenameModal'
 import UploadModal from './modals/UploadModal'
 import { useFileStore } from './store/useFileStore'
+
+// Define the FileItem type if not already imported
+export type FileItem = {
+    id: string
+    name: string
+    slug?: string
+    size?: string
+    color?: string
+    visibleToUsers?: string[]
+    items?: number
+    updatedAt?: Date
+    type: 'file' | 'folder' | 'pdf' | 'image' | 'document' | 'code'
+    path: string[]
+    // Add other properties as needed
+}
 
 export type Props = {
     defaultDirectory?: string
@@ -82,7 +93,7 @@ export default function FileManager({
     const { data: fileSystem, isLoading } = { data: [], isLoading: true }
     const [files, setFiles] = useState<FileItem[]>(fileSystem ?? [])
 
-    const [previewModalOpen, setPreviewModalOpen] = useState(false)
+    const [, setPreviewModalOpen] = useState(false)
 
     // New folder name
     const [newFileName, setNewFileName] = useState('')

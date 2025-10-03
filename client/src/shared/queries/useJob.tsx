@@ -10,6 +10,8 @@ import {
 import { JobTabEnum } from '@/shared/enums/jobTab.enum'
 import { jobApi } from '@/app/api/job.api'
 import { CONFIG_CONSTANTS } from '../constants/config.constant'
+import { DefaultJobStatusCode } from '@/shared/enums/default-job-status-code.enum'
+import { jobStatusApi } from '../../app/api/jobStatus.api'
 
 export const useJobs = (
     params: JobQueryInput = {
@@ -103,6 +105,26 @@ export const useJobByNo = (jobNo?: string) => {
     return {
         refetch,
         job: data?.result,
+        error,
+        isLoading,
+    }
+}
+
+export const useJobsByStatusCode = (statusCode?: DefaultJobStatusCode) => {
+    const { data, refetch, error, isLoading } = useQuery({
+        queryKey: ['jobs', 'status', 'code', statusCode],
+        queryFn: () => {
+            if (!statusCode) {
+                return undefined
+            }
+            return jobStatusApi.findJobsByStatusCode(statusCode)
+        },
+        enabled: !!statusCode,
+        select: (res) => res?.data,
+    })
+    return {
+        refetch,
+        jobs: data?.result,
         error,
         isLoading,
     }

@@ -2,9 +2,8 @@ import React, { useState } from 'react'
 import FilterDropdown from '../FilterDropdown'
 import ViewSettingsDropdown from '../ViewSettingsDropdown'
 import { RefreshCcw, Search } from 'lucide-react'
-import { Button } from '@heroui/react'
 import HeroInput from '@/shared/components/customize/HeroInput'
-import { HeroButton } from '../../../../../../../shared/components/customize/HeroButton'
+import { HeroButton } from '@/shared/components/customize/HeroButton'
 
 type Props = {
     defaultKeywords?: string

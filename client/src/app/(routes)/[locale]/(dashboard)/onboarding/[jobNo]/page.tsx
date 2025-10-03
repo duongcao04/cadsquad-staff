@@ -14,9 +14,8 @@ import PaidChip from '@/shared/components/chips/PaidChip'
 import { Job } from '@/shared/interfaces/job.interface'
 import JobDetailSection from '../../_components/JobDetailSection'
 import ActionsDropdown from '../@jobDetail/_components/dropdowns/ActionsDropdown'
-import { RoleEnum } from '@/shared/enums/role.enum'
-import useAuth from '@/shared/queries/useAuth'
 import DueToField from '../components/data-fields/DueToField'
+import { Image } from 'antd'
 
 export default function JobDetailPage({
     params,
@@ -25,7 +24,6 @@ export default function JobDetailPage({
 }) {
     const { jobNo } = use(params)
 
-    const { userRole } = useAuth()
     const { job, isLoading } = useJobByNo(jobNo)
     const isEditMode = false
     return (
@@ -45,13 +43,24 @@ export default function JobDetailPage({
                                         isLoaded={!isLoading}
                                     >
                                         {!isEditMode ? (
-                                            <div>
-                                                <p className="align-bottom text-lg text-text2 font-normal underline-offset-2 tracking-wider line-clamp-1">
-                                                    #{job?.no}
-                                                </p>
-                                                <p className="align-bottom text-3xl font-semibold">
-                                                    {job?.displayName}
-                                                </p>
+                                            <div className="flex items-center justify-start gap-4">
+                                                <Image
+                                                    preview={false}
+                                                    alt={job?.displayName}
+                                                    src={String(
+                                                        job?.status.thumbnailUrl
+                                                    )}
+                                                    rootClassName="size-20 rounded-full"
+                                                    className="!size-full rounded-full"
+                                                />
+                                                <div>
+                                                    <p className="align-bottom text-lg text-text2 font-normal underline-offset-2 tracking-wider line-clamp-1">
+                                                        #{job?.no}
+                                                    </p>
+                                                    <p className="align-bottom text-3xl font-semibold">
+                                                        {job?.displayName}
+                                                    </p>
+                                                </div>
                                             </div>
                                         ) : (
                                             <Input
@@ -68,13 +77,13 @@ export default function JobDetailPage({
                                 </div>
                             </div>
                             <div className="w-full flex items-center justify-end gap-2">
-                                {userRole === RoleEnum.ADMIN && (
+                                {/* {userRole === RoleEnum.ADMIN && (
                                     <Button size="sm" variant="solid">
                                         <p className="text-sm font-medium">
                                             Edit
                                         </p>
                                     </Button>
-                                )}
+                                )} */}
                                 <Tooltip content="Copy link">
                                     <Button
                                         variant="light"
@@ -123,7 +132,7 @@ export default function JobDetailPage({
                                 </Tooltip>
                             </div>
                         </div>
-                        <div className="w-full flex items-center justify-between gap-3">
+                        <div className="mt-4 w-full flex items-center justify-between gap-3">
                             <div className="flex items-center justify-start gap-4">
                                 <Skeleton
                                     className="w-fit h-[24px] rounded-md"
