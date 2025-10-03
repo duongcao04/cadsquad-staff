@@ -394,6 +394,45 @@ export class JobService {
   }
 
   /**
+   * Lấy danh sách job đến hạn vào ngày input
+   * @param inputDate ngày cần kiểm tra (Date hoặc string)
+   * @returns danh sách job
+   */
+  async getJobsDueOnDate(userId: string, userRole: RoleEnum, inputDate: Date | string): Promise<Job[]> {
+    const queryPermission =
+      userRole === RoleEnum.ADMIN
+        ? {}
+        : {
+          assignee: { some: { id: userId } },
+        }
+    const startOfDay = dayjs(inputDate).startOf('day').toDate();
+    const endOfDay = dayjs(inputDate).endOf('day').toDate();
+
+    const jobs = await this.prisma.job.findMany({
+      where: {
+        ...queryPermission,
+        dueAt: {
+          gte: startOfDay,
+          lte: endOfDay,
+        },
+      },
+      include: {
+        status: true,
+        type: true
+      },
+      orderBy: { dueAt: 'asc' },
+    });
+
+    if (!jobs) {
+      throw new NotFoundException('Jobs not found')
+    }
+
+    return plainToInstance(JobResponseDto, jobs, {
+      excludeExtraneousValues: true,
+    }) as unknown as Job[]
+  }
+
+  /**
    * Update job by ID.
    */
   async update(jobId: string, data: UpdateJobDto): Promise<Job> {

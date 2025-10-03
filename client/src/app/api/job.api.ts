@@ -13,6 +13,11 @@ export const jobApi = {
 			ApiResponse<{ data: Job[], paginate: Paginate }>
 		>('/jobs', { params: query })
 	},
+	getJobsDueOnDate: (inputDate: string) => {
+		return axiosClient.get<
+			ApiResponse<Job[]>
+		>(`/jobs/dueOn/${inputDate}`)
+	},
 	columns: () => {
 		return axiosClient.get<ApiResponse<JobColumn[]>>('/jobs/columns')
 	},

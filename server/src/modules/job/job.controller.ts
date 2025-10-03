@@ -9,6 +9,7 @@ import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { JobQueryDto } from './dto/job-query.dto'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
+import { GetJobsDueDto } from './dto/get-jobs-due.dto'
 
 @Controller('jobs')
 export class JobController {
@@ -47,6 +48,18 @@ export class JobController {
   async getColumns(@Req() request: Request) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.getColumns(userPayload.sub)
+  }
+
+  @Get('dueOn/:inputDate')
+  @HttpCode(200)
+  @UseGuards(JwtGuard)
+  async getJobsDueOnDate(
+    @Req() request: Request,
+    @Param() params: GetJobsDueDto,
+  ) {
+    const userPayload: TokenPayload = request['user'];
+    const { inputDate } = params;
+    return this.jobService.getJobsDueOnDate(userPayload.sub, userPayload.role, inputDate);
   }
 
   @Get(':id')

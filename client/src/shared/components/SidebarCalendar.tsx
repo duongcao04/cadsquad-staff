@@ -6,12 +6,12 @@ import { JobTabEnum } from '@/shared/enums/jobTab.enum'
 import { useJobs } from '@/shared/queries/useJob'
 import { JobQueryInput } from '@/shared/validationSchemas/job.schema'
 import Badge from '@mui/material/Badge'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar'
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay'
 import dayjs, { Dayjs } from 'dayjs'
+import { useDisclosure } from '@heroui/react'
+import JobDueModal from './modals/JobDueModal'
 
 interface ServerDayProps extends PickersDayProps {
     highlightedDays?: number[]
@@ -27,7 +27,11 @@ function ServerDay(props: ServerDayProps) {
         <Badge
             key={day.toString()}
             overlap="circular"
-            badgeContent={isHighlighted ? '🤖' : undefined}
+            badgeContent={
+                isHighlighted ? (
+                    <span className="select-none">🤖</span>
+                ) : undefined
+            }
         >
             <PickersDay
                 {...other}
@@ -47,6 +51,8 @@ export default function SidebarCalendar({
     tab = JobTabEnum.ACTIVE,
     queryParams,
 }: JobsCalendarProps) {
+    const { isOpen, onClose, onOpen } = useDisclosure({ id: 'JobDueModal' })
+    const [currentDate, setCurrentDate] = React.useState<string>('')
     const [currentMonth, setCurrentMonth] = React.useState(dayjs())
     const [highlightedDays, setHighlightedDays] = React.useState<number[]>([])
 
@@ -82,14 +88,21 @@ export default function SidebarCalendar({
     }
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <>
+            <JobDueModal
+                isOpen={isOpen}
+                onClose={onClose}
+                currentDate={currentDate}
+            />
             <DateCalendar
                 sx={{ width: '100%' }}
                 defaultValue={dayjs()}
                 loading={isLoading}
                 onMonthChange={handleMonthChange}
                 onChange={(value) => {
-                    console.log(value)
+                    const dateString = dayjs(value).toISOString().split('T')[0]
+                    setCurrentDate(dateString)
+                    onOpen()
                 }}
                 renderLoading={() => <DayCalendarSkeleton />}
                 slots={{ day: ServerDay }}
@@ -97,6 +110,6 @@ export default function SidebarCalendar({
                     day: { highlightedDays } as Partial<ServerDayProps>,
                 }}
             />
-        </LocalizationProvider>
+        </>
     )
 }

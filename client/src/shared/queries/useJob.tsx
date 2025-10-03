@@ -62,6 +62,19 @@ export const useJobColumns = () => {
     return { jobColumns }
 }
 
+export const useJobsDueOnDate = (dueAt: string) => {
+    const {
+        data: jobs,
+        isLoading,
+        isFetching,
+    } = useQuery({
+        queryKey: ['jobs', 'dueOn', dueAt],
+        queryFn: () => jobApi.getJobsDueOnDate(dueAt),
+        select: (res) => res.data.result,
+    })
+    return { jobs, isLoading: isLoading || isFetching }
+}
+
 export const useCountJobByTab = (tab: JobTabEnum) => {
     const {
         data,
