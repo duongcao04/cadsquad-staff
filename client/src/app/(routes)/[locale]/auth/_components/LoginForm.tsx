@@ -35,13 +35,13 @@ export default function LoginForm() {
                 console.log(values)
 
                 setLoading(true)
-                await login(values)
-                addToast({
-                    title: 'Đăng nhập thành công',
-                    color: 'success',
+                await login(values).then(() => {
+                    router.push(redirect)
+                    addToast({
+                        title: 'Đăng nhập thành công',
+                        color: 'success',
+                    })
                 })
-
-                router.push(redirect)
             } catch (error) {
                 addToast({
                     title: 'Đăng nhập thất bại',
