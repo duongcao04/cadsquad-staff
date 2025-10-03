@@ -13,8 +13,11 @@ import envConfig from '@/config/envConfig'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { X } from 'lucide-react'
 import { useAddMemberModal } from '@/shared/actions/useAddMemberModal'
+import { RoleEnum } from '@/shared/enums/role.enum'
+import useAuth from '@/shared/queries/useAuth'
 
 export default function AddMemberModal() {
+    const { userRole } = useAuth()
     const [memberSelected, setMemberSelected] = useState<string[]>([])
     const { isOpen, closeModal, jobNo } = useAddMemberModal()
     const { mutateAsync: assignMemberMutate } = useAssignMemberMutation({
@@ -100,7 +103,10 @@ export default function AddMemberModal() {
             title={
                 <div className="p-2">
                     <p className="text-lg font-semibold">
-                        Invite member to job #{jobNo}
+                        {userRole === RoleEnum.ADMIN
+                            ? 'Member assigned in'
+                            : 'Invite member to job'}{' '}
+                        #{jobNo}
                     </p>
                     <p className="text-sm font-normal text-text2">
                         System will send notification them instruction.
@@ -118,75 +124,89 @@ export default function AddMemberModal() {
             footer={<></>}
         >
             <div className="px-2">
-                <div className="space-y-1.5">
-                    <p className="font-semibold text-text2">Invite users</p>
-                    <div className="grid grid-cols-[1fr_100px] gap-4">
-                        <Select
-                            mode="multiple"
-                            style={{ width: '100%' }}
-                            placeholder="Search by name, email, username, department,..."
-                            value={memberSelected}
-                            onChange={handleChange}
-                            options={users?.map((user) => {
-                                return {
-                                    ...user,
-                                    value: user.id,
-                                    label: user.displayName,
+                {userRole === RoleEnum.ADMIN && (
+                    <div className="space-y-1.5 mb-6">
+                        <p className="font-semibold text-text2">Invite users</p>
+                        <div className="grid grid-cols-[1fr_100px] gap-4">
+                            <Select
+                                mode="multiple"
+                                style={{ width: '100%' }}
+                                placeholder="Search by name, email, username, department,..."
+                                value={memberSelected}
+                                onChange={handleChange}
+                                options={users
+                                    ?.filter(
+                                        (user) =>
+                                            !job?.assignee?.some(
+                                                (selected) =>
+                                                    selected.id === user.id
+                                            )
+                                    )
+                                    ?.map((user) => {
+                                        return {
+                                            ...user,
+                                            value: user.id,
+                                            label: user.displayName,
+                                        }
+                                    })}
+                                filterOption={(input, option) =>
+                                    (option?.label ?? '')
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase()) ||
+                                    (option?.email ?? '')
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase()) ||
+                                    (option?.username ?? '')
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase()) ||
+                                    (option?.department?.displayName ?? '')
+                                        .toLowerCase()
+                                        .includes(input.toLowerCase())
                                 }
-                            })}
-                            filterOption={(input, option) =>
-                                (option?.label ?? '')
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase()) ||
-                                (option?.email ?? '')
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase()) ||
-                                (option?.username ?? '')
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase()) ||
-                                (option?.department?.displayName ?? '')
-                                    .toLowerCase()
-                                    .includes(input.toLowerCase())
-                            }
-                            optionRender={(option) => {
-                                const departmentColor = option.data.department
-                                    ? option.data.department?.hexColor
-                                    : 'transparent'
-                                return (
-                                    <div className="flex items-center justify-start gap-4 !p-0">
-                                        <Image
-                                            src={option.data.avatar as string}
-                                            alt="user avatar"
-                                            rootClassName="!size-10 rounded-full"
-                                            className="!size-full rounded-full p-[1px] border-2"
-                                            preview={false}
-                                            style={{
-                                                borderColor: departmentColor,
-                                            }}
-                                        />
-                                        <div>
-                                            <p className="font-semibold">
-                                                {option.label}
-                                            </p>
-                                            <p className="text-text2 !font-normal">
-                                                {option.data.email}
-                                            </p>
+                                optionRender={(option) => {
+                                    const departmentColor = option.data
+                                        .department
+                                        ? option.data.department?.hexColor
+                                        : 'transparent'
+                                    return (
+                                        <div className="flex items-center justify-start gap-4 !p-0">
+                                            <Image
+                                                src={
+                                                    option.data.avatar as string
+                                                }
+                                                alt="user avatar"
+                                                rootClassName="!size-10 rounded-full"
+                                                className="!size-full rounded-full p-[1px] border-2"
+                                                preview={false}
+                                                style={{
+                                                    borderColor:
+                                                        departmentColor,
+                                                }}
+                                            />
+                                            <div>
+                                                <p className="font-semibold">
+                                                    {option.label}
+                                                </p>
+                                                <p className="text-text2 !font-normal">
+                                                    {option.data.email}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-                                )
-                            }}
-                        />
-                        <Button
-                            onPress={async () => {
-                                handleAssignMember(memberSelected)
-                            }}
-                            color="primary"
-                        >
-                            Send invites
-                        </Button>
+                                    )
+                                }}
+                            />
+                            <Button
+                                onPress={async () => {
+                                    handleAssignMember(memberSelected)
+                                }}
+                                color="primary"
+                            >
+                                Send invites
+                            </Button>
+                        </div>
                     </div>
-                </div>
-                <hr className="mt-6 mb-4 text-text3" />
+                )}
+                <hr className="mb-4 text-text3" />
                 <div className="space-y-2.5">
                     <p className="font-semibold text-text2">
                         Members ({job?.assignee?.length})

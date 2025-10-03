@@ -12,21 +12,17 @@ import {
     DropdownSectionProps,
     DropdownTrigger,
 } from '@heroui/react'
-import {
-    CircleCheck,
-    CircleDollarSign,
-    CopyIcon,
-    Edit,
-    EllipsisVerticalIcon,
-    PinIcon,
-    Trash,
-    UserPlus,
-} from 'lucide-react'
 
 import { Job } from '@/shared/interfaces/job.interface'
 import { useAddMemberModal } from '@/shared/actions/useAddMemberModal'
+import { EllipsisVerticalIcon } from 'lucide-react'
+import { adminActions } from '../dropdowns/adminActions'
+import { userActions } from '../dropdowns/userActions'
+import { accountingActions } from '../dropdowns/accountingActions'
+import useAuth from '@/shared/queries/useAuth'
+import { RoleEnum } from '@/shared/enums/role.enum'
 
-type ActionGroup = {
+export type ActionGroup = {
     key: React.Key | null | undefined
     groupTitle: string
     groupProps?: DropdownSectionProps
@@ -44,95 +40,21 @@ type Props = {
 }
 export default function ActionDropdown({ data }: Props) {
     const { openModal } = useAddMemberModal()
-    const adminActions: ActionGroup[] = [
-        {
-            key: 'Assignee menu',
-            groupTitle: 'Assignee',
-            children: [
-                {
-                    key: 'assignReassign',
-                    title: 'Assign / Reassign',
-                    icon: <UserPlus size={14} />,
-                    childProps: {
-                        onPress: () => {
-                            openModal(data.no)
-                        },
-                    },
-                },
-            ],
-        },
-        {
-            key: 'Job menu',
-            groupTitle: 'Job',
-            children: [
-                {
-                    key: 'pin',
-                    title: 'Pin Job',
-                    icon: <PinIcon size={14} className="rotate-45" />,
-                    childProps: {
-                        onPress: () => {},
-                    },
-                },
-                {
-                    key: 'assignReassign',
-                    title: 'Assign / Reassign',
-                    icon: <UserPlus size={14} />,
-                    childProps: {
-                        onPress: () => {
-                            openModal(data.no as string)
-                        },
-                    },
-                },
-                {
-                    key: 'editJob',
-                    title: 'Edit Job',
-                    icon: <Edit size={14} />,
-                    childProps: {
-                        onPress: () => {},
-                    },
-                },
-                {
-                    key: 'duplicateJob',
-                    title: 'Duplicate Job',
-                    icon: <CopyIcon size={14} />,
-                    childProps: {
-                        onPress: () => {},
-                    },
-                },
-                {
-                    key: 'deleteJob',
-                    title: 'Delete',
-                    icon: <Trash size={14} />,
-                    childProps: {
-                        color: 'danger',
-                        onPress: () => {},
-                    },
-                },
-            ],
-        },
-        {
-            key: 'Payment menu',
-            groupTitle: 'Payment',
-            children: [
-                {
-                    key: 'updateCost',
-                    title: 'Update Cost',
-                    icon: <CircleDollarSign size={14} />,
-                    childProps: {
-                        onPress: () => {},
-                    },
-                },
-                {
-                    key: 'markAsPaid',
-                    title: 'Mark as Paid',
-                    icon: <CircleCheck size={14} />,
-                    childProps: {
-                        onPress: () => {},
-                    },
-                },
-            ],
-        },
-    ]
+    const { userRole } = useAuth()
+
+    const getActions: () => ActionGroup[] = () => {
+        if (userRole === RoleEnum.ADMIN) {
+            return adminActions(data.no, () => {
+                openModal(data.no)
+            })
+        }
+        if (userRole === RoleEnum.USER) {
+            return userActions(data.no)
+        }
+        return accountingActions(data.no)
+    }
+    const actionsDropdown = getActions()
+
     return (
         <Dropdown>
             <DropdownTrigger>
@@ -141,7 +63,7 @@ export default function ActionDropdown({ data }: Props) {
                 </Button>
             </DropdownTrigger>
             <DropdownMenu aria-label="Job menu actions">
-                {adminActions.map((group) => {
+                {actionsDropdown.map((group) => {
                     return (
                         <DropdownSection
                             key={group.key}

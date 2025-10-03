@@ -26,7 +26,7 @@ import SwitchCurrency from '../components/SwitchCurrency'
 import { SortOrder } from 'antd/es/table/interface'
 import { CopyButton } from '@/shared/components/ui/copy-button'
 import DueToField from '../components/data-fields/DueToField'
-import { DefaultJobStatusCode } from '../../../../../../shared/enums/default-job-status-code.enum'
+import { DefaultJobStatusCode } from '@/shared/enums/default-job-status-code.enum'
 
 export type JobWithKey = Job & {
     key: React.Key

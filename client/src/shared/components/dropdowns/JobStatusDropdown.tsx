@@ -19,13 +19,17 @@ import JobStatusChip from '@/shared/components/chips/JobStatusChip'
 import { useChangeStatusMutation } from '@/shared/queries/useJob'
 import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
 import { Job } from '@/shared/interfaces/job.interface'
-import { lightenHexColor } from '../../../lib/utils'
+import { lightenHexColor } from '@/lib/utils'
+import { RoleEnum } from '@/shared/enums/role.enum'
+import useAuth from '@/shared/queries/useAuth'
+import { DefaultJobStatusCode } from '../../enums/default-job-status-code.enum'
 
 type Props = {
     jobData: Job
     statusData: JobStatus
 }
 export default function JobStatusDropdown({ jobData, statusData }: Props) {
+    const { userRole } = useAuth()
     const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
     const { jobStatus: nextStatus } = useJobStatusByOrder(
         statusData.nextStatusOrder
@@ -72,14 +76,24 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
     const actions: { key: string; data?: JobStatus; action: () => void }[] = [
         {
             key: 'nextStatusOrder',
-            data: nextStatus,
+            data:
+                userRole === RoleEnum.ADMIN
+                    ? nextStatus
+                    : nextStatus?.code === DefaultJobStatusCode.DELIVERED
+                    ? nextStatus
+                    : undefined,
             action: () => {
                 handleChangeStatus(nextStatus as JobStatus)
             },
         },
         {
             key: 'prevStatusOrder',
-            data: prevStatus,
+            data:
+                userRole === RoleEnum.ADMIN
+                    ? prevStatus
+                    : prevStatus?.code === DefaultJobStatusCode.DELIVERED
+                    ? prevStatus
+                    : undefined,
             action: () => {
                 handleChangeStatus(prevStatus as JobStatus)
             },
@@ -130,110 +144,121 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                         panel: 'size-full',
                     }}
                 >
-                    <Tab key="photos" title="Quick change">
+                    <Tab key="quick" title="Quick change">
                         <div className="size-full space-y-2.5">
-                            {dropdownActions.map((item) => {
-                                return (
-                                    <Button
-                                        key={item.key}
-                                        className="w-full"
-                                        style={{
-                                            backgroundColor: lightenHexColor(
-                                                item.data?.hexColor
-                                                    ? item.data?.hexColor
-                                                    : '#ffffff',
-                                                90
-                                            ),
-                                        }}
-                                        onPress={item.action}
-                                    >
-                                        {item.data && (
-                                            <div className="flex items-center justify-start gap-2">
-                                                <div
-                                                    className="size-2 rounded-full"
-                                                    style={{
-                                                        backgroundColor: item
-                                                            .data?.hexColor
-                                                            ? item.data
-                                                                  ?.hexColor
-                                                            : '#ffffff',
-                                                    }}
-                                                />
-                                                <p
-                                                    className="font-semibold"
-                                                    style={{
-                                                        color: item.data
-                                                            ?.hexColor
-                                                            ? item.data
-                                                                  ?.hexColor
-                                                            : '#ffffff',
-                                                    }}
-                                                >
-                                                    {item.data.displayName}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </Button>
-                                )
-                            })}
-                        </div>
-                    </Tab>
-                    <Tab key="music" title="Force change">
-                        <p className="text-text2 text-xs">Mark status as</p>
-                        <hr className="mt-2 mb-3 text-text3" />
-                        {!jobStatuses ? (
-                            <p className="text-xs text-center">
-                                Không tìm thấy danh sách trạng thái
-                            </p>
-                        ) : (
-                            <div className="size-full space-y-2.5">
-                                {jobStatuses.map((item) => {
+                            {!dropdownActions.length ? (
+                                <p className="py-3 font-medium text-center text-text2">
+                                    Cannot quick change
+                                </p>
+                            ) : (
+                                dropdownActions.map((item) => {
                                     return (
                                         <Button
-                                            key={item.id}
+                                            key={item.key}
                                             className="w-full"
                                             style={{
                                                 backgroundColor:
                                                     lightenHexColor(
-                                                        item?.hexColor
-                                                            ? item?.hexColor
+                                                        item.data?.hexColor
+                                                            ? item.data
+                                                                  ?.hexColor
                                                             : '#ffffff',
                                                         90
                                                     ),
                                             }}
-                                            onPress={() => {
-                                                handleChangeStatus(item)
-                                            }}
+                                            onPress={item.action}
                                         >
-                                            {item && (
+                                            {item.data && (
                                                 <div className="flex items-center justify-start gap-2">
                                                     <div
                                                         className="size-2 rounded-full"
                                                         style={{
                                                             backgroundColor:
-                                                                item?.hexColor
-                                                                    ? item?.hexColor
+                                                                item.data
+                                                                    ?.hexColor
+                                                                    ? item.data
+                                                                          ?.hexColor
                                                                     : '#ffffff',
                                                         }}
                                                     />
                                                     <p
                                                         className="font-semibold"
                                                         style={{
-                                                            color: item?.hexColor
-                                                                ? item?.hexColor
+                                                            color: item.data
+                                                                ?.hexColor
+                                                                ? item.data
+                                                                      ?.hexColor
                                                                 : '#ffffff',
                                                         }}
                                                     >
-                                                        {item.displayName}
+                                                        {item.data.displayName}
                                                     </p>
                                                 </div>
                                             )}
                                         </Button>
                                     )
-                                })}
-                            </div>
-                        )}
+                                })
+                            )}
+                        </div>
                     </Tab>
+                    {userRole !== RoleEnum.USER && (
+                        <Tab key="force" title="Force change">
+                            <p className="text-text2 text-xs">Mark status as</p>
+                            <hr className="mt-2 mb-3 text-text3" />
+                            {!jobStatuses ? (
+                                <p className="text-xs text-center">
+                                    Không tìm thấy danh sách trạng thái
+                                </p>
+                            ) : (
+                                <div className="size-full space-y-2.5">
+                                    {jobStatuses.map((item) => {
+                                        return (
+                                            <Button
+                                                key={item.id}
+                                                className="w-full"
+                                                style={{
+                                                    backgroundColor:
+                                                        lightenHexColor(
+                                                            item?.hexColor
+                                                                ? item?.hexColor
+                                                                : '#ffffff',
+                                                            90
+                                                        ),
+                                                }}
+                                                onPress={() => {
+                                                    handleChangeStatus(item)
+                                                }}
+                                            >
+                                                {item && (
+                                                    <div className="flex items-center justify-start gap-2">
+                                                        <div
+                                                            className="size-2 rounded-full"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    item?.hexColor
+                                                                        ? item?.hexColor
+                                                                        : '#ffffff',
+                                                            }}
+                                                        />
+                                                        <p
+                                                            className="font-semibold"
+                                                            style={{
+                                                                color: item?.hexColor
+                                                                    ? item?.hexColor
+                                                                    : '#ffffff',
+                                                            }}
+                                                        >
+                                                            {item.displayName}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </Button>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </Tab>
+                    )}
                 </Tabs>
             </PopoverContent>
         </Popover>
