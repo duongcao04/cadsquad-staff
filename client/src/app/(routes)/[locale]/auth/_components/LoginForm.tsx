@@ -2,66 +2,72 @@
 
 import React, { useState } from 'react'
 
-import { Button, Input, addToast } from '@heroui/react'
+import { addToast, Button, Input } from '@heroui/react'
 import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
 
 import envConfig from '@/config/envConfig'
 import { Link, useRouter } from '@/i18n/navigation'
-import useAuth from '@/shared/queries/useAuth'
+import { useLogin } from '@/shared/queries/useAuth'
 import { useSearchParam } from '@/hooks/useSearchParam'
-import { LoginInputSchema } from '@/shared/validationSchemas/auth.schema'
+import {
+    LoginInput,
+    LoginInputSchema,
+} from '@/shared/validationSchemas/auth.schema'
+import { useTranslations } from 'next-intl'
 
-const HOME = envConfig.NEXT_PUBLIC_URL as string
+const HOME = String(envConfig.NEXT_PUBLIC_URL)
 
 export default function LoginForm() {
-    const { login } = useAuth()
+    const t = useTranslations()
     const router = useRouter()
     const { getSearchParam } = useSearchParam()
     const redirect = getSearchParam('redirect') ?? '/'
 
     const [isVisible, setIsVisible] = useState(false)
-    const [isLoading, setLoading] = useState(false)
     const toggleVisibility = () => setIsVisible(!isVisible)
 
-    const formik = useFormik({
+    const { mutateAsync: loginMutate, isPending: isLoggingIn } = useLogin()
+
+    const formik = useFormik<LoginInput>({
         initialValues: {
             email: '',
             password: '',
         },
         validationSchema: LoginInputSchema,
         onSubmit: async (values) => {
-            try {
-                console.log(values)
-
-                setLoading(true)
-                await login(values).then(() => {
-                    router.push(redirect)
-                    addToast({
-                        title: 'Đăng nhập thành công',
-                        color: 'success',
-                    })
-                })
-            } catch (error) {
-                addToast({
-                    title: 'Đăng nhập thất bại',
-                    description: `${error}`,
-                    color: 'danger',
-                })
-            } finally {
-                setLoading(false)
-            }
+            await loginMutate(
+                {
+                    email: values.email,
+                    password: values.password,
+                },
+                {
+                    onSuccess(res) {
+                        addToast({ title: res.data.message, color: 'success' })
+                        router.replace(redirect)
+                    },
+                    onError(error) {
+                        addToast({
+                            title: error.error,
+                            description: `Error: ${error.message}`,
+                            color: 'danger',
+                        })
+                    },
+                }
+            )
         },
     })
 
     return (
         <form
             onSubmit={formik.handleSubmit}
-            className="min-w-[600px] shadow-lg rounded-sm py-8 p-16 bg-white"
+            className="min-w-[600px] shadow-lg rounded-sm py-8 p-16 bg-background"
         >
-            <h1 className="text-2xl font-bold text-left font-saira">Sign in</h1>
+            <h1 className="text-2xl font-bold text-left font-saira">
+                {t('signIn')}
+            </h1>
             <p>
-                to continue to{' '}
+                {t('toContinueTo')}{' '}
                 <Link
                     href={HOME}
                     className="text-blue-700 hover:underline underline-offset-2"
@@ -74,7 +80,7 @@ export default function LoginForm() {
                     isRequired
                     id="email"
                     name="email"
-                    label="Email"
+                    label={t('email')}
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     isInvalid={
@@ -89,7 +95,7 @@ export default function LoginForm() {
                     isRequired
                     id="password"
                     name="password"
-                    label="Password"
+                    label={t('password')}
                     type={isVisible ? 'text' : 'password'}
                     value={formik.values.password}
                     onChange={formik.handleChange}
@@ -112,7 +118,7 @@ export default function LoginForm() {
                     }
                 />
                 <p className="ml-1 text-sm">
-                    Support? Contact to{' '}
+                    {t('support')}? {t('contactTo')}{' '}
                     <Link
                         href={'mailto:ch.duong@cadsquad.vn'}
                         className="text-blue-700 hover:underline underline-offset-2"
@@ -125,16 +131,16 @@ export default function LoginForm() {
                         color="danger"
                         className="w-full rounded-sm"
                         type="submit"
-                        isLoading={isLoading}
+                        isLoading={isLoggingIn}
                     >
-                        Login
+                        {t('login')}
                     </Button>
-                    <div className="flex items-center justify-between w-full gap-3">
+                    {/* <div className="flex items-center justify-between w-full gap-3">
                         <hr className="w-full opacity-20" />
-                        <p className="my-5 opacity-70">or</p>
+                        <p className="my-5 opacity-70">{t('or')}</p>
                         <hr className="w-full opacity-20" />
                     </div>
-                    {/* <Button
+                    <Button
                         type="button"
                         color="secondary"
                         className="w-full rounded-full"

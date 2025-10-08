@@ -19,7 +19,7 @@ export default function GridFileManager({ filteredFiles }: Props) {
             {filteredFiles.map((file) => (
                 <div
                     key={file.id}
-                    className={`relative group rounded-lg border bg-white p-3 transition-all hover:shadow-md cursor-pointer ${
+                    className={`relative group rounded-lg border bg-background p-3 transition-all hover:shadow-md cursor-pointer ${
                         selectedFiles.includes(file.id)
                             ? 'ring-2 ring-blue-500'
                             : ''
@@ -45,7 +45,9 @@ export default function GridFileManager({ filteredFiles }: Props) {
                             </p>
                             <p className="text-xs text-gray-500">
                                 {file.type === 'folder'
-                                    ? `${file.items} item${file.items !== 1 ? 's' : ''}`
+                                    ? `${file.items} item${
+                                          file.items !== 1 ? 's' : ''
+                                      }`
                                     : file.size}
                             </p>
                         </div>

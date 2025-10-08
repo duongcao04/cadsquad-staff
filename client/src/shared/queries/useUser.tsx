@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { axiosClient } from '@/lib/axios'
-import { User } from '@/shared/interfaces/user.interface'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { userApi } from '@/app/api/user.api'
 import {
@@ -12,11 +11,15 @@ import {
 import { UpdatePasswordInput } from '@/shared/validationSchemas/auth.schema'
 
 export const useUsers = () => {
-    return useQuery({
+    const { data, isLoading, isFetching } = useQuery({
         queryKey: ['users'],
         queryFn: () => userApi.findAll(),
         select: (res) => res.data.result,
     })
+    return {
+        users: data,
+        isLoading: isLoading || isFetching,
+    }
 }
 
 export const useUpdateUserMutation = () => {
@@ -57,15 +60,11 @@ export const useUpdatePasswordMutation = () => {
     })
 }
 
-export const useCreateUser = (onSuccess?: (data?: User) => void) => {
+export const useCreateUser = () => {
     return useMutation({
-        mutationFn: async (data: CreateUserInput) => {
-            const res = await userApi.create(data)
-            return res.data.result
-        },
-        onSuccess: (user) => {
+        mutationFn: async (data: CreateUserInput) => await userApi.create(data),
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] })
-            onSuccess?.(user)
         },
     })
 }

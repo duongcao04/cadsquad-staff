@@ -46,10 +46,9 @@ export const useCommentById = (commentId?: string) => {
 
 export const useCreateComment = () => {
     return useMutation({
-        mutationFn: (data: CreateCommentInput) =>
-            commentApi.create(data).then((res) => res.data.result),
+        mutationFn: (data: CreateCommentInput) => commentApi.create(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['comments'] }) // refresh cache
+            queryClient.invalidateQueries({ queryKey: ['comments'] })
         },
     })
 }

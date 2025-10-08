@@ -32,6 +32,15 @@ export class JobController {
     return this.jobService.findAll(userPayload.sub, userPayload.role, query)
   }
 
+  @Get('search')
+  @HttpCode(200)
+  @ResponseMessage('Get jobs by search successfully')
+  @UseGuards(JwtGuard)
+  async searchJob(@Req() request: Request, @Query() query: { keywords?: string }) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.findAllNoPaginate(userPayload.sub, userPayload.role, query)
+  }
+
   @Get("no/:jobNo")
   @HttpCode(200)
   @ResponseMessage('Get job by no successfully')
@@ -77,6 +86,8 @@ export class JobController {
   }
 
   @Patch(':id')
+  @ResponseMessage('Update job successfully')
+  @UseGuards(JwtGuard)
   async update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
     return this.jobService.update(id, updateJobDto)
   }

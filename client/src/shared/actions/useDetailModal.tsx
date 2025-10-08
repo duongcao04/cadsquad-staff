@@ -19,8 +19,8 @@ export const useDetailModal = () => {
 
     const isEditMode = actionMode === 'edit'
 
-    const switchMode = (mode: ModalActionMode) => {
-        setSearchParams({ mode: mode })
+    const switchMode = () => {
+        setSearchParams({ mode: isEditMode ? 'view' : 'edit' })
     }
 
     const closeModal = () => {

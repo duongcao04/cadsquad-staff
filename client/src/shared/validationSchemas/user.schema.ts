@@ -6,7 +6,7 @@ export const CreateUserSchema = yup.object().shape({
     username: yup.string().optional(),
     password: yup.string().optional(),
     displayName: yup.string().required(),
-    jobTitleIds: yup.array(yup.string().required()).optional(),
+    jobTitleId: yup.string().optional(),
     departmentId: yup.string().optional(),
     phoneNumber: yup.string(),
 

@@ -49,7 +49,6 @@ export class CreateJobDto {
 	createdById: string
 
 	@IsOptional()
-	@IsUUID()
 	paymentChannelId: string
 
 	@IsOptional()

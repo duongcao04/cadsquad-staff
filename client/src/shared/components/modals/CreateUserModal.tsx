@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-import { Button, InputProps, addToast } from '@heroui/react'
+import { addToast, Button, InputProps } from '@heroui/react'
 import { Modal } from 'antd'
 import { useFormik } from 'formik'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
@@ -17,8 +17,8 @@ import HeroInput from '../customize/HeroInput'
 import { HeroSelect, HeroSelectItem } from '../customize/HeroSelect'
 import { useDepartments } from '@/shared/queries/useDepartment'
 import { useJobTitles } from '@/shared/queries/useJobTitle'
-import lodash from 'lodash'
 import { useCreateUser } from '@/shared/queries/useUser'
+import { ApiError } from '../../../lib/axios'
 
 export const userModalInputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -56,33 +56,28 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
             displayName: '',
             avatar: '',
             email: '',
-            jobTitleIds: [],
+            jobTitleId: '',
             departmentId: '',
             phoneNumber: '',
             role: 'USER',
         },
         validationSchema: CreateUserSchema,
         onSubmit: async (values) => {
-            if (!lodash.isEmpty(formik.errors)) {
-                console.log(formik.errors)
-                addToast({
-                    title: 'Đã xảy ra lỗi',
-                    color: 'danger',
-                })
-            }
-            try {
-                await createUserMutation(values)
-                addToast({
-                    title: 'Create user successfully!',
-                    color: 'success',
-                })
-            } catch (error) {
-                addToast({
-                    title: 'Create user failed!',
-                    description: `${error}`,
-                    color: 'danger',
-                })
-            }
+            await createUserMutation(values, {
+                onSuccess(res) {
+                    addToast({ title: res.data.message, color: 'success' })
+                    formik.resetForm()
+                    onClose()
+                },
+                onError(error) {
+                    const errorRes = error as unknown as ApiError
+                    addToast({
+                        title: errorRes.error,
+                        description: `Error: ${errorRes.message}`,
+                        color: 'danger',
+                    })
+                },
+            })
         },
     })
 
@@ -182,8 +177,8 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
                             className={`text-right font-semibold text-base pr-2 ${
                                 (Boolean(formik.touched.departmentId) &&
                                     formik.errors.departmentId) ||
-                                (Boolean(formik.touched.jobTitleIds) &&
-                                    formik.errors.jobTitleIds)
+                                (Boolean(formik.touched.jobTitleId) &&
+                                    formik.errors.jobTitleId)
                                     ? 'text-danger'
                                     : 'text-primary'
                             }`}
@@ -256,33 +251,41 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
                             </HeroSelect>
                             <HeroSelect
                                 isLoading={loadingJobTitles}
-                                id="jobTitleIds"
-                                name="jobTitleIds"
-                                label="Job Titles"
-                                placeholder="Select one or more job titles"
+                                id="jobTitleId"
+                                name="jobTitleId"
+                                label="Job title"
+                                placeholder="Select one job title"
                                 size="sm"
-                                selectionMode="multiple"
-                                selectedKeys={formik.values.jobTitleIds}
+                                selectedKeys={
+                                    formik.values.jobTitleId
+                                        ? [formik.values.jobTitleId]
+                                        : []
+                                }
                                 onChange={(e) => {
                                     const value = e.target.value
-                                    const valueArr = value
-                                        .split(',')
-                                        .filter((i) => i !== '')
-
-                                    formik.setFieldValue(
-                                        'jobTitleIds',
-                                        valueArr
-                                    )
+                                    formik.setFieldValue('jobTitleId', value)
                                     formik.setFieldTouched(
-                                        'jobTitleIds',
+                                        'jobTitleId',
                                         true,
                                         false
                                     )
                                 }}
+                                renderValue={(selectedItems) => {
+                                    const item = jobTitles?.find(
+                                        (d) => d.id === selectedItems[0].key
+                                    )
+                                    if (!item)
+                                        return (
+                                            <span className="text-gray-400">
+                                                Select one job title
+                                            </span>
+                                        )
+                                    return <span>{item.displayName}</span>
+                                }}
                             >
-                                {jobTitles?.map((jTitle) => (
-                                    <HeroSelectItem key={jTitle.id}>
-                                        {jTitle.displayName}
+                                {jobTitles?.map((jobTitle) => (
+                                    <HeroSelectItem key={jobTitle.id}>
+                                        <span>{jobTitle.displayName}</span>
                                     </HeroSelectItem>
                                 ))}
                             </HeroSelect>

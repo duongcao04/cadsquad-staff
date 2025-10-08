@@ -4,15 +4,19 @@ import { useQuery } from '@tanstack/react-query'
 import { jobTypeApi } from '@/app/api/jobType.api'
 
 export const useJobTypes = () => {
-    return useQuery({
+    const { data, isLoading, isFetching } = useQuery({
         queryKey: ['jobTypes'],
         queryFn: () => jobTypeApi.findAll(),
         select: (res) => res.data.result,
     })
+    return {
+        data,
+        isLoading: isLoading || isFetching,
+    }
 }
 
 export const useJobTypeDetail = (typeId?: string) => {
-    const { data, refetch, error, isLoading } = useQuery({
+    const { data, refetch, error, isLoading, isFetching } = useQuery({
         queryKey: typeId ? ['jobTypes', typeId] : ['jobTypes'],
         queryFn: () => {
             if (!typeId) {
@@ -27,6 +31,6 @@ export const useJobTypeDetail = (typeId?: string) => {
         refetch,
         jobType: data,
         error,
-        isLoading,
+        isLoading: isLoading || isFetching,
     }
 }

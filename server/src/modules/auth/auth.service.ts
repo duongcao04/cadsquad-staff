@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { RegisterUserDto } from './dto/register-user.dto'
 import { PrismaService } from '../../providers/prisma/prisma.service'
@@ -66,22 +67,39 @@ export class AuthService {
       where: { email: loginDto.email },
     })
     if (!existingUser) {
-      throw new NotFoundException('Incorrect email or password')
+      throw new UnauthorizedException('Incorrect email or password')
     }
     // 2. Compare inputPassword and databasePassword
     const isCertificate = await this.bcryptService.compare(loginDto.password, existingUser.password)
     if (!isCertificate) {
-      throw new NotFoundException('Incorrect email or password')
+      throw new UnauthorizedException('Incorrect email or password')
     }
 
     // 3. Return token
     try {
       const accessToken = await this.tokenService.getAccessToken(existingUser)
+
+      // Update last logined timestamp
+      await this.updateLastLogined(existingUser.id);
+
       return { accessToken }
     } catch (error) {
-      throw new InternalServerErrorException('Incorrect email or password', {
+      throw new UnauthorizedException('Incorrect email or password', {
         description: error,
       })
+    }
+  }
+
+  async updateLastLogined(userId: string) {
+    try {
+      const updatedUser = await this.prismaService.$executeRaw`
+      UPDATE "User"
+      SET "lastLoginAt" = NOW()
+      WHERE "id" = ${userId};
+    `;
+      return updatedUser;
+    } catch (error) {
+      throw new Error(`Failed to update last logined time: ${error.message}`);
     }
   }
 
@@ -99,7 +117,7 @@ export class AuthService {
         where: { id: userId },
         include: {
           department: true,
-          jobTitles: true
+          jobTitle: true
         }
       })
       const userRes = plainToInstance(UserResponseDto, userData, {

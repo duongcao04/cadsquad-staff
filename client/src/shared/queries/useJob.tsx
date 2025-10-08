@@ -12,6 +12,7 @@ import { jobApi } from '@/app/api/job.api'
 import { CONFIG_CONSTANTS } from '../constants/config.constant'
 import { DefaultJobStatusCode } from '@/shared/enums/default-job-status-code.enum'
 import { jobStatusApi } from '../../app/api/jobStatus.api'
+import lodash from 'lodash'
 
 export const useJobs = (
     params: JobQueryInput = {
@@ -39,7 +40,7 @@ export const useJobs = (
             `isHideFinishItems=${hideFinishItems}`,
         ],
         queryFn: () => {
-            return jobApi.findAll(params)
+            return jobApi.findAll(lodash.omitBy(params, lodash.isUndefined))
         },
         select: (res) => res.data,
     })
@@ -53,6 +54,29 @@ export const useJobs = (
     }
 }
 
+export const useSearchJobs = (keywords?: string) => {
+    const {
+        data,
+        isFetching,
+        isLoading: isFirstLoading,
+    } = useQuery({
+        queryKey: ['jobs', `search=${keywords}`],
+        queryFn: () => {
+            if (!keywords) {
+                return
+            }
+            return jobApi.searchJobs(keywords)
+        },
+        enabled: !!keywords,
+        select: (res) => res?.data.result,
+    })
+
+    return {
+        isLoading: isFirstLoading || isFetching,
+        jobs: data,
+    }
+}
+
 export const useJobColumns = () => {
     const { data: jobColumns } = useQuery({
         queryKey: ['configs', 'code', CONFIG_CONSTANTS.keys.jobShowColumns],
@@ -62,16 +86,23 @@ export const useJobColumns = () => {
     return { jobColumns }
 }
 
-export const useJobsDueOnDate = (dueAt: string) => {
+export const useJobsDueOnDate = (dueAt?: string) => {
     const {
         data: jobs,
         isLoading,
         isFetching,
     } = useQuery({
-        queryKey: ['jobs', 'dueOn', dueAt],
-        queryFn: () => jobApi.getJobsDueOnDate(dueAt),
-        select: (res) => res.data.result,
+        queryKey: ['jobs', 'dueOn', dueAt ?? ''],
+        queryFn: () => {
+            if (!dueAt) {
+                return
+            }
+            return jobApi.getJobsDueOnDate(dueAt)
+        },
+        enabled: !!dueAt,
+        select: (res) => res?.data.result,
     })
+
     return { jobs, isLoading: isLoading || isFetching }
 }
 
@@ -191,6 +222,9 @@ export const useCreateJobMutation = () => {
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],
             })
+            queryClient.invalidateQueries({
+                queryKey: ['jobTypes'],
+            })
         },
     })
 }
@@ -213,12 +247,12 @@ export const useChangeStatusMutation = () => {
                 changeStatusInput
             )
         },
-        onSuccess: (data) => {
+        onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobDetail', data.data.result?.no],
+                queryKey: ['jobs', 'no', res.data.result?.no],
             })
             queryClient.invalidateQueries({
-                queryKey: ['jobActivityLog', String(data.data.result?.id)],
+                queryKey: ['jobActivityLog', String(res.data.result?.id)],
             })
         },
     })
@@ -285,7 +319,7 @@ export const useRemoveMemberMutation = () => {
     })
 }
 
-export const useUpdateJobMutation = (onSucess?: () => void) => {
+export const useUpdateJobMutation = () => {
     return useMutation({
         mutationKey: ['updateJob'],
         mutationFn: ({
@@ -297,14 +331,13 @@ export const useUpdateJobMutation = (onSucess?: () => void) => {
         }) => {
             return axiosClient.patch(`jobs/${jobId}`, updateJobInput)
         },
-        onSuccess: (data) => {
+        onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobs', 'no', data.data.result?.no],
+                queryKey: ['jobs', 'no', res.data.result?.no],
             })
             queryClient.invalidateQueries({
-                queryKey: ['jobs', 'id', data.data.result?.id],
+                queryKey: ['jobs', 'id', res.data.result?.id],
             })
-            onSucess?.()
         },
     })
 }
@@ -312,8 +345,8 @@ export const useUpdateJobMutation = (onSucess?: () => void) => {
 export const useDeleteJobMutation = () => {
     return useMutation({
         mutationKey: ['deleteJob'],
-        mutationFn: (id: number | string) => {
-            return axiosClient.delete(`jobs/${id}`)
+        mutationFn: (id: string) => {
+            return jobApi.remove(id)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({

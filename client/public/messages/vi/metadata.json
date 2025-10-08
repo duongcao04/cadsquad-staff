@@ -1,34 +1,83 @@
 {
+    "auth": {
+        "title": "Đăng nhập | Cadsquad",
+        "description": "Truy cập hệ thống Cadsquad để quản lý dự án, tài liệu kỹ thuật và cộng tác với đội ngũ kỹ sư của bạn. Đăng nhập hoặc tạo tài khoản mới ngay hôm nay.",
+        "keywords": "Cadsquad, đăng nhập, đăng ký, hệ thống kỹ sư, quản lý dự án, tài liệu kỹ thuật, CAD, kỹ thuật cơ khí, thiết kế 3D",
+        "canonical": "https://staff.cadsquad.vn/auth",
+        "ogTitle": "Đăng nhập | Cadsquad",
+        "ogDescription": "Truy cập hệ thống kỹ sư Cadsquad để quản lý dự án và cộng tác hiệu quả. Đăng nhập hoặc tạo tài khoản miễn phí ngay.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
+    },
     "overview": {
         "title": "Tổng quan | Cadsquad",
-        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+        "description": "Hệ thống quản lý dự án Cadsquad giúp tối ưu quy trình thiết kế cơ khí, theo dõi tiến độ công việc, quản lý tệp CAD, hỗ trợ làm việc nhóm và đảm bảo tiến độ – chất lượng dự án.",
+        "keywords": "dịch vụ CAD, thiết kế cơ khí, gia công CAD, CAD Việt Nam, phát triển sản phẩm, chuyên gia CAD, bản vẽ 2D, mô hình 3D, thiết kế kỹ thuật, kỹ sư CAD, dịch vụ CAO, thiết kế sản phẩm, kỹ thuật cơ khí, CAD drafting, CAD engineering",
+        "canonical": "https://cadsquad.vn/",
+        "ogTitle": "Cadsquad Việt Nam - Dịch vụ CAD & Thiết kế cơ khí chất lượng cao",
+        "ogDescription": "Dịch vụ CAD chuyên nghiệp từ Việt Nam. Thiết kế cơ khí, mô hình 2D/3D, bản vẽ kỹ thuật và nhiều hơn nữa cho doanh nghiệp toàn cầu.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     },
     "workbench": {
         "title": "Bàn làm việc | Cadsquad",
-        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+        "description": "Quản lý, thiết kế và cộng tác hiệu quả với Cadsquad Workbench — trung tâm điều hành dự án cơ khí, tệp CAD và quy trình làm việc của bạn.",
+        "keywords": "bàn làm việc CAD, công cụ thiết kế cơ khí, quản lý tệp CAD, theo dõi dự án CAD, nền tảng CAD cộng tác, thiết kế 3D, CAD Việt Nam, Cadsquad Workbench",
+        "canonical": "https://cadsquad.vn/workbench",
+        "ogTitle": "Cadsquad Workbench - Nền tảng cộng tác CAD tối ưu",
+        "ogDescription": "Sử dụng Workbench để thiết kế, quản lý và cộng tác liền mạch giữa các dự án thiết kế cơ khí và tệp CAD.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     },
     "profile": {
-        "title": "Hồ sơ | Cadsquad",
-        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+        "title": "Hồ sơ cá nhân | Cadsquad",
+        "description": "Quản lý hồ sơ kỹ sư thiết kế của bạn, theo dõi hoạt động và thể hiện chuyên môn trong hệ thống Cadsquad.",
+        "keywords": "hồ sơ kỹ sư CAD, hồ sơ kỹ thuật, tài khoản Cadsquad, chuyên gia CAD, lịch sử dự án, hồ sơ thành viên nhóm, kỹ sư cơ khí",
+        "canonical": "https://cadsquad.vn/profile",
+        "ogTitle": "Hồ sơ Cadsquad - Quản lý tài khoản kỹ sư thiết kế CAD",
+        "ogDescription": "Xem và cập nhật hồ sơ của bạn để thể hiện kỹ năng CAD và quản lý các dự án bạn đang tham gia.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     },
     "onboarding": {
-        "title": "Đang triển khai | Cadsquad",
-        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+        "title": "Hướng dẫn bắt đầu | Cadsquad",
+        "description": "Bắt đầu nhanh chóng với hướng dẫn của Cadsquad dành cho kỹ sư CAD — tìm hiểu quy trình làm việc, công cụ và cách cộng tác hiệu quả.",
+        "keywords": "hướng dẫn CAD, đào tạo Cadsquad, thiết lập kỹ sư mới, hướng dẫn thiết kế cơ khí, quy trình quản lý dự án, CAD Việt Nam, hướng dẫn cộng tác",
+        "canonical": "https://cadsquad.vn/onboarding",
+        "ogTitle": "Cadsquad Onboarding - Bắt đầu hành trình CAD của bạn",
+        "ogDescription": "Làm quen nhanh với quy trình và công cụ của Cadsquad để quản lý và hoàn thành dự án CAD hiệu quả.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     },
     "documents": {
         "title": "Tài liệu | Cadsquad",
-        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+        "description": "Tập trung và quản lý tất cả tài liệu, bản vẽ thiết kế và tệp kỹ thuật của bạn một cách an toàn với Cadsquad.",
+        "keywords": "tài liệu CAD, bản vẽ kỹ thuật, quản lý thiết kế, lưu trữ CAD, kiểm soát phiên bản tệp CAD, tài liệu kỹ sư, lưu trữ an toàn",
+        "canonical": "https://cadsquad.vn/documents",
+        "ogTitle": "Tài liệu Cadsquad - Quản lý tệp CAD an toàn và tiện lợi",
+        "ogDescription": "Quản lý tất cả bản vẽ và tài liệu thiết kế CAD của bạn trong một hệ thống an toàn và đồng bộ với Cadsquad Documents.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     },
     "projectCenter": {
-        "title": "Trung tâm Dự án | Cadsquad",
-        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+        "title": "Trung tâm dự án | Cadsquad",
+        "description": "Theo dõi tiến độ, phân công nhiệm vụ và đảm bảo tiến độ giao hàng đúng hạn với Trung tâm dự án của Cadsquad.",
+        "keywords": "quản lý dự án CAD, theo dõi nhiệm vụ, quy trình thiết kế cơ khí, cộng tác CAD, quản lý kỹ thuật, trung tâm dự án, Cadsquad Project Center",
+        "canonical": "https://cadsquad.vn/project-center",
+        "ogTitle": "Cadsquad Project Center - Quản lý dự án thiết kế CAD hiệu quả",
+        "ogDescription": "Theo dõi và quản lý tất cả các dự án thiết kế CAD của bạn một cách chính xác và khoa học với Cadsquad Project Center.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     },
     "team": {
-        "title": "Nhóm | Cadsquad",
-        "description": "Hệ thống Quản lý Dự án Cadsquad tối ưu hóa quy trình thiết kế cơ khí, theo dõi công việc, quản lý tệp CAD, hỗ trợ cộng tác nhóm và đảm bảo giao dự án đúng hạn với chất lượng cao."
+        "title": "Nhóm làm việc | Cadsquad",
+        "description": "Cộng tác cùng các kỹ sư và nhà thiết kế CAD toàn cầu. Quản lý vai trò, phân quyền và làm việc nhóm hiệu quả với Cadsquad Team.",
+        "keywords": "quản lý nhóm CAD, cộng tác thiết kế, nhóm kỹ sư, thiết kế cơ khí, teamwork CAD, phối hợp dự án, Cadsquad Team",
+        "canonical": "https://cadsquad.vn/team",
+        "ogTitle": "Cadsquad Team - Môi trường làm việc nhóm CAD chuyên nghiệp",
+        "ogDescription": "Xây dựng và quản lý đội ngũ thiết kế CAD của bạn — cộng tác trong thời gian thực và nâng cao hiệu suất với Cadsquad Team.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     },
     "settings": {
         "title": "Cài đặt | Cadsquad",
-        "description": "Cadsquad Project Management System streamlines mechanical design workflows, tracks tasks, manages CAD files, enables team collaboration, and ensures on-time, high-quality project delivery."
+        "description": "Tùy chỉnh không gian làm việc Cadsquad của bạn. Quản lý thông báo, ngôn ngữ, tài khoản và giao diện theo sở thích cá nhân.",
+        "keywords": "cài đặt CAD, tùy chỉnh Cadsquad, tài khoản người dùng, cài đặt thông báo, ngôn ngữ hiển thị, cấu hình hệ thống CAD, workspace CAD",
+        "canonical": "https://cadsquad.vn/settings",
+        "ogTitle": "Cadsquad Settings - Cá nhân hóa trải nghiệm thiết kế CAD của bạn",
+        "ogDescription": "Điều chỉnh các tùy chọn cá nhân để tối ưu hóa ngôn ngữ, thông báo và giao diện làm việc trong Cadsquad.",
+        "ogImage": "https://res.cloudinary.com/dqx1guyc0/image/upload/v1754592421/Cadsquad/ogImage_mogssp.png"
     }
 }

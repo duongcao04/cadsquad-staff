@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 import { calcLeftTime, cn } from '@/lib/utils'
 import { MS } from '@/shared/constants/appConstant'
+import { useTranslations } from 'next-intl'
 
 type CountDownProps = {
     endedDate: Date | string
@@ -27,10 +28,11 @@ const CountDown: React.FC<CountDownProps> = ({
         showDays: true,
         showHours: true,
         showMinutes: true,
-        showSeconds: true,
+        showSeconds: false,
         format: 'full',
     },
 }) => {
+    const t = useTranslations()
     const [timeText, setTimeText] = useState('')
 
     useEffect(() => {
@@ -38,7 +40,7 @@ const CountDown: React.FC<CountDownProps> = ({
             const difference = calcLeftTime(endedDate)
 
             if (difference <= 0) {
-                setTimeText('Expired')
+                setTimeText(t('expired'))
                 return
             }
 
@@ -83,7 +85,7 @@ const CountDown: React.FC<CountDownProps> = ({
                     parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`)
                 }
                 const textFull =
-                    parts.length > 0 ? parts.join(', ') + ' left' : 'Expired'
+                    parts.length > 0 ? parts.join(', ') + ' left' : t('expired')
                 setTimeText(textFull)
             } else if (options.format === 'short') {
                 // Show all enabled units
@@ -107,7 +109,8 @@ const CountDown: React.FC<CountDownProps> = ({
                 if (seconds > 0 && options.showSeconds) {
                     temp.push(`${seconds}s`)
                 }
-                const textShort = temp.length > 0 ? temp.join(', ') : 'Expired'
+                const textShort =
+                    temp.length > 0 ? temp.join(', ') : t('expired')
                 setTimeText(textShort)
             } else {
                 // Show only the highest significant unit

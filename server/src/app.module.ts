@@ -13,9 +13,12 @@ import { ConfigModule } from './modules/config/config.module'
 import { CommentModule } from './modules/comment/comment.module'
 import { DepartmentModule } from './modules/department/department.module'
 import { JobTitleModule } from './modules/job-title/job-title.module'
+import { CloudinaryModule } from './providers/cloudinary/cloudinary.module'
+import { GalleryModule } from './modules/gallery/gallery.module';
+import { GatewayModule } from './modules/gateway/gateway.module'
 
 @Module({
-  imports: [PrismaModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, ConfigModule, CommentModule, DepartmentModule, JobTitleModule],
+  imports: [PrismaModule, GatewayModule, CloudinaryModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, ConfigModule, CommentModule, DepartmentModule, JobTitleModule, GalleryModule],
   controllers: [AppController],
   providers: [AppService],
 })

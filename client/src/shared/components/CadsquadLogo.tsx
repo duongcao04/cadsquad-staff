@@ -7,9 +7,9 @@ import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
+import { useTheme } from 'next-themes'
 import CSDWhiteLogo from '../../../public/logo-white.webp'
 import CSDLogo from '../../../public/logo.webp'
-import { useTheme } from 'next-themes'
 
 type Props = {
     canRedirect?: boolean
@@ -21,7 +21,7 @@ type Props = {
     logoTheme?: 'white' | 'default'
 }
 
-export default function CadsquadLogo({
+function CadsquadLogo({
     logoTheme = 'default',
     canRedirect = true,
     href = '/',
@@ -62,3 +62,4 @@ export default function CadsquadLogo({
         </Wrapper>
     )
 }
+export default React.memo(CadsquadLogo)

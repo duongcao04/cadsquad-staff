@@ -13,8 +13,8 @@ export default async function SettingsLayout({
             {/* Height for header */}
             <div className="h-[56px]" />
             {/*  */}
-            <main className="max-w-screen h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
-                <div className="mx-auto mt-4">{children}</div>
+            <main className="size-full h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
+                {children}
             </main>
         </div>
     )

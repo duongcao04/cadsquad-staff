@@ -6,7 +6,7 @@ export const CONFIG_CONSTANTS = {
 	keys: {
 		// Job table
 		jobShowColumns: "job-show-columns",
-		hideFinishItems: 'onboarding-activeTab-hide-finish-items'
+		hideFinishItems: 'project-center-activeTab-hide-finish-items'
 	},
 	values: {
 		allJobColumns: {

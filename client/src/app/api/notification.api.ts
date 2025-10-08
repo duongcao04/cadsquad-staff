@@ -1,4 +1,3 @@
-
 import { axiosClient } from '@/lib/axios'
 import { CreateNotificationInput, UpdateNotificationInput } from '@/shared/validationSchemas/notification.schema'
 

@@ -22,7 +22,7 @@ import { Job } from '@/shared/interfaces/job.interface'
 import { lightenHexColor } from '@/lib/utils'
 import { RoleEnum } from '@/shared/enums/role.enum'
 import useAuth from '@/shared/queries/useAuth'
-import { DefaultJobStatusCode } from '../../enums/default-job-status-code.enum'
+import { DefaultJobStatusCode } from '@/shared/enums/default-job-status-code.enum'
 
 type Props = {
     jobData: Job

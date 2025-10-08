@@ -96,27 +96,37 @@ export default function AntdProvider({
                             :where(
                                     .css-dev-only-do-not-override-1qhywnf
                                 ).ant-table-wrapper {
+                                background: var(--color-background) !important;
+                                color: var(--color-foreground) !important;
                                 height: 100% !important;
                             }
                             :where(
                                     .css-dev-only-do-not-override-1qhywnf
                                 ).ant-spin-nested-loading {
+                                color: var(--color-foreground) !important;
+                                background: var(--color-background) !important;
                                 height: 100% !important;
                             }
                             :where(
                                     .css-dev-only-do-not-override-1qhywnf
                                 ).ant-spin-nested-loading
                                 .ant-spin-container {
+                                color: var(--color-foreground) !important;
+                                background: var(--color-background) !important;
                                 height: 100% !important;
                             }
                             :where(
                                     .css-dev-only-do-not-override-1qhywnf
                                 ).ant-table-wrapper
                                 .ant-table {
+                                color: var(--color-foreground) !important;
+                                background: var(--color-background) !important;
                                 height: 100% !important;
                             }
 
                             .ant-table-container {
+                                color: var(--color-foreground) !important;
+                                background: var(--color-background) !important;
                                 height: 100% !important;
                                 padding: 14px !important;
                             }
@@ -124,6 +134,8 @@ export default function AntdProvider({
                                     .css-dev-only-do-not-override-175gf9i
                                 ).ant-table-wrapper
                                 .ant-table {
+                                color: var(--color-foreground) !important;
+                                background: var(--color-background) !important;
                                 border-radius: 14px !important;
                             }
 
@@ -142,16 +154,21 @@ export default function AntdProvider({
                                 ).ant-table-wrapper
                                 .ant-table
                                 .ant-table-header {
+                                color: var(--color-foreground) !important;
                                 border-radius: 14px !important;
                                 box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
                             }
                             .ant-table-wrapper .ant-table-column-title {
+                                color: var(--color-foreground) !important;
+                                background: var(--color-background) !important;
                                 display: -webkit-box;
                                 -webkit-line-clamp: 1; /* số dòng muốn giới hạn */
                                 -webkit-box-orient: vertical;
                                 overflow: hidden;
                             }
                             .ant-table-body {
+                                color: var(--color-foreground) !important;
+                                background: var(--color-background) !important;
                                 height: calc(100% - 53px) !important;
                                 margin-right: -8px !important;
                                 margin-bottom: -8px !important;

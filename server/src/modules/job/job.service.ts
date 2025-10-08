@@ -5,23 +5,23 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common'
-import { PrismaService } from '../../providers/prisma/prisma.service'
 import { ActivityType, Job, Prisma, RoleEnum } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
-import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
-import { CreateJobDto } from './dto/create-job.dto'
-import { ChangeStatusDto } from './dto/change-status.dto'
-import { UpdateJobMembersDto } from './dto/update-job-members.dto'
-import { JobQueryDto } from './dto/job-query.dto'
-import { PaginationMeta } from '../../common/interfaces/pagination-meta.interface'
-import { JobTabEnum } from './enums/job-tab.enum'
 import dayjs from 'dayjs'
-import { UserService } from '../user/user.service'
-import { ConfigService } from '../config/config.service'
 import { userConfigCode } from '../../common/constants/user-config-code.constant'
-import { NotificationService } from '../notification/notification.service'
+import { PaginationMeta } from '../../common/interfaces/pagination-meta.interface'
+import { PrismaService } from '../../providers/prisma/prisma.service'
+import { ConfigService } from '../config/config.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
+import { NotificationService } from '../notification/notification.service'
+import { UserService } from '../user/user.service'
+import { ChangeStatusDto } from './dto/change-status.dto'
+import { CreateJobDto } from './dto/create-job.dto'
+import { JobQueryDto } from './dto/job-query.dto'
+import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
+import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
+import { JobTabEnum } from './enums/job-tab.enum'
 
 @Injectable()
 export class JobService {
@@ -47,7 +47,7 @@ export class JobService {
           ...jobData,
           priority: jobData.priority as Job['priority'], // Ensure correct enum type
           statusId: statusId,
-          assignee: assigneeIds
+          assignee: assigneeIds?.length
             ? {
               connect: assigneeIds.map((id) => ({ id })),
             }
@@ -126,6 +126,76 @@ export class JobService {
       : finalColumns
   }
 
+  async findAllNoPaginate(
+    userId: string,
+    userRole: RoleEnum,
+    query: { keywords?: string },) {
+    const { keywords } = query
+    if (!keywords) {
+      return []
+    }
+
+    const queryPermission =
+      userRole === RoleEnum.ADMIN
+        ? {}
+        : {
+          assignee: { some: { id: userId } },
+        }
+
+    const where: Prisma.JobWhereInput = {
+      ...queryPermission,
+      ...(keywords && {
+        OR: [
+          {
+            displayName: {
+              contains: keywords,
+              mode: 'insensitive' as const,
+            },
+          },
+          {
+            no: {
+              contains: keywords,
+              mode: 'insensitive' as const,
+            },
+          },
+          {
+            type: {
+              displayName: {
+                contains: keywords,
+                mode: 'insensitive' as const,
+              },
+              code: {
+                contains: keywords,
+                mode: 'insensitive' as const,
+              },
+            },
+          },
+        ],
+      }),
+    }
+
+    const jobs = await this.prisma.job.findMany({
+      where,
+      include: {
+        status: {
+          select: {
+            thumbnailUrl: true
+          }
+        },
+      },
+      orderBy: { no: 'asc' },
+    })
+
+    const isAdmin = (await this.userService.getUserRole(userId)) === 'ADMIN'
+    const responseDto = isAdmin ? JobResponseDto : JobStaffResponseDto
+
+    const result = jobs.map((j) =>
+      plainToInstance(responseDto, j, { excludeExtraneousValues: true }),
+    ) as unknown as Job[]
+
+    return result
+  }
+
   /**
    * Find all jobs with relations.
    */
@@ -169,6 +239,12 @@ export class JobService {
           },
           {
             no: {
+              contains: search,
+              mode: 'insensitive' as const,
+            },
+          },
+          {
+            clientName: {
               contains: search,
               mode: 'insensitive' as const,
             },
@@ -481,10 +557,14 @@ export class JobService {
         })
         if (!job) throw new NotFoundException('Job not found')
 
+        const toStatus = await tx.jobStatus.findUnique({
+          where: { id: data.toStatusId }
+        })
+
         // 2. Update job
-        const updatedJob = await tx.job.update({
+        await tx.job.update({
           where: { id: jobId },
-          data: { statusId: data.toStatusId },
+          data: { statusId: data.toStatusId, completedAt: toStatus?.code === 'completed' ? new Date() : null, finishedAt: toStatus?.code === 'finish' ? new Date() : null, isPaid: toStatus?.code === 'finish' ? true : false },
         })
 
         // 3. Create activity log

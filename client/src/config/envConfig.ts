@@ -1,6 +1,7 @@
 import * as yup from 'yup'
 
 const configSchema = yup.object({
+    NODE_ENV: yup.string(),
     NEXT_PUBLIC_API_ENDPOINT: yup.string(),
     NEXT_PUBLIC_URL: yup.string(),
     NEXT_PUBLIC_CADSQUAD_EMAIL: yup.string(),
@@ -15,6 +16,7 @@ const configSchema = yup.object({
 function configProject() {
     try {
         const config = configSchema.validateSync({
+            NODE_ENV: process.env.NODE_ENV,
             NEXT_PUBLIC_API_ENDPOINT: process.env.NEXT_PUBLIC_API_ENDPOINT,
             NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
             NEXT_PUBLIC_CADSQUAD_EMAIL: process.env.NEXT_PUBLIC_CADSQUAD_EMAIL,

@@ -1,15 +1,35 @@
 'use client'
 
 import React from 'react'
-import TeamTable from './_components/TeamTable'
+import TeamTable from './shared/components/TeamTable'
 import { useUsers } from '@/shared/queries/useUser'
+import PageHeading from '@/shared/components/layouts/PageHeading'
+import { useTranslations } from 'next-intl'
+import { Badge } from '@heroui/react'
 
 export default function ManagementTeamPage() {
-    const { data: users } = useUsers()
+    const t = useTranslations('settings')
+    const { users, isLoading: loadingUsers } = useUsers()
+
     return (
-        <div className="size-full">
-            <h1>Management User</h1>
-            <TeamTable data={users ?? []} tableOptions={{ scroll: {} }} />
-        </div>
+        <>
+            <PageHeading
+                title={
+                    <Badge color="primary" content="5">
+                        <p className="pr-5 leading-none">
+                            {t('teamManagement')}
+                        </p>
+                    </Badge>
+                }
+                classNames={{
+                    wrapper: 'w-full',
+                }}
+            />
+            <div className="w-full h-[calc(100%-54px-12px)] bg-background rounded-md pr-3.5 overflow-y-auto overflow-x-hidden">
+                <div className="size-full">
+                    <TeamTable data={users ?? []} isLoading={loadingUsers} />
+                </div>
+            </div>
+        </>
     )
 }

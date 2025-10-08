@@ -4,10 +4,10 @@ import { LoginUserDto, RegisterUserDto } from '@/shared/interfaces/auth.interfac
 import { User } from '@/shared/interfaces/user.interface'
 
 export const authApi = {
-	register: (data: RegisterUserDto) => {
+	register: async (data: RegisterUserDto) => {
 		return axiosClient.post('/auth/register', data)
 	},
-	login: (data: LoginUserDto) => {
+	login: async (data: LoginUserDto) => {
 		return axiosClient.post('/auth/login', data)
 	},
 	getProfile: () => {

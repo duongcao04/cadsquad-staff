@@ -29,8 +29,11 @@ export interface User {
 	/** Avatar URL (nullable) */
 	avatar?: string | null
 
-	/** List of job titles associated with the user */
-	jobTitles: JobTitle[]
+	/** Job title information (nullable) */
+	jobTitleId?: string | null
+
+	/** Job title information (nullable) */
+	jobTitle?: JobTitle | null
 
 	/** Department ID (nullable) */
 	departmentId?: string | null

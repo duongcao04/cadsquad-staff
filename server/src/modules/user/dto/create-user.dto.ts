@@ -21,8 +21,8 @@ export class CreateUserDto {
 	avatar?: string
 
 	@IsOptional()
-	@IsArray()
-	jobTitleIds?: string[]
+	@IsString()
+	jobTitleId?: string
 
 	@IsOptional()
 	@IsString()

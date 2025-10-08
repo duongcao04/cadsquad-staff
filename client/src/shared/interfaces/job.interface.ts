@@ -168,6 +168,20 @@ export interface Job {
 	completedAt?: Date | null
 
 	/**
+	 * The date and time when the job was finish.
+	 * Can be null if the job is not yet finish.
+	 * @type {Date | null | undefined}
+	 */
+	finishedAt?: Date | null
+
+	/**
+	 * The date and time when the job was paid.
+	 * Can be null if the job is not yet paid.
+	 * @type {Date | null | undefined}
+	 */
+	paidAt?: Date | null
+
+	/**
 	 * The timestamp when the job was created.
 	 * @type {Date}
 	 */

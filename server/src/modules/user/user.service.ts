@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { RoleEnum, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
@@ -12,42 +12,70 @@ import { UpdatePasswordDto } from './dto/update-password.dto'
 @Injectable()
 export class UserService {
   constructor(private readonly prismaService: PrismaService, private readonly bcryptService: BcryptService) { }
+
   async create(data: CreateUserDto): Promise<UserResponseDto> {
-    const { jobTitleIds, departmentId, ...rest } = data
+    const { jobTitleId, departmentId, ...rest } = data
     const username = data.username ? data.username :
       removeVietnameseAccent(data.displayName.toLowerCase()) +
       Date.now()
+
+    if (await this.existingEmail(data.email) || await this.existingUsername(username)) {
+      throw new ConflictException("User already exists")
+    }
+
     const password = data.password ? await this.bcryptService.hash(data.password) : ''
     const avatar = data.avatar ? data.avatar : `https://ui-avatars.com/api/?name=${data.displayName.replaceAll(" ", "+")}&background=random`
-    const user = await this.prismaService.user.create({
-      data: {
-        ...rest,
-        password,
-        avatar,
-        username,
-        ...(jobTitleIds && jobTitleIds.length > 0
-          ? {
-            jobTitles: {
-              connect: jobTitleIds.map((id) => ({ id })),
-            },
-          }
-          : {}),
-        ...(departmentId
-          ? {
-            department: {
-              connect: { id: departmentId },
-            },
-          }
-          : {}),
-      },
-      include: {
-        jobTitles: true,
-        department: true,
-      },
-    })
 
-    return plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: true,
+    try {
+      const user = await this.prismaService.user.create({
+        data: {
+          ...rest,
+          password,
+          avatar,
+          username,
+          ...(jobTitleId
+            ? {
+              jobTitle: {
+                connect: { id: jobTitleId },
+              },
+            }
+            : {}),
+          ...(departmentId
+            ? {
+              department: {
+                connect: { id: departmentId },
+              },
+            }
+            : {}),
+        },
+        include: {
+          jobTitle: true,
+          department: true,
+        },
+      })
+
+      return plainToInstance(UserResponseDto, user, {
+        excludeExtraneousValues: true,
+      })
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(error.message)
+    }
+  }
+
+  async existingEmail(email: string) {
+    return await this.prismaService.user.findUnique({
+      where: {
+        email
+      }
+    })
+  }
+
+  async existingUsername(username: string) {
+    return await this.prismaService.user.findUnique({
+      where: {
+        username
+      }
     })
   }
 
@@ -119,7 +147,10 @@ export class UserService {
     const users = await this.prismaService.user.findMany({
       include: {
         department: {},
-        jobTitles: {}
+        jobTitle: {}
+      },
+      orderBy: {
+        displayName: 'asc'
       }
     })
     return plainToInstance(UserResponseDto, users, {

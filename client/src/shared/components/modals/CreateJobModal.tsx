@@ -1,25 +1,26 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { Button, Input, InputProps, NumberInput, addToast } from '@heroui/react'
 import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 
-import { useUsers } from '@/shared/queries/useUser'
+import useAuth from '@/shared/queries/useAuth'
+import { useCreateJobMutation } from '@/shared/queries/useJob'
 import { usePaymentChannels } from '@/shared/queries/usePaymentChannel'
+import { useUsers } from '@/shared/queries/useUser'
 import {
     CreateJobInput,
     CreateJobSchema,
 } from '@/shared/validationSchemas/job.schema'
-import InsertAttachments from '@/app/(routes)/[locale]/(dashboard)/_components/formFields/InsertAttachments'
-import InsertJobNo from '@/app/(routes)/[locale]/(dashboard)/_components/formFields/InsertJobNo'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
-import useAuth from '@/shared/queries/useAuth'
-import { useJobStore } from '@/app/(routes)/[locale]/(dashboard)/onboarding/store/useJobStore'
-import { useCreateJobMutation } from '@/shared/queries/useJob'
-import InsertDatePicker from '@/app/(routes)/[locale]/(dashboard)/_components/formFields/InsertDatePicker'
+import { useJobStore } from '@/app/(routes)/[locale]/(workspace)/project-center/store/useJobStore'
+import InsertAttachments from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields/InsertAttachments'
+import InsertDatePicker from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields/InsertDatePicker'
+import InsertJobNo from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields/InsertJobNo'
 import { HeroSelect, HeroSelectItem } from '../customize/HeroSelect'
+import { ApiError } from '../../../lib/axios'
 
 export const jobModalInputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -42,17 +43,18 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
 
     const { setNewJobNo } = useJobStore()
     const { profile } = useAuth()
-    const [isLoading, setLoading] = useState(false)
 
     /**
      * Get initial data
      */
-    const { data: users, isLoading: loadingUsers } = useUsers()
+    const { users, isLoading: loadingUsers } = useUsers()
     const { data: paymentChannels, isLoading: loadingPaymentChannels } =
         usePaymentChannels()
 
-    const { mutateAsync: createJobMutation } = useCreateJobMutation()
+    const { mutateAsync: createJobMutation, isPending: isCreatingJob } =
+        useCreateJobMutation()
 
+    // TODO: DEFAULT @nb.vy by API
     const initialValues = useMemo<CreateJobInput>(
         () => ({
             clientName: '',
@@ -62,7 +64,7 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
             attachmentUrls: [],
             startedAt: new Date(),
             dueAt: new Date(),
-            assigneeIds: [],
+            assigneeIds: ['c4d35f1b-9b37-4a3f-804b-373f7b0e1a24'],
             incomeCost: null as unknown as number,
             staffCost: null as unknown as number,
             paymentChannelId: null as unknown as string,
@@ -75,29 +77,27 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
         initialValues,
         validationSchema: CreateJobSchema,
         onSubmit: async (values) => {
-            try {
-                setLoading(true)
-
-                onClose()
-                await createJobMutation({
+            await createJobMutation(
+                {
                     ...values,
-                })
-                setNewJobNo(values.no)
-
-                addToast({
-                    title: 'Create project successfully!',
-                    color: 'success',
-                })
-                formik.resetForm()
-            } catch (error) {
-                addToast({
-                    title: 'Create project failed!',
-                    description: `${JSON.stringify(error)}`,
-                    color: 'danger',
-                })
-            } finally {
-                setLoading(false)
-            }
+                },
+                {
+                    onSuccess(res) {
+                        addToast({ title: res.data.message, color: 'success' })
+                        setNewJobNo(values.no)
+                        formik.resetForm()
+                        onClose()
+                    },
+                    onError(error) {
+                        const errorRes = error as unknown as ApiError
+                        addToast({
+                            title: errorRes.error,
+                            description: `Error: ${errorRes.message}`,
+                            color: 'danger',
+                        })
+                    },
+                }
+            )
         },
     })
 
@@ -133,7 +133,7 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
                                 Cancel
                             </Button>
                             <Button
-                                isLoading={isLoading}
+                                isLoading={isCreatingJob}
                                 color="primary"
                                 className="px-16"
                                 onPress={() => {

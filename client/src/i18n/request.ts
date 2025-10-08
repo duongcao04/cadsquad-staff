@@ -11,11 +11,12 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
     try {
         // Dynamic import multiple namespace files with error handling
-        const [commonResult, metadataResult, landingResult] =
+        const [commonResult, metadataResult, landingResult, settingsResult] =
             await Promise.allSettled([
                 import(`../../public/messages/${locale}/common.json`),
                 import(`../../public/messages/${locale}/metadata.json`),
                 import(`../../public/messages/${locale}/landing.json`),
+                import(`../../public/messages/${locale}/settings.json`),
             ])
 
         // Extract messages safely
@@ -34,12 +35,18 @@ export default getRequestConfig(async ({ requestLocale }) => {
                 ? landingResult.value.default
                 : {}
 
+        const settingsMessages =
+            settingsResult.status === 'fulfilled'
+                ? settingsResult.value.default
+                : {}
+
         return {
             locale,
             messages: {
                 landing: landingMessages,
                 metadata: metadataMessages,
                 common: commonMessages,
+                settings: settingsMessages,
 
                 // Flatten common messages to root level for easy access
                 ...commonMessages,
@@ -56,6 +63,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
                 landing: {},
                 metadata: {},
                 common: {},
+                settings: {}
             },
             timeZone: await getTimeZone(),
         }
@@ -70,7 +78,7 @@ export const getRequestConfigDynamic = getRequestConfig(
             : routing.defaultLocale
 
         // Define all possible namespaces
-        const namespaces = ['common', 'metadata', 'landing'] // Đổi thứ tự
+        const namespaces = ['common', 'metadata', 'landing', 'settings'] // Đổi thứ tự
 
         try {
             // Dynamic import all namespace files

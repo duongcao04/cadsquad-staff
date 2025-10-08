@@ -25,7 +25,9 @@ export class NotificationController {
   @HttpCode(201)
   @UseGuards(JwtGuard)
   @ResponseMessage('Create notification successfully')
-  async create(@Body() createNotificationDto: CreateNotificationDto) {
+  async create(@Req() request: Request, @Body() createNotificationDto: CreateNotificationDto) {
+    const userPayload: TokenPayload = await request['user']
+    createNotificationDto.senderId = userPayload.sub
     return this.notificationService.create(createNotificationDto)
   }
 

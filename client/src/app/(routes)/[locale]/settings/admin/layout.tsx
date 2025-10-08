@@ -1,12 +1,16 @@
 import React from 'react'
-import AdminSettingSidebar from './_components/AdminSettingSidebar'
+import { AdminSettingSidebar } from '../shared/components/SettingSidebar'
 
-type Props = { children: React.ReactNode }
-export default async function AdminSettingLayout({ children }: Props) {
+type Props = {
+    children: React.ReactNode
+}
+export default function AdminSettingsLayout({ children }: Props) {
     return (
-        <div className="w-screen h-screen grid grid-cols-[300px_1fr] gap-10">
-            <AdminSettingSidebar />
-            <div className="w-full">{children}</div>
+        <div className="size-full grid grid-cols-12 gap-1.5">
+            <div className="col-span-2 overflow-hidden pt-4">
+                <AdminSettingSidebar />
+            </div>
+            <div className="col-span-10 pr-3.5">{children}</div>
         </div>
     )
 }

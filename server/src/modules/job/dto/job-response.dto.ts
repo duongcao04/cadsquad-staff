@@ -56,6 +56,12 @@ export class JobResponseDto {
 	completedAt?: Date
 
 	@Expose()
+	finishedAt?: Date
+
+	@Expose()
+	paidAt?: Date
+
+	@Expose()
 	deletedAt?: Date
 
 	@Expose()

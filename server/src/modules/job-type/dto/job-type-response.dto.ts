@@ -1,4 +1,6 @@
-import { Expose } from 'class-transformer'
+import { Job } from '@prisma/client'
+import { Expose, Type } from 'class-transformer'
+import { JobResponseDto } from '../../job/dto/job-response.dto'
 
 export class JobTypeResponseDto {
 	@Expose()
@@ -12,6 +14,10 @@ export class JobTypeResponseDto {
 
 	@Expose()
 	hexColor?: string
+
+	@Expose()
+	@Type(() => JobResponseDto)
+	jobs?: JobResponseDto[]
 
 	@Expose()
 	_count: Record<string, unknown>

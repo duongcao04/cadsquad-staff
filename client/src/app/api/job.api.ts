@@ -13,6 +13,11 @@ export const jobApi = {
 			ApiResponse<{ data: Job[], paginate: Paginate }>
 		>('/jobs', { params: query })
 	},
+	searchJobs: (keywords: string) => {
+		return axiosClient.get<
+			ApiResponse<Job[]>
+		>('/jobs/search', { params: { keywords } })
+	},
 	getJobsDueOnDate: (inputDate: string) => {
 		return axiosClient.get<
 			ApiResponse<Job[]>

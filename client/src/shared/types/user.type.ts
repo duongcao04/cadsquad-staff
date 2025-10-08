@@ -19,3 +19,5 @@ export type UserSummary = {
 	/** An optional URL to the user's avatar image. */
 	avatar?: string;
 };
+
+export type UserColumn = 'email' | 'username' | 'displayName' | 'displayName' | 'avatar' | 'jobTitle' | 'department' | 'phoneNumber' | 'role' | 'isActive' | 'lastLoginAt' | 'jobsAssigned' | 'accounts' | 'createdAt' | 'updatedAt' | 'action'

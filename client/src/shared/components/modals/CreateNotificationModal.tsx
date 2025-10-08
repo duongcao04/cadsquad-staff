@@ -38,7 +38,7 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
         },
     ])
 
-    const { data: users, isLoading: loadingUsers } = useUsers()
+    const { users, isLoading: loadingUsers } = useUsers()
     const { profile } = useAuth()
 
     const {
@@ -88,21 +88,19 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                     await Promise.all(sendAll)
 
                     addToast({
-                        title: 'Gửi thông báo thành công!',
+                        title: 'Send notification successfully!',
                         color: 'success',
                     })
                 }
             } catch (error) {
                 addToast({
-                    title: 'Gửi thông báo thất bại!',
+                    title: 'Send notification failed!',
                     description: `${error}`,
                     color: 'danger',
                 })
             }
         },
     })
-
-    console.log(formik.values)
 
     return (
         <form onSubmit={formik.handleSubmit}>

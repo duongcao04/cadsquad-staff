@@ -21,10 +21,10 @@ import {
 
 import { useDebouncedValue } from '@/hooks/useDebounce'
 
-import { ROOT_DIR } from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
 import { useSearchParam } from '@/hooks/useSearchParam'
 
 import { useFileStore } from './store/useFileStore'
+import { ROOT_DIR } from '@/app/(routes)/[locale]/(workspace)/documents/actions'
 
 const DEBOUNCE_VALUE = 250
 

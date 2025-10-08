@@ -31,7 +31,8 @@ model User {
   displayName         String
   password            String
   avatar              String?
-  jobTitles           JobTitle[]       @relation("UserJobTitles")
+  jobTitleId          String?
+  jobTitle            JobTitle?        @relation(fields: [jobTitleId], references: [id])
   departmentId        String?
   department          Department?      @relation(fields: [departmentId], references: [id])
   phoneNumber         String?
@@ -49,7 +50,19 @@ model User {
   configs             Config[]
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
-  Comment             Comment[]
+  comment             Comment[]
+  gallery             Gallery[]
+}
+
+model Gallery {
+  id          String   @id @default(uuid())
+  title       String?
+  description String?
+  url         String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Comment {
@@ -79,7 +92,7 @@ model JobTitle {
   code        String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  users       User[]   @relation("UserJobTitles")
+  users       User[]
 }
 
 model Department {
@@ -169,8 +182,8 @@ model Job {
   assignee         User[]           @relation("UserJobs") // Member assigned
   createdBy        User             @relation("JobCreator", fields: [createdById], references: [id])
   createdById      String
-  paymentChannel   PaymentChannel   @relation(fields: [paymentChannelId], references: [id])
-  paymentChannelId String
+  paymentChannel   PaymentChannel?  @relation(fields: [paymentChannelId], references: [id])
+  paymentChannelId String?
   status           JobStatus        @relation(fields: [statusId], references: [id])
   statusId         String
   activityLog      JobActivityLog[]
@@ -182,6 +195,8 @@ model Job {
   isPaid           Boolean          @default(false)
   dueAt            DateTime
   completedAt      DateTime?
+  finishedAt       DateTime?
+  paidAt           DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?

@@ -6,9 +6,9 @@ import { Button, Input, addToast } from '@heroui/react'
 import { Modal } from 'antd'
 import { FolderIcon, FolderPlus } from 'lucide-react'
 
-import { ROOT_DIR } from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
 import { useSearchParam } from '@/hooks/useSearchParam'
 import { FileItem } from '..'
+import { ROOT_DIR } from '../../../../app/(routes)/[locale]/(workspace)/documents/actions'
 
 const FOLDER_COLORS = [
     '#1b1464',

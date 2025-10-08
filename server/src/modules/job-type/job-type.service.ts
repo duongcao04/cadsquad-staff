@@ -26,7 +26,16 @@ export class JobTypeService {
    * @returns {Promise<JobType[]>} List of all job types.
    */
   async findAll(): Promise<JobType[]> {
-    const jobTypes = await this.prismaService.jobType.findMany()
+    const jobTypes = await this.prismaService.jobType.findMany({
+      include: {
+        jobs: true,
+        _count: {
+          select: {
+            jobs: {}
+          }
+        }
+      }
+    })
     return jobTypes.map((jt) =>
       plainToInstance(JobTypeResponseDto, jt, { excludeExtraneousValues: true })
     ) as unknown as JobType[]
@@ -43,6 +52,7 @@ export class JobTypeService {
     const jobType = await this.prismaService.jobType.findUnique({
       where: { id: jobTypeId },
       include: {
+        jobs: true,
         _count: {
           select: {
             jobs: {}

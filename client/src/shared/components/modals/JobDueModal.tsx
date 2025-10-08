@@ -1,13 +1,13 @@
 'use client'
 
-import React from 'react'
-
-import { Modal } from 'antd'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
-import { useJobsDueOnDate } from '@/shared/queries/useJob'
-import { VietnamDateFormat } from '@/lib/dayjs'
-import { JobCard } from '@/app/(routes)/[locale]/(dashboard)/profile'
+import { JobCard } from '@/app/(routes)/[locale]/(workspace)/profile'
 import { Link } from '@/i18n/navigation'
+import { VietnamDateFormat } from '@/lib/dayjs'
+import { useJobsDueOnDate } from '@/shared/queries/useJob'
+import { Modal } from 'antd'
+import { useTranslations } from 'next-intl'
+import React from 'react'
+import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 type Props = {
     isOpen: boolean
@@ -15,8 +15,9 @@ type Props = {
     currentDate: string
 }
 
-export default function JobDueModal({ isOpen, onClose, currentDate }: Props) {
-    const { jobs } = useJobsDueOnDate(currentDate)
+function JobDueModal({ isOpen, onClose, currentDate }: Props) {
+    const t = useTranslations()
+    const { jobs, isLoading } = useJobsDueOnDate(currentDate)
 
     useKeyboardShortcuts([
         {
@@ -31,7 +32,7 @@ export default function JobDueModal({ isOpen, onClose, currentDate }: Props) {
             onCancel={onClose}
             title={
                 <p className="text-xl font-semibold">
-                    Job đến hạn trong ngày{' '}
+                    {t('jobDueOn')}{' '}
                     <span className="text-primary">
                         {VietnamDateFormat(currentDate)}
                     </span>
@@ -51,20 +52,26 @@ export default function JobDueModal({ isOpen, onClose, currentDate }: Props) {
             <div className="py-8 space-y-5 border-t border-border">
                 {jobs?.length ? (
                     jobs?.map((job) => {
-                        return <JobCard key={job.id} data={job} />
+                        return (
+                            <JobCard
+                                key={job.id}
+                                data={job}
+                                isLoading={isLoading}
+                            />
+                        )
                     })
                 ) : (
                     <div className="py-12 flex flex-col items-center justify-center gap-2 text-text2">
                         <p className="text-base font-semibold">
-                            No active job found
+                            {t('emptyDueOnToday')}
                         </p>
                         <p className="tracking-wide text-sm">
-                            View all jobs{' '}
+                            {t('viewAllJobs')}{' '}
                             <Link
-                                href={'/onboarding'}
+                                href={'/project-center?tab=active'}
                                 className="link !underline"
                             >
-                                here
+                                {t('here')}
                             </Link>
                         </p>
                     </div>
@@ -73,3 +80,4 @@ export default function JobDueModal({ isOpen, onClose, currentDate }: Props) {
         </Modal>
     )
 }
+export default React.memo(JobDueModal)

@@ -6,7 +6,6 @@ import { Button, addToast, useDisclosure } from '@heroui/react'
 import { Empty, message } from 'antd'
 import { ArrowUp, PlusIcon } from 'lucide-react'
 
-import { ROOT_DIR } from '@/app/(routes)/[locale]/(dashboard)/documents/actions'
 // import { FILE_SYSTEM_API } from '@/lib/swr/api'
 import { FILE } from '@/shared/constants/appConstant'
 import { useSearchParam } from '@/hooks/useSearchParam'
@@ -21,6 +20,7 @@ import NewFolderModal from './modals/NewFolderModal'
 import RenameModal from './modals/RenameModal'
 import UploadModal from './modals/UploadModal'
 import { useFileStore } from './store/useFileStore'
+import { ROOT_DIR } from '@/app/(routes)/[locale]/(workspace)/documents/actions'
 
 // Define the FileItem type if not already imported
 export type FileItem = {
