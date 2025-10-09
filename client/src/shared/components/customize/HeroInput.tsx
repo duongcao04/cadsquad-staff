@@ -1,6 +1,8 @@
+'use client'
+
 import { extendVariants, Input } from '@heroui/react'
 
-const HeroInput = extendVariants(Input, {
+export const HeroInput = extendVariants(Input, {
     variants: {
         color: {
             base: {
@@ -22,4 +24,3 @@ const HeroInput = extendVariants(Input, {
         size: 'sm',
     },
 })
-export default HeroInput

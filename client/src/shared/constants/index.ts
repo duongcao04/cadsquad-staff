@@ -5,3 +5,6 @@ export const constants = {
 		}
 	}
 }
+
+export * from './config.constant'
+export * from './image.constant'

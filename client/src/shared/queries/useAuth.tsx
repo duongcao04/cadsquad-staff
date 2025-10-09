@@ -65,7 +65,7 @@ export function useProfile() {
     }
 }
 
-export default function useAuth() {
+export function useAuth() {
     const {
         data: profile,
         isLoading: loadingProfile,

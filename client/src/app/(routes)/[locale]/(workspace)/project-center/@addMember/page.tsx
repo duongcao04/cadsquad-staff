@@ -1,26 +1,25 @@
 'use client'
 
-import { Image, Modal, Select } from 'antd'
-import React, { useState } from 'react'
-import { useUsers } from '@/shared/queries/useUser'
-import { addToast, Button, Input } from '@heroui/react'
+import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { useAddMemberModal } from '@/shared/actions'
+import { handleCopy } from '@/shared/components'
+import { envConfig } from '@/shared/config'
+import { RoleEnum } from '@/shared/enums'
+import { useProfile, useUsers } from '@/shared/queries'
 import {
     useAssignMemberMutation,
     useJobByNo,
     useRemoveMemberMutation,
 } from '@/shared/queries/useJob'
-import envConfig from '@/config/envConfig'
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { addToast, Button, Input } from '@heroui/react'
+import { Image, Modal, Select } from 'antd'
 import { X } from 'lucide-react'
-import { useAddMemberModal } from '@/shared/actions/useAddMemberModal'
-import { RoleEnum } from '@/shared/enums/role.enum'
-import useAuth from '@/shared/queries/useAuth'
 import { useTranslations } from 'next-intl'
-import { handleCopy } from '@/shared/components/ui/copy-button'
+import { useState } from 'react'
 
 export default function AddMemberModal() {
     const t = useTranslations()
-    const { userRole } = useAuth()
+    const { userRole } = useProfile()
     const [memberSelected, setMemberSelected] = useState<string[]>([])
     const { isOpen, closeModal, jobNo } = useAddMemberModal()
     const { mutateAsync: assignMemberMutate } = useAssignMemberMutation({

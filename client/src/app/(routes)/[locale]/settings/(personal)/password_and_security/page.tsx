@@ -1,20 +1,19 @@
 'use client'
 
-import React from 'react'
-import ChangePasswordForm from './_components/ChangePasswordForm'
+import { useProfile } from '@/shared/queries'
 import { Skeleton } from 'antd'
-import useAuth from '@/shared/queries/useAuth'
+import { ChangePasswordForm } from './shared'
 
 export default function SecurityPage() {
-    const { loadingProfile } = useAuth()
+    const { isLoading } = useProfile()
 
     return (
-        <div className="w-full mt-4 space-y-6">
+        <div className="w-full p-4 space-y-6 max-w-[900px]">
             <h1 className="text-xl font-semibold">Đăng nhập và bảo mật</h1>
-            {loadingProfile && (
+            {isLoading && (
                 <Skeleton className="w-full h-[400px] rounded-xl"></Skeleton>
             )}
-            {!loadingProfile && <ChangePasswordForm />}
+            {!isLoading && <ChangePasswordForm />}
         </div>
     )
 }

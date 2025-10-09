@@ -1,8 +1,5 @@
-import React from 'react'
-
-import CadsquadLogo from '@/shared/components/CadsquadLogo'
-
-import LoginForm from './_components/LoginForm'
+import { CadsquadLogo } from '@/shared/components'
+import { LoginForm } from './shared'
 
 export default function AuthPage() {
     return (

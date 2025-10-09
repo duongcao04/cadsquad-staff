@@ -1,5 +1,7 @@
+'use client'
+
 import { usePathname, useRouter } from '@/i18n/navigation'
-import { useLogout, useProfile } from '@/shared/queries/useAuth'
+import { useLogout, useProfile } from '@/shared/queries'
 import {
     addToast,
     Avatar,
@@ -13,7 +15,7 @@ import {
 import { LogOut, User, UserCircle } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-export default function UserDropdown() {
+export function UserDropdown() {
     const tSettings = useTranslations('settings')
     const tCommon = useTranslations()
 

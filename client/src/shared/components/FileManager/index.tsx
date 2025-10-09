@@ -7,8 +7,7 @@ import { Empty, message } from 'antd'
 import { ArrowUp, PlusIcon } from 'lucide-react'
 
 // import { FILE_SYSTEM_API } from '@/lib/swr/api'
-import { FILE } from '@/shared/constants/appConstant'
-import { useSearchParam } from '@/hooks/useSearchParam'
+import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
 import BulkActionsToolbar from './BulkActionsToolbar'
 import FileManagerHeader from './FileManagerHeader'
@@ -87,7 +86,7 @@ export default function FileManager({
     const viewMode = getSearchParam('mode') ?? view
 
     useEffect(() => {
-        setCurrentPath(defaultDirectory.split(FILE.SPLASH))
+        setCurrentPath(defaultDirectory.split('/'))
     }, [])
 
     const { data: fileSystem, isLoading } = { data: [], isLoading: true }
@@ -112,7 +111,7 @@ export default function FileManager({
     const navigateToFolder = (folder: FileItem) => {
         if (folder.type === 'folder') {
             const newPath = [...folder.path, folder.name]
-            setSearchParams({ directory: newPath.join(FILE.SPLASH) })
+            setSearchParams({ directory: newPath.join('/') })
             setCurrentPath(newPath)
             setSelectedFiles([])
         }

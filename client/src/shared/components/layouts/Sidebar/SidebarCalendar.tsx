@@ -2,15 +2,15 @@
 
 import * as React from 'react'
 
-import { JobTabEnum } from '@/shared/enums/jobTab.enum'
-import { useJobs } from '@/shared/queries/useJob'
-import { JobQueryInput } from '@/shared/validationSchemas/job.schema'
+import { JobTabEnum } from '@/shared/enums'
+import { useJobs } from '@/shared/queries'
+import { JobQueryInput } from '@/shared/validationSchemas'
 import { useDisclosure } from '@heroui/react'
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar'
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton'
 import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay'
 import dayjs, { Dayjs } from 'dayjs'
-import JobDueModal from '../../modals/JobDueModal'
+import { JobDueModal } from '../../modals'
 
 interface ServerDayProps extends PickersDayProps {
     highlightedDays?: number[]

@@ -1,7 +1,7 @@
 import { getApps, initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
 
-import firebaseConfig from '@/config/firebaseConfig'
+import firebaseConfig from '@/shared/config/firebaseConfig'
 
 export const app = !getApps().length
     ? initializeApp(firebaseConfig)

@@ -8,7 +8,10 @@ import {
     CreateUserInput,
     UpdateUserInput,
 } from '@/shared/validationSchemas/user.schema'
-import { UpdatePasswordInput } from '@/shared/validationSchemas/auth.schema'
+import {
+    ResetPasswordInput,
+    UpdatePasswordInput,
+} from '@/shared/validationSchemas/auth.schema'
 
 export const useUsers = () => {
     const { data, isLoading, isFetching } = useQuery({
@@ -60,6 +63,26 @@ export const useUpdatePasswordMutation = () => {
     })
 }
 
+export const useResetPasswordMutation = () => {
+    return useMutation({
+        mutationKey: ['resetPassword'],
+        mutationFn: ({
+            userId,
+            resetPasswordInput,
+        }: {
+            userId: string
+            resetPasswordInput: ResetPasswordInput
+        }) => {
+            return userApi.resetPassword(userId, resetPasswordInput)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['profile'],
+            })
+        },
+    })
+}
+
 export const useCreateUser = () => {
     return useMutation({
         mutationFn: async (data: CreateUserInput) => await userApi.create(data),
@@ -70,15 +93,11 @@ export const useCreateUser = () => {
 }
 
 // Mutation: Xóa user
-export const useDeleteUser = (onSuccess?: () => void) => {
+export const useDeleteUser = () => {
     return useMutation({
-        mutationFn: async (id: string) => {
-            await userApi.remove(id)
-            return id
-        },
+        mutationFn: async (id: string) => await userApi.remove(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] })
-            onSuccess?.()
         },
     })
 }

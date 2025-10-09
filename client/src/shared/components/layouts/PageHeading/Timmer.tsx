@@ -35,4 +35,4 @@ const Timmer: React.FC = () => {
     )
 }
 
-export default Timmer
+export default React.memo(Timmer)

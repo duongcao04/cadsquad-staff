@@ -4,22 +4,19 @@ import createNextIntlPlugin from 'next-intl/plugin'
 
 const nextConfig: NextConfig = {
     images: {
+        unoptimized: process.env.NODE_ENV === 'development',
         remotePatterns: [
             {
                 protocol: 'https',
-                hostname: 'avatar.iran.liara.run',
-                pathname: '/**/*',
+                hostname: '**', // Cho phép tất cả hostname
             },
         ],
     },
-    /* config options here */
     eslint: {
-        // Tắt ESLint trong quá trình build
-        ignoreDuringBuilds: true,
+        ignoreDuringBuilds: process.env.NODE_ENV === 'development',
     },
     typescript: {
-        // Tắt TypeScript type checking trong quá trình build
-        ignoreBuildErrors: true,
+        ignoreBuildErrors: process.env.NODE_ENV === 'development',
     },
 }
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')

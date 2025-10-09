@@ -1,5 +1,5 @@
 import React from 'react'
 
-export default function FeatureList() {
+export function FeatureList() {
     return <div>FeatureList</div>
 }

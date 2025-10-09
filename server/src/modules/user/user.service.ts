@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { removeVietnameseAccent } from '../../utils/removeVietnameseAccent'
 import { BcryptService } from '../auth/bcrypt.service'
 import { UpdatePasswordDto } from './dto/update-password.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
 
 @Injectable()
 export class UserService {
@@ -158,6 +159,15 @@ export class UserService {
     })
   }
 
+  async resetPassword(userId: string, data: ResetPasswordDto) {
+    const hashedPassword = await this.bcryptService.hash(data.newPassword)
+    const user = await this.prismaService.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    })
+    return { username: user.username }
+  }
+
   /**
    * Find a user by their unique ID.
    *
@@ -190,12 +200,21 @@ export class UserService {
     })
   }
 
-  async delete(id: string): Promise<UserResponseDto> {
-    const user = await this.prismaService.user.delete({
+  async delete(id: string) {
+    const existingUser = await this.prismaService.user.findUnique({
       where: { id },
     })
-    return plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: true,
+
+    if (!existingUser) {
+      throw new NotFoundException("User not found")
+    }
+
+    await this.prismaService.user.delete({
+      where: { id },
     })
+
+    return {
+      username: existingUser.username
+    }
   }
 }

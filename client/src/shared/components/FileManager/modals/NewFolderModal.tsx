@@ -6,7 +6,7 @@ import { Button, Input, addToast } from '@heroui/react'
 import { Modal } from 'antd'
 import { FolderIcon, FolderPlus } from 'lucide-react'
 
-import { useSearchParam } from '@/hooks/useSearchParam'
+import { useSearchParam } from '@/shared/hooks/useSearchParam'
 import { FileItem } from '..'
 import { ROOT_DIR } from '../../../../app/(routes)/[locale]/(workspace)/documents/actions'
 

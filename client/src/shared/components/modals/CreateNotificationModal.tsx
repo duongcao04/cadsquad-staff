@@ -1,25 +1,24 @@
 'use client'
 
-import React, { useMemo } from 'react'
-
-import { Button, InputProps, Textarea, addToast } from '@heroui/react'
-import { Image, Modal } from 'antd'
-import { useFormik } from 'formik'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
-
-import { useUsers } from '@/shared/queries/useUser'
+import { NotificationType } from '@/shared/enums'
+import {
+    useProfile,
+    useSendNotificationMutation,
+    useUsers,
+} from '@/shared/queries'
 import {
     CreateNotificationInput,
     CreateNotificationInputSchema,
-} from '@/shared/validationSchemas/notification.schema'
-import { NotificationType } from '@/shared/enums/notificationType.enum'
-import HeroInput from '../customize/HeroInput'
-import { HeroSelect, HeroSelectItem } from '../customize/HeroSelect'
+} from '@/shared/validationSchemas'
+import { Button, InputProps, Textarea, addToast } from '@heroui/react'
+import { Image, Modal } from 'antd'
+import { useFormik } from 'formik'
 import { capitalize } from 'lodash'
-import useAuth from '@/shared/queries/useAuth'
-import { useSendNotificationMutation } from '@/shared/queries/useNotification'
+import { useMemo } from 'react'
+import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
+import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
 
-export const notificationModalInputClassNames: InputProps['classNames'] = {
+const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
     inputWrapper:
         'w-full border-[1px] bg-background shadow-none !placeholder:italic',
@@ -30,7 +29,7 @@ type Props = {
     isOpen: boolean
     onClose: () => void
 }
-export default function CreateNotificationModal({ isOpen, onClose }: Props) {
+export function CreateNotificationModal({ isOpen, onClose }: Props) {
     useKeyboardShortcuts([
         {
             keys: ['escape'],
@@ -39,7 +38,7 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
     ])
 
     const { users, isLoading: loadingUsers } = useUsers()
-    const { profile } = useAuth()
+    const { profile } = useProfile()
 
     const {
         mutateAsync: sendNotificationMutate,
@@ -161,7 +160,7 @@ export default function CreateNotificationModal({ isOpen, onClose }: Props) {
                         value={formik.values.title}
                         onChange={formik.handleChange}
                         labelPlacement="outside-left"
-                        classNames={notificationModalInputClassNames}
+                        classNames={inputClassNames}
                         isInvalid={
                             Boolean(formik.touched.title) &&
                             Boolean(formik.errors.title)

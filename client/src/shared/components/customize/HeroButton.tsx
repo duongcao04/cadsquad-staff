@@ -1,3 +1,5 @@
+'use client'
+
 import { extendVariants, Button } from '@heroui/react'
 
 export const HeroButton = extendVariants(Button, {

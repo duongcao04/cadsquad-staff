@@ -1,0 +1,43 @@
+'use client'
+
+import { useJobActivityLogs } from '@/shared/queries'
+import { Spinner } from '@heroui/react'
+import { useTranslations } from 'next-intl'
+import { LogCard } from '../cards'
+
+type Props = {
+    jobId?: string
+}
+export function WorkLogTab({ jobId }: Props) {
+    const t = useTranslations()
+    const { activityLogs } = useJobActivityLogs(jobId)
+
+    if (!jobId) {
+        return <Spinner />
+    }
+
+    return (
+        <div>
+            <div className="space-y-7">
+                {activityLogs?.length ? (
+                    activityLogs?.map((log) => {
+                        return (
+                            <div key={log.id}>
+                                <LogCard data={log} />
+                            </div>
+                        )
+                    })
+                ) : (
+                    <div className="flex flex-col items-center justify-center gap-0.5 text-text1p5 pt-6 pb-8">
+                        <h3 className="text-sm font-semibold">
+                            {t('noRecord')}
+                        </h3>
+                        <p className="mt-0.5 text-xs">
+                            {t('allChangesAndActivity')}
+                        </p>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}

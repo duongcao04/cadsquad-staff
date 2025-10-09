@@ -7,13 +7,9 @@ import { Link, usePathname } from '@/i18n/navigation'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@heroui/react'
 import { useTranslations } from 'next-intl'
-import {
-    ADMIN_SETTING_SIDEBAR,
-    PERSONAL_SETTING_SIDEBAR,
-    SidebarActions,
-} from '../actions/settingSidebarActions'
+import { SETTING_SIDEBAR, SidebarActions } from '../actions'
 
-export default function SettingSidebar({
+export function SettingSidebar({
     title,
     sidebarData,
 }: {
@@ -60,7 +56,7 @@ export default function SettingSidebar({
         },
         hover: {
             opacity: 1,
-            background: 'var(--color-text2)',
+            background: 'var(--color-text3)',
             transition: {
                 duration: 0.05,
             },
@@ -116,7 +112,7 @@ export default function SettingSidebar({
                                                     : 'animate'
                                             }
                                             whileHover="hover"
-                                            className="px-4 py-2 mt-0.5 flex items-center justify-start gap-3 cursor-pointer"
+                                            className="px-4 py-2 mt-0.5 flex items-center justify-start gap-3 cursor-pointer rounded-md"
                                         >
                                             <item.icon
                                                 size={20}
@@ -141,18 +137,6 @@ export default function SettingSidebar({
 export function PersonalSettingSidebar() {
     const t = useTranslations('settings')
     return (
-        <SettingSidebar
-            title={t('settings')}
-            sidebarData={PERSONAL_SETTING_SIDEBAR}
-        />
-    )
-}
-export function AdminSettingSidebar() {
-    const t = useTranslations('settings')
-    return (
-        <SettingSidebar
-            title={t('adminSettings')}
-            sidebarData={ADMIN_SETTING_SIDEBAR}
-        />
+        <SettingSidebar title={t('settings')} sidebarData={SETTING_SIDEBAR} />
     )
 }

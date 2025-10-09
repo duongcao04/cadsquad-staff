@@ -1,15 +1,15 @@
-import React from 'react'
-import { Job } from '@/shared/interfaces/job.interface'
+'use client'
+
+import { useRouter } from '@/i18n/navigation'
+import { Job } from '@/shared/interfaces'
 import { Image } from 'antd'
 import { ChevronRight } from 'lucide-react'
-import { useRouter } from '@/i18n/navigation'
 
 type Props = {
     data: Job
     onClose: () => void
 }
-
-export default function JobCard({ data, onClose }: Props) {
+export function JobCard({ data, onClose }: Props) {
     const router = useRouter()
     return (
         <button

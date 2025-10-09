@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParam } from '@/hooks/useSearchParam'
+import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
 export const useAddMemberModal = () => {
     const { setSearchParams, removeSearchParams, getSearchParam } =

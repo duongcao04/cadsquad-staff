@@ -1,26 +1,18 @@
 'use client'
 
-import React from 'react'
-
 import { addToast, Button, InputProps } from '@heroui/react'
 import { Modal } from 'antd'
 import { useFormik } from 'formik'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
+import { ApiError } from '@/lib/axios'
 import { capitalize } from '@/lib/utils'
-import { RoleEnum } from '@/shared/enums/role.enum'
-import {
-    CreateUserInput,
-    CreateUserSchema,
-} from '@/shared/validationSchemas/user.schema'
-import HeroInput from '../customize/HeroInput'
-import { HeroSelect, HeroSelectItem } from '../customize/HeroSelect'
-import { useDepartments } from '@/shared/queries/useDepartment'
-import { useJobTitles } from '@/shared/queries/useJobTitle'
-import { useCreateUser } from '@/shared/queries/useUser'
-import { ApiError } from '../../../lib/axios'
+import { RoleEnum } from '@/shared/enums'
+import { useCreateUser, useDepartments, useJobTitles } from '@/shared/queries'
+import { CreateUserInput, CreateUserSchema } from '@/shared/validationSchemas'
+import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
 
-export const userModalInputClassNames: InputProps['classNames'] = {
+const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
     inputWrapper:
         'w-full border-[1px] bg-background shadow-none !placeholder:italic',
@@ -31,7 +23,7 @@ type Props = {
     isOpen: boolean
     onClose: () => void
 }
-export default function CreateUserModal({ isOpen, onClose }: Props) {
+export function CreateUserModal({ isOpen, onClose }: Props) {
     const { mutateAsync: createUserMutation, isPending: isCreatingUser } =
         useCreateUser()
     const { departments, isLoading: loadingDepartments } = useDepartments()
@@ -140,7 +132,7 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
                         value={formik.values.displayName}
                         onChange={formik.handleChange}
                         labelPlacement="outside-left"
-                        classNames={userModalInputClassNames}
+                        classNames={inputClassNames}
                         isInvalid={
                             Boolean(formik.touched.displayName) &&
                             Boolean(formik.errors.displayName)
@@ -162,7 +154,7 @@ export default function CreateUserModal({ isOpen, onClose }: Props) {
                         labelPlacement="outside-left"
                         color="primary"
                         variant="faded"
-                        classNames={userModalInputClassNames}
+                        classNames={inputClassNames}
                         isInvalid={
                             Boolean(formik.touched.email) &&
                             Boolean(formik.errors.email)

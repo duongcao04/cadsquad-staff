@@ -1,7 +1,5 @@
-import Header from '@/shared/components/layouts/Header'
-import Sidebar from '@/shared/components/layouts/Sidebar'
-
-import ActionButton from './shared/components/ActionButton'
+import { Header, Sidebar } from '@/shared/components'
+import { ActionButton } from './shared/components'
 
 export default async function DashboardLayout({
     children,

@@ -2,7 +2,7 @@
 import { ApiResponse, axiosClient } from '@/lib/axios'
 import { CreateUserInput, UpdateUserInput } from '@/shared/validationSchemas/user.schema'
 import { User } from '@/shared/interfaces/user.interface'
-import { UpdatePasswordInput } from '../../shared/validationSchemas/auth.schema'
+import { ResetPasswordInput, UpdatePasswordInput } from '../../shared/validationSchemas/auth.schema'
 
 export const userApi = {
 	create: (data: CreateUserInput) => {
@@ -15,7 +15,10 @@ export const userApi = {
 		return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(`/users/username/${username}`)
 	},
 	updatePassword: (data: UpdatePasswordInput) => {
-		return axiosClient.patch<ApiResponse<{ message: string }>>('/users/update-password', data)
+		return axiosClient.patch('/users/update-password', data)
+	},
+	resetPassword: (userId: string, data: ResetPasswordInput) => {
+		return axiosClient.patch<ApiResponse<{ username: string }>>(`/users/${userId}/reset-password`, data)
 	},
 	findOne: (id: string) => {
 		return axiosClient.get<ApiResponse<User>>(`/users/${id}`)
@@ -24,6 +27,6 @@ export const userApi = {
 		return axiosClient.patch(`/users/${id}`, data)
 	},
 	remove: (id: string) => {
-		return axiosClient.delete(`/users/${id}`)
+		return axiosClient.delete<ApiResponse<{ username: string }>>(`/users/${id}`)
 	},
 }

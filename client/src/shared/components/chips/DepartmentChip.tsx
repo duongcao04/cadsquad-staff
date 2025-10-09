@@ -1,16 +1,15 @@
 'use client'
 
-import React from 'react'
 import { cn, lightenHexColor } from '@/lib/utils'
+import { Department } from '@/shared/interfaces'
 import { Chip, ChipProps } from '@heroui/react'
-import { Department } from '@/shared/interfaces/department.interface'
 
 type Props = {
     data: Department
     classNames?: ChipProps['classNames']
     props?: ChipProps
 }
-export default function DepartmentChip({ data, classNames, props }: Props) {
+export function DepartmentChip({ data, classNames, props }: Props) {
     return (
         <Chip
             style={{

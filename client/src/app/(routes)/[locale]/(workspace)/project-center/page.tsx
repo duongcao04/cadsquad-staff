@@ -3,19 +3,15 @@
 import { Button } from '@heroui/react'
 import React, { useCallback, useState } from 'react'
 
-import { useSearchParam } from '@/hooks/useSearchParam'
-import PageHeading from '@/shared/components/layouts/PageHeading'
-import { CONFIG_CONSTANTS } from '@/shared/constants/config.constant'
-import { JobTabEnum } from '@/shared/enums/jobTab.enum'
-import { Job } from '@/shared/interfaces/job.interface'
-import { useConfigByCode } from '@/shared/queries/useConfig'
-import { useJobColumns, useJobs } from '@/shared/queries/useJob'
+import { PageHeading } from '@/shared/components'
+import { CONFIG_CONSTANTS } from '@/shared/constants'
+import { JobTabEnum } from '@/shared/enums'
+import { useSearchParam } from '@/shared/hooks'
+import { Job } from '@/shared/interfaces'
+import { useConfigByCode, useJobColumns, useJobs } from '@/shared/queries'
 import { DownloadIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import JobTableTabs from './components/JobTableTabs'
-import DefaultPanel from './components/panels/DefaultPanel'
-import PaginationPanel from './components/panels/PaginationPanel'
-import JobTable from './components/tables/JobTable'
+import { DefaultPanel, JobTable, JobTableTabs, PaginationPanel } from './shared'
 
 export type DataType = Job & {
     key: React.Key

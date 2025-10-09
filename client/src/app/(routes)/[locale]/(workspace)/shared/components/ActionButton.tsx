@@ -1,5 +1,16 @@
 'use client'
 
+import { MotionDiv } from '@/lib/motion'
+import {
+    CreateJobModal,
+    CreateNotificationModal,
+    CreateUserModal,
+    IconAlertColorful,
+    IconPeopleColorful,
+    IconWorkColorful,
+} from '@/shared/components'
+import { useProfile } from '@/shared/queries'
+import { ESidebarStatus, useUiStore } from '@/shared/stores'
 import {
     Button,
     Dropdown,
@@ -10,34 +21,20 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { PlusIcon } from 'lucide-react'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
-
-import { IconAlertColorful } from '@/shared/components/icons/IconAlertColorful'
-// import { IconFileColorful } from '@/shared/components/icons/IconFileColorful'
-// import { IconFolderColorful } from '@/shared/components/icons/IconFolderColorful'
-import { IconPeopleColorful } from '@/shared/components/icons/IconPeopleColorful'
-import { IconWorkColorful } from '@/shared/components/icons/IconWorkColorful'
-
-import { MotionDiv } from '@/lib/motion'
-import CreateJobModal from '@/shared/components/modals/CreateJobModal'
-import CreateNotificationModal from '@/shared/components/modals/CreateNotificationModal'
-import CreateUserModal from '@/shared/components/modals/CreateUserModal'
-import { RoleEnum } from '@/shared/enums/role.enum'
-import useAuth from '@/shared/queries/useAuth'
-import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
+import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
-export default function ActionButton() {
-    const { userRole } = useAuth()
+export function ActionButton() {
+    const { isAdmin, isAccounting, isStaff } = useProfile()
 
-    if (userRole === RoleEnum.ADMIN) {
+    if (isAdmin) {
         return <AdminCreateButton />
     }
-    if (userRole === RoleEnum.ACCOUNTING) {
+    if (isAccounting) {
         return <AccountingButton />
     }
-    if (userRole === RoleEnum.USER) {
+    if (isStaff) {
         return <StaffButton />
     }
 }

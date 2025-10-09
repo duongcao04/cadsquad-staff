@@ -1,9 +1,9 @@
 'use client'
 
-import React from 'react'
 import { cn, lightenHexColor } from '@/lib/utils'
+import { JobStatus } from '@/shared/interfaces'
 import { Chip, ChipProps } from '@heroui/react'
-import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
+import React from 'react'
 
 type Props = {
     data: JobStatus
@@ -11,7 +11,7 @@ type Props = {
     props?: ChipProps
     childrenRender?: (status: JobStatus) => React.ReactNode
 }
-export default function JobStatusChip({
+export function JobStatusChip({
     data,
     classNames,
     props,

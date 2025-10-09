@@ -1,13 +1,13 @@
 'use client'
 
-import { JobCard } from '@/app/(routes)/[locale]/(workspace)/profile'
 import { Link } from '@/i18n/navigation'
 import { VietnamDateFormat } from '@/lib/dayjs'
-import { useJobsDueOnDate } from '@/shared/queries/useJob'
+import { useJobsDueOnDate } from '@/shared/queries'
 import { Modal } from 'antd'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
+import { JobCard } from '../../../app/(routes)/[locale]/(workspace)/profile/shared'
 
 type Props = {
     isOpen: boolean

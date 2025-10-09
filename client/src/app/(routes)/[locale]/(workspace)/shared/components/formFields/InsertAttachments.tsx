@@ -1,18 +1,24 @@
 'use client'
 
-import { Input } from '@heroui/react'
-import React, { useState } from 'react'
-import { jobModalInputClassNames } from '@/shared/components/modals/CreateJobModal'
-import { PlusIcon, SquareArrowOutUpRight, X } from 'lucide-react'
-import { HeroButton } from '@/shared/components/customize/HeroButton'
 import { Link } from '@/i18n/navigation'
+import { HeroButton } from '@/shared/components'
+import { CreateJobInput } from '@/shared/validationSchemas'
+import { Input, InputProps } from '@heroui/react'
 import { FormikProps } from 'formik'
-import { CreateJobInput } from '@/shared/validationSchemas/job.schema'
+import { PlusIcon, SquareArrowOutUpRight, X } from 'lucide-react'
+import React, { useState } from 'react'
+
+const inputClassNames: InputProps['classNames'] = {
+    base: 'grid grid-cols-[140px_1fr] gap-3',
+    inputWrapper:
+        'w-full border-[1px] bg-background shadow-none !placeholder:italic',
+    label: 'text-right font-medium text-base',
+}
 
 type Props = {
     formik: FormikProps<CreateJobInput>
 }
-export default function InsertAttachments({ formik }: Props) {
+export function InsertAttachments({ formik }: Props) {
     const [inputValue, setInputValue] = useState('')
     const [touchedButton, setTouchedButton] = useState(false)
     const isInvalid = React.useMemo(() => {
@@ -34,7 +40,7 @@ export default function InsertAttachments({ formik }: Props) {
                     isInvalid={isInvalid}
                     errorMessage="Please enter a valid url"
                     classNames={{
-                        ...jobModalInputClassNames,
+                        ...inputClassNames,
                         mainWrapper: '!w-full',
                         base: '!w-full',
                     }}

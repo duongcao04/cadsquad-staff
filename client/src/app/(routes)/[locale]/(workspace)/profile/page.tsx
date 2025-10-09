@@ -1,14 +1,11 @@
 'use client'
 
-import React from 'react'
-
-import ProfileCard from './components/ProfileCard'
-import { useJobsByStatusCode } from '@/shared/queries/useJob'
-import { DefaultJobStatusCode } from '@/shared/enums/default-job-status-code.enum'
-import JobCard from './components/cards/JobCard'
 import { Link } from '@/i18n/navigation'
-import PageHeading from '@/shared/components/layouts/PageHeading'
+import { PageHeading } from '@/shared/components'
+import { DefaultJobStatusCode } from '@/shared/enums'
+import { useJobsByStatusCode } from '@/shared/queries'
 import { useTranslations } from 'next-intl'
+import { JobCard, ProfileCard } from './shared'
 
 export default function ProfilePage() {
     const t = useTranslations()

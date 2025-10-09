@@ -1,23 +1,22 @@
 'use client'
 
-import React, { useState } from 'react'
-import { useDetailModal } from '@/shared/actions/useDetailModal'
-import JobDetailSection from './_components/data-fields/JobDetailSection'
-import { useJobStatusByOrder } from '@/shared/queries/useJobStatus'
-import { useChangeStatusMutation, useJobByNo } from '@/shared/queries/useJob'
+import { ApiError } from '@/lib/axios'
+import { VietnamDateFormat } from '@/lib/dayjs'
+import { lightenHexColor } from '@/lib/utils'
+import { useDetailModal } from '@/shared/actions'
+import { CountDown, JobStatusChip, PaidChip } from '@/shared/components'
+import { JobStatus } from '@/shared/interfaces'
+import {
+    useChangeStatusMutation,
+    useJobByNo,
+    useJobStatusByOrder,
+} from '@/shared/queries'
 import { addToast, Button, Skeleton } from '@heroui/react'
 import { Drawer } from 'antd'
 import { Clock9 } from 'lucide-react'
-import PaidChip from '@/shared/components/chips/PaidChip'
-import JobStatusChip from '@/shared/components/chips/JobStatusChip'
-import { JobStatus } from '@/shared/interfaces/jobStatus.interface'
-import { lightenHexColor } from '@/lib/utils'
-import CountDown from '@/shared/components/texts/CountDown'
 import { useTranslations } from 'next-intl'
-import { ApiError } from '@/lib/axios'
-import { VietnamDateFormat } from '@/lib/dayjs'
-import JobDetailActions from './_components/JobDetailActions'
-import JobName from './_components/data-fields/JobName'
+import { useState } from 'react'
+import { JobDetailActions, JobDetailSection, JobName } from './shared'
 
 export default function JobDetailView() {
     const t = useTranslations()

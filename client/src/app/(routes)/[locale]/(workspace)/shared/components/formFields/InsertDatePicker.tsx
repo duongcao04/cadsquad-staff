@@ -25,7 +25,7 @@ type Props = {
     defaultValue?: CalendarDate
     onChange?: (value: CalendarDate) => void
 }
-export default function InsertDatePicker({
+export function InsertDatePicker({
     label,
     defaultValue = today(getLocalTimeZone()),
     onChange,

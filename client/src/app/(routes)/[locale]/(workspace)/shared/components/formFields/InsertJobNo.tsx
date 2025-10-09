@@ -1,22 +1,19 @@
 'use client'
 
-import {
-    HeroSelect,
-    HeroSelectItem,
-} from '@/shared/components/customize/HeroSelect'
-import { useJobTypeDetail, useJobTypes } from '@/shared/queries/useJobType'
-import { CreateJobInput } from '@/shared/validationSchemas/job.schema'
+import { jobTypeApi } from '@/app/api/jobType.api'
+import { HeroSelect, HeroSelectItem } from '@/shared/components'
+import { useJobTypeDetail, useJobTypes } from '@/shared/queries'
+import { CreateJobInput } from '@/shared/validationSchemas'
 import { Skeleton } from '@heroui/react'
 import { FormikProps } from 'formik'
 import lodash from 'lodash'
 import { Slash } from 'lucide-react'
-import { jobTypeApi } from '../../../../../../api/jobType.api'
 
 type Props = {
     formik: FormikProps<CreateJobInput>
 }
 
-export default function InsertJobNo({ formik }: Props) {
+export function InsertJobNo({ formik }: Props) {
     const { data: jobTypes, isLoading: isLoadingJobTypes } = useJobTypes()
     const { jobType, isLoading: isLoadingJobType } = useJobTypeDetail(
         formik.values.typeId

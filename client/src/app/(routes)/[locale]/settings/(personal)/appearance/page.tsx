@@ -1,14 +1,13 @@
 'use client'
 
-import React from 'react'
+import { useProfile } from '@/shared/queries'
 import { Skeleton } from 'antd'
-import useAuth from '@/shared/queries/useAuth'
-import EditAppearanceForm from './_components/EditAppearanceForm'
 import { useTranslations } from 'next-intl'
+import { EditAppearanceForm } from './shared'
 
 export default function AppearancePage() {
     const t = useTranslations()
-    const { loadingProfile } = useAuth()
+    const { isLoading: loadingProfile } = useProfile()
 
     return (
         <div className="w-full mt-4 space-y-6">

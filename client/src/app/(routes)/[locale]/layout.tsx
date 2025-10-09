@@ -9,8 +9,8 @@ import { AppProvider } from '@/app/providers'
 import { geistMono, geistSans, quicksand, saira } from '@/fonts'
 import { SupportLanguages, routing } from '@/i18n/routing'
 
+import { GlassBackground } from '@/shared/components'
 import AppLoader from './loading'
-import GlassBackground from '../../../shared/components/ui/GlassBackground'
 
 export default async function RootLayout({
     children,

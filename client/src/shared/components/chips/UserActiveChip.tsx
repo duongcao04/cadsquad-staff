@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { cn, lightenHexColor } from '@/lib/utils'
 import { Chip, ChipProps } from '@heroui/react'
 
@@ -20,7 +19,7 @@ type Props = {
     classNames?: ChipProps['classNames']
     props?: ChipProps
 }
-export default function UserActiveChip({ status, classNames, props }: Props) {
+export function UserActiveChip({ status, classNames, props }: Props) {
     return (
         <Chip
             style={{

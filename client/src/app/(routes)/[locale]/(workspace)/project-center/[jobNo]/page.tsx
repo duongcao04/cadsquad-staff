@@ -3,7 +3,7 @@
 import { use } from 'react'
 import React from 'react'
 
-import PageBreadcrumbs from './_components/PageBreadcrumbs'
+import PageBreadcrumbs from './shared/components/PageBreadcrumbs'
 import { useJobByNo } from '@/shared/queries/useJob'
 import { addToast } from '@heroui/react'
 import { Skeleton, Input, Tooltip, Button } from '@heroui/react'
@@ -11,9 +11,9 @@ import { Copy, Clock9, Settings } from 'lucide-react'
 import JobStatusChip from '@/shared/components/chips/JobStatusChip'
 import PaidChip from '@/shared/components/chips/PaidChip'
 import { Job } from '@/shared/interfaces/job.interface'
-import JobDetailSection from '../@jobDetail/_components/data-fields/JobDetailSection'
-import ActionsDropdown from '../@jobDetail/_components/dropdowns/ActionsDropdown'
-import DueToField from '../components/data-fields/DueToField'
+import JobDetailSection from '../@jobDetail/shared/components/data-fields/JobDetailSection'
+import ActionsDropdown from '../@jobDetail/shared/components/dropdowns/ActionsDropdown'
+import DueToField from '../shared/components/data-fields/DueToField'
 import { Image } from 'antd'
 import PageHeading from '@/shared/components/layouts/PageHeading'
 import { useTranslations } from 'next-intl'
@@ -177,7 +177,7 @@ export default function JobDetailPage({
                         </div>
                     </div>
                     <hr className="text-text3 my-8" />
-                    <JobDetailSection jobNo={jobNo} />
+                    <JobDetailSection data={job} />
                     <div className="h-32" />
                 </>
             </div>

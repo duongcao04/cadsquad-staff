@@ -1,22 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
   HttpCode,
-  UseGuards,
+  Param,
+  Patch,
+  Post,
   Req,
+  UseGuards,
 } from '@nestjs/common'
-import { UserService } from './user.service'
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
-import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
-import { UpdatePasswordDto } from './dto/update-password.dto'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
+import { JwtGuard } from '../auth/jwt.guard'
+import { CreateUserDto } from './dto/create-user.dto'
+import { ResetPasswordDto } from './dto/reset-password.dto'
+import { UpdatePasswordDto } from './dto/update-password.dto'
+import { UpdateUserDto } from './dto/update-user.dto'
+import { UserService } from './user.service'
 
 @Controller('users')
 export class UserController {
@@ -46,6 +47,16 @@ export class UserController {
   ) {
     const userPayload: TokenPayload = await request['user']
     return this.userService.updatePassword(userPayload.sub, dto)
+  }
+
+  @Patch(':id/reset-password')
+  @HttpCode(200)
+  @UseGuards(JwtGuard)
+  @ResponseMessage('Reset password successfully')
+  async resetPassword(@Param('id') id: string,
+    @Body() dto: ResetPasswordDto,
+  ) {
+    return this.userService.resetPassword(id, dto)
   }
 
 

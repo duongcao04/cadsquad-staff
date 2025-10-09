@@ -1,9 +1,9 @@
 'use client'
 
-import PageHeading from '@/shared/components/layouts/PageHeading'
-import { useJobs } from '@/shared/queries/useJob'
+import { PageHeading } from '@/shared/components'
+import { useJobs } from '@/shared/queries'
 import { useTranslations } from 'next-intl'
-import { JobTable } from '../project-center'
+import { JobTable } from '../project-center/shared'
 
 export default function WorkbenchPage() {
     const t = useTranslations()

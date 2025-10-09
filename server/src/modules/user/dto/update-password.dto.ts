@@ -8,10 +8,10 @@ export class UpdatePasswordDto {
 	@IsString()
 	@IsNotEmpty({ message: 'New password is required' })
 	@Matches(
-		/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+		/^.{8,}$/,
 		{
 			message:
-				'Password must be at least 8 characters long, include uppercase, lowercase, number and special character',
+				'Password must be at least 8 characters long',
 		},
 	)
 	newPassword: string

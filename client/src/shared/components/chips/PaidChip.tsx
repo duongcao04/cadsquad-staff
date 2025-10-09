@@ -20,7 +20,7 @@ type Props = {
     classNames?: ChipProps['classNames']
     props?: ChipProps
 }
-export default function PaidChip({ status, classNames, props }: Props) {
+export function PaidChip({ status, classNames, props }: Props) {
     return (
         <Chip
             style={{

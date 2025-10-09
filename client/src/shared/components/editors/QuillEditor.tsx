@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 
 import dynamic from 'next/dynamic'
@@ -12,7 +14,7 @@ type QuillEditorProps = {
     formats?: string[]
     onChange?: (value: string) => void
 }
-export default function QuillEditor({
+export function QuillEditor({
     defaultValue,
     toolbar = [
         [{ header: [1, 2, 3, false] }],

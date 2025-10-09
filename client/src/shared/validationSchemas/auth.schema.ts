@@ -6,7 +6,6 @@ export const LoginInputSchema = yup.object().shape({
 })
 export type LoginInput = yup.InferType<typeof LoginInputSchema>
 
-
 export const UpdatePasswordInputSchema = yup.object().shape({
     oldPassword: yup
         .string()
@@ -16,8 +15,8 @@ export const UpdatePasswordInputSchema = yup.object().shape({
         .string()
         .required("New password is required")
         .matches(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-            "Password must be at least 8 characters, include uppercase, lowercase, number and special character"
+            /^.{8,}$/,
+            "Password must be at least 8 characters"
         ),
 
     newConfirmPassword: yup
@@ -27,4 +26,16 @@ export const UpdatePasswordInputSchema = yup.object().shape({
     ,
 })
 export type UpdatePasswordInput = yup.InferType<typeof UpdatePasswordInputSchema>
+
+
+export const ResetPasswordSchema = yup.object().shape({
+    newPassword: yup
+        .string()
+        .required("New password is required")
+        .matches(
+            /^.{8,}$/,
+            "Password must be at least 8 characters"
+        ),
+})
+export type ResetPasswordInput = yup.InferType<typeof ResetPasswordSchema>
 

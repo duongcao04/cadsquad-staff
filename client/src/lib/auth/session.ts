@@ -4,7 +4,7 @@ import { compare, hash } from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-import envConfig from '@/config/envConfig'
+import envConfig from '@/shared/config/envConfig'
 import { constants } from '@/shared/constants'
 import { User } from '@/shared/interfaces/user.interface'
 

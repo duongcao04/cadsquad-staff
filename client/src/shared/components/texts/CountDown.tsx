@@ -1,7 +1,8 @@
+'use client'
+
 import React, { useEffect, useState } from 'react'
 
 import { calcLeftTime, cn } from '@/lib/utils'
-import { MS } from '@/shared/constants/appConstant'
 import { useTranslations } from 'next-intl'
 
 type CountDownProps = {
@@ -19,7 +20,7 @@ type CountDownProps = {
 }
 
 export type CountDownOptions = CountDownProps['options']
-const CountDown: React.FC<CountDownProps> = ({
+export const CountDown: React.FC<CountDownProps> = ({
     endedDate,
     className = '',
     options = {
@@ -149,7 +150,7 @@ const CountDown: React.FC<CountDownProps> = ({
         options.format,
     ])
 
-    const oneDayMs = MS.day
+    const oneDayMs = 24 * 60 * 60 * 1000
     return (
         <span
             className={cn(
@@ -161,5 +162,3 @@ const CountDown: React.FC<CountDownProps> = ({
         </span>
     )
 }
-
-export default CountDown

@@ -21,7 +21,7 @@ import {
 
 import { useDebouncedValue } from '@/hooks/useDebounce'
 
-import { useSearchParam } from '@/hooks/useSearchParam'
+import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
 import { useFileStore } from './store/useFileStore'
 import { ROOT_DIR } from '@/app/(routes)/[locale]/(workspace)/documents/actions'

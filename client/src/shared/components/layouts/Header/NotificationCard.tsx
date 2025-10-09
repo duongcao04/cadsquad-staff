@@ -5,7 +5,7 @@ import { Notification } from '@/shared/interfaces/notification.interface'
 import CadsquadLogo from '@/shared/components/CadsquadLogo'
 import { Image } from 'antd'
 
-export default function NotificationCard({ data }: { data: Notification }) {
+export function NotificationCard({ data }: { data: Notification }) {
     const { mutateAsync: updateNotificationMutate } = useUpdateNotification()
 
     return (

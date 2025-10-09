@@ -14,9 +14,9 @@ import { Bell } from 'lucide-react'
 import { NotificationStatus } from '@/shared/enums/notificationStatus.enum'
 import { useNotifications } from '@/shared/queries/useNotification'
 import { BellIcon } from '../../icons/animate/BellIcon'
-import NotificationCard from './NotificationCard'
+import { NotificationCard } from './NotificationCard'
 
-export default function NotificationDropdown() {
+export function NotificationDropdown() {
     const { data: notifications, isLoading, isFetching } = useNotifications()
 
     const countUnseen =

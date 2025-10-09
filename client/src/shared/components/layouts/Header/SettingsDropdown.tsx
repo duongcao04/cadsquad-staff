@@ -1,7 +1,13 @@
 'use client'
 
-import React from 'react'
-
+import { Link } from '@/i18n/navigation'
+import {
+    ADMIN_SETTINGS_DROPDOWN,
+    USER_SETTINGS_DROPDOWN,
+} from '@/shared/actions'
+import { SettingsGearIcon } from '@/shared/components'
+import { RoleEnum } from '@/shared/enums'
+import { useProfile } from '@/shared/queries'
 import {
     Button,
     Dropdown,
@@ -10,17 +16,9 @@ import {
     DropdownSection,
     DropdownTrigger,
 } from '@heroui/react'
-import { SettingsGearIcon } from '../../icons/animate/SettingsGearIcon'
-import { Link } from '@/i18n/navigation'
-import { useProfile } from '@/shared/queries/useAuth'
-import { RoleEnum } from '@/shared/enums/role.enum'
-import {
-    ADMIN_SETTINGS_DROPDOWN,
-    USER_SETTINGS_DROPDOWN,
-} from '@/shared/actions/settingsDropdownActions'
 import { useTranslations } from 'next-intl'
 
-export default function SettingsDropdown() {
+export function SettingsDropdown() {
     const { userRole } = useProfile()
     const t = useTranslations('settings')
 

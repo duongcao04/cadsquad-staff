@@ -6,21 +6,22 @@ import { Button, Input, InputProps, NumberInput, addToast } from '@heroui/react'
 import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 
-import useAuth from '@/shared/queries/useAuth'
-import { useCreateJobMutation } from '@/shared/queries/useJob'
-import { usePaymentChannels } from '@/shared/queries/usePaymentChannel'
-import { useUsers } from '@/shared/queries/useUser'
+import { useJobStore } from '@/app/(routes)/[locale]/(workspace)/project-center/shared'
 import {
-    CreateJobInput,
-    CreateJobSchema,
-} from '@/shared/validationSchemas/job.schema'
+    InsertAttachments,
+    InsertDatePicker,
+    InsertJobNo,
+} from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields'
+import { ApiError } from '@/lib/axios'
+import {
+    useCreateJobMutation,
+    usePaymentChannels,
+    useProfile,
+    useUsers,
+} from '@/shared/queries'
+import { CreateJobInput, CreateJobSchema } from '@/shared/validationSchemas'
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
-import { useJobStore } from '@/app/(routes)/[locale]/(workspace)/project-center/store/useJobStore'
-import InsertAttachments from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields/InsertAttachments'
-import InsertDatePicker from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields/InsertDatePicker'
-import InsertJobNo from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields/InsertJobNo'
-import { HeroSelect, HeroSelectItem } from '../customize/HeroSelect'
-import { ApiError } from '../../../lib/axios'
+import { HeroSelect, HeroSelectItem } from '../customize'
 
 export const jobModalInputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -33,7 +34,7 @@ type Props = {
     isOpen: boolean
     onClose: () => void
 }
-export default function CreateJobModal({ isOpen, onClose }: Props) {
+export function CreateJobModal({ isOpen, onClose }: Props) {
     useKeyboardShortcuts([
         {
             keys: ['escape'],
@@ -42,7 +43,7 @@ export default function CreateJobModal({ isOpen, onClose }: Props) {
     ])
 
     const { setNewJobNo } = useJobStore()
-    const { profile } = useAuth()
+    const { profile } = useProfile()
 
     /**
      * Get initial data

@@ -1,5 +1,6 @@
 'use client'
-import { AddMemberModal } from '@/app/(routes)/[locale]/(workspace)/project-center'
+
+import AddMemberModal from '../../project-center/@addMember/page'
 
 export default function AddMember() {
     return <AddMemberModal />

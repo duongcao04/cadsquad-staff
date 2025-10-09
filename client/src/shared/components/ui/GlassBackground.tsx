@@ -2,11 +2,7 @@
 
 import React from 'react'
 
-export default function GlassBackground({
-    children,
-}: {
-    children: React.ReactNode
-}) {
+export function GlassBackground({ children }: { children: React.ReactNode }) {
     return (
         <div
             style={{

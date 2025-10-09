@@ -1,9 +1,7 @@
 'use client'
 
-import React from 'react'
-
 import FileManager from '@/shared/components/FileManager'
-import { useSearchParam } from '@/hooks/useSearchParam'
+import { useSearchParam } from '@/shared/hooks'
 
 import { TEAM_DIR } from '../documents/actions'
 

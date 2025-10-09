@@ -1,4 +1,5 @@
-import Header from '@/shared/components/layouts/Header'
+import { Header } from '@/shared/components'
+import { PersonalSettingSidebar } from './shared'
 
 export default async function SettingsLayout({
     children,
@@ -6,15 +7,17 @@ export default async function SettingsLayout({
     children: React.ReactNode
 }) {
     return (
-        <div className="dashboard-page">
-            <div className="fixed top-0 w-full z-[99]">
+        <div id="settings-page" className="h-screen w-screen">
+            <div className="sticky top-0 w-full z-[99] h-[56px]">
                 <Header />
             </div>
-            {/* Height for header */}
-            <div className="h-[56px]" />
-            {/*  */}
-            <main className="size-full h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
-                {children}
+            <main className="size-full h-[calc(100vh-56px)] max-h-[calc(100vh-56px)]">
+                <div className="size-full grid grid-cols-[300px_1fr] gap-5 overflow-x-hidden">
+                    <div className="sticky top-20 left-0 size-full overflow-hidden pt-4">
+                        <PersonalSettingSidebar />
+                    </div>
+                    <div className="size-full overflow-y-auto">{children}</div>
+                </div>
             </main>
         </div>
     )

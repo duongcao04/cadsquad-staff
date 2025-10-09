@@ -9,7 +9,7 @@ import { MotionDiv } from '@/lib/motion'
 import CSDLogo from '../../../../public/logo.webp'
 import WhiteCSDLogo from '../../../../public/logo-white.webp'
 import '../../../styles/loading.css'
-import GlassBackground from '@/shared/components/ui/GlassBackground'
+import { GlassBackground } from '@/shared/components'
 import { useTheme } from 'next-themes'
 
 export default function AppLoader() {
