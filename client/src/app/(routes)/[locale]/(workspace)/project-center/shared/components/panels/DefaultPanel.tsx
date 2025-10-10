@@ -1,9 +1,11 @@
 'use client'
 
 import { HeroButton, HeroInput } from '@/shared/components'
-import { RefreshCcw, Search } from 'lucide-react'
+import { useDisclosure } from '@heroui/react'
+import { Funnel, RefreshCcw, Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { FilterDrawer } from '../drawers/FilterDrawer/FilterDrawer'
 import { ViewSettingsDropdown } from '../ViewSettingsDropdown'
 
 type Props = {
@@ -19,6 +21,9 @@ export function DefaultPanel({
     onRefresh,
 }: Props) {
     const t = useTranslations()
+    const { isOpen, onOpen, onClose } = useDisclosure({
+        id: 'FilterDrawer',
+    })
     const [keywords, setKeywords] = useState(defaultKeywords)
     return (
         <div className="flex items-center justify-between gap-5">
@@ -47,7 +52,14 @@ export function DefaultPanel({
                 >
                     {t('refresh')}
                 </HeroButton>
-                {/* <FilterDropdown /> */}
+                <HeroButton
+                    variant="bordered"
+                    startContent={<Funnel size={14} />}
+                    onPress={onOpen}
+                >
+                    {t('filter')}
+                </HeroButton>
+                <FilterDrawer isOpen={isOpen} onClose={onClose} />
                 <ViewSettingsDropdown />
             </div>
         </div>

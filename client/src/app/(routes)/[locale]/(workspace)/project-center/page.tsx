@@ -12,6 +12,7 @@ import { JobFiltersInput, JobQueryInput } from '@/shared/validationSchemas'
 import { DownloadIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { DefaultPanel, JobTable, JobTableTabs, PaginationPanel } from './shared'
+import { JobTabEnum } from '../../../../../shared/enums'
 
 export type JobQueryParams = Omit<JobQueryInput, 'hideFinishItems'>
 export type JobFilterParams = JobFiltersInput
@@ -34,7 +35,7 @@ export default function ProjectCenterPage() {
             page: searchParams.page,
             search: searchParams.search,
             sort: searchParams.sort,
-            tab: searchParams.tab,
+            tab: searchParams.tab ?? JobTabEnum.PRIORITY,
         }
     }, [searchParams])
     // Filter params
@@ -58,8 +59,7 @@ export default function ProjectCenterPage() {
         }
     }, [searchParams])
     const [params, setParams] = useState<JobQueryParams>(initialParams)
-    const [filterParams, setFilterParams] =
-        useState<JobFilterParams>(initialFilterParams)
+    const [filterParams] = useState<JobFilterParams>(initialFilterParams)
 
     useEffect(() => {
         const combineParams = { ...params, ...filterParams }
@@ -101,11 +101,12 @@ export default function ProjectCenterPage() {
         setParams((prev) => ({ ...prev, limit, page: 1 }))
     }, [])
 
-    const handleFilterChange = useCallback((newValues: JobFilterParams) => {
-        setFilterParams((prev) => ({ ...prev, ...newValues }))
-        // Auto return page 1 after change filter
-        setParams((prev) => ({ ...prev, page: 1 }))
-    }, [])
+    // TODO: use for filter set params
+    // const handleFilterChange = useCallback((newValues: JobFilterParams) => {
+    //     setFilterParams((prev) => ({ ...prev, ...newValues }))
+    //     // Auto return page 1 after change filter
+    //     setParams((prev) => ({ ...prev, page: 1 }))
+    // }, [])
 
     return (
         <>
@@ -144,9 +145,7 @@ export default function ProjectCenterPage() {
                         data={jobs as Job[]}
                         showColumns={showColumns}
                         sortValue={params.sort}
-                        filterValue={filterParams}
                         onSort={handleSortChange}
-                        onFilter={handleFilterChange}
                     />
                 </div>
                 <div className="h-[52px]">

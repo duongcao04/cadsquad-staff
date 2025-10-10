@@ -13,10 +13,9 @@ import { JobColumn } from '@/shared/types'
 import type { TableProps } from 'antd'
 import { Table } from 'antd'
 import { SorterResult } from 'antd/es/table/interface'
-import lodash from 'lodash'
 import { useLocale, useTranslations } from 'next-intl'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { DataType, JobFilterParams } from '../../../page'
+import { DataType } from '../../../page'
 import { jobColumns } from '../../columns'
 import { useJobStore } from '../../store'
 
@@ -26,9 +25,7 @@ type JobTableProps = {
     showColumns?: JobColumn[]
     tableOptions?: TableProps<DataType>
     sortValue?: string
-    filterValue?: JobFilterParams
     onSort?: (sort: string) => void
-    onFilter?: (newValues: JobFilterParams) => void
 }
 
 function JobTable({
@@ -37,8 +34,6 @@ function JobTable({
     showColumns,
     sortValue,
     onSort,
-    filterValue,
-    onFilter,
     tableOptions = { scroll: { x: 'max-content', y: '100%' } },
 }: JobTableProps) {
     const t = useTranslations()
@@ -95,7 +90,7 @@ function JobTable({
                 onAssignMember: handleAssignMember,
                 onViewDetail: handleViewDetail,
             },
-            { locale, showColumns, translations: t, filterValue }
+            { locale, showColumns, translations: t }
         ).map((col) => ({
             ...col,
             sortOrder: sortOrderMap[col.key as string],
@@ -112,7 +107,6 @@ function JobTable({
         t,
         handleAssignMember,
         handleViewDetail,
-        filterValue,
     ])
 
     const handleTableChange: TableProps<DataType>['onChange'] = (
@@ -125,7 +119,7 @@ function JobTable({
         if (Array.isArray(_sorter)) sorts = _sorter
         else if (_sorter && _sorter.field) sorts = [_sorter]
 
-        const sortQuery = sorts
+        const sortQueryBuilder = sorts
             .map((s) => {
                 if (!s.field || !s.order) return ''
                 const prefix = s.order === 'descend' ? '-' : '+'
@@ -136,33 +130,7 @@ function JobTable({
 
         // Handle sort safely
         if (onSort) {
-            onSort(sortQuery)
-        }
-
-        // Handle filters safely
-        if (onFilter) {
-            /**
-             * Converts a filters object into a query string for use in URLs.
-             *
-             * This function removes all `null` values from the `_filters` object,
-             * then serializes it into a URL-friendly query string using the
-             * `query-string` library.
-             *
-             * Arrays are joined with commas (`arrayFormat: 'comma'`), so an input like:
-             * ```ts
-             * {
-             *   clientName: ['Christian Carter', 'Dr. Casey'],
-             *   type: ['FV', 'OTH']
-             * }
-             * ```
-             * becomes:
-             * ```
-             * clientName=Christian%20Carter,Dr.%20Casey&type=FV,OTH
-             * ```
-             *  */
-            const filters = lodash.omitBy(_filters, lodash.isNull)
-            onFilter(filters)
-            console.log(filterValue)
+            onSort(sortQueryBuilder)
         }
     }
 

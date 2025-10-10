@@ -10,6 +10,7 @@ import {
     cn,
     DateValue,
     RadioProps,
+    DatePickerProps,
 } from '@heroui/react'
 import {
     startOfWeek,
@@ -20,7 +21,7 @@ import {
 } from '@internationalized/date'
 import { useLocale } from '@react-aria/i18n'
 
-type Props = {
+type Props = Omit<DatePickerProps, 'defaultValue'> & {
     label: string
     defaultValue?: CalendarDate
     onChange?: (value: CalendarDate) => void
@@ -29,6 +30,7 @@ export function InsertDatePicker({
     label,
     defaultValue = today(getLocalTimeZone()),
     onChange,
+    ...props
 }: Props) {
     const { locale } = useLocale()
     const [value, setValue] = useState<CalendarDate>(defaultValue)
@@ -119,6 +121,7 @@ export function InsertDatePicker({
                 onChange={(date) => {
                     handleChange(date as unknown as CalendarDate)
                 }}
+                {...props}
             />
         </div>
     )

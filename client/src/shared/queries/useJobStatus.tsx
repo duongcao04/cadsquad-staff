@@ -2,11 +2,15 @@ import { useQuery } from '@tanstack/react-query'
 import { jobStatusApi } from '@/app/api/jobStatus.api'
 
 export const useJobStatuses = () => {
-    return useQuery({
+    const { data, isLoading, isFetching } = useQuery({
         queryKey: ['job-statuses'],
         queryFn: () => jobStatusApi.findAll(),
         select: (res) => res.data.result,
     })
+    return {
+        data,
+        isLoading: isLoading || isFetching,
+    }
 }
 
 export const useJobStatusDetail = (statusId?: string) => {

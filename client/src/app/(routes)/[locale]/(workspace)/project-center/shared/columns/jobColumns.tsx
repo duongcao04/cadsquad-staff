@@ -21,7 +21,6 @@ import { JobColumn } from '@/shared/types'
 import { addToast, Button, Tooltip } from '@heroui/react'
 import { Avatar, Image, TableColumnsType } from 'antd'
 import { SortOrder } from 'antd/es/table/interface'
-import lodash from 'lodash'
 import {
     ChevronDown,
     ChevronsLeftRight,
@@ -31,7 +30,6 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { DueToField, SwitchCurrency, TableActionDropdown } from '../components'
-import { JobFilterParams } from '../../page'
 
 export type JobWithKey = Job & {
     key: React.Key
@@ -56,15 +54,13 @@ export function jobColumns(
         onViewDetail?: (jobNo: string) => void
     },
     options: {
-        filterValue?: JobFilterParams
         locale?: string
         showColumns?: string[]
         translations: ReturnType<typeof useTranslations>
     }
 ): TableColumns<JobWithKey> {
-    const { jobs, jobStatuses, users, jobTypes, paymentChannels } = data
     const { onAssignMember, onViewDetail } = actions
-    const { locale = 'en', showColumns, translations, filterValue } = options
+    const { locale = 'en', showColumns, translations } = options
 
     const allColumns: TableColumns<JobWithKey> = [
         {
@@ -106,23 +102,12 @@ export function jobColumns(
                 <p className="line-clamp-1">{record.clientName}</p>
             ),
             sorter: { multiple: 1 },
-            filterSearch: true,
-            filters: lodash.uniqBy(jobs, 'clientName')?.map((item) => ({
-                text: item.clientName,
-                value: item.clientName ?? '',
-            })),
         },
         {
             title: translations('jobColumns.type'),
             dataIndex: 'type',
             key: 'type',
             minWidth: 120,
-            filterSearch: true,
-            filters: lodash.uniqBy(jobTypes, 'code')?.map((item) => ({
-                text: item.displayName,
-                value: item.code ?? '',
-            })),
-            // filteredValue: filterValue?.type ? filterValue?.type : [],
             render: (_: unknown, record: JobWithKey) => (
                 <p className="line-clamp-1">{record.type.displayName}</p>
             ),
@@ -205,10 +190,6 @@ export function jobColumns(
                     />
                 </div>
             ),
-            filters: lodash.uniqBy(jobStatuses, 'code')?.map((item) => ({
-                text: item.displayName,
-                value: item.code?.toString() ?? '',
-            })),
         },
         {
             title: translations('jobColumns.dueAt'),
@@ -248,11 +229,6 @@ export function jobColumns(
             key: 'assignee',
             minWidth: 150,
             className: 'group cursor-default',
-            filterSearch: true,
-            filters: lodash.uniqBy(users, 'username').map((item) => ({
-                text: item.displayName,
-                value: item.username ?? '',
-            })),
             render: (_, record: JobWithKey) => {
                 const count = 4
                 return (
@@ -319,12 +295,6 @@ export function jobColumns(
             dataIndex: 'paymentChannel',
             key: 'paymentChannel',
             minWidth: 200,
-            filters: lodash
-                .uniqBy(paymentChannels, 'displayName')
-                .map((item) => ({
-                    text: item.displayName,
-                    value: item.displayName ?? '',
-                })),
             render: (_, record: JobWithKey) =>
                 record.paymentChannel ? (
                     <p className="line-clamp-1">
