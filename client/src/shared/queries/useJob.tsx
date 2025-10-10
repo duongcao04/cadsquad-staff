@@ -5,7 +5,7 @@ import { Job } from '@/shared/interfaces/job.interface'
 import { JobActivityLog } from '@/shared/interfaces/jobActivityLog.interface'
 import {
     CreateJobInput,
-    JobQueryInput,
+    JobQueryWithFiltersInput,
 } from '@/shared/validationSchemas/job.schema'
 import { JobTabEnum } from '@/shared/enums/jobTab.enum'
 import { jobApi } from '@/app/api/job.api'
@@ -13,16 +13,18 @@ import { CONFIG_CONSTANTS } from '../constants/config.constant'
 import { DefaultJobStatusCode } from '@/shared/enums/default-job-status-code.enum'
 import { jobStatusApi } from '../../app/api/jobStatus.api'
 import lodash from 'lodash'
+import queryString from 'query-string'
 
 export const useJobs = (
-    params: JobQueryInput = {
+    params: JobQueryWithFiltersInput = {
         hideFinishItems: 0,
         page: 1,
         limit: 10,
         tab: JobTabEnum.ACTIVE,
     }
 ) => {
-    const { hideFinishItems, page, limit, search, tab } = params
+    const { hideFinishItems, page, limit, search, tab, sort, ...filters } =
+        params
 
     const {
         data,
@@ -38,9 +40,12 @@ export const useJobs = (
             `page=${page}`,
             `keywords=${search}`,
             `isHideFinishItems=${hideFinishItems}`,
+            `sort=${sort}`,
+            `filters=${queryString.stringify(filters)}`,
         ],
         queryFn: () => {
-            return jobApi.findAll(lodash.omitBy(params, lodash.isUndefined))
+            const newParams = lodash.omitBy(params, lodash.isUndefined)
+            return jobApi.findAll(newParams)
         },
         select: (res) => res.data,
     })

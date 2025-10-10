@@ -14,10 +14,10 @@ import {
 import { useTranslations } from 'next-intl'
 import React from 'react'
 
-type Props = { activeKey: string; onChange: (key: string) => void }
+type Props = { activeKey?: string; onChange: (key: string) => void }
 type TabItem = Omit<TabsProps, 'title'> & { title: React.ReactNode }
 
-function JobTableTabs({ activeKey, onChange }: Props) {
+function JobTableTabs({ activeKey = JobTabEnum.PRIORITY, onChange }: Props) {
     const t = useTranslations()
     const { userRole } = useProfile()
     const { paginate: priorityPaginate } = useJobs({

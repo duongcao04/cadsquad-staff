@@ -61,6 +61,7 @@ export const Header = () => {
                     classNames={{
                         logo: 'h-8',
                     }}
+                    logoTheme="default"
                 />
                 <div className="w-full">
                     <div className="w-full flex items-center justify-center">

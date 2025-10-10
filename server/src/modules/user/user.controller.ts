@@ -18,6 +18,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserService } from './user.service'
+import { AdminGuard } from '../auth/admin.guard'
 
 @Controller('users')
 export class UserController {
@@ -25,8 +26,8 @@ export class UserController {
 
   @Post()
   @HttpCode(201)
-  @UseGuards(JwtGuard)
   @ResponseMessage('Create user successfully')
+  @UseGuards(JwtGuard, AdminGuard)
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto)
   }
@@ -34,6 +35,7 @@ export class UserController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of users successfully')
+  @UseGuards(JwtGuard)
   async findAll() {
     return this.userService.findAll()
   }
@@ -51,8 +53,8 @@ export class UserController {
 
   @Patch(':id/reset-password')
   @HttpCode(200)
-  @UseGuards(JwtGuard)
   @ResponseMessage('Reset password successfully')
+  @UseGuards(JwtGuard, AdminGuard)
   async resetPassword(@Param('id') id: string,
     @Body() dto: ResetPasswordDto,
   ) {
@@ -71,22 +73,23 @@ export class UserController {
   @Get(':id')
   @HttpCode(200)
   @ResponseMessage('Get user detail successfully')
+  @UseGuards(JwtGuard)
   async findOne(@Param('id') id: string) {
     return this.userService.findById(id)
   }
 
   @Patch(':id')
   @HttpCode(200)
-  @UseGuards(JwtGuard)
   @ResponseMessage('Update user successfully')
+  @UseGuards(JwtGuard, AdminGuard)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto)
   }
 
   @Delete(':id')
   @HttpCode(200)
-  @UseGuards(JwtGuard)
   @ResponseMessage('Delete user successfully')
+  @UseGuards(JwtGuard, AdminGuard)
   async remove(@Param('id') id: string) {
     return this.userService.delete(id)
   }

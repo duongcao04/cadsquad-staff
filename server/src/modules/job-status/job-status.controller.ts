@@ -5,6 +5,7 @@ import { UpdateJobStatusDto } from './dto/update-job-status.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
+import { AdminGuard } from '../auth/admin.guard'
 
 @Controller('job-statuses')
 export class JobStatusController {
@@ -13,7 +14,7 @@ export class JobStatusController {
   @Post()
   @HttpCode(201)
   @ResponseMessage('Insert new job status successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async create(@Body() createJobStatusDto: CreateJobStatusDto) {
     return this.jobStatusService.create(createJobStatusDto)
   }
@@ -21,6 +22,7 @@ export class JobStatusController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of job status successfully')
+  @UseGuards(JwtGuard)
   async findAll() {
     return this.jobStatusService.findAll()
   }
@@ -28,6 +30,7 @@ export class JobStatusController {
   @Get('/order/:orderNum')
   @HttpCode(200)
   @ResponseMessage('Get job status detail successfully')
+  @UseGuards(JwtGuard)
   async findByOrder(@Param('orderNum') orderNum: string) {
     return this.jobStatusService.findByOrder(parseInt(orderNum))
   }
@@ -44,6 +47,7 @@ export class JobStatusController {
   @Get(':id')
   @HttpCode(200)
   @ResponseMessage('Get job status detail successfully')
+  @UseGuards(JwtGuard)
   async findOne(@Param('id') id: string) {
     return this.jobStatusService.findById(id)
   }
@@ -51,7 +55,7 @@ export class JobStatusController {
   @Patch(':id')
   @HttpCode(200)
   @ResponseMessage('Update job status successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async update(@Param('id') id: string, @Body() updateJobStatusDto: UpdateJobStatusDto) {
     return this.jobStatusService.update(id, updateJobStatusDto)
   }
@@ -59,7 +63,7 @@ export class JobStatusController {
   @Delete(':id')
   @HttpCode(200)
   @ResponseMessage('Update job status successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async remove(@Param('id') id: string) {
     return this.jobStatusService.delete(id)
   }

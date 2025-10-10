@@ -1,17 +1,21 @@
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { CreateJobInput, JobQueryInput, ChangeStatusInput, UpdateJobMembersInput } from '@/shared/validationSchemas/job.schema'
+import { CreateJobInput, ChangeStatusInput, UpdateJobMembersInput, JobQueryWithFiltersInput } from '@/shared/validationSchemas/job.schema'
 import { JobColumn } from '@/shared/types/job.type'
 import { Job } from '@/shared/interfaces/job.interface'
 import { Paginate } from '@/shared/interfaces/paginate.interface'
+import queryString from 'query-string'
 
 export const jobApi = {
 	create: (data: CreateJobInput) => {
 		return axiosClient.post('/jobs', data)
 	},
-	findAll: (query: JobQueryInput) => {
+	findAll: (query: JobQueryWithFiltersInput) => {
+		const queryStringFormatter = queryString.stringify(query, {
+			arrayFormat: 'comma',
+		})
 		return axiosClient.get<
 			ApiResponse<{ data: Job[], paginate: Paginate }>
-		>('/jobs', { params: query })
+		>(`/jobs?${queryStringFormatter}`)
 	},
 	searchJobs: (keywords: string) => {
 		return axiosClient.get<

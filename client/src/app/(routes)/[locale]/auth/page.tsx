@@ -8,6 +8,7 @@ export default function AuthPage() {
                 classNames={{
                     logo: 'w-64',
                 }}
+                logoTheme="default"
             />
             <LoginForm />
         </div>

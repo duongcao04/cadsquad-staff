@@ -86,3 +86,20 @@ export function lightenHexColor(hex: string, percent: number): string {
 
     return `#${toHex(lightenedR)}${toHex(lightenedG)}${toHex(lightenedB)}`
 }
+/**
+ * Convert a sort query string (e.g. "-price,+createdAt") into an array of Prisma orderBy objects.
+ */
+export function parseSortParam(
+    sort: string
+): Record<string, 'asc' | 'desc'>[] {
+    if (!sort) return []
+    return sort
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .map((item) => {
+            const direction = item.startsWith('-') ? 'desc' : 'asc'
+            const field = item.replace(/^[-+]/, '')
+            return { [field]: direction }
+        })
+}

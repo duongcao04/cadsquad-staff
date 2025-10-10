@@ -1,67 +1,118 @@
 'use client'
 
 import { Button } from '@heroui/react'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { PageHeading } from '@/shared/components'
 import { CONFIG_CONSTANTS } from '@/shared/constants'
-import { JobTabEnum } from '@/shared/enums'
 import { useSearchParam } from '@/shared/hooks'
 import { Job } from '@/shared/interfaces'
 import { useConfigByCode, useJobColumns, useJobs } from '@/shared/queries'
+import { JobFiltersInput, JobQueryInput } from '@/shared/validationSchemas'
 import { DownloadIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { DefaultPanel, JobTable, JobTableTabs, PaginationPanel } from './shared'
 
+export type JobQueryParams = Omit<JobQueryInput, 'hideFinishItems'>
+export type JobFilterParams = JobFiltersInput
+export type JobSearchParams = JobQueryInput & JobFiltersInput & {}
+
 export type DataType = Job & {
     key: React.Key
 }
+
 export default function ProjectCenterPage() {
     const t = useTranslations()
-    const { jobColumns: showColumns } = useJobColumns()
+    const { getAllSearchParams, setSearchParams } = useSearchParam()
+
+    const searchParams: JobSearchParams = getAllSearchParams()
+    // Query params
+    const initialParams = useMemo(() => {
+        return {
+            // Query params
+            limit: searchParams.limit,
+            page: searchParams.page,
+            search: searchParams.search,
+            sort: searchParams.sort,
+            tab: searchParams.tab,
+        }
+    }, [searchParams])
+    // Filter params
+    const initialFilterParams = useMemo(() => {
+        return {
+            clientName: searchParams.clientName,
+            status: searchParams.status,
+            type: searchParams.type,
+            assignee: searchParams.assignee,
+            completedAtFrom: searchParams.completedAtFrom,
+            completedAtTo: searchParams.completedAtTo,
+            createdAtFrom: searchParams.createdAtFrom,
+            createdAtTo: searchParams.createdAtTo,
+            dueAtFrom: searchParams.dueAtFrom,
+            dueAtTo: searchParams.dueAtTo,
+            finishedAtFrom: searchParams.finishedAtFrom,
+            finishedAtTo: searchParams.finishedAtTo,
+            paymentChannel: searchParams.paymentChannel,
+            updatedAtFrom: searchParams.updatedAtFrom,
+            updatedAtTo: searchParams.updatedAtTo,
+        }
+    }, [searchParams])
+    const [params, setParams] = useState<JobQueryParams>(initialParams)
+    const [filterParams, setFilterParams] =
+        useState<JobFilterParams>(initialFilterParams)
+
+    useEffect(() => {
+        const combineParams = { ...params, ...filterParams }
+        setSearchParams(combineParams as Record<string, string>)
+    }, [params, filterParams, setSearchParams])
+
     const { value: isHideFinishItems } = useConfigByCode(
         CONFIG_CONSTANTS.keys.hideFinishItems
     )
-    const { getSearchParam, setSearchParams, removeSearchParam } =
-        useSearchParam()
-    const tabQuery = getSearchParam('tab') ?? JobTabEnum.PRIORITY
-    const searchKeywords = getSearchParam('search') ?? ''
-
-    const [currentTab, setCurrentTab] = useState(tabQuery)
-    const [itemsPerPage, setItemsPerPage] = useState<number>(10)
-    const [currentJobPage, setCurrentJobPage] = useState(1)
-
+    const { jobColumns: showColumns } = useJobColumns()
     const {
         jobs,
         paginate,
         refetch: refreshJobs,
         isLoading: loadingJobs,
     } = useJobs({
-        tab: currentTab as JobTabEnum,
-        page: currentJobPage,
-        search: searchKeywords,
-        limit: itemsPerPage,
         hideFinishItems: isHideFinishItems,
+        ...params,
+        ...filterParams,
     })
 
-    const handleTabChange = useCallback(
-        (activeKey: string) => {
-            setCurrentTab(activeKey)
-            if (activeKey === 'priority') {
-                removeSearchParam('tab')
-            } else {
-                setSearchParams({ tab: activeKey })
-            }
-        },
-        [removeSearchParam, setSearchParams]
-    )
+    const handleTabChange = useCallback((tab: string) => {
+        setParams((prev) => ({ ...prev, tab, page: 1 }))
+    }, [])
+
+    const handlePageChange = useCallback((page: number) => {
+        setParams((prev) => ({ ...prev, page }))
+    }, [])
+
+    const handleSearchChange = useCallback((search: string) => {
+        setParams((prev) => ({ ...prev, search, page: 1 })) // reset page khi search
+    }, [])
+
+    const handleSortChange = useCallback((sort: string) => {
+        setParams((prev) => ({ ...prev, sort, page: 1 }))
+    }, [])
+
+    const handleLimitChange = useCallback((limit: number) => {
+        setParams((prev) => ({ ...prev, limit, page: 1 }))
+    }, [])
+
+    const handleFilterChange = useCallback((newValues: JobFilterParams) => {
+        setFilterParams((prev) => ({ ...prev, ...newValues }))
+        // Auto return page 1 after change filter
+        setParams((prev) => ({ ...prev, page: 1 }))
+    }, [])
 
     return (
         <>
             <PageHeading title={t('projectCenter')} />
             <div className="pb-2 flex items-center justify-between">
                 <JobTableTabs
-                    activeKey={currentTab}
+                    activeKey={params.tab}
                     onChange={handleTabChange}
                 />
 
@@ -79,9 +130,9 @@ export default function ProjectCenterPage() {
                 </Button>
             </div>
             <DefaultPanel
-                defaultKeywords={searchKeywords}
+                defaultKeywords={params.search}
                 onSearch={(value) => {
-                    setSearchParams({ search: value })
+                    handleSearchChange(value)
                 }}
                 onRefresh={refreshJobs}
                 isRefreshing={loadingJobs}
@@ -92,6 +143,10 @@ export default function ProjectCenterPage() {
                         isLoading={loadingJobs}
                         data={jobs as Job[]}
                         showColumns={showColumns}
+                        sortValue={params.sort}
+                        filterValue={filterParams}
+                        onSort={handleSortChange}
+                        onFilter={handleFilterChange}
                     />
                 </div>
                 <div className="h-[52px]">
@@ -103,12 +158,12 @@ export default function ProjectCenterPage() {
                                 prev: 'cursor-pointer',
                             },
                             onChange(page) {
-                                setCurrentJobPage(page)
+                                handlePageChange(page)
                             },
                         }}
                         paginate={paginate}
                         onChangeItemsPerPage={(key) => {
-                            setItemsPerPage(parseInt(key))
+                            handleLimitChange(parseInt(key))
                         }}
                         isLoading={loadingJobs}
                     />

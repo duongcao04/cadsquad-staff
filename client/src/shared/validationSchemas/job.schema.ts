@@ -67,14 +67,41 @@ export type CreateJobInput = yup.InferType<typeof CreateJobSchema>
 export const UpdateJobSchema = CreateJobSchema.partial()
 export type UpdateJobInput = yup.InferType<typeof UpdateJobSchema>
 
+export const JobFiltersSchema = yup.object({
+    clientName: yup.array().of(yup.string().required()).optional(), // Client names split as ","
+    type: yup.array().of(yup.string().required()).optional(), // Job type codes split as ","
+    status: yup.array().of(yup.string().required()).optional(), // Status codes split as ","
+    assignee: yup.array().of(yup.string().required()).optional(), // Assignee username split as ","
+    paymentChannel: yup.array().of(yup.string().required()).optional(), // Payment channel codes split as ","
+    incomeCostMin: yup.string().optional(),
+    incomeCostMax: yup.string().optional(),
+    staffCostMin: yup.string().optional(),
+    staffCostMax: yup.string().optional(),
+    dueAtFrom: yup.string().optional(),
+    dueAtTo: yup.string().optional(),
+    completedAtFrom: yup.string().optional(),
+    completedAtTo: yup.string().optional(),
+    createdAtFrom: yup.string().optional(),
+    createdAtTo: yup.string().optional(),
+    updatedAtFrom: yup.string().optional(),
+    updatedAtTo: yup.string().optional(),
+    finishedAtFrom: yup.string().optional(),
+    finishedAtTo: yup.string().optional(),
+});
+export type JobFiltersInput = yup.InferType<typeof JobFiltersSchema>;
+
 export const JobQuerySchema = yup.object({
     tab: yup.string().optional(),
     search: yup.string().optional(),
     hideFinishItems: yup.number().optional(),
     limit: yup.number().optional(),
     page: yup.number().optional(),
+    sort: yup.string().optional(),
 });
 export type JobQueryInput = yup.InferType<typeof JobQuerySchema>;
+
+export const JobQueryWithFiltersSchema = JobQuerySchema.concat(JobFiltersSchema)
+export type JobQueryWithFiltersInput = yup.InferType<typeof JobQueryWithFiltersSchema>;
 
 export const ChangeStatusSchema = yup.object({
     fromStatusId: yup.string().required(),

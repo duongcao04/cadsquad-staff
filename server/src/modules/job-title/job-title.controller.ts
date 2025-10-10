@@ -4,6 +4,7 @@ import { CreateJobTitleDto } from './dto/create-job-title.dto'
 import { UpdateJobTitleDto } from './dto/update-job-title.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { AdminGuard } from '../auth/admin.guard'
 
 @Controller('job-titles')
 export class JobTitleController {
@@ -12,7 +13,7 @@ export class JobTitleController {
   @Post()
   @HttpCode(201)
   @ResponseMessage('Insert new job title successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async create(@Body() createJobTitleDto: CreateJobTitleDto) {
     return this.jobTitleService.create(createJobTitleDto)
   }
@@ -20,6 +21,7 @@ export class JobTitleController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of job titles successfully')
+  @UseGuards(JwtGuard)
   async findAll() {
     return this.jobTitleService.findAll()
   }
@@ -27,6 +29,7 @@ export class JobTitleController {
   @Get(':id')
   @HttpCode(200)
   @ResponseMessage('Get job title detail successfully')
+  @UseGuards(JwtGuard)
   async findOne(@Param('id') id: string) {
     return this.jobTitleService.findById(id)
   }
@@ -34,7 +37,7 @@ export class JobTitleController {
   @Patch(':id')
   @HttpCode(200)
   @ResponseMessage('Update job title successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async update(@Param('id') id: string, @Body() updateJobTitleDto: UpdateJobTitleDto) {
     return this.jobTitleService.update(id, updateJobTitleDto)
   }
@@ -42,7 +45,7 @@ export class JobTitleController {
   @Delete(':id')
   @HttpCode(200)
   @ResponseMessage('Delete job title successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async remove(@Param('id') id: string) {
     return this.jobTitleService.delete(id)
   }

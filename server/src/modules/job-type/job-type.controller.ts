@@ -4,6 +4,7 @@ import { CreateJobTypeDto } from './dto/create-job-type.dto'
 import { UpdateJobTypeDto } from './dto/update-job-type.dto'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { JwtGuard } from '../auth/jwt.guard'
+import { AdminGuard } from '../auth/admin.guard'
 
 @Controller('job-types')
 export class JobTypeController {
@@ -12,7 +13,7 @@ export class JobTypeController {
   @Post()
   @HttpCode(201)
   @ResponseMessage('Insert new job type successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async create(@Body() createJobTypeDto: CreateJobTypeDto) {
     return this.jobTypeService.create(createJobTypeDto)
   }
@@ -20,6 +21,7 @@ export class JobTypeController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of job type successfully')
+  @UseGuards(JwtGuard)
   async findAll() {
     return this.jobTypeService.findAll()
   }
@@ -27,6 +29,7 @@ export class JobTypeController {
   @Get(':id')
   @HttpCode(200)
   @ResponseMessage('Get job type detail successfully')
+  @UseGuards(JwtGuard)
   async findOne(@Param('id') id: string) {
     return this.jobTypeService.findById(id)
   }
@@ -34,7 +37,7 @@ export class JobTypeController {
   @Patch(':id')
   @HttpCode(200)
   @ResponseMessage('Update job type successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async update(@Param('id') id: string, @Body() updateJobTypeDto: UpdateJobTypeDto) {
     return this.jobTypeService.update(id, updateJobTypeDto)
   }
@@ -42,7 +45,7 @@ export class JobTypeController {
   @Delete(':id')
   @HttpCode(200)
   @ResponseMessage('Update job type successfully')
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, AdminGuard)
   async remove(@Param('id') id: string) {
     return this.jobTypeService.delete(id)
   }

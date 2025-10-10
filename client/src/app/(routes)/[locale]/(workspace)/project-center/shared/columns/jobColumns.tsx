@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { DueToField, SwitchCurrency, TableActionDropdown } from '../components'
+import { JobFilterParams } from '../../page'
 
 export type JobWithKey = Job & {
     key: React.Key
@@ -50,19 +51,20 @@ export function jobColumns(
         jobTypes: JobType[]
         paymentChannels: PaymentChannel[]
     },
-    handler: {
+    actions: {
         onAssignMember?: (jobNo: string) => void
         onViewDetail?: (jobNo: string) => void
     },
     options: {
+        filterValue?: JobFilterParams
         locale?: string
         showColumns?: string[]
         translations: ReturnType<typeof useTranslations>
     }
 ): TableColumns<JobWithKey> {
     const { jobs, jobStatuses, users, jobTypes, paymentChannels } = data
-    const { onAssignMember, onViewDetail } = handler
-    const { locale = 'en', showColumns, translations } = options
+    const { onAssignMember, onViewDetail } = actions
+    const { locale = 'en', showColumns, translations, filterValue } = options
 
     const allColumns: TableColumns<JobWithKey> = [
         {
@@ -103,47 +105,35 @@ export function jobColumns(
             render: (_: unknown, record: JobWithKey) => (
                 <p className="line-clamp-1">{record.clientName}</p>
             ),
-            sorter: {
-                compare: (a: JobWithKey, b: JobWithKey) =>
-                    a.clientName!.localeCompare(b.clientName!),
-                multiple: 4,
-            },
+            sorter: { multiple: 1 },
+            filterSearch: true,
             filters: lodash.uniqBy(jobs, 'clientName')?.map((item) => ({
-                text: `${item.clientName}`,
-                value: item?.clientName ?? '',
+                text: item.clientName,
+                value: item.clientName ?? '',
             })),
-            onFilter: (value, record) =>
-                record?.clientName?.indexOf(value as string) === 0,
         },
         {
             title: translations('jobColumns.type'),
             dataIndex: 'type',
             key: 'type',
             minWidth: 120,
+            filterSearch: true,
+            filters: lodash.uniqBy(jobTypes, 'code')?.map((item) => ({
+                text: item.displayName,
+                value: item.code ?? '',
+            })),
+            // filteredValue: filterValue?.type ? filterValue?.type : [],
             render: (_: unknown, record: JobWithKey) => (
                 <p className="line-clamp-1">{record.type.displayName}</p>
             ),
-            sorter: {
-                compare: (a, b) => a.no!.localeCompare(b.no!),
-                multiple: 1,
-            },
-            filters: lodash.uniqBy(jobTypes, 'code')?.map((item) => ({
-                text: item.displayName,
-                value: item?.id ?? '',
-            })),
-            onFilter: (value, record) =>
-                record.type.id.toString().indexOf(value as string) === 0,
         },
         {
-            title: (
-                <p className="truncate" title={translations('jobColumns.no')}>
-                    {translations('jobColumns.no')}
-                </p>
-            ),
+            title: translations('jobColumns.no'),
             dataIndex: 'no',
             key: 'no',
             fixed: 'left',
             minWidth: 120,
+            sorter: { multiple: 1 },
             render: (jobNo) => (
                 <div className="flex items-center justify-between gap-2 group size-full">
                     <p
@@ -161,23 +151,13 @@ export function jobColumns(
                     </p>
                 </div>
             ),
-            sorter: {
-                compare: (a, b) => a.no!.localeCompare(b.no!),
-                multiple: 1,
-            },
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.displayName')}
-                >
-                    {translations('jobColumns.displayName')}
-                </p>
-            ),
+            title: translations('jobColumns.displayName'),
             dataIndex: 'displayName',
             key: 'displayName',
             minWidth: 300,
+            sorter: { multiple: 1 },
             render: (displayName, record: JobWithKey) => (
                 <button className="link">
                     <Link
@@ -189,62 +169,31 @@ export function jobColumns(
                     </Link>
                 </button>
             ),
-            sorter: {
-                compare: (a, b) => a.displayName.localeCompare(b.displayName),
-                multiple: 3,
-            },
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.incomeCost')}
-                >
-                    {translations('jobColumns.incomeCost')}
-                </p>
-            ),
+            title: translations('jobColumns.incomeCost'),
             dataIndex: 'incomeCost',
             key: 'incomeCost',
             minWidth: 100,
+            sorter: { multiple: 1 },
             render: (incomeCost) => (
                 <SwitchCurrency value={incomeCost} defaultType="en" />
             ),
-            sorter: {
-                compare: (a, b) => a.incomeCost - b.incomeCost,
-                multiple: 2,
-            },
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.staffCost')}
-                >
-                    {translations('jobColumns.staffCost')}
-                </p>
-            ),
+            title: translations('jobColumns.staffCost'),
             dataIndex: 'staffCost',
             key: 'staffCost',
             minWidth: 100,
+            sorter: { multiple: 1 },
             render: (staffCost) => (
                 <p className="font-bold text-right text-currency">
                     {formatCurrencyVND(staffCost)}
                 </p>
             ),
-            sorter: {
-                compare: (a, b) => a.staffCost - b.staffCost,
-                multiple: 2,
-            },
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.status')}
-                >
-                    {translations('jobColumns.status')}
-                </p>
-            ),
+            title: translations('jobColumns.status'),
             dataIndex: 'status',
             key: 'status',
             width: 120,
@@ -256,77 +205,54 @@ export function jobColumns(
                     />
                 </div>
             ),
-            filters: lodash.uniqBy(jobStatuses, 'id')?.map((item) => ({
-                text: `${item.displayName}`,
-                value: item?.id?.toString() ?? '',
+            filters: lodash.uniqBy(jobStatuses, 'code')?.map((item) => ({
+                text: item.displayName,
+                value: item.code?.toString() ?? '',
             })),
-            onFilter: (value, record) =>
-                record?.status?.id?.toString()?.indexOf(value as string) === 0,
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.dueAt')}
-                >
-                    {translations('jobColumns.dueAt')}
-                </p>
-            ),
+            title: translations('jobColumns.dueAt'),
             dataIndex: 'dueAt',
             key: 'dueAt',
             minWidth: 170,
-            render: (_, record: JobWithKey) => {
-                return (
-                    <div className="text-right line-clamp-1">
-                        <DueToField
-                            data={record.dueAt}
-                            disableCountdown={
-                                record.status.code ===
-                                    DefaultJobStatusCode.FINISH ||
-                                record.status.code ===
-                                    DefaultJobStatusCode.COMPLETED
-                            }
-                        />
-                    </div>
-                )
-            },
-        },
-        {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.attachmentUrls')}
-                >
-                    {translations('jobColumns.attachmentUrls')}
-                </p>
-            ),
-            dataIndex: 'attachmentUrls',
-            key: 'attachmentUrls',
-            minWidth: 100,
-            render: (_: unknown, record: JobWithKey) => (
-                <div>
-                    {!record.attachmentUrls ||
-                    record.attachmentUrls.length === 0 ? (
-                        <p>-</p>
-                    ) : (
-                        <p>{record.attachmentUrls.length} attachments</p>
-                    )}
+            sorter: { multiple: 1 },
+            render: (_, record: JobWithKey) => (
+                <div className="text-right line-clamp-1">
+                    <DueToField
+                        data={record.dueAt}
+                        disableCountdown={
+                            record.status.code ===
+                                DefaultJobStatusCode.FINISH ||
+                            record.status.code ===
+                                DefaultJobStatusCode.COMPLETED
+                        }
+                    />
                 </div>
             ),
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.assignee')}
-                >
-                    {translations('jobColumns.assignee')}
-                </p>
-            ),
+            title: translations('jobColumns.attachmentUrls'),
+            dataIndex: 'attachmentUrls',
+            key: 'attachmentUrls',
+            minWidth: 100,
+            render: (_, record: JobWithKey) =>
+                !record.attachmentUrls?.length ? (
+                    <p>-</p>
+                ) : (
+                    <p>{record.attachmentUrls.length} attachments</p>
+                ),
+        },
+        {
+            title: translations('jobColumns.assignee'),
             dataIndex: 'assignee',
             key: 'assignee',
             minWidth: 150,
             className: 'group cursor-default',
+            filterSearch: true,
+            filters: lodash.uniqBy(users, 'username').map((item) => ({
+                text: item.displayName,
+                value: item.username ?? '',
+            })),
             render: (_, record: JobWithKey) => {
                 const count = 4
                 return (
@@ -336,197 +262,121 @@ export function jobColumns(
                         }}
                         className="cursor-pointer w-fit"
                     >
-                        {record.assignee.length === 0 ? (
+                        {!record.assignee.length ? (
                             <button
-                                onClick={() => {
-                                    onAssignMember?.(record.no)
-                                }}
+                                onClick={() => onAssignMember?.(record.no)}
                                 className="link"
                                 title={translations('assignMembers')}
                             >
                                 {translations('assignMembers')}
                             </button>
                         ) : (
-                            <div title={translations('jobColumns.assignee')}>
-                                <Avatar.Group
-                                    max={{
-                                        count: count,
-                                        style: {
-                                            color: 'var(--color-primary)',
-                                            backgroundColor:
-                                                'var(--color-primary-50)',
+                            <Avatar.Group
+                                max={{
+                                    count,
+                                    style: {
+                                        color: 'var(--color-primary)',
+                                        backgroundColor:
+                                            'var(--color-primary-50)',
+                                    },
+                                    popover: {
+                                        styles: {
+                                            body: { borderRadius: '16px' },
                                         },
-                                        popover: {
-                                            styles: {
-                                                body: {
-                                                    borderRadius: '16px',
-                                                },
-                                            },
-                                        },
-                                    }}
-                                >
-                                    {record.assignee.map((member) => {
-                                        return (
-                                            <Avatar
-                                                key={member.id}
-                                                src={member.avatar}
-                                            />
-                                        )
-                                    })}
-                                </Avatar.Group>
-                            </div>
+                                    },
+                                }}
+                            >
+                                {record.assignee.map((member) => (
+                                    <Avatar
+                                        key={member.id}
+                                        src={member.avatar}
+                                    />
+                                ))}
+                            </Avatar.Group>
                         )}
                     </div>
                 )
             },
-            filters: lodash.uniqBy(users, 'id').map((item) => ({
-                text: `${item.displayName}`,
-                value: item.id ?? '',
-            })),
-            onFilter: (value, record) =>
-                record.assignee.some((item) => item.id === value),
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.isPaid')}
-                >
-                    {translations('jobColumns.isPaid')}
-                </p>
-            ),
+            title: translations('jobColumns.isPaid'),
             dataIndex: 'isPaid',
             key: 'isPaid',
             width: 120,
             className: 'group cursor-default',
-            render: (_, record: JobWithKey) => {
-                return (
-                    <PaidChip
-                        status={record.isPaid ? 'paid' : 'unpaid'}
-                        classNames={{
-                            base: '!w-[100px]',
-                            content: '!w-[100px] text-center',
-                        }}
-                    />
-                )
-            },
+            render: (_, record: JobWithKey) => (
+                <PaidChip
+                    status={record.isPaid ? 'paid' : 'unpaid'}
+                    classNames={{
+                        base: '!w-[100px]',
+                        content: '!w-[100px] text-center',
+                    }}
+                />
+            ),
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.paymentChannel')}
-                >
-                    {translations('jobColumns.paymentChannel')}
-                </p>
-            ),
+            title: translations('jobColumns.paymentChannel'),
             dataIndex: 'paymentChannel',
             key: 'paymentChannel',
             minWidth: 200,
-            render: (_, record: JobWithKey) => (
-                <p className="line-clamp-1">
-                    {record?.paymentChannel
-                        ? record.paymentChannel?.displayName
-                        : '-'}
-                </p>
-            ),
-            sorter: {
-                compare: (a: JobWithKey, b: JobWithKey) =>
-                    a.paymentChannel?.displayName.localeCompare(
-                        b.paymentChannel?.displayName
-                    ),
-                multiple: 2,
-            },
             filters: lodash
                 .uniqBy(paymentChannels, 'displayName')
                 .map((item) => ({
-                    text: `${item.displayName}`,
+                    text: item.displayName,
                     value: item.displayName ?? '',
                 })),
-            onFilter: (value, record) =>
-                record.paymentChannel.displayName.indexOf(value as string) ===
-                0,
+            render: (_, record: JobWithKey) =>
+                record.paymentChannel ? (
+                    <p className="line-clamp-1">
+                        {record.paymentChannel.displayName}
+                    </p>
+                ) : (
+                    <p>-</p>
+                ),
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.completedAt')}
-                >
-                    {translations('jobColumns.completedAt')}
-                </p>
-            ),
+            title: translations('jobColumns.completedAt'),
             dataIndex: 'completedAt',
             key: 'completedAt',
             minWidth: 120,
-            render: (_, record: JobWithKey) => (
-                <div>
-                    {record?.completedAt
-                        ? VietnamDateFormat(record.completedAt)
-                        : '-'}
-                </div>
-            ),
+            sorter: { multiple: 1 },
+            render: (_, record: JobWithKey) =>
+                record.completedAt
+                    ? VietnamDateFormat(record.completedAt)
+                    : '-',
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.createdAt')}
-                >
-                    {translations('jobColumns.createdAt')}
-                </p>
-            ),
+            title: translations('jobColumns.createdAt'),
             dataIndex: 'createdAt',
             key: 'createdAt',
             minWidth: 100,
-            render: (_, record: JobWithKey) => (
-                <div>
-                    {record?.createdAt && VietnamDateFormat(record.createdAt)}
-                </div>
-            ),
+            sorter: { multiple: 1 },
+            render: (_, record: JobWithKey) =>
+                record.createdAt && VietnamDateFormat(record.createdAt),
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.updatedAt')}
-                >
-                    {translations('jobColumns.updatedAt')}
-                </p>
-            ),
+            title: translations('jobColumns.updatedAt'),
             dataIndex: 'updatedAt',
             key: 'updatedAt',
             minWidth: 100,
-            render: (_, record: JobWithKey) => (
-                <div>
-                    {record?.updatedAt && VietnamDateFormat(record.updatedAt)}
-                </div>
-            ),
+            sorter: { multiple: 1 },
+            render: (_, record: JobWithKey) =>
+                record.updatedAt && VietnamDateFormat(record.updatedAt),
         },
         {
-            title: (
-                <p
-                    className="truncate"
-                    title={translations('jobColumns.action')}
-                >
-                    {translations('jobColumns.action')}
-                </p>
-            ),
+            title: translations('jobColumns.action'),
             key: 'action',
             dataIndex: 'action',
             width: 150,
             fixed: 'right',
-            render: (_, record: JobWithKey) => {
-                return (
-                    <div className="flex items-center justify-end gap-2">
+            render: (_, record: JobWithKey) => (
+                <div className="flex items-center justify-end gap-2">
+                    {onViewDetail && (
                         <Tooltip content={translations('viewDetail')}>
                             <Button
                                 variant="light"
                                 color="primary"
-                                onPress={() => {
-                                    onViewDetail?.(record.no)
-                                }}
-                                className="flex items-center justify-center"
+                                onPress={() => onViewDetail?.(record.no)}
                                 size="sm"
                                 isIconOnly
                             >
@@ -536,23 +386,20 @@ export function jobColumns(
                                 />
                             </Button>
                         </Tooltip>
-                        <Tooltip content={translations('copyLink')}>
-                            <CopyButton
-                                slot="p"
-                                content={
-                                    envConfig.NEXT_PUBLIC_URL +
-                                    `/${locale}/` +
-                                    `project-center?detail=${record.no}`
-                                }
-                                variant="ghost"
-                            />
-                        </Tooltip>
-                        <TableActionDropdown data={record} />
-                    </div>
-                )
-            },
+                    )}
+                    <Tooltip content={translations('copyLink')}>
+                        <CopyButton
+                            slot="p"
+                            content={`${envConfig.NEXT_PUBLIC_URL}/${locale}/project-center?detail=${record.no}`}
+                            variant="ghost"
+                        />
+                    </Tooltip>
+                    <TableActionDropdown data={record} />
+                </div>
+            ),
         },
     ]
+
     if (showColumns && showColumns.length > 0) {
         return allColumns.map((item) => ({
             ...item,

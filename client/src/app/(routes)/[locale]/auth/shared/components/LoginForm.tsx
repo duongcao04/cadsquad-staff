@@ -64,7 +64,7 @@ export function LoginForm() {
                 {t('signIn')}
             </h1>
             <p>
-                {t('toContinueTo')}{' '}
+                {t('toContinueTo')}
                 <Link
                     href={HOME}
                     className="text-blue-700 hover:underline underline-offset-2"
@@ -132,22 +132,6 @@ export function LoginForm() {
                     >
                         {t('login')}
                     </Button>
-                    {/* <div className="flex items-center justify-between w-full gap-3">
-                        <hr className="w-full opacity-20" />
-                        <p className="my-5 opacity-70">{t('or')}</p>
-                        <hr className="w-full opacity-20" />
-                    </div>
-                    <Button
-                        type="button"
-                        color="secondary"
-                        className="w-full rounded-full"
-                        isLoading={isLoading}
-                        startContent={<IconMicrosoftColorful />}
-                        variant="bordered"
-                        onPress={loginWithMicrosoft}
-                    >
-                        <p className="px-2">Login with Microsoft</p>
-                    </Button> */}
                 </div>
             </div>
         </form>
