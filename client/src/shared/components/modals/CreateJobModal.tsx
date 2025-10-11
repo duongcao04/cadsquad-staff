@@ -295,7 +295,7 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                                         formik.setFieldValue(
                                             'startedAt',
                                             dayjs(
-                                                value?.start.toString()
+                                                value?.start?.toString()
                                             ).toISOString()
                                         )
                                     }
@@ -303,7 +303,7 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                                         formik.setFieldValue(
                                             'dueAt',
                                             dayjs(
-                                                value?.end.toString()
+                                                value?.end?.toString()
                                             ).toISOString()
                                         )
                                     }
