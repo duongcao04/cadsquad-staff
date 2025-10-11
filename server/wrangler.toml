@@ -1,3 +1,9 @@
 name = "cadsquad-staff-be"
-main = " ./dist/src/main.js"
-compatibility_date = "2024-09-23" # Or a more recent date
+main = "./dist/src/main.js"
+compatibility_date = "2025-10-11"
+
+[compatibility_flags]
+nodejs_compat = true
+
+[build]
+command = "npm run build"
