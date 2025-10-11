@@ -1,8 +1,8 @@
 name = "cadsquad-staff-be"
 main = "./dist/src/main.js"
-compatibility_date = "2025-10-11"
 
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = [ "nodejs_compat" ]
+compatibility_date = "2025-10-11"
 
 [build]
 command = "npm run build"
