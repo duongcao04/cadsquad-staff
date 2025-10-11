@@ -6,3 +6,6 @@ compatibility_date = "2025-10-11"
 
 [build]
 command = "npm run build"
+
+[build.external]
+"@nestjs/microservices" = "commonjs"
