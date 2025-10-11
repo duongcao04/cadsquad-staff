@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build-backend
+    command: node server/dist/main.js
+    ports:
+      - "4000:3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build-frontend
+    command: npm run start --workspace=client
+    ports:
+      - "3000:3000"

@@ -3,7 +3,6 @@
 import { Button, Kbd, useDisclosure } from '@heroui/react'
 import { Layout } from 'antd'
 import { CircleHelpIcon, Search } from 'lucide-react'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { MotionButton } from '@/lib/motion'
 import { CadsquadLogo } from '@/shared/components'
@@ -13,6 +12,8 @@ import { NotificationDropdown } from './NotificationDropdown'
 import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
+import { useEffect } from 'react'
+import hotkeys from 'hotkeys-js'
 
 const { Header: AntHeader } = Layout
 
@@ -38,12 +39,13 @@ export const Header = () => {
         id: 'SearchModal',
     })
 
-    useKeyboardShortcuts([
-        {
-            keys: ['ctrl', 'K'],
-            onEvent: () => onOpen(),
-        },
-    ])
+    useEffect(() => {
+        hotkeys('ctrl+k', function (event) {
+            // Prevent the default refresh event under WINDOWS system
+            event.preventDefault()
+            onOpen()
+        })
+    }, [])
 
     return (
         <AntHeader

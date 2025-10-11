@@ -20,10 +20,11 @@ import {
     DropdownTrigger,
     useDisclosure,
 } from '@heroui/react'
+import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
+import { useEffect } from 'react'
 
 export function ActionButton() {
     const { isAdmin, isAccounting, isStaff } = useProfile()
@@ -72,20 +73,23 @@ export function AdminCreateButton() {
         id: 'NotificationModal',
     })
 
-    useKeyboardShortcuts([
-        {
-            keys: ['alt', 'N'],
-            onEvent: () => onOpenJM(),
-        },
-        {
-            keys: ['alt', 'U'],
-            onEvent: () => onOpenUM(),
-        },
-        {
-            keys: ['alt', 'M'],
-            onEvent: () => onOpenNM(),
-        },
-    ])
+    useEffect(() => {
+        hotkeys('alt+n,alt+u,alt+m', function (event, handler) {
+            switch (handler.key) {
+                case 'alt+n':
+                    onOpenJM()
+                    break
+                case 'alt+u':
+                    onOpenUM()
+                    break
+                case 'alt+m':
+                    onOpenNM()
+                    break
+                default:
+                    alert(event)
+            }
+        })
+    }, [])
 
     const iconVariants: Variants = {
         init: { opacity: 0, rotate: 0 },

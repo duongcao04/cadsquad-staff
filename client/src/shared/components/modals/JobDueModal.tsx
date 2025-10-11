@@ -6,7 +6,6 @@ import { useJobsDueOnDate } from '@/shared/queries'
 import { Modal } from 'antd'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 import { JobCard } from '../../../app/(routes)/[locale]/(workspace)/profile/shared'
 
 type Props = {
@@ -18,13 +17,6 @@ type Props = {
 function JobDueModal({ isOpen, onClose, currentDate }: Props) {
     const t = useTranslations()
     const { jobs, isLoading } = useJobsDueOnDate(currentDate)
-
-    useKeyboardShortcuts([
-        {
-            keys: ['escape'],
-            onEvent: () => onClose(),
-        },
-    ])
 
     return (
         <Modal

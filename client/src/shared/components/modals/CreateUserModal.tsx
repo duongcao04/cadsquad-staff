@@ -3,7 +3,6 @@
 import { addToast, Button, InputProps } from '@heroui/react'
 import { Modal } from 'antd'
 import { useFormik } from 'formik'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 
 import { ApiError } from '@/lib/axios'
 import { capitalize } from '@/lib/utils'
@@ -35,13 +34,6 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
             value: i[0],
         }
     })
-
-    useKeyboardShortcuts([
-        {
-            keys: ['escape'],
-            onEvent: () => onClose(),
-        },
-    ])
 
     const formik = useFormik<CreateUserInput>({
         initialValues: {

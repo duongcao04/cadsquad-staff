@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { PageHeading } from '@/shared/components'
 import { CONFIG_CONSTANTS } from '@/shared/constants'
+import { JobTabEnum } from '@/shared/enums'
 import { useSearchParam } from '@/shared/hooks'
 import { Job } from '@/shared/interfaces'
 import { useConfigByCode, useJobColumns, useJobs } from '@/shared/queries'
@@ -12,7 +13,7 @@ import { JobFiltersInput, JobQueryInput } from '@/shared/validationSchemas'
 import { DownloadIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { DefaultPanel, JobTable, JobTableTabs, PaginationPanel } from './shared'
-import { JobTabEnum } from '../../../../../shared/enums'
+import lodash from 'lodash'
 
 export type JobQueryParams = Omit<JobQueryInput, 'hideFinishItems'>
 export type JobFilterParams = JobFiltersInput
@@ -89,9 +90,11 @@ export default function ProjectCenterPage() {
         setParams((prev) => ({ ...prev, page }))
     }, [])
 
-    const handleSearchChange = useCallback((search: string) => {
-        setParams((prev) => ({ ...prev, search, page: 1 })) // reset page khi search
-    }, [])
+    const handleSearchChange = lodash.debounce(
+        (search) => setParams((prev) => ({ ...prev, search, page: 1 })),
+        500,
+        { maxWait: 1000 }
+    )
 
     const handleSortChange = useCallback((sort: string) => {
         setParams((prev) => ({ ...prev, sort, page: 1 }))

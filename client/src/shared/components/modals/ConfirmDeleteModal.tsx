@@ -7,10 +7,14 @@ import {
     ModalContent,
     ModalFooter,
     ModalHeader,
+    ModalProps,
 } from '@heroui/react'
 import React from 'react'
 
-interface ConfirmDeleteModalProps {
+type ConfirmDeleteModalProps = Omit<
+    ModalProps,
+    'isOpen' | 'onClose' | 'children'
+> & {
     isOpen: boolean
     onClose: () => void
     onConfirm: () => void
@@ -20,6 +24,7 @@ interface ConfirmDeleteModalProps {
     cancelText?: string
     children?: React.ReactNode
     isLoading?: boolean
+    color?: 'danger' | 'primary' | 'success' | 'warning'
 }
 
 export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
@@ -32,6 +37,8 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
     cancelText = 'Cancel',
     isLoading = false,
     children,
+    color = 'danger',
+    ...props
 }) => {
     return (
         <Modal
@@ -39,12 +46,27 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
             onClose={onClose}
             placement="center"
             hideCloseButton
+            {...props}
         >
-            <ModalContent className="p-2">
-                <ModalHeader className="text-danger font-semibold text-lg">
+            <ModalContent
+                className="p-2"
+                style={{
+                    zIndex: 999999999,
+                }}
+            >
+                <ModalHeader
+                    className="text-danger font-semibold text-lg"
+                    style={{
+                        color: `var(--color-${color})`,
+                    }}
+                >
                     {title}
                 </ModalHeader>
-                <ModalBody>
+                <ModalBody
+                    style={{
+                        zIndex: 999999999,
+                    }}
+                >
                     {children ? (
                         children
                     ) : (
@@ -58,7 +80,7 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
                         {cancelText}
                     </Button>
                     <Button
-                        color="danger"
+                        color={color}
                         isLoading={isLoading}
                         onPress={() => {
                             onConfirm()

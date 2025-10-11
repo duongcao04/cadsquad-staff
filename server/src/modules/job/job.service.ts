@@ -255,8 +255,6 @@ export class JobService {
       updatedAtTo
     }
 
-    console.log(_filters);
-
     // Pass filter field is undefined
     const filters = lodash.omitBy(_filters, lodash.isUndefined)
 
@@ -279,8 +277,10 @@ export class JobService {
         // Search filter
         this.buildSearchBy(search),
         // All other filters
-        ...this.buildFilters(filters),
-      ].filter((condition) => Object.keys(condition).length > 0),
+        // ...this.buildFilters(filters),
+      ]
+      // .filter((condition) => Object.keys(condition).length > 0)
+      ,
     }
 
     console.log(JSON.stringify(this.buildFilters(filters)));

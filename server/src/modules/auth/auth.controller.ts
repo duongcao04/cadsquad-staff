@@ -44,8 +44,6 @@ export class AuthController {
       };
       // const accessToken = this.jwtService.sign(payload);
 
-      console.log(payload);
-
       return {}
 
       // Option 2: Redirect with token (uncomment to use)

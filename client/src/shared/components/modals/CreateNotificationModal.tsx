@@ -15,7 +15,6 @@ import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 import { capitalize } from 'lodash'
 import { useMemo } from 'react'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
 
 const inputClassNames: InputProps['classNames'] = {
@@ -30,13 +29,6 @@ type Props = {
     onClose: () => void
 }
 export function CreateNotificationModal({ isOpen, onClose }: Props) {
-    useKeyboardShortcuts([
-        {
-            keys: ['escape'],
-            onEvent: () => onClose(),
-        },
-    ])
-
     const { users, isLoading: loadingUsers } = useUsers()
     const { profile } = useProfile()
 
@@ -151,6 +143,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
                 <div className="py-8 space-y-4 border-t border-border">
                     <HeroInput
                         isRequired
+                        autoFocus
                         id="title"
                         name="title"
                         label="Title"

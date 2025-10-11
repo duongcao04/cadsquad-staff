@@ -13,7 +13,6 @@ import {
     SearchIcon,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 import { useDebounceValue } from 'usehooks-ts'
 import { JobList } from './JobList'
 
@@ -100,13 +99,6 @@ export function SearchModal({ isOpen, onClose }: Props) {
             children: <p>Khong tim thay</p>,
         },
     ]
-
-    useKeyboardShortcuts([
-        {
-            keys: ['escape'],
-            onEvent: () => onClose(),
-        },
-    ])
 
     return (
         <Modal

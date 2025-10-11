@@ -20,7 +20,6 @@ import {
     useUsers,
 } from '@/shared/queries'
 import { CreateJobInput, CreateJobSchema } from '@/shared/validationSchemas'
-import { useKeyboardShortcuts } from 'use-keyboard-shortcuts'
 import { HeroSelect, HeroSelectItem } from '../customize'
 
 export const jobModalInputClassNames: InputProps['classNames'] = {
@@ -35,13 +34,6 @@ type Props = {
     onClose: () => void
 }
 export function CreateJobModal({ isOpen, onClose }: Props) {
-    useKeyboardShortcuts([
-        {
-            keys: ['escape'],
-            onEvent: () => onClose(),
-        },
-    ])
-
     const { setNewJobNo } = useJobStore()
     const { profile } = useProfile()
 

@@ -12,7 +12,9 @@ import {
 export function adminActions(
     jobNo: string,
     onOpenAssignModal: (jobNo: string) => void,
-    handleDeleteJob: () => void
+    handleDeleteJob: () => void,
+    handleUpdateCost: () => void,
+    handleOpenMarkAsPaidModal: () => void
 ): ActionGroup[] {
     return [
         {
@@ -77,9 +79,7 @@ export function adminActions(
                     title: 'Update Cost',
                     icon: <CircleDollarSign size={14} />,
                     childProps: {
-                        onPress: () => {
-                            alert('Tính năng đang được phát triển')
-                        },
+                        onPress: () => handleUpdateCost(),
                     },
                 },
                 {
@@ -87,9 +87,7 @@ export function adminActions(
                     title: 'Mark as Paid',
                     icon: <CircleCheck size={14} />,
                     childProps: {
-                        onPress: () => {
-                            alert('Tính năng đang được phát triển')
-                        },
+                        onPress: () => handleOpenMarkAsPaidModal(),
                     },
                 },
             ],
