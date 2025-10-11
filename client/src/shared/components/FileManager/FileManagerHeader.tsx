@@ -19,14 +19,12 @@ import {
     Upload,
 } from 'lucide-react'
 
-import { useDebouncedValue } from '@/hooks/useDebounce'
-
 import { useSearchParam } from '@/shared/hooks/useSearchParam'
 
 import { useFileStore } from './store/useFileStore'
 import { ROOT_DIR } from '@/app/(routes)/[locale]/(workspace)/documents/actions'
 
-const DEBOUNCE_VALUE = 250
+// const DEBOUNCE_VALUE = 250
 
 type Props = {
     onOpenNewFolderModal: () => void
@@ -51,10 +49,10 @@ export default function FileManagerHeader({
     const breadcrumbItems = currentPath
 
     // Debounced search value - will only update after user stops typing
-    const debouncedSearchValue = useDebouncedValue<string>(
-        inputValue,
-        DEBOUNCE_VALUE
-    )
+    // const debouncedSearchValue = useDebouncedValue<string>(
+    //     inputValue,
+    //     DEBOUNCE_VALUE
+    // )
 
     // Handle breadcrumb navigation
     const navigateToBreadcrumb = (index: number) => {
@@ -65,15 +63,15 @@ export default function FileManagerHeader({
     }
 
     // Update URL params when debounced value changes
-    useEffect(() => {
-        if (debouncedSearchValue.trim()) {
-            setSearchParams({
-                search: debouncedSearchValue,
-            })
-        } else {
-            removeSearchParam('search')
-        }
-    }, [debouncedSearchValue, setSearchParams, removeSearchParam])
+    // useEffect(() => {
+    //     if (debouncedSearchValue.trim()) {
+    //         setSearchParams({
+    //             search: debouncedSearchValue,
+    //         })
+    //     } else {
+    //         removeSearchParam('search')
+    //     }
+    // }, [debouncedSearchValue, setSearchParams, removeSearchParam])
 
     // Sync local state with URL params when component mounts or URL changes externally
     useEffect(() => {

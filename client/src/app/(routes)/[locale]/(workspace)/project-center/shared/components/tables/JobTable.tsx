@@ -12,7 +12,7 @@ import {
 import { JobColumn } from '@/shared/types'
 import type { TableProps } from 'antd'
 import { Table } from 'antd'
-import { SorterResult } from 'antd/es/table/interface'
+import { SorterResult, SortOrder } from 'antd/es/table/interface'
 import { useLocale, useTranslations } from 'next-intl'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { DataType } from '../../../page'
@@ -93,7 +93,8 @@ function JobTable({
             { locale, showColumns, translations: t }
         ).map((col) => ({
             ...col,
-            sortOrder: sortOrderMap[col.key as string],
+            sortOrder:
+                (sortOrderMap[col.key as string] as SortOrder) || undefined,
         }))
     }, [
         jobsData,

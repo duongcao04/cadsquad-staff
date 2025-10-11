@@ -2,10 +2,7 @@
 
 import CadsquadLogo from '@/shared/components/CadsquadLogo'
 import { Button } from '@heroui/react'
-import FeatureBoard from './shared/components/FeatureBoard'
-import FeatureCard, {
-    FeatureCardProps,
-} from './shared/components/FeatureBoard/FeatureCard'
+import { FeatureBoard, FeatureCard, FeatureCardProps } from './shared'
 import { useTranslations } from 'next-intl'
 
 const FEATURE_BOARD_ACTIONS: FeatureCardProps[] = [

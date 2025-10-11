@@ -1,10 +1,13 @@
+import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
-export async function generateMetadata({
-    params,
-}: Readonly<{
+type Props = {
     params: Promise<{ locale: string }>
-}>) {
+    children: React.ReactNode
+    jobDetail: React.ReactNode
+    addMember: React.ReactNode
+}
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Get locale and check if it's valid
     const { locale } = await params
 
@@ -39,15 +42,11 @@ export async function generateMetadata({
     }
 }
 
-export default async function WorkbenchLayout({
+export default function WorkbenchLayout({
     children,
     jobDetail,
     addMember,
-}: {
-    children: React.ReactNode
-    jobDetail: React.ReactNode
-    addMember: React.ReactNode
-}) {
+}: Props) {
     return (
         <>
             {jobDetail}

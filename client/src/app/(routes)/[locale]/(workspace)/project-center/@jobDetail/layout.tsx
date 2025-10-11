@@ -3,9 +3,6 @@ import { getTranslations } from 'next-intl/server'
 
 type Props = {
     params: Promise<{ locale: string }>
-    children: React.ReactNode
-    jobDetail: React.ReactNode
-    addMember: React.ReactNode
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Get locale and check if it's valid
@@ -14,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Use server-side translations
     const tMetadata = await getTranslations({
         locale,
-        namespace: 'metadata.projectCenter',
+        namespace: 'metadata.workbench',
     })
 
     return {
@@ -42,16 +39,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
-export default function WorkbenchLayout({
+export default function ProjectCenterJobDetailLayout({
     children,
-    jobDetail,
-    addMember,
-}: Props) {
-    return (
-        <>
-            {jobDetail}
-            {addMember}
-            {children}
-        </>
-    )
+}: {
+    children: React.ReactNode
+}) {
+    return children
 }

@@ -4,9 +4,9 @@ import { compare, hash } from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-import envConfig from '@/shared/config/envConfig'
+import { envConfig } from '@/shared/config'
 import { constants } from '@/shared/constants'
-import { User } from '@/shared/interfaces/user.interface'
+import { User } from '@/shared/interfaces'
 
 const key = new TextEncoder().encode(envConfig.NEXT_PUBLIC_SUPABASE_JWT_KEY)
 const SALT_ROUNDS = 10

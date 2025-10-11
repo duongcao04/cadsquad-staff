@@ -290,7 +290,9 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                                         onChange={(value) => {
                                             formik.setFieldValue(
                                                 'startedAt',
-                                                value.toDate('Asia/Ho_Chi_Minh')
+                                                value?.toDate(
+                                                    'Asia/Ho_Chi_Minh'
+                                                )
                                             )
                                         }}
                                     />
@@ -307,7 +309,9 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                                         onChange={(value) => {
                                             formik.setFieldValue(
                                                 'dueAt',
-                                                value.toDate('Asia/Ho_Chi_Minh')
+                                                value?.toDate(
+                                                    'Asia/Ho_Chi_Minh'
+                                                )
                                             )
                                         }}
                                     />

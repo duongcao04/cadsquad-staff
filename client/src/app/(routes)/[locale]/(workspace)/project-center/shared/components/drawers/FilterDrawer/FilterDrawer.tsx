@@ -6,12 +6,13 @@ import React from 'react'
 import { HeroSelect, HeroSelectItem } from '@/shared/components'
 import {
     useJobStatuses,
+    useJobTypes,
     usePaymentChannels,
     useUpdateConfigByCodeMutation,
     useUsers,
 } from '@/shared/queries'
 import { JobColumn } from '@/shared/types'
-import { Button, Spinner } from '@heroui/react'
+import { Button, Slider, Spinner } from '@heroui/react'
 import {
     ArrowLeft,
     Handshake,
@@ -47,6 +48,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
         useJobStatuses()
     const { data: paymentChannels, isLoading: loadingPaymentChannels } =
         usePaymentChannels()
+    const { data: jobTypes, isLoading: loadingJobTypes } = useJobTypes()
     const { users, isLoading: loadingUsers } = useUsers()
     useUpdateConfigByCodeMutation()
 
@@ -154,6 +156,58 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                 onChange={(date, dateString) => {
                                     console.log(date, dateString)
                                 }}
+                            />
+                        </div>
+                    </div>
+                    <hr className="mt-6 mb-4 w-full text-text4" />
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <p className="font-medium text-base">Cost range</p>
+                        </div>
+                        <div className="mt-2 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <p className="font-medium text-text1p5">
+                                    Income cost
+                                </p>
+                                <div>
+                                    <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
+                                        <p className="font-medium">Reset</p>
+                                    </button>
+                                </div>
+                            </div>
+                            <Slider
+                                defaultValue={[100, 500]}
+                                formatOptions={{
+                                    style: 'currency',
+                                    currency: 'USD',
+                                }}
+                                maxValue={1000}
+                                minValue={0}
+                                step={50}
+                                showTooltip
+                            />
+                        </div>
+                        <div className="mt-2 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <p className="font-medium text-text1p5">
+                                    Staff cost
+                                </p>
+                                <div>
+                                    <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
+                                        <p className="font-medium">Reset</p>
+                                    </button>
+                                </div>
+                            </div>
+                            <Slider
+                                defaultValue={[100, 500]}
+                                formatOptions={{
+                                    style: 'currency',
+                                    currency: 'VND',
+                                }}
+                                maxValue={1000}
+                                minValue={0}
+                                step={50}
+                                showTooltip
                             />
                         </div>
                     </div>
@@ -546,10 +600,10 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div>
                             <HeroSelect
-                                isLoading={loadingJobStatuses}
-                                id="status"
-                                name="status"
-                                placeholder="Select one or more status"
+                                isLoading={loadingJobTypes}
+                                id="jobTypes"
+                                name="jobTypes"
+                                placeholder="Select one or more type"
                                 selectionMode="multiple"
                                 onChange={() => {
                                     // const value = e.target.value
@@ -563,23 +617,21 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                 renderValue={(selectedItems) => {
                                     return (
                                         <ul className="flex line-clamp-1 truncate">
-                                            {selectedItems.map((jobStatus) => {
-                                                const item = jobStatuses?.find(
-                                                    (d) =>
-                                                        d.id === jobStatus.key
+                                            {selectedItems.map((jobType) => {
+                                                const item = jobTypes?.find(
+                                                    (d) => d.id === jobType.key
                                                 )
                                                 if (!item)
                                                     return (
                                                         <span
                                                             className="text-gray-400"
-                                                            key={jobStatus.key}
+                                                            key={jobType.key}
                                                         >
-                                                            Select one job
-                                                            status
+                                                            Select one job type
                                                         </span>
                                                     )
                                                 return (
-                                                    <p key={jobStatus.key}>
+                                                    <p key={jobType.key}>
                                                         {item.displayName}
                                                         {item.id !==
                                                             selectedItems[
@@ -597,19 +649,19 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                     )
                                 }}
                             >
-                                {jobStatuses?.map((jobStatus) => (
-                                    <HeroSelectItem key={jobStatus.id}>
+                                {jobTypes?.map((jobType) => (
+                                    <HeroSelectItem key={jobType.id}>
                                         <div className="flex items-center justify-start gap-2">
                                             <div
                                                 className="size-2 rounded-full"
                                                 style={{
                                                     backgroundColor:
-                                                        jobStatus.hexColor
-                                                            ? jobStatus.hexColor
+                                                        jobType.hexColor
+                                                            ? jobType.hexColor
                                                             : 'transparent',
                                                 }}
                                             />
-                                            <p>{jobStatus.displayName}</p>
+                                            <p>{jobType.displayName}</p>
                                         </div>
                                     </HeroSelectItem>
                                 ))}
