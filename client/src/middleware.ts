@@ -27,7 +27,7 @@ function redirectToAuth(request: NextRequest, pathname: string) {
     const authUrl = new URL(`/${authLocale}/auth`, request.url);
 
     // Set the redirect query parameter to the protected path, but only if it's not the root path
-    if (protectedPath !== '/') {
+    if (protectedPath !== '/' && protectedPath !== '/en') {
         authUrl.searchParams.set('redirect', protectedPath);
     }
 
