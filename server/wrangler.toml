@@ -1,11 +1,15 @@
 name = "cadsquad-staff-be"
 main = "./dist/src/main.js"
-
-compatibility_flags = [ "nodejs_compat" ]
 compatibility_date = "2025-10-11"
+
+compatibility_flags = ["nodejs_compat"]
 
 [build]
 command = "npm run build"
-
-[build.external]
-"@nestjs/microservices" = "commonjs"
+external = [
+    "@nestjs/microservices",
+    "class-transformer/storage",
+    "dtrace-provider",
+    "@nestjs/websockets",
+    "socket.io",
+]
