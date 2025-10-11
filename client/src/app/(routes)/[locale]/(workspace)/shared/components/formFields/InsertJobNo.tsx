@@ -33,8 +33,13 @@ export function InsertJobNo({ formik }: Props) {
                     placeholder="Select type manage"
                     size="sm"
                     selectedKeys={[formik.values.typeId]}
-                    isInvalid={!!formik.errors.typeId}
-                    errorMessage={formik.errors.typeId}
+                    isInvalid={
+                        Boolean(formik.touched.typeId) &&
+                        Boolean(formik.errors.typeId)
+                    }
+                    errorMessage={
+                        Boolean(formik.touched.typeId) && formik.errors.typeId
+                    }
                     onChange={async (e) => {
                         const value = e.target.value
                         formik.setFieldValue('typeId', value)

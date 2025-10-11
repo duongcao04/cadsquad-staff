@@ -24,30 +24,3 @@ export const routing = defineRouting({
     //     }
     // ]
 })
-
-// Export the locales array for use in middleware
-export const locales = routing.locales
-export const defaultLocale = routing.defaultLocale
-
-// Helper function to check if a locale is supported
-export function isValidLocale(locale: string): locale is SupportLanguages {
-    return (locales as readonly string[]).includes(locale)
-}
-
-// Helper function to get locale from pathname
-export function getLocaleFromPathname(
-    pathname: string
-): SupportLanguages | null {
-    const segments = pathname.split('/')
-    const potentialLocale = segments[1]
-
-    if (potentialLocale && isValidLocale(potentialLocale)) {
-        return potentialLocale
-    }
-
-    return null
-}
-
-export function removeLocaleFromPathname(pathname: string): string {
-    return pathname.replace(/^\/(vi|en)/, '') || '/'
-}

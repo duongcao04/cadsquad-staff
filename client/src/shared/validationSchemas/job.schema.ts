@@ -37,8 +37,7 @@ export const CreateJobSchema = yup.object({
     paymentChannelId: yup
         .string().nullable(),
     startedAt: yup
-        .date()
-        .min(new Date(), "Start date cannot be in the past"),
+        .date().required(),
     priority: yup
         .string()
         .oneOf(["LOW", "MEDIUM", "HIGH", "URGENT"], "Priority must be one of: LOW, MEDIUM, HIGH, URGENT")
@@ -54,7 +53,7 @@ export const CreateJobSchema = yup.object({
         .optional(),
     dueAt: yup
         .date()
-        .min(new Date(), "Due date cannot be in the past"),
+        .min(new Date(), "Due date cannot be in the past").required(),
     completedAt: yup
         .date()
         .optional(),

@@ -2,14 +2,20 @@
 
 import { useMemo } from 'react'
 
-import { Button, Input, InputProps, NumberInput, addToast } from '@heroui/react'
+import {
+    Button,
+    DateRangePicker,
+    Input,
+    InputProps,
+    NumberInput,
+    addToast,
+} from '@heroui/react'
 import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 
 import { useJobStore } from '@/app/(routes)/[locale]/(workspace)/project-center/shared'
 import {
     InsertAttachments,
-    InsertDatePicker,
     InsertJobNo,
 } from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields'
 import { ApiError } from '@/lib/axios'
@@ -21,6 +27,7 @@ import {
 } from '@/shared/queries'
 import { CreateJobInput, CreateJobSchema } from '@/shared/validationSchemas'
 import { HeroSelect, HeroSelectItem } from '../customize'
+import dayjs from 'dayjs'
 
 export const jobModalInputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -55,8 +62,8 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
             no: '',
             displayName: '',
             attachmentUrls: [],
-            startedAt: new Date(),
-            dueAt: new Date(),
+            startedAt: null as unknown as Date,
+            dueAt: null as unknown as Date,
             assigneeIds: ['c4d35f1b-9b37-4a3f-804b-373f7b0e1a24'],
             incomeCost: null as unknown as number,
             staffCost: null as unknown as number,
@@ -93,6 +100,9 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
             )
         },
     })
+
+    console.log(formik.errors)
+    console.log(formik.values)
 
     return (
         <form onSubmit={formik.handleSubmit}>
@@ -263,8 +273,9 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                     <div className="grid grid-cols-[140px_1fr] gap-3 items-center">
                         <p
                             className={`relative text-right font-medium text-base pr-2 ${
-                                Boolean(formik.touched.dueAt) &&
-                                formik.errors.dueAt
+                                (Boolean(formik.touched.startedAt) ||
+                                    Boolean(formik.touched.dueAt)) &&
+                                (formik.errors.startedAt || formik.errors.dueAt)
                                     ? 'text-danger'
                                     : 'text-primary'
                             }`}
@@ -275,50 +286,39 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                             </span>
                         </p>
                         <div className="flex flex-col w-full">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <InsertDatePicker
-                                        label="Start at"
-                                        onChange={(value) => {
-                                            formik.setFieldValue(
-                                                'startedAt',
-                                                value?.toDate(
-                                                    'Asia/Ho_Chi_Minh'
-                                                )
-                                            )
-                                        }}
-                                    />
-                                    {Boolean(formik.touched.startedAt) &&
-                                        Boolean(formik.errors.startedAt) && (
-                                            <p className="mt-1 text-xs text-danger">
-                                                {formik.errors.startedAt}
-                                            </p>
-                                        )}
-                                </div>
-                                <div>
-                                    <InsertDatePicker
-                                        label="Due at"
-                                        onChange={(value) => {
-                                            formik.setFieldValue(
-                                                'dueAt',
-                                                value?.toDate(
-                                                    'Asia/Ho_Chi_Minh'
-                                                )
-                                            )
-                                        }}
-                                    />
-                                    {Boolean(formik.touched.dueAt) &&
-                                        Boolean(formik.errors.dueAt) && (
-                                            <p className="mt-1 text-xs text-danger">
-                                                {formik.errors.dueAt}
-                                            </p>
-                                        )}
-                                </div>
-                            </div>
+                            <DateRangePicker
+                                isRequired
+                                label="Due one date range"
+                                visibleMonths={2}
+                                onChange={(value) => {
+                                    if (value?.start) {
+                                        formik.setFieldValue(
+                                            'startedAt',
+                                            dayjs(
+                                                value?.start.toString()
+                                            ).toISOString()
+                                        )
+                                    }
+                                    if (value?.end) {
+                                        formik.setFieldValue(
+                                            'dueAt',
+                                            dayjs(
+                                                value?.end.toString()
+                                            ).toISOString()
+                                        )
+                                    }
+                                }}
+                            />
                             {Boolean(formik.touched.dueAt) &&
                                 Boolean(formik.errors.dueAt) && (
                                     <p className="mt-1 text-xs text-danger">
-                                        {/* {formik.errors.dueAt} */}
+                                        {formik.errors.dueAt as string}
+                                    </p>
+                                )}
+                            {Boolean(formik.touched.startedAt) &&
+                                Boolean(formik.errors.startedAt) && (
+                                    <p className="mt-1 text-xs text-danger">
+                                        {formik.errors.startedAt as string}
                                     </p>
                                 )}
                         </div>

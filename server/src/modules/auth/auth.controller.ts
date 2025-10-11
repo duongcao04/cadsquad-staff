@@ -10,6 +10,14 @@ import { AuthGuard } from '@nestjs/passport'
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService, private readonly userService: UserService) { }
+  // New function to validate a token
+  @Get('validate-token')
+  @HttpCode(200)
+  @ResponseMessage('Token is valid')
+  @UseGuards(JwtGuard)
+  async validateToken(@Req() request: Request) {
+    return { isValid: 1 };
+  }
 
   @Post('register')
   @HttpCode(200)

@@ -16,7 +16,7 @@ export const useLogin = () => {
                 accessToken: { token, expiresAt },
             } = res.data.result
             // Set cookie for authentication
-            cookie.set('session', token, {
+            cookie.set('authentication', token, {
                 path: '/',
                 expires: new Date(expiresAt),
             })
@@ -30,7 +30,7 @@ export const useLogin = () => {
 export const useLogout = () => {
     return useMutation({
         mutationFn: async () => {
-            return cookie.remove('session')
+            return cookie.remove('authentication')
         },
         onSuccess: () => {
             queryClient.removeQueries()
