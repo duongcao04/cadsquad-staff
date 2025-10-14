@@ -21,8 +21,8 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: String(process.env.CLIENT_URL), // không dùng "*"
-    credentials: true, // cho phép gửi cookie / Authorization headers
+    origin: String(process.env.CLIENT_URL),
+    credentials: true, // Accept send cookie / Authorization headers
   })
   app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()))
   app.useGlobalFilters(new HttpExceptionFilter());

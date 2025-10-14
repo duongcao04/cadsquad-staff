@@ -17,6 +17,17 @@ CREATE TYPE "public"."NotificationStatus" AS ENUM ('SEEN', 'UNSEEN');
 CREATE TYPE "public"."NotificationType" AS ENUM ('INFO', 'WARNING', 'ERROR', 'SUCCESS', 'JOB_UPDATE', 'DEADLINE_REMINDER', 'STATUS_CHANGE');
 
 -- CreateTable
+CREATE TABLE "public"."UserDevices" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "status" BOOLEAN NOT NULL DEFAULT false,
+    "values" TEXT[] DEFAULT ARRAY[]::TEXT[],
+
+    CONSTRAINT "UserDevices_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -24,6 +35,7 @@ CREATE TABLE "public"."User" (
     "displayName" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "avatar" TEXT,
+    "jobTitleId" TEXT,
     "departmentId" TEXT,
     "phoneNumber" TEXT,
     "role" "public"."RoleEnum" NOT NULL DEFAULT 'USER',
@@ -33,6 +45,19 @@ CREATE TABLE "public"."User" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Gallery" (
+    "id" TEXT NOT NULL,
+    "title" TEXT,
+    "description" TEXT,
+    "url" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Gallery_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -125,7 +150,7 @@ CREATE TABLE "public"."Job" (
     "incomeCost" INTEGER NOT NULL,
     "staffCost" INTEGER NOT NULL,
     "createdById" TEXT NOT NULL,
-    "paymentChannelId" TEXT NOT NULL,
+    "paymentChannelId" TEXT,
     "statusId" TEXT NOT NULL,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "priority" "public"."JobPriority" NOT NULL DEFAULT 'MEDIUM',
@@ -134,6 +159,8 @@ CREATE TABLE "public"."Job" (
     "isPaid" BOOLEAN NOT NULL DEFAULT false,
     "dueAt" TIMESTAMP(3) NOT NULL,
     "completedAt" TIMESTAMP(3),
+    "finishedAt" TIMESTAMP(3),
+    "paidAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -214,14 +241,6 @@ CREATE TABLE "public"."Notification" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "public"."_UserJobTitles" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-
-    CONSTRAINT "_UserJobTitles_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
@@ -313,16 +332,22 @@ CREATE INDEX "Notification_userId_status_idx" ON "public"."Notification"("userId
 CREATE INDEX "Notification_createdAt_idx" ON "public"."Notification"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "_UserJobTitles_B_index" ON "public"."_UserJobTitles"("B");
-
--- CreateIndex
 CREATE INDEX "_UserFiles_B_index" ON "public"."_UserFiles"("B");
 
 -- CreateIndex
 CREATE INDEX "_UserJobs_B_index" ON "public"."_UserJobs"("B");
 
 -- AddForeignKey
+ALTER TABLE "public"."UserDevices" ADD CONSTRAINT "UserDevices_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."User" ADD CONSTRAINT "User_jobTitleId_fkey" FOREIGN KEY ("jobTitleId") REFERENCES "public"."JobTitle"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "public"."User" ADD CONSTRAINT "User_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "public"."Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "public"."Gallery" ADD CONSTRAINT "Gallery_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Comment" ADD CONSTRAINT "Comment_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "public"."Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -352,7 +377,7 @@ ALTER TABLE "public"."Job" ADD CONSTRAINT "Job_typeId_fkey" FOREIGN KEY ("typeId
 ALTER TABLE "public"."Job" ADD CONSTRAINT "Job_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "public"."Job" ADD CONSTRAINT "Job_paymentChannelId_fkey" FOREIGN KEY ("paymentChannelId") REFERENCES "public"."PaymentChannel"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Job" ADD CONSTRAINT "Job_paymentChannelId_fkey" FOREIGN KEY ("paymentChannelId") REFERENCES "public"."PaymentChannel"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Job" ADD CONSTRAINT "Job_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "public"."JobStatus"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -368,12 +393,6 @@ ALTER TABLE "public"."Notification" ADD CONSTRAINT "Notification_userId_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "public"."Notification" ADD CONSTRAINT "Notification_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "public"."User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."_UserJobTitles" ADD CONSTRAINT "_UserJobTitles_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."JobTitle"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "public"."_UserJobTitles" ADD CONSTRAINT "_UserJobTitles_B_fkey" FOREIGN KEY ("B") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."_UserFiles" ADD CONSTRAINT "_UserFiles_A_fkey" FOREIGN KEY ("A") REFERENCES "public"."FileSystem"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -64,22 +64,6 @@ export class UserService {
     }
   }
 
-  async existingEmail(email: string) {
-    return await this.prismaService.user.findUnique({
-      where: {
-        email
-      }
-    })
-  }
-
-  async existingUsername(username: string) {
-    return await this.prismaService.user.findUnique({
-      where: {
-        username
-      }
-    })
-  }
-
   async updatePassword(userId: string, dto: UpdatePasswordDto): Promise<{ message: string }> {
     const { oldPassword, newPassword, newConfirmPassword } = dto
 
@@ -216,5 +200,23 @@ export class UserService {
     return {
       username: existingUser.username
     }
+  }
+
+
+
+  private async existingEmail(email: string) {
+    return await this.prismaService.user.findUnique({
+      where: {
+        email
+      }
+    })
+  }
+
+  private async existingUsername(username: string) {
+    return await this.prismaService.user.findUnique({
+      where: {
+        username
+      }
+    })
   }
 }
