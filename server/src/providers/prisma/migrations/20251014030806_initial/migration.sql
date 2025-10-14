@@ -260,6 +260,9 @@ CREATE TABLE "public"."_UserJobs" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "UserDevices_userId_key" ON "public"."UserDevices"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
 -- CreateIndex

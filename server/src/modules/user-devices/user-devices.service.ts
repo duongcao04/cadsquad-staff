@@ -29,7 +29,7 @@ export class UserDevicesService {
   }
 
   async findByUser(userId: string) {
-    return this.prisma.userDevices.findMany({
+    return this.prisma.userDevices.findUnique({
       where: { userId },
       include: { user: true },
     });

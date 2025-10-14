@@ -26,7 +26,7 @@ datasource db {
 
 model UserDevices {
   id     String   @id @default(uuid())
-  userId String
+  userId String   @unique()
   user   User     @relation(fields: [userId], references: [id])
   type   String
   status Boolean  @default(false)

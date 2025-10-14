@@ -39,6 +39,7 @@
         "dayjs": "^1.11.18",
         "firebase": "^11.9.1",
         "formik": "^2.4.6",
+        "get-browser-fingerprint": "^4.1.1",
         "heroicons": "^2.2.0",
         "hotkeys-js": "^3.13.15",
         "i": "^0.3.7",
@@ -1768,6 +1769,8 @@
     "function.prototype.name": ["function.prototype.name@1.1.8", "", { "dependencies": { "call-bind": "^1.0.8", "call-bound": "^1.0.3", "define-properties": "^1.2.1", "functions-have-names": "^1.2.3", "hasown": "^2.0.2", "is-callable": "^1.2.7" } }, "sha512-e5iwyodOHhbMr/yNrc7fDYG4qlbIvI5gajyzPnb5TCwyhjApznQh1BMFou9b30SevY43gCJKXycoCBjMbsuW0Q=="],
 
     "functions-have-names": ["functions-have-names@1.2.3", "", {}, "sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ=="],
+
+    "get-browser-fingerprint": ["get-browser-fingerprint@4.1.1", "", {}, "sha512-cD9CYgaPswizbGtJJQYaK1sbcNHwKCJiiTirB+aZSkIpujHDxOjp+ZzRTW2uvP6j4x/IwwTDj76ezRzeoo6b4Q=="],
 
     "get-caller-file": ["get-caller-file@2.0.5", "", {}, "sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg=="],
 

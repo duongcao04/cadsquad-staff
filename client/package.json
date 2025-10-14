@@ -50,6 +50,7 @@
     "dayjs": "^1.11.18",
     "firebase": "^11.9.1",
     "formik": "^2.4.6",
+    "get-browser-fingerprint": "^4.1.1",
     "heroicons": "^2.2.0",
     "hotkeys-js": "^3.13.15",
     "i": "^0.3.7",

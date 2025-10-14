@@ -7,9 +7,10 @@ import { LoginInput } from '@/shared/validationSchemas/auth.schema'
 import { RoleEnum } from '@/shared/enums/role.enum'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { ApiError } from '@/lib/axios'
+import { authSocket } from '@/lib/socket'
 
 export const useLogin = () => {
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: (data: LoginInput) => authApi.login(data),
         onSuccess: (res) => {
             const {
@@ -20,16 +21,29 @@ export const useLogin = () => {
                 path: '/',
                 expires: new Date(expiresAt),
             })
+            authSocket(res.data.result.accessToken.token).on(
+                'connection',
+                (socket) => {
+                    socket.emit('login', {
+                        token: res.data.result.accessToken.token,
+                    })
+                }
+            )
         },
         onError: (error: ApiError) => {
             console.log(error)
         },
     })
+    return {
+        ...mutation,
+        accessToken: mutation.data?.data.result.accessToken.token,
+    }
 }
 
 export const useLogout = () => {
     return useMutation({
-        mutationFn: async () => {
+        mutationFn: async (accessToken: string) => {
+            authSocket(accessToken).emit('logout')
             return cookie.remove('authentication')
         },
         onSuccess: () => {
@@ -49,6 +63,8 @@ export function useProfile() {
         select: (res) => res.data.result,
     })
 
+    const accessToken = cookie.get('authentication')
+
     const userRole = profile?.role as RoleEnum
 
     const isAdmin = userRole === RoleEnum.ADMIN
@@ -61,6 +77,7 @@ export function useProfile() {
         isStaff,
         isAdmin,
         isAccounting,
+        accessToken,
         userRole,
     }
 }
@@ -80,7 +97,7 @@ export function useAuth() {
 
     const logout = async () => {
         try {
-            cookie.remove('session')
+            cookie.remove('authentication')
         } catch (error) {
             console.log(error)
         } finally {

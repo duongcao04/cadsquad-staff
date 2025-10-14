@@ -17,6 +17,7 @@ import { UserModule } from './modules/user/user.module'
 import { CloudinaryModule } from './providers/cloudinary/cloudinary.module'
 import { PrismaModule } from './providers/prisma/prisma.module'
 import { UserDevicesModule } from './modules/user-devices/user-devices.module'
+import { AppGateway } from './app.gateway'
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { UserDevicesModule } from './modules/user-devices/user-devices.module'
       envFilePath: ['.env.development', '.env.production'],
     }), PrismaModule, GatewayModule, CloudinaryModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, CommentModule, DepartmentModule, JobTitleModule, GalleryModule, UserDevicesModule],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AppGateway],
 })
 export class AppModule { }

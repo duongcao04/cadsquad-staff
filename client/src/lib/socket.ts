@@ -1,6 +1,21 @@
-import { io } from 'socket.io-client';
+// src/socket.ts
+import { io } from "socket.io-client";
+import { envConfig } from "../shared/config";
+import getBrowserFingerprint from 'get-browser-fingerprint';
 
-// "undefined" means the URL will be computed from the `window.location` object
-export const SOCKET_URL = String(process.env.NEXT_PUBLIC_BACKEND_URL);
+// Base WebSocket URL
+export const SOCKET_URL = envConfig.NEXT_PUBLIC_WS_URL;
 
-export const socket = io(SOCKET_URL);
+// 🔹 Public socket (no authentication)
+export const socket = io(SOCKET_URL, {
+	transports: ["websocket"],
+});
+
+
+const fingerprint = await getBrowserFingerprint();
+// 🔹 Authenticated socket (token in handshake)
+export const authSocket = (token: string) =>
+	io(SOCKET_URL, {
+		transports: ["websocket"],
+		query: { token, deviceId: fingerprint }, // 👈 Attach token to handshake
+	});

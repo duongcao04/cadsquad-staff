@@ -79,8 +79,8 @@ export class AuthService {
     try {
       const accessToken = await this.tokenService.getAccessToken(existingUser)
 
-      // Update last logined timestamp
-      await this.updateLastLogined(existingUser.id);
+      // Update last logged in timestamp
+      await this.updateLastLoggedIn(existingUser.id);
 
       return { accessToken }
     } catch (error) {
@@ -90,7 +90,7 @@ export class AuthService {
     }
   }
 
-  async updateLastLogined(userId: string) {
+  private async updateLastLoggedIn(userId: string) {
     try {
       const updatedUser = await this.prismaService.$executeRaw`
       UPDATE "User"
