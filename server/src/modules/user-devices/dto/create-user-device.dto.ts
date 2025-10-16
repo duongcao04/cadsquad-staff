@@ -1,17 +1,19 @@
-import { IsString, IsBoolean, IsOptional, IsArray, ArrayNotEmpty } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsArray, ArrayNotEmpty, IsNotEmpty } from 'class-validator';
 
 export class CreateUserDeviceDto {
+	@IsNotEmpty()
 	@IsString()
 	userId: string;
 
+	@IsOptional()
 	@IsString()
-	type: string;
+	type: string = 'browser';
 
 	@IsOptional()
 	@IsBoolean()
 	status?: boolean = false;
 
-	@IsOptional()
-	@IsArray()
-	values?: string[] = [];
+	@IsNotEmpty()
+	@IsString()
+	value: string
 }

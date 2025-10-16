@@ -16,6 +16,8 @@ import { useFormik } from 'formik'
 import { capitalize } from 'lodash'
 import { useMemo } from 'react'
 import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
+import { cookie } from '../../../lib/cookie'
+import { authSocket } from '../../../lib/socket'
 
 const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -29,6 +31,7 @@ type Props = {
     onClose: () => void
 }
 export function CreateNotificationModal({ isOpen, onClose }: Props) {
+    const token = cookie.get('authentication')
     const { users, isLoading: loadingUsers } = useUsers()
     const { profile } = useProfile()
 
@@ -64,24 +67,26 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
             try {
                 if (values.userIds?.length) {
                     // map các userId thành mảng promise
-                    const sendAll = values.userIds.map((userId) =>
-                        sendNotificationMutate({
+                    const sendAll = values.userIds.map((userId) => {
+                        const message = {
                             content: values.content,
                             type: values.type,
                             imageUrl: values.imageUrl,
                             senderId: values.senderId,
                             title: values.title,
                             userId,
-                        })
-                    )
+                        }
+                        const socket = authSocket()
+                        // GÁN token vào handshake trước khi connect
+                        socket.auth = { token }
+                        socket.connect()
+
+                        socket.emit('send_message', message)
+                        // sendNotificationMutate(message)
+                    })
 
                     // chờ tất cả promise hoàn thành
                     await Promise.all(sendAll)
-
-                    addToast({
-                        title: 'Send notification successfully!',
-                        color: 'success',
-                    })
                 }
             } catch (error) {
                 addToast({

@@ -6,13 +6,12 @@ import { notFound } from 'next/navigation'
 
 import '@/app/globals.css'
 import { AppProvider } from '@/app/providers'
-import { geistMono, geistSans, quicksand, saira } from '@/fonts'
 import { SupportLanguages, routing } from '@/i18n/routing'
 
 import { GlassBackground } from '@/shared/components'
 import AppLoader from './loading'
 
-export default async function RootLayout({
+export default async function LocaleLayout({
     children,
     params,
 }: Readonly<{
@@ -32,17 +31,10 @@ export default async function RootLayout({
     const messages = await getMessages()
 
     return (
-        <html lang={locale} suppressHydrationWarning>
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} ${saira.variable} ${quicksand.variable} antialiased`}
-                suppressHydrationWarning
-            >
-                <AppProvider key="root" locale={locale} messages={messages}>
-                    <Suspense fallback={<AppLoader />}>
-                        <GlassBackground>{children}</GlassBackground>
-                    </Suspense>
-                </AppProvider>
-            </body>
-        </html>
+        <AppProvider key="root" locale={locale} messages={messages}>
+            <Suspense fallback={<AppLoader />}>
+                <GlassBackground>{children}</GlassBackground>
+            </Suspense>
+        </AppProvider>
     )
 }

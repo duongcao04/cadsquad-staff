@@ -1,21 +1,26 @@
-// src/socket.ts
-import { io } from "socket.io-client";
-import { envConfig } from "../shared/config";
-import getBrowserFingerprint from 'get-browser-fingerprint';
+// lib/socket.ts
+import { io, Socket } from 'socket.io-client'
+import { cookie } from '@/lib/cookie'
 
-// Base WebSocket URL
-export const SOCKET_URL = envConfig.NEXT_PUBLIC_WS_URL;
+let _socket: Socket | null = null
 
-// 🔹 Public socket (no authentication)
-export const socket = io(SOCKET_URL, {
-	transports: ["websocket"],
-});
+export function authSocket() {
+    if (!_socket) {
+        _socket = io(process.env.NEXT_PUBLIC_WS_URL!, {
+            autoConnect: false,         // QUAN TRỌNG: tự tay connect khi đã có token
+            withCredentials: true,
+            transports: ['websocket'],
+            // Mẹo: vẫn để dạng function để mỗi lần reconnect nó tự đọc cookie mới
+            auth: (cb) => cb({ token: cookie.get('authentication') }),
+        })
 
-
-const fingerprint = await getBrowserFingerprint();
-// 🔹 Authenticated socket (token in handshake)
-export const authSocket = (token: string) =>
-	io(SOCKET_URL, {
-		transports: ["websocket"],
-		query: { token, deviceId: fingerprint }, // 👈 Attach token to handshake
-	});
+        // Log hỗ trợ debug
+        _socket.on('connect', () => {
+            console.log('[socket] connected', _socket!.id)
+        })
+        _socket.on('connect_error', (err) => {
+            console.error('[socket] connect_error', err?.message || err)
+        })
+    }
+    return _socket
+}

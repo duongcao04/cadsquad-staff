@@ -1,6 +1,7 @@
 'use client'
 
 import {
+    addToast,
     Button,
     Dropdown,
     DropdownItem,
@@ -11,18 +12,47 @@ import {
 } from '@heroui/react'
 import { Bell } from 'lucide-react'
 
+import { useRouter } from '@/i18n/navigation'
+import { cookie } from '@/lib/cookie'
+import { authSocket } from '@/lib/socket'
 import { NotificationStatus } from '@/shared/enums/notificationStatus.enum'
+import { Notification } from '@/shared/interfaces'
 import { useNotifications } from '@/shared/queries/useNotification'
+import { useEffect, useState } from 'react'
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { NotificationCard } from './NotificationCard'
 
 export function NotificationDropdown() {
-    const { data: notifications, isLoading, isFetching } = useNotifications()
+    const router = useRouter()
+    const token = cookie.get('authentication')
+    const { data: notifications, isLoading, refetch } = useNotifications()
+    const [newNotification, setNewNotification] = useState<Notification | null>(
+        null
+    )
 
     const countUnseen =
         notifications?.filter(
             (item) => item.status === NotificationStatus.UNSEEN
         ).length ?? 0
+
+    const socket = authSocket()
+    socket.auth = { token }
+    socket.connect()
+    socket.once('received_message', (data: Notification) => {
+        setNewNotification(data)
+    })
+
+    useEffect(() => {
+        if (newNotification) {
+            refetch()
+            addToast({
+                title: newNotification.title ?? 'You have notification!',
+                description: newNotification.content,
+                color: 'success',
+                shouldShowTimeoutProgress: true,
+            })
+        }
+    }, [newNotification])
 
     return (
         <Dropdown placement="bottom-end">
@@ -53,7 +83,7 @@ export function NotificationDropdown() {
                 aria-label="User notification"
                 disabledKeys={['title']}
                 classNames={{
-                    base: 'w-96 left-0',
+                    base: 'w-[470px] left-0',
                 }}
             >
                 <DropdownSection showDivider aria-label="Title">
@@ -71,7 +101,7 @@ export function NotificationDropdown() {
                         </p>
                     </DropdownItem>
                 </DropdownSection>
-                {isLoading && isFetching ? (
+                {isLoading ? (
                     <DropdownSection aria-label="Loading Notifications">
                         <DropdownItem key="Loading">
                             <div className="w-full h-full grid place-items-center">
@@ -80,7 +110,12 @@ export function NotificationDropdown() {
                         </DropdownItem>
                     </DropdownSection>
                 ) : (
-                    <DropdownSection aria-label="Notifications">
+                    <DropdownSection
+                        aria-label="Notifications"
+                        classNames={{
+                            base: 'max-h-[700px] overflow-y-auto',
+                        }}
+                    >
                         {notifications && notifications.length > 0 ? (
                             notifications.map((data, index) => {
                                 const isUnseen =
@@ -93,7 +128,13 @@ export function NotificationDropdown() {
                                                 isUnseen
                                                     ? 'bg-gray-200'
                                                     : 'transparent'
-                                            } py-2`,
+                                            } py-2 my-2`,
+                                        }}
+                                        onPress={() => {
+                                            router.push(
+                                                data.redirectUrl ??
+                                                    'notifications'
+                                            )
                                         }}
                                     >
                                         <NotificationCard data={data} />

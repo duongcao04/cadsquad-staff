@@ -16,10 +16,11 @@ import { UpdateNotificationDto } from './dto/update-notification.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
+import { NotificationGateway } from './notification.gateway'
 
 @Controller('notifications')
 export class NotificationController {
-  constructor(private readonly notificationService: NotificationService) { }
+  constructor(private readonly notificationService: NotificationService, private readonly notificationGateway: NotificationGateway) { }
 
   @Post('/send')
   @HttpCode(201)
@@ -28,6 +29,9 @@ export class NotificationController {
   async create(@Req() request: Request, @Body() createNotificationDto: CreateNotificationDto) {
     const userPayload: TokenPayload = await request['user']
     createNotificationDto.senderId = userPayload.sub
+
+    this.notificationGateway.sendNotificationToUser(createNotificationDto)
+
     return this.notificationService.create(createNotificationDto)
   }
 

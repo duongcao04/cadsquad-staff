@@ -57,6 +57,12 @@ export interface Notification {
 	sender?: User | null
 
 	/**
+	 * A url for redirect action
+	 * @type {string | null | undefined}
+	 */
+	redirectUrl?: string | null
+
+	/**
 	 * The type of the notification (e.g., INFO, WARNING, JOB_UPDATE).
 	 * @type {NotificationType}
 	 */

@@ -21,28 +21,19 @@ export function UserDropdown() {
 
     const pathname = usePathname()
     const router = useRouter()
-    const { profile, accessToken } = useProfile()
+    const { profile } = useProfile()
     const { mutateAsync: logoutMutate } = useLogout()
 
     const handleLogout = async () => {
-        logoutMutate(accessToken, {
-            onSuccess() {
-                addToast({
-                    title: 'Logout successfully!',
-                    color: 'success',
-                })
-                router.push({
-                    pathname: '/auth',
-                    query: { redirect: pathname },
-                })
-            },
-            onError(error) {
-                addToast({
-                    title: 'Logout failed!',
-                    description: `${error}`,
-                    color: 'danger',
-                })
-            },
+        logoutMutate().then(() => {
+            addToast({
+                title: 'Logout successfully!',
+                color: 'success',
+            })
+            router.push({
+                pathname: '/auth',
+                query: { redirect: pathname },
+            })
         })
     }
 

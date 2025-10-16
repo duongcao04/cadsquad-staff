@@ -21,8 +21,9 @@ export class CreateNotificationDto {
 	@IsString()
 	redirectUrl?: string
 
+	@IsOptional()
 	@IsEnum(NotificationType)
-	type: NotificationType
+	type?: NotificationType = NotificationType.INFO
 
 	@IsString()
 	userId: string

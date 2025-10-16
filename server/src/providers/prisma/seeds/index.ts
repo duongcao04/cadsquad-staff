@@ -2,17 +2,17 @@ import { PrismaClient } from '@prisma/client'
 import { seedJobStatus } from './seedJobStatus'
 import { seedPaymentChannel } from './seedPaymentChannel'
 import { seedJobType } from './seedJobType'
-import { seedUsers } from './seedUser'
-import { seedJob } from './seedJob'
+import { seedJobTitle } from './seedJobTitle'
+import { seedDepartment } from './seedDepartment'
 
 const prisma = new PrismaClient()
 
 async function main() {
-  await seedUsers(prisma)
-  await seedJobType(prisma)
-  await seedJobStatus(prisma)
-  await seedPaymentChannel(prisma)
-  await seedJob(prisma)
+  seedJobTitle(prisma)
+  seedJobType(prisma)
+  seedPaymentChannel(prisma)
+  seedJobStatus(prisma)
+  seedDepartment(prisma)
 }
 
 main()

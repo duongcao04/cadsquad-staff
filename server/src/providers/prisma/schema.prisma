@@ -8,15 +8,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator docs {
-  provider = "node node_modules/prisma-docs-generator"
-  output   = "./docs"
-}
-
-// generator erd {
-//   provider = "prisma-erd-generator"
-//   theme    = "forest"
-//   output   = "../ERD.svg"
+// generator docs {
+//   provider = "node node_modules/prisma-docs-generator"
+//   output   = "./docs"
 // }
 
 datasource db {
@@ -24,13 +18,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model BrowserSubscribes {
+  id String @id @default(uuid())
+
+  endpoint       String
+  expirationTime String?
+  p256dh         String
+  auth           String
+}
+
 model UserDevices {
-  id     String   @id @default(uuid())
-  userId String   @unique()
-  user   User     @relation(fields: [userId], references: [id])
+  id     String  @id @default(uuid())
+  userId String
+  user   User    @relation(fields: [userId], references: [id])
   type   String
-  status Boolean  @default(false)
-  values String[] @default([])
+  status Boolean @default(false)
+  value  String
 }
 
 model User {

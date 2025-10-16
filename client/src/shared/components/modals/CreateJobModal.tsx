@@ -101,9 +101,6 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
         },
     })
 
-    console.log(formik.errors)
-    console.log(formik.values)
-
     return (
         <form onSubmit={formik.handleSubmit}>
             <Modal

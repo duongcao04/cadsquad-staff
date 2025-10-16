@@ -9,7 +9,7 @@ export class WsJwtGuard implements CanActivate {
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const client: Socket = context.switchToWs().getClient<Socket>();
-		const token = this.extractTokenFromHandshake(client);
+		const token = this.extractToken(client);
 
 		if (!token) {
 			throw new WsException('Unauthorized: No token provided');
@@ -19,16 +19,21 @@ export class WsJwtGuard implements CanActivate {
 			const payload = await this.tokenService.verifyToken(token);
 			client.data.user = payload; // Attach user payload to the socket
 		} catch (e) {
+			client.disconnect()
 			throw new WsException('Unauthorized: Invalid token');
 		}
 		return true;
 	}
 
-	private extractTokenFromHandshake(client: Socket): string | undefined {
-		const authToken = client.handshake.headers.authorization;
-		if (authToken && authToken.startsWith('Bearer ')) {
-			return authToken.substring(7);
-		}
-		return undefined;
+	private extractToken(client: Socket): string | null {
+		const fromAuth = client.handshake?.auth?.token;
+		if (fromAuth) return fromAuth as string;
+
+		const authHeader = client.handshake?.headers?.authorization as
+			| string
+			| undefined;
+		if (!authHeader) return null;
+		const [type, token] = authHeader.split(' ');
+		return type === 'Bearer' && token ? token : null;
 	}
 }

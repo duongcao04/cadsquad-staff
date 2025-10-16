@@ -1,13 +1,22 @@
 'use client'
 
-import { cookie } from '@/lib/cookie'
-import { useMutation, useQuery } from '@tanstack/react-query'
 import { authApi } from '@/app/api/auth.api'
-import { LoginInput } from '@/shared/validationSchemas/auth.schema'
-import { RoleEnum } from '@/shared/enums/role.enum'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { ApiError } from '@/lib/axios'
+import { cookie } from '@/lib/cookie'
 import { authSocket } from '@/lib/socket'
+import { RoleEnum } from '@/shared/enums/role.enum'
+import { LoginInput } from '@/shared/validationSchemas/auth.schema'
+import { useMutation, useQuery } from '@tanstack/react-query'
+
+function parseExpires(expiresAt: string | number) {
+    if (typeof expiresAt === 'number') {
+        const ms =
+            String(expiresAt).length === 10 ? expiresAt * 1000 : expiresAt
+        return new Date(ms)
+    }
+    return new Date(expiresAt)
+}
 
 export const useLogin = () => {
     const mutation = useMutation({
@@ -19,16 +28,19 @@ export const useLogin = () => {
             // Set cookie for authentication
             cookie.set('authentication', token, {
                 path: '/',
-                expires: new Date(expiresAt),
+                expires: parseExpires(expiresAt),
             })
-            authSocket(res.data.result.accessToken.token).on(
-                'connection',
-                (socket) => {
-                    socket.emit('login', {
-                        token: res.data.result.accessToken.token,
-                    })
-                }
-            )
+
+            const socket = authSocket()
+            // GÁN token vào handshake trước khi connect
+            socket.auth = { token }
+            socket.connect()
+
+            socket.once('connect', () => {
+                // Không bắt buộc phải emit 'login' nếu server đã auth theo handshake,
+                // nhưng nếu bạn cần một event ứng dụng:
+                socket.emit('login')
+            })
         },
         onError: (error: ApiError) => {
             console.log(error)
@@ -39,15 +51,20 @@ export const useLogin = () => {
         accessToken: mutation.data?.data.result.accessToken.token,
     }
 }
-
 export const useLogout = () => {
     return useMutation({
-        mutationFn: async (accessToken: string) => {
-            authSocket(accessToken).emit('logout')
-            return cookie.remove('authentication')
-        },
-        onSuccess: () => {
-            queryClient.removeQueries()
+        mutationFn: async () => {
+            const token = cookie.get('authentication')
+            const socket = authSocket()
+            cookie.remove('authentication')
+            // Nếu server cần token trong event:
+            socket.emit('logout', { token })
+            socket.disconnect()
+
+
+            queryClient.clear?.()
+            queryClient.invalidateQueries?.()
+            queryClient.removeQueries?.()
         },
     })
 }
@@ -68,8 +85,8 @@ export function useProfile() {
     const userRole = profile?.role as RoleEnum
 
     const isAdmin = userRole === RoleEnum.ADMIN
-    const isStaff = userRole === RoleEnum.ADMIN
-    const isAccounting = userRole === RoleEnum.ADMIN
+    const isStaff = userRole === RoleEnum.USER
+    const isAccounting = userRole === RoleEnum.ACCOUNTING
 
     return {
         profile,
@@ -95,20 +112,9 @@ export function useAuth() {
 
     const userRole = profile?.role as RoleEnum
 
-    const logout = async () => {
-        try {
-            cookie.remove('authentication')
-        } catch (error) {
-            console.log(error)
-        } finally {
-            queryClient.removeQueries()
-        }
-    }
-
     return {
         profile,
         loadingProfile: loadingProfile || fetchingProfile,
         userRole,
-        logout,
     }
 }

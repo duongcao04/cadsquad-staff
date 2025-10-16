@@ -1,20 +1,26 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { ApiResponse, axiosClient } from '@/lib/axios'
+import { notificationApi } from '@/app/api/notification.api'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { ApiResponse, axiosClient } from '@/lib/axios'
+import { Notification } from '@/shared/interfaces/notification.interface'
 import {
     CreateNotificationInput,
     UpdateNotificationInput,
 } from '@/shared/validationSchemas/notification.schema'
-import { Notification } from '@/shared/interfaces/notification.interface'
-import { notificationApi } from '@/app/api/notification.api'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 export const useNotifications = () => {
-    return useQuery({
+    const { data, isFetching, isLoading, refetch } = useQuery({
         queryKey: ['notifications'],
         queryFn: () =>
             axiosClient.get<ApiResponse<Notification[]>>('notifications'),
         select: (res) => res.data.result,
     })
+
+    return {
+        data,
+        isLoading: isLoading || isFetching,
+        refetch,
+    }
 }
 
 export const useSendNotificationMutation = () => {

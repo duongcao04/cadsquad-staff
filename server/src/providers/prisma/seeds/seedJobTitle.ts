@@ -42,7 +42,6 @@ const JOB_TITLES_DATA: Prisma.JobTitleCreateInput[] = [
 	{ id: 'b0d91d34-f5f1-4b94-9b29-3c0c24e20e91', code: 'cfo', displayName: 'CFO' },
 ]
 
-
 export const seedJobTitle = async (prisma: PrismaClient) => {
 	const result = await Promise.all(
 		JOB_TITLES_DATA.map((data) => {

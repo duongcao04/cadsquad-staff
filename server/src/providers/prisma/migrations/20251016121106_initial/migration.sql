@@ -17,12 +17,23 @@ CREATE TYPE "public"."NotificationStatus" AS ENUM ('SEEN', 'UNSEEN');
 CREATE TYPE "public"."NotificationType" AS ENUM ('INFO', 'WARNING', 'ERROR', 'SUCCESS', 'JOB_UPDATE', 'DEADLINE_REMINDER', 'STATUS_CHANGE');
 
 -- CreateTable
+CREATE TABLE "public"."BrowserSubscribes" (
+    "id" TEXT NOT NULL,
+    "endpoint" TEXT NOT NULL,
+    "expirationTime" TEXT,
+    "p256dh" TEXT NOT NULL,
+    "auth" TEXT NOT NULL,
+
+    CONSTRAINT "BrowserSubscribes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "public"."UserDevices" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "status" BOOLEAN NOT NULL DEFAULT false,
-    "values" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "value" TEXT NOT NULL,
 
     CONSTRAINT "UserDevices_pkey" PRIMARY KEY ("id")
 );
@@ -258,9 +269,6 @@ CREATE TABLE "public"."_UserJobs" (
 
     CONSTRAINT "_UserJobs_AB_pkey" PRIMARY KEY ("A","B")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "UserDevices_userId_key" ON "public"."UserDevices"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
