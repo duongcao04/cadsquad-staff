@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import { ConfigModule as ConfigurationModule } from '@nestjs/config'
 import { AppController } from './app.controller'
 import { AppGateway } from './app.gateway'
 import { AppService } from './app.service'
@@ -20,10 +19,7 @@ import { PrismaModule } from './providers/prisma/prisma.module'
 import { BrowserSubscribesModule } from './modules/browser-subscribes/browser-subscribes.module'
 
 @Module({
-  imports: [
-    ConfigurationModule.forRoot({
-      envFilePath: ['.env', '.env.development', '.env.production'],
-    }), PrismaModule, CloudinaryModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, CommentModule, DepartmentModule, JobTitleModule, GalleryModule, UserDevicesModule, BrowserSubscribesModule],
+  imports: [PrismaModule, CloudinaryModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, CommentModule, DepartmentModule, JobTitleModule, GalleryModule, UserDevicesModule, BrowserSubscribesModule],
   controllers: [AppController],
   providers: [AppService, AppGateway],
 })
