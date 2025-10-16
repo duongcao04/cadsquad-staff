@@ -20,7 +20,7 @@ import { NotificationGateway } from './notification.gateway'
 
 @Controller('notifications')
 export class NotificationController {
-  constructor(private readonly notificationService: NotificationService, private readonly notificationGateway: NotificationGateway) { }
+  constructor(private readonly notificationService: NotificationService) { }
 
   @Post('/send')
   @HttpCode(201)
@@ -30,7 +30,7 @@ export class NotificationController {
     const userPayload: TokenPayload = await request['user']
     createNotificationDto.senderId = userPayload.sub
 
-    this.notificationGateway.sendNotificationToUser(createNotificationDto)
+    // this.notificationGateway.sendNotificationToUser(createNotificationDto)
 
     return this.notificationService.create(createNotificationDto)
   }

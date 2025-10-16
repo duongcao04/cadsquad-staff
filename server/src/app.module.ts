@@ -21,6 +21,6 @@ import { BrowserSubscribesModule } from './modules/browser-subscribes/browser-su
 @Module({
   imports: [PrismaModule, CloudinaryModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, CommentModule, DepartmentModule, JobTitleModule, GalleryModule, UserDevicesModule, BrowserSubscribesModule],
   controllers: [AppController],
-  providers: [AppService, AppGateway],
+  providers: [AppService],
 })
 export class AppModule { }
