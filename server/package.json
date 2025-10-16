@@ -1,8 +1,12 @@
 {
-  "name": "server",
+  "name": "cadsquad-staff-server",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": {
+    "email": "duongcaovn@gmail.com",
+    "name": "Duong Cao",
+    "url": "https://yangis.dev"
+  },
   "private": true,
   "license": "UNLICENSED",
   "type": "commonjs",
