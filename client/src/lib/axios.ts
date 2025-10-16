@@ -34,8 +34,6 @@ axiosClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
-        config.headers['Access-Control-Allow-Origin'] = envConfig.NEXT_PUBLIC_URL
-        config.headers['Access-Control-Allow-Credentials'] = 'true'
         config.headers['Content-Type'] = 'application/json'
         // 2. If token -> put token into header for Authentication
         return config

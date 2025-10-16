@@ -21,7 +21,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: String(process.env.CLIENT_URL),
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Accept send cookie / Authorization headers
   })
