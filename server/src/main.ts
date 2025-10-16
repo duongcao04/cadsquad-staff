@@ -21,10 +21,7 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: [
-      process.env.CLIENT_URL,
-      "https://staff.cadsquad.vn"
-    ],
+    origin: String(process.env.CLIENT_URL),
     credentials: true, // Accept send cookie / Authorization headers
   })
   app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()))

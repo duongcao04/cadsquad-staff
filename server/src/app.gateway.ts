@@ -14,10 +14,7 @@ import { TokenService } from './modules/auth/token.service';
 
 @WebSocketGateway(3006, {
 	cors: {
-		origin: [
-			process.env.CLIENT_URL,
-			"https://staff.cadsquad.vn"
-		],
+		origin: String(process.env.CLIENT_URL),
 		credentials: true
 	},
 })
