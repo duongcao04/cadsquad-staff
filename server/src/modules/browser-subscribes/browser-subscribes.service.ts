@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { BrowserSubscribes } from '@prisma/client';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { CreateBrowserSubscribeDto } from './dto/create-browser-subscribe.dto';
 import { UpdateBrowserSubscribeDto } from './dto/update-browser-subscribe.dto';
+import { BrowserSubscribes } from '@prisma/client';
 
 @Injectable()
 export class BrowserSubscribesService {

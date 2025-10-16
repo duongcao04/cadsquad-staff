@@ -13,7 +13,13 @@ import { TokenPayload } from './modules/auth/dto/token-payload.dto';
 import { TokenService } from './modules/auth/token.service';
 
 @WebSocketGateway(3006, {
-	cors: { origin: '*' },
+	cors: {
+		origin: [
+			process.env.CLIENT_URL,
+			"https://staff.cadsquad.vn"
+		],
+		credentials: true
+	},
 })
 export class AppGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer() server: Server

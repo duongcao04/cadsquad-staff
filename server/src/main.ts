@@ -8,7 +8,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('v1');
   app.useGlobalPipes(
     new ValidationPipe({
       exceptionFactory: (validationErrors: ValidationError[] = []) => {
@@ -21,7 +21,10 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: String(process.env.CLIENT_URL),
+    origin: [
+      process.env.CLIENT_URL,
+      "https://staff.cadsquad.vn"
+    ],
     credentials: true, // Accept send cookie / Authorization headers
   })
   app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()))

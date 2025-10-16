@@ -5,5 +5,6 @@ import { BrowserSubscribesController } from './browser-subscribes.controller';
 @Module({
   controllers: [BrowserSubscribesController],
   providers: [BrowserSubscribesService],
+  exports: [BrowserSubscribesService],
 })
-export class BrowserSubscribesModule {}
+export class BrowserSubscribesModule { }
