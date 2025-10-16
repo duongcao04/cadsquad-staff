@@ -1,4 +1,10 @@
 {
+	"workbench.colorCustomizations": {
+		"titleBar.activeBackground": "#1b1464",
+		"titleBar.inactiveBackground": "#060047",
+		"titleBar.activeForeground": "#ffffff",
+		"titleBar.inactiveForeground": "#ffffff",
+	},
 	"cSpell.language": "en,vi",
 	"cSpell.words": [
 		"autoincrement",
