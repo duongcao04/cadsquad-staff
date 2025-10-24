@@ -1,11 +1,11 @@
-import { Controller, Post, Body, HttpCode, Get, UseGuards, Req, HttpException, HttpStatus, Request, Res } from '@nestjs/common'
-import { AuthService } from './auth.service'
-import { RegisterUserDto } from './dto/register-user.dto'
-import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
-import { LoginUserDto } from './dto/login-user.dto'
-import { JwtGuard } from './jwt.guard'
-import { UserService } from '../user/user.service'
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Req, Request, Res, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
+import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { UserService } from '../user/user.service'
+import { AuthService } from './auth.service'
+import { LoginUserDto } from './dto/login-user.dto'
+import { RegisterUserDto } from './dto/register-user.dto'
+import { JwtGuard } from './jwt.guard'
 
 @Controller('auth')
 export class AuthController {

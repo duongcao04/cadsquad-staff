@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Expose } from 'class-transformer'
+import { UserResponseDto } from '../../user/dto/user-response.dto'
 
 export class GalleryResponseDto {
 	@ApiProperty({ example: 'uuid-1234' })
@@ -19,6 +20,10 @@ export class GalleryResponseDto {
 	})
 	@Expose()
 	url: string
+
+	@ApiProperty({ example: 'Duong' })
+	@Expose()
+	user: UserResponseDto
 
 	@ApiProperty({ example: 'USER_ID_123' })
 	@Expose()

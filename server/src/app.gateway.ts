@@ -10,7 +10,6 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TokenPayload } from './modules/auth/dto/token-payload.dto';
-import { TokenService } from './modules/auth/token.service';
 
 @WebSocketGateway(3006, {
 	cors: {

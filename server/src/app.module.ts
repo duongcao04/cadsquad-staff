@@ -17,9 +17,10 @@ import { UserModule } from './modules/user/user.module'
 import { CloudinaryModule } from './providers/cloudinary/cloudinary.module'
 import { PrismaModule } from './providers/prisma/prisma.module'
 import { BrowserSubscribesModule } from './modules/browser-subscribes/browser-subscribes.module'
+import { UploadModule } from './modules/upload/upload.module'
 
 @Module({
-  imports: [PrismaModule, CloudinaryModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, CommentModule, DepartmentModule, JobTitleModule, GalleryModule, UserDevicesModule, BrowserSubscribesModule],
+  imports: [PrismaModule, CloudinaryModule, UserModule, AuthModule, JobModule, JobTypeModule, JobStatusModule, PaymentChannelModule, NotificationModule, CommentModule, DepartmentModule, JobTitleModule, GalleryModule, UserDevicesModule, BrowserSubscribesModule, UploadModule],
   controllers: [AppController],
   providers: [AppService],
 })
