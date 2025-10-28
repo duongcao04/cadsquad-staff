@@ -13,10 +13,6 @@ const JOB_TITLES_DATA: Prisma.JobTitleCreateInput[] = [
 	{ id: '4b6c02ae-2f8d-4baf-95f4-143bfe4a17e3', code: 'seo_specialist', displayName: 'SEO Specialist' },
 	{ id: '2b67fc5b-4f36-4d9d-9c7b-97e4d1f776b4', code: 'content_creator', displayName: 'Content Creator' },
 
-	// Sales
-	{ id: '38f1c86e-8db3-4a1b-b2d4-97216ec2a1d4', code: 'sales_exec', displayName: 'Sales Executive' },
-	{ id: '7d593b87-0cd1-44e0-84e5-fac6c079f97d', code: 'sales_manager', displayName: 'Sales Manager' },
-
 	// Customer Support
 	{ id: '0d8d3d59-f1cb-48ff-b815-21cb930f5e67', code: 'customer_service', displayName: 'Customer Service Representative' },
 	{ id: '3d745eb0-4cc7-442f-bf0c-bdfdd7a9935a', code: 'support_specialist', displayName: 'Support Specialist' },

@@ -4,23 +4,18 @@ const prisma = new PrismaClient()
 const JOB_TYPES_DATA: Prisma.JobTypeCreateInput[] = [
 	{
 		"id": "2f9c6060-7f9b-42a5-b6fa-df3ac9627c42",
-		"code": "FV",
+		"code": "F",
 		"displayName": "Fiverr"
 	},
 	{
 		"id": "f93c8c34-f85f-46b6-8dbf-b9e10fd2f3cb",
-		"code": "OTH",
-		"displayName": "Other"
+		"code": "G",
+		"displayName": "Global"
 	},
 	{
 		"id": "9c78d5e6-4f11-47d4-8cb3-dfe287d9b763",
-		"code": "PCM",
-		"displayName": "Corporation"
-	},
-	{
-		"id": "f6e6bde7-6e4a-4dc5-b642-b32f6a8b64af",
-		"code": "XP",
-		"displayName": "Xplora"
+		"code": "V",
+		"displayName": "Vietnam"
 	}
 ]
 
