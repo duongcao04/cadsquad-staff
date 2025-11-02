@@ -20,7 +20,7 @@ export function PageHeading({
 }: Props) {
     return (
         <div className={cn('w-full pt-3 pb-5', classNames?.wrapper)}>
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center justify-between">
                 <div className="flex items-center justify-start">
                     <h1 className="align-middle font-medium text-2xl">
                         {title}
@@ -35,7 +35,7 @@ export function PageHeading({
                 <Timmer />
             </div>
             {description && (
-                <p className="pt-1 text-text-6 text-base">{description}</p>
+                <p className="text-text-6 text-base">{description}</p>
             )}
         </div>
     )

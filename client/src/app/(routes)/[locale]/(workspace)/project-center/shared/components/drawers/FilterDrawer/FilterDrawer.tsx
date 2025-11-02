@@ -3,7 +3,6 @@
 import { Avatar, DatePicker, Drawer, Image } from 'antd'
 import React from 'react'
 
-import { HeroSelect, HeroSelectItem } from '@/shared/components'
 import {
     useJobStatuses,
     useJobTypes,
@@ -11,6 +10,7 @@ import {
     useUpdateConfigByCodeMutation,
     useUsers,
 } from '@/lib/queries'
+import { HeroSelect, HeroSelectItem } from '@/shared/components'
 import { JobColumn } from '@/shared/types'
 import { Button, Slider, Spinner } from '@heroui/react'
 import {
@@ -58,7 +58,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
             title={<p>{t('filter')}</p>}
             width={500}
             maskClosable
-            closeIcon={<ArrowLeft size={16} />}
+            closeIcon={<ArrowLeft size={16} className="!text-text-default" />}
             mask={true}
             onClose={onClose}
             // classNames={{
@@ -66,7 +66,11 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
             // }}
             footer={
                 <div className="flex items-center justify-between gap-3">
-                    <Button variant="light" className="!w-full">
+                    <Button
+                        variant="light"
+                        className="!w-full"
+                        onPress={onClose}
+                    >
                         Cancel
                     </Button>
                     <Button
@@ -100,12 +104,14 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-defaultp5">
+                                <p className="font-medium text-text-default">
                                     Create at
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium">Reset</p>
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
                                     </button>
                                 </div>
                             </div>
@@ -120,12 +126,14 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-defaultp5">
+                                <p className="font-medium text-text-default">
                                     Due at
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium">Reset</p>
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
                                     </button>
                                 </div>
                             </div>
@@ -140,12 +148,14 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-defaultp5">
+                                <p className="font-medium text-text-default">
                                     Completed at
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium">Reset</p>
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
                                     </button>
                                 </div>
                             </div>
@@ -159,19 +169,21 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             />
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text-muted" />
+                    <hr className="mt-6 mb-4 w-full text-text-disabled" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <p className="font-medium text-base">Cost range</p>
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-defaultp5">
+                                <p className="font-medium text-text-default">
                                     Income cost
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium">Reset</p>
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
                                     </button>
                                 </div>
                             </div>
@@ -189,12 +201,14 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-defaultp5">
+                                <p className="font-medium text-text-default">
                                     Staff cost
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium">Reset</p>
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
                                     </button>
                                 </div>
                             </div>
@@ -211,18 +225,23 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             />
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text-muted" />
+                    <hr className="mt-6 mb-4 w-full text-text-disabled" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
-                                <Loader size={14} className="text-defaultp5" />
+                                <Loader
+                                    size={14}
+                                    className="text-text-default"
+                                />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.status')}
                                 </p>
                             </div>
                             <div>
                                 <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                    <p className="font-medium">Reset</p>
+                                    <p className="font-medium text-text-subdued">
+                                        Reset
+                                    </p>
                                 </button>
                             </div>
                         </div>
@@ -233,6 +252,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                 name="status"
                                 placeholder="Select one or more status"
                                 selectionMode="multiple"
+                                size="lg"
                                 onChange={() => {
                                     // const value = e.target.value
                                     // formik.setFieldValue('departmentId', value)
@@ -242,6 +262,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                     //     false
                                     // )
                                 }}
+                                variant="bordered"
                                 renderValue={(selectedItems) => {
                                     return (
                                         <ul className="flex line-clamp-1 truncate">
@@ -298,20 +319,22 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             </HeroSelect>
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text-muted" />
+                    <hr className="mt-6 mb-4 w-full text-text-disabled" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-start gap-1.5">
-                            <Landmark size={14} className="text-defaultp5" />
+                            <Landmark size={14} className="text-text-default" />
                             <p className="font-medium text-base">Payment</p>
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-defaultp5">
+                                <p className="font-medium text-text-default">
                                     {t('jobColumns.paymentChannel')}
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium">Reset</p>
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
                                     </button>
                                 </div>
                             </div>
@@ -321,6 +344,8 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                 name="payment channel"
                                 placeholder="Select one or more payment channel"
                                 selectionMode="multiple"
+                                variant="bordered"
+                                size="lg"
                                 onChange={() => {
                                     // const value = e.target.value
                                     // formik.setFieldValue('departmentId', value)
@@ -397,12 +422,14 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-defaultp5">
+                                <p className="font-medium text-text-default">
                                     Status
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium">Reset</p>
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
                                     </button>
                                 </div>
                             </div>
@@ -410,6 +437,8 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                 id="paymentStatus"
                                 name="paymentStatus"
                                 placeholder="Select payment status"
+                                variant="bordered"
+                                size="lg"
                                 onChange={() => {
                                     // const value = e.target.value
                                     // formik.setFieldValue('departmentId', value)
@@ -463,13 +492,13 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             </HeroSelect>
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text-muted" />
+                    <hr className="mt-6 mb-4 w-full text-text-disabled" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
                                 <UsersRound
                                     size={14}
-                                    className="text-defaultp5"
+                                    className="text-text-default"
                                 />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.assignee')}
@@ -477,7 +506,9 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             </div>
                             <div>
                                 <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                    <p className="font-medium">Reset</p>
+                                    <p className="font-medium text-text-subdued">
+                                        Reset
+                                    </p>
                                 </button>
                             </div>
                         </div>
@@ -488,6 +519,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             placeholder="Select one or more assignee"
                             size="lg"
                             selectionMode="multiple"
+                            variant="bordered"
                             onChange={() => {
                                 // const value = e.target.value
                                 // const valueArr = value
@@ -561,7 +593,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                                     src={usr.avatar as string}
                                                     alt="user avatar"
                                                     rootClassName="!size-10 rounded-full"
-                                                    className="!size-full rounded-full p-[1px] border-2"
+                                                    className="!size-full rounded-full p-[1px] border-2 object-cover"
                                                     preview={false}
                                                     style={{
                                                         borderColor:
@@ -583,18 +615,23 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             })}
                         </HeroSelect>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text-muted" />
+                    <hr className="mt-6 mb-4 w-full text-text-disabled" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
-                                <Layers2 size={14} className="text-defaultp5" />
+                                <Layers2
+                                    size={14}
+                                    className="text-text-default"
+                                />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.type')}
                                 </p>
                             </div>
                             <div>
                                 <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                    <p className="font-medium">Reset</p>
+                                    <p className="font-medium text-text-subdued">
+                                        Reset
+                                    </p>
                                 </button>
                             </div>
                         </div>
@@ -605,6 +642,8 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                 name="jobTypes"
                                 placeholder="Select one or more type"
                                 selectionMode="multiple"
+                                variant="bordered"
+                                size="lg"
                                 onChange={() => {
                                     // const value = e.target.value
                                     // formik.setFieldValue('departmentId', value)
@@ -668,18 +707,23 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             </HeroSelect>
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text-muted" />
+                    <hr className="mt-6 mb-4 w-full text-text-disabled" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
-                                <Handshake size={14} className="text-defaultp5" />
+                                <Handshake
+                                    size={14}
+                                    className="text-text-default"
+                                />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.clientName')}
                                 </p>
                             </div>
                             <div>
                                 <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                    <p className="font-medium">Reset</p>
+                                    <p className="font-medium text-text-subdued">
+                                        Reset
+                                    </p>
                                 </button>
                             </div>
                         </div>
@@ -690,6 +734,8 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                 name="status"
                                 placeholder="Select one or more status"
                                 selectionMode="multiple"
+                                variant="bordered"
+                                size="lg"
                                 onChange={() => {
                                     // const value = e.target.value
                                     // formik.setFieldValue('departmentId', value)

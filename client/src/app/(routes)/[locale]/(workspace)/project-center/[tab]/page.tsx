@@ -69,29 +69,14 @@ export default function ProjectCenterTabPage({
     // )
 
     return (
-        <>
-            {/* <Button
-                    color="success"
-                    variant="flat"
-                    size="sm"
-                    className="font-semibold"
-                    startContent={<DownloadIcon size={14} />}
-                    onPress={() => {
-                        alert(t('featureUnderDevelopment'))
-                    }}
-                >
-                    {t('downloadAsCSV')}
-                </Button> */}
-            <div className="pt-3 w-full h-[calc(100%-54px-44px-32px-12px)]">
-                <div className="w-full h-[calc(100%-52px)]">
-                    <ProjectCenterTable
-                        data={jobs ?? []}
-                        onRefresh={refreshJobs}
-                        isLoading={loadingJobs}
-                        visibleColumns={showColumns ?? []}
-                    />
-                </div>
-            </div>
-        </>
+        <div className="py-3 size-full max-h-[calc(100%-150px)]">
+            <ProjectCenterTable
+                data={jobs ?? []}
+                onRefresh={refreshJobs}
+                isLoading={loadingJobs}
+                visibleColumns={showColumns ?? []}
+                options={{ fillContainerHeight: true }}
+            />
+        </div>
     )
 }

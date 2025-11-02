@@ -19,7 +19,7 @@ export function SwitchCurrency({
 
     return (
         <p
-            className={cn('font-bold text-right text-[#252b5b]', className)}
+            className={cn('font-bold text-right text-currency', className)}
             onClick={() => {
                 // if (type === 'en') {
                 // 	setType('vi')

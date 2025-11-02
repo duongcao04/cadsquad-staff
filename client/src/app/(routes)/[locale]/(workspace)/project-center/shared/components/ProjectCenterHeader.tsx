@@ -27,6 +27,9 @@ export function ProjectCenterHeader() {
         <PageHeading
             title={t('projectCenter')}
             description={tMetadata('description')}
+            classNames={{
+                wrapper: '!pb-3',
+            }}
             breadcrumbs={
                 false && (
                     <Skeleton

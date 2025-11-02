@@ -50,7 +50,7 @@ export default function ProjectCenterLayout({
     addMember,
 }: Props) {
     return (
-        <div className="bg-background h-full">
+        <div className="bg-background h-full flex flex-col">
             <ProjectCenterHeader />
             <div className="mt-1 mb-2">
                 <ProjectCenterTabs />

@@ -23,6 +23,7 @@ import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { JobTabEnum } from './enums/job-tab.enum'
+import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 
 @Injectable()
 export class JobService {
@@ -220,7 +221,7 @@ export class JobService {
       limit = '10',
       search,
       tab = JobTabEnum.ACTIVE,
-      sort = '-createdAt',
+      sort = 'no',
       assignee,
       clientName,
       type,
@@ -508,6 +509,30 @@ export class JobService {
       return { id: jobId }
     } catch (error) {
       throw new InternalServerErrorException('Change status failed')
+    }
+  }
+
+  async bulkChangeStatus(
+    modifierId: string,
+    data: BulkChangeStatusDto,
+  ): Promise<{ jobIds: string }> {
+    try {
+      const results = await Promise.all(
+        data.jobIds.map(async (jobId) => {
+          const job = await this.prisma.job.findUnique({
+            where: { id: jobId },
+            select: { statusId: true },
+          })
+
+          return this.changeStatus(jobId, modifierId, {
+            fromStatusId: job?.statusId ?? '',
+            toStatusId: data.toStatusId,
+          })
+        })
+      )
+      return { jobIds: data.jobIds.toString() }
+    } catch (error) {
+      throw new InternalServerErrorException('Bulk change status failed')
     }
   }
 

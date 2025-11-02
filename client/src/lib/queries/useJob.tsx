@@ -3,6 +3,7 @@ import { jobApi, jobStatusApi } from '@/lib/api'
 import { ApiResponse, axiosClient } from '@/lib/axios'
 import { USER_CONFIG_KEYS } from '@/lib/utils'
 import {
+    BulkChangeStatusInput,
     ChangeStatusInput,
     CreateJobInput,
     JobQueryWithFiltersInput,
@@ -256,6 +257,20 @@ export const useChangeStatusMutation = () => {
             })
             queryClient.invalidateQueries({
                 queryKey: ['jobActivityLog', String(res.data.result?.id)],
+            })
+        },
+    })
+}
+
+export const useBulkChangeStatusMutation = () => {
+    return useMutation({
+        mutationKey: ['changeStatus', 'job'],
+        mutationFn: ({ data }: { data: BulkChangeStatusInput }) => {
+            return jobApi.bulkChangeStatus(data)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ['jobs'],
             })
         },
     })

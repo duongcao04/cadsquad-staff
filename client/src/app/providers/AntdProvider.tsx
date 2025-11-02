@@ -42,8 +42,9 @@ export default function AntdProvider({
                     }}
                     drawer={{
                         classNames: {
-                            wrapper: '!p-2.5 !shadow-none',
-                            content: 'rounded-lg shadow-lg',
+                            wrapper: '!p-2.5 !shadow-none !bg-transparent',
+                            content:
+                                'rounded-lg shadow-lg !bg-background-muted !text-text-default',
                             body: '!py-3 !px-5',
                         },
                         styles: {

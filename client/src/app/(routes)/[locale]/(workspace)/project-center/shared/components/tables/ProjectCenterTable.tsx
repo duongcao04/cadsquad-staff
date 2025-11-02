@@ -13,7 +13,7 @@ import {
 import {
     HeroCopyButton,
     JobStatusDropdown,
-    PaidChip,
+    PaymentStatusDropdown,
 } from '@/shared/components'
 import { useSearchParam } from '@/shared/hooks'
 import type { Job, JobStatus } from '@/shared/interfaces'
@@ -68,7 +68,8 @@ import { TableActionDropdown } from '../TableActionDropdown'
 import { ViewColumnsDrawer } from '../ViewColumnsDrawer'
 import { DueToField } from '../data-fields'
 import { FilterDrawer } from '../drawers'
-import BulkActionsDropdown from '../dropdowns/BulkActionsDropdown'
+import { BulkActionsDropdown } from '../dropdowns'
+import { BulkChangeStatusModal } from '../modals'
 
 const ROW_PER_PAGE_OPTIONS = [
     { displayName: '5 items', value: 5 },
@@ -77,19 +78,25 @@ const ROW_PER_PAGE_OPTIONS = [
     { displayName: '20 items', value: 20 },
 ]
 
+type ProjectCenterOptions = {
+    fillContainerHeight?: boolean
+}
 type Props = {
     data: Job[]
     isLoading?: boolean
     onRefresh?: () => void
     visibleColumns: 'all' | JobColumnKey[]
+    options?: ProjectCenterOptions
 }
 export default function ProjectCenterTable({
     data,
     visibleColumns,
     onRefresh,
     isLoading = false,
+    options = { fillContainerHeight: false },
 }: Props) {
     const t = useTranslations()
+
     const { setSearchParams } = useSearchParam()
 
     const searchKeywords = useStore(projectCenterStore, (state) => state.search)
@@ -106,6 +113,11 @@ export default function ProjectCenterTable({
         onClose: onCloseViewColDrawer,
         onOpen: onOpenViewColDrawer,
     } = useDisclosure({ id: 'ViewColumnDrawer' })
+    const {
+        isOpen: isOpenBulkChangeStatusModal,
+        onClose: onCloseBulkChangeStatusModal,
+        onOpen: onOpenBulkChangeStatusModal,
+    } = useDisclosure({ id: 'BulkChangeStatusModal' })
 
     const { value: isHideFinishItems } = useConfigByCode(
         USER_CONFIG_KEYS.hideFinishItems
@@ -174,8 +186,9 @@ export default function ProjectCenterTable({
                             classNames={{
                                 base: 'w-[450px]',
                                 mainWrapper: 'w-[450px]',
-                                inputWrapper: 'shadow-SM',
+                                inputWrapper: 'hover:shadow-SM bg-background',
                             }}
+                            variant="bordered"
                             size="sm"
                             placeholder="Search by name..."
                             startContent={
@@ -200,7 +213,7 @@ export default function ProjectCenterTable({
                                         size={14}
                                     />
                                 }
-                                variant="light"
+                                variant="bordered"
                                 size="sm"
                                 className="hover:shadow-SM"
                                 onPress={onRefresh}
@@ -212,9 +225,9 @@ export default function ProjectCenterTable({
                                 startContent={
                                     <Filter className="text-small" size={14} />
                                 }
-                                variant="flat"
+                                variant="bordered"
                                 size="sm"
-                                className="shadow-SM"
+                                className="hover:shadow-SM"
                                 onPress={onOpenFilterDrawer}
                             >
                                 <span className="font-medium">Filter</span>
@@ -229,9 +242,9 @@ export default function ProjectCenterTable({
                                                 size={14}
                                             />
                                         }
-                                        variant="flat"
+                                        variant="bordered"
                                         size="sm"
-                                        className="shadow-SM"
+                                        className="hover:shadow-SM"
                                     >
                                         <span className="font-medium">
                                             Columns
@@ -266,7 +279,7 @@ export default function ProjectCenterTable({
                             >
                                 <DropdownTrigger>
                                     <Button
-                                        variant="light"
+                                        variant="bordered"
                                         size="sm"
                                         className="hover:shadow-SM"
                                         isIconOnly
@@ -347,12 +360,17 @@ export default function ProjectCenterTable({
                         <div className="w-[1px] mx-3 h-5 bg-text-muted"></div>
                         {(selectedKeys === 'all' || selectedKeys.size > 0) && (
                             <div className="flex items-center justify-start gap-3">
-                                <p>
+                                <p className="text-sm">
                                     {selectedKeys === 'all'
                                         ? 'All items selected'
                                         : `${selectedKeys.size} selected`}
                                 </p>
-                                <BulkActionsDropdown keys={selectedKeys} />
+                                <BulkActionsDropdown
+                                    keys={selectedKeys}
+                                    onBulkChangeStatus={
+                                        onOpenBulkChangeStatusModal
+                                    }
+                                />
                             </div>
                         )}
                     </div>
@@ -519,82 +537,78 @@ export default function ProjectCenterTable({
                     )
                 case 'attachmentUrls':
                     return !data.attachmentUrls?.length ? (
-                        <Tooltip content={'Add attachment'}>
-                            <Button
-                                isIconOnly
-                                variant="light"
-                                size="sm"
-                                className="!size-8 flex items-center justify-center"
-                            >
-                                <p className="inline-flex items-center leading-none">
-                                    <FilePlus
-                                        size={16}
-                                        className="opacity-60"
-                                    />
-                                </p>
-                            </Button>
-                        </Tooltip>
+                        <div className="size-full flex items-center justify-center">
+                            <Tooltip content={'Add attachment'}>
+                                <Button
+                                    isIconOnly
+                                    variant="light"
+                                    size="sm"
+                                    className="!size-8 flex items-center justify-center"
+                                >
+                                    <p className="inline-flex items-center leading-none">
+                                        <FilePlus
+                                            size={16}
+                                            className="opacity-60"
+                                        />
+                                    </p>
+                                </Button>
+                            </Tooltip>
+                        </div>
                     ) : (
                         <p>{data.attachmentUrls.length} attachments</p>
                     )
                 case 'assignee':
-                    return (
+                    return !data.assignee.length ? (
+                        <div className="size-full flex items-center justify-center">
+                            <Tooltip content={t('assignMembers')}>
+                                <Button
+                                    isIconOnly
+                                    variant="light"
+                                    size="sm"
+                                    className="!size-8 flex items-center justify-center"
+                                >
+                                    <p className="inline-flex items-center leading-none">
+                                        <UserRoundPlus
+                                            size={16}
+                                            className="opacity-60"
+                                        />
+                                    </p>
+                                </Button>
+                            </Tooltip>
+                        </div>
+                    ) : (
                         <div
                             onClick={() => {}}
                             className="cursor-pointer w-fit"
                         >
-                            {!data.assignee.length ? (
-                                <Tooltip content={t('assignMembers')}>
-                                    <Button
-                                        isIconOnly
-                                        variant="light"
-                                        size="sm"
-                                        className="!size-8 flex items-center justify-center"
-                                    >
-                                        <p className="inline-flex items-center leading-none">
-                                            <UserRoundPlus
-                                                size={16}
-                                                className="opacity-60"
-                                            />
-                                        </p>
-                                    </Button>
-                                </Tooltip>
-                            ) : (
-                                <Avatar.Group
-                                    max={{
-                                        count: 4,
-                                        style: {
-                                            color: 'var(--color-primary)',
-                                            backgroundColor:
-                                                'var(--color-primary-50)',
-                                        },
-                                        popover: {
-                                            styles: {
-                                                body: { borderRadius: '16px' },
+                            <Avatar.Group
+                                max={{
+                                    count: 4,
+                                    style: {
+                                        color: 'var(--color-primary)',
+                                        backgroundColor:
+                                            'var(--color-primary-50)',
+                                    },
+                                    popover: {
+                                        styles: {
+                                            body: {
+                                                borderRadius: '16px',
                                             },
                                         },
-                                    }}
-                                >
-                                    {data.assignee.map((member) => (
-                                        <Avatar
-                                            key={member.id}
-                                            src={member.avatar}
-                                        />
-                                    ))}
-                                </Avatar.Group>
-                            )}
+                                    },
+                                }}
+                            >
+                                {data.assignee.map((member) => (
+                                    <Avatar
+                                        key={member.id}
+                                        src={member.avatar}
+                                    />
+                                ))}
+                            </Avatar.Group>
                         </div>
                     )
                 case 'isPaid':
-                    return (
-                        <PaidChip
-                            status={data.isPaid ? 'paid' : 'unpaid'}
-                            classNames={{
-                                base: '!w-[100px]',
-                                content: '!w-[100px] text-center',
-                            }}
-                        />
-                    )
+                    return <PaymentStatusDropdown jobData={data} />
                 case 'paymentChannel':
                     return data.paymentChannel ? (
                         <p className="line-clamp-1">
@@ -667,9 +681,13 @@ export default function ProjectCenterTable({
                 onClose={onCloseViewColDrawer}
             />
 
+            <BulkChangeStatusModal
+                isOpen={isOpenBulkChangeStatusModal}
+                onClose={onCloseBulkChangeStatusModal}
+            />
+
             <Table
                 key="no"
-                isCompact
                 isHeaderSticky
                 aria-label="Project center table"
                 bottomContent={bottomContent}
@@ -680,7 +698,16 @@ export default function ProjectCenterTable({
                 // sortDescriptor={sortDescriptor}
                 topContentPlacement="outside"
                 onSelectionChange={setSelectedKeys}
-                // onSortChange={setSortDescriptor}
+                // onSortChange={setSortDescriptor}'removeWrapper
+                classNames={{
+                    base: `${options.fillContainerHeight ? '!h-full' : ''}`,
+                    table: `${options.fillContainerHeight ? '!h-full' : ''}`,
+                    wrapper: `${
+                        options.fillContainerHeight ? '!h-full' : ''
+                    } custom-scrollbar`,
+                    tbody: `${options.fillContainerHeight ? '!h-full' : ''}`,
+                    tr: `${options.fillContainerHeight ? '!h-2.5' : ''}`,
+                }}
             >
                 <TableHeader columns={headerColumns}>
                     {(column) => (

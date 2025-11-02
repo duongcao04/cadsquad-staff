@@ -91,6 +91,18 @@ export const ACTIVITY_LOG_TYPE = {
 	deleteJob: "DeleteJob",
 }
 
+export const PAID_STATUS_COLOR: Record<string, { title: string, hexColor: string }> = {
+	paid: {
+		title: 'Paid',
+		hexColor: '#2a9174',
+	},
+	unpaid: {
+		title: 'Unpaid',
+		hexColor: '#f83640',
+	},
+}
+
+
 export const JOB_COLUMNS: { displayName: string, uid: JobColumnKey, sortable: boolean, description?: string }[] = [
 	{
 		"displayName": "Thumbnail",

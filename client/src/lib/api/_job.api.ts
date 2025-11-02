@@ -1,6 +1,6 @@
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { JobColumn, JobColumnKey } from '@/shared/types'
-import { ChangeStatusInput, CreateJobInput, JobQueryWithFiltersInput, UpdateJobMembersInput } from '@/lib/validationSchemas'
+import { JobColumnKey } from '@/shared/types'
+import { BulkChangeStatusInput, ChangeStatusInput, CreateJobInput, JobQueryWithFiltersInput, UpdateJobMembersInput } from '@/lib/validationSchemas'
 import { Job, Paginate } from '@/shared/interfaces'
 import queryString from 'query-string'
 
@@ -40,6 +40,9 @@ export const jobApi = {
 	},
 	changeStatus: (id: string, data: ChangeStatusInput) => {
 		return axiosClient.patch(`/v1/jobs/${id}/change-status`, data)
+	},
+	bulkChangeStatus: (data: BulkChangeStatusInput) => {
+		return axiosClient.post(`/v1/jobs/bulk/change-status`, data)
 	},
 	removeMember: (id: string, memberId: string) => {
 		return axiosClient.patch(`/v1/jobs/${id}/member/${memberId}/remove`)

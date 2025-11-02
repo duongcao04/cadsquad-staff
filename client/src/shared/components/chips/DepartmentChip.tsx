@@ -1,8 +1,9 @@
 'use client'
 
-import { cn, lightenHexColor } from '@/lib/utils'
+import { cn, darkenHexColor, lightenHexColor } from '@/lib/utils'
 import { Department } from '@/shared/interfaces'
 import { Chip, ChipProps } from '@heroui/react'
+import { useTheme } from 'next-themes'
 
 type Props = {
     data: Department
@@ -10,14 +11,17 @@ type Props = {
     props?: ChipProps
 }
 export function DepartmentChip({ data, classNames, props }: Props) {
+    const { resolvedTheme } = useTheme()
+
+    const backgroundColor =
+        resolvedTheme === 'light'
+            ? lightenHexColor(data?.hexColor ? data.hexColor : '#ffffff', 90)
+            : darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
     return (
         <Chip
             style={{
                 color: data?.hexColor ? data.hexColor : '#ffffff',
-                backgroundColor: lightenHexColor(
-                    data?.hexColor ? data.hexColor : '#ffffff',
-                    90
-                ),
+                backgroundColor: backgroundColor,
                 border: '1px solid',
                 borderColor: data?.hexColor ? data.hexColor : '#ffffff',
             }}

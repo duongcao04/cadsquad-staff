@@ -11,6 +11,7 @@ import { JobQueryDto } from './dto/job-query.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { JobService } from './job.service'
+import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 
 @Controller('jobs')
 export class JobController {
@@ -104,6 +105,15 @@ export class JobController {
   async changeStatus(@Req() request: Request, @Param('id') id: string, @Body() data: ChangeStatusDto) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.changeStatus(id, userPayload.sub, data)
+  }
+
+  @Post('bulk/change-status')
+  @HttpCode(200)
+  @ResponseMessage('Bulk change status successfully')
+  @UseGuards(JwtGuard)
+  async bulkChangeStatus(@Req() request: Request, @Body() data: BulkChangeStatusDto) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.bulkChangeStatus(userPayload.sub, data)
   }
 
   @Patch(':id/assign-member')

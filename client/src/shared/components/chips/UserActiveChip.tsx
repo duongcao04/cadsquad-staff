@@ -1,7 +1,8 @@
 'use client'
 
-import { cn, lightenHexColor } from '@/lib/utils'
+import { cn, darkenHexColor, lightenHexColor } from '@/lib/utils'
 import { Chip, ChipProps } from '@heroui/react'
+import { useTheme } from 'next-themes'
 
 const userActiveStatus = {
     activated: {
@@ -20,18 +21,29 @@ type Props = {
     props?: ChipProps
 }
 export function UserActiveChip({ status, classNames, props }: Props) {
+    const { resolvedTheme } = useTheme()
+
+    const backgroundColor =
+        resolvedTheme === 'light'
+            ? lightenHexColor(
+                  userActiveStatus[status]?.hexColor
+                      ? userActiveStatus[status].hexColor
+                      : '#ffffff',
+                  90
+              )
+            : darkenHexColor(
+                  userActiveStatus[status]?.hexColor
+                      ? userActiveStatus[status].hexColor
+                      : '#000000',
+                  70
+              )
     return (
         <Chip
             style={{
                 color: userActiveStatus[status]?.hexColor
                     ? userActiveStatus[status].hexColor
                     : '#ffffff',
-                backgroundColor: lightenHexColor(
-                    userActiveStatus[status]?.hexColor
-                        ? userActiveStatus[status].hexColor
-                        : '#ffffff',
-                    90
-                ),
+                backgroundColor: backgroundColor,
                 border: '1px solid',
                 borderColor: userActiveStatus[status]?.hexColor
                     ? userActiveStatus[status].hexColor

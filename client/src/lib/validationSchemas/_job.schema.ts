@@ -108,6 +108,16 @@ export const ChangeStatusSchema = yup.object({
 });
 export type ChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>;
 
+import { z } from "zod";
+
+export const BulkChangeStatusInputSchema = z.object({
+    jobIds: z.array(z.string()).min(1, "jobIds must contain at least one id"),
+    toStatusId: z.string().min(1, "toStatusId is required"),
+});
+
+export type BulkChangeStatusInput = z.infer<typeof BulkChangeStatusInputSchema>;
+
+
 export const UpdateJobMembersSchema = yup.object({
     prevMemberIds: yup.string().required(),
     updateMemberIds: yup.string().required(),

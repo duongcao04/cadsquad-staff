@@ -1,3 +1,5 @@
+'use client'
+
 import {
     Button,
     Dropdown,
@@ -5,24 +7,28 @@ import {
     DropdownMenu,
     DropdownSection,
     DropdownTrigger,
+    useDisclosure,
 } from '@heroui/react'
 import { ChevronDownIcon } from 'lucide-react'
-import React from 'react'
 
 type Props = {
     keys: Set<string> | 'all'
+    onBulkChangeStatus: () => void
 }
-export default function BulkActionsDropdown({}: Props) {
+export default function BulkActionsDropdown({ onBulkChangeStatus }: Props) {
+    const { isOpen, onClose, onOpen } = useDisclosure({
+        id: 'BulkActionsDropdown',
+    })
     return (
-        <Dropdown>
-            <DropdownTrigger className="hidden sm:flex">
+        <Dropdown isOpen={isOpen} onClose={onClose} onOpenChange={onOpen}>
+            <DropdownTrigger className="hidden sm:flex" onPress={onOpen}>
                 <Button
                     endContent={
                         <ChevronDownIcon className="text-small" size={14} />
                     }
-                    variant="flat"
+                    variant="bordered"
                     size="sm"
-                    className="shadow-SM"
+                    className="hover:shadow-SM"
                 >
                     <span className="font-medium">Selected Actions</span>
                 </Button>
@@ -34,7 +40,13 @@ export default function BulkActionsDropdown({}: Props) {
                 // onSelectionChange={setVisibleColumns}
             >
                 <DropdownSection title="Status">
-                    <DropdownItem key="change_status">
+                    <DropdownItem
+                        key="change_status"
+                        onPress={() => {
+                            onClose()
+                            onBulkChangeStatus()
+                        }}
+                    >
                         Bulk change status
                     </DropdownItem>
                     <DropdownItem key="delete_all">Delete all</DropdownItem>
