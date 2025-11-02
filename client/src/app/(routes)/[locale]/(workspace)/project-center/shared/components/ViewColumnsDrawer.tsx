@@ -1,13 +1,14 @@
 import { Drawer } from 'antd'
 import React from 'react'
 
-import { CONFIG_CONSTANTS } from '@/shared/constants'
 import { RoleEnum } from '@/shared/enums'
+
 import {
     useJobColumns,
     useProfile,
     useUpdateConfigByCodeMutation,
-} from '@/shared/queries'
+} from '@/lib/queries'
+import { USER_CONFIG_KEYS, USER_CONFIG_VALUES } from '@/lib/utils'
 import { JobColumn } from '@/shared/types'
 import { Spinner } from '@heroui/react'
 import {
@@ -50,75 +51,75 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
     > = {
         no: {
             title: t('jobColumns.no'),
-            icon: <p className="font-bold text-lg text-text1p5">#</p>,
+            icon: <p className="font-bold text-lg text-defaultp5">#</p>,
         },
         type: {
             title: t('jobColumns.type'),
-            icon: <Layers2 size={20} className="text-text1p5" />,
+            icon: <Layers2 size={20} className="text-defaultp5" />,
         },
         thumbnail: {
             title: t('jobColumns.thumbnail'),
-            icon: <GalleryThumbnails size={20} className="text-text1p5" />,
+            icon: <GalleryThumbnails size={20} className="text-defaultp5" />,
         },
         displayName: {
             title: t('jobColumns.displayName'),
-            icon: <AtSign size={20} className="text-text1p5" />,
+            icon: <AtSign size={20} className="text-defaultp5" />,
         },
         description: {
             title: t('jobColumns.description'),
-            icon: <Text size={20} className="text-text1p5" />,
+            icon: <Text size={20} className="text-defaultp5" />,
         },
         attachmentUrls: {
             title: t('jobColumns.attachmentUrls'),
-            icon: <Paperclip size={20} className="text-text1p5" />,
+            icon: <Paperclip size={20} className="text-defaultp5" />,
         },
         clientName: {
             title: t('jobColumns.clientName'),
-            icon: <Handshake size={20} className="text-text1p5" />,
+            icon: <Handshake size={20} className="text-defaultp5" />,
         },
         incomeCost: {
             title: t('jobColumns.incomeCost'),
-            icon: <DollarSign size={20} className="text-text1p5" />,
+            icon: <DollarSign size={20} className="text-defaultp5" />,
         },
         staffCost: {
             title: t('jobColumns.staffCost'),
-            icon: <p className="font-semibold text-lg text-text1p5">đ</p>,
+            icon: <p className="font-semibold text-lg text-defaultp5">đ</p>,
         },
         assignee: {
             title: t('jobColumns.assignee'),
-            icon: <UsersRound size={20} className="text-text1p5" />,
+            icon: <UsersRound size={20} className="text-defaultp5" />,
         },
         paymentChannel: {
             title: t('jobColumns.paymentChannel'),
-            icon: <Landmark size={20} className="text-text1p5" />,
+            icon: <Landmark size={20} className="text-defaultp5" />,
         },
         status: {
             title: t('jobColumns.status'),
-            icon: <Loader size={20} className="text-text1p5" />,
+            icon: <Loader size={20} className="text-defaultp5" />,
         },
         isPaid: {
             title: t('jobColumns.isPaid'),
-            icon: <BanknoteArrowUp size={20} className="text-text1p5" />,
+            icon: <BanknoteArrowUp size={20} className="text-defaultp5" />,
         },
         dueAt: {
             title: t('jobColumns.dueAt'),
-            icon: <CalendarClock size={20} className="text-text1p5" />,
+            icon: <CalendarClock size={20} className="text-defaultp5" />,
         },
         completedAt: {
             title: t('jobColumns.completedAt'),
-            icon: <Calendar size={20} className="text-text1p5" />,
+            icon: <Calendar size={20} className="text-defaultp5" />,
         },
         createdAt: {
             title: t('jobColumns.createdAt'),
-            icon: <Calendar size={20} className="text-text1p5" />,
+            icon: <Calendar size={20} className="text-defaultp5" />,
         },
         updatedAt: {
             title: t('jobColumns.updatedAt'),
-            icon: <Calendar size={20} className="text-text1p5" />,
+            icon: <Calendar size={20} className="text-defaultp5" />,
         },
         action: {
             title: t('jobColumns.action'),
-            icon: <Hand size={20} className="text-text1p5" />,
+            icon: <Hand size={20} className="text-defaultp5" />,
         },
     }
 
@@ -131,8 +132,8 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
     }))
     const canShowCols =
         userRole === RoleEnum.ADMIN
-            ? CONFIG_CONSTANTS.values.allJobColumns.admin
-            : CONFIG_CONSTANTS.values.allJobColumns.user
+            ? USER_CONFIG_VALUES.allJobColumns.admin
+            : USER_CONFIG_VALUES.allJobColumns.user
     const finalColumns = headerColumns.filter((col) => {
         return canShowCols.includes(col.key)
     })
@@ -142,7 +143,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
             if (!isSelected) {
                 const newCols = showColumns?.filter((item) => item !== colKey)
                 updateConfigMutate({
-                    code: CONFIG_CONSTANTS.keys.jobShowColumns,
+                    code: USER_CONFIG_KEYS.jobShowColumns,
                     data: {
                         value: JSON.stringify(newCols),
                     },
@@ -150,7 +151,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
             } else {
                 const newCols = [...showColumns, colKey]
                 updateConfigMutate({
-                    code: CONFIG_CONSTANTS.keys.jobShowColumns,
+                    code: USER_CONFIG_KEYS.jobShowColumns,
                     data: {
                         value: JSON.stringify(newCols),
                     },
@@ -179,7 +180,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                     </div>
                 )}
                 <div className="flex items-center justify-between">
-                    <p className="font-medium text-text1p5">
+                    <p className="font-medium text-defaultp5">
                         {t('shownStatus')}
                     </p>
                     <button
@@ -190,19 +191,17 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                             if (canShowAll) {
                                 const data =
                                     userRole === RoleEnum.ADMIN
-                                        ? CONFIG_CONSTANTS.values.allJobColumns
-                                              .admin
-                                        : CONFIG_CONSTANTS.values.allJobColumns
-                                              .user
+                                        ? USER_CONFIG_VALUES.allJobColumns.admin
+                                        : USER_CONFIG_VALUES.allJobColumns.user
                                 updateConfigMutate({
-                                    code: CONFIG_CONSTANTS.keys.jobShowColumns,
+                                    code: USER_CONFIG_KEYS.jobShowColumns,
                                     data: {
                                         value: JSON.stringify(data),
                                     },
                                 })
                             } else {
                                 updateConfigMutate({
-                                    code: CONFIG_CONSTANTS.keys.jobShowColumns,
+                                    code: USER_CONFIG_KEYS.jobShowColumns,
                                     data: {
                                         value: JSON.stringify([]),
                                     },
@@ -210,7 +209,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                             }
                         }}
                     >
-                        <p className="font-medium text-text1p5">
+                        <p className="font-medium text-defaultp5">
                             {showColumns?.length === 0
                                 ? t('showAll')
                                 : t('hideAll')}

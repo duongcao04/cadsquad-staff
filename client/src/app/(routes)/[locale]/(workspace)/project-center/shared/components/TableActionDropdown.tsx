@@ -17,15 +17,15 @@ import {
 
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { ApiError } from '@/lib/axios'
-import { useAddMemberModal } from '@/shared/actions'
-import { ConfirmDeleteModal } from '@/shared/components'
-import { RoleEnum } from '@/shared/enums'
-import { Job } from '@/shared/interfaces'
 import {
     useDeleteJobMutation,
     useProfile,
     useUpdateJobMutation,
-} from '@/shared/queries'
+} from '@/lib/queries'
+import { useAddMemberModal } from '@/shared/actions'
+import { ConfirmDeleteModal } from '@/shared/components'
+import { RoleEnum } from '@/shared/enums'
+import { Job } from '@/shared/interfaces'
 import { EllipsisVerticalIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { accountingActions, adminActions, userActions } from '../dropdowns'
@@ -48,10 +48,12 @@ type Props = {
 }
 export function TableActionDropdown({ data }: Props) {
     const t = useTranslations()
+
     const { openModal } = useAddMemberModal()
     const { userRole } = useProfile()
     const { mutateAsync: updateJobMutation, isPending: isUpdating } =
         useUpdateJobMutation()
+
     const {
         isOpen: isOpenModal,
         onOpen: onOpenModal,
@@ -59,6 +61,7 @@ export function TableActionDropdown({ data }: Props) {
     } = useDisclosure({
         id: 'ConfirmDeleteModal',
     })
+
     const {
         isOpen: isOpenMAPModal,
         onOpen: onOpenMAPModal,
@@ -66,6 +69,7 @@ export function TableActionDropdown({ data }: Props) {
     } = useDisclosure({
         id: 'MarkAsPaidModal',
     })
+
     const {
         isOpen: isOpenUCostModal,
         onOpen: onOpenUCostModal,
@@ -76,7 +80,6 @@ export function TableActionDropdown({ data }: Props) {
 
     const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
         useDeleteJobMutation()
-
     const handleDelete = async () => {
         if (data?.id) {
             await deleteJobMutation(data?.id, {
@@ -226,7 +229,7 @@ export function TableActionDropdown({ data }: Props) {
                                         <DropdownItem
                                             key={item.key}
                                             startContent={
-                                                <div className="text-text-fore2">
+                                                <div className="text-text-subdued">
                                                     {item.icon}
                                                 </div>
                                             }

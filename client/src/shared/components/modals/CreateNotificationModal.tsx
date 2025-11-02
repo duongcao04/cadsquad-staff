@@ -1,23 +1,23 @@
 'use client'
 
-import { NotificationType } from '@/shared/enums'
+import { cookie } from '@/lib/cookie'
 import {
     useProfile,
     useSendNotificationMutation,
     useUsers,
-} from '@/shared/queries'
+} from '@/lib/queries'
+import { authSocket } from '@/lib/socket'
 import {
     CreateNotificationInput,
     CreateNotificationInputSchema,
-} from '@/shared/validationSchemas'
+} from '@/lib/validationSchemas'
+import { NotificationTypeEnum } from '@/shared/enums'
 import { Button, InputProps, Textarea, addToast } from '@heroui/react'
 import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 import { capitalize } from 'lodash'
 import { useMemo } from 'react'
 import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
-import { cookie } from '../../../lib/cookie'
-import { authSocket } from '../../../lib/socket'
 
 const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -40,18 +40,20 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
         isPending: isSendingNotification,
     } = useSendNotificationMutation()
 
-    const notificationTypeList = Object.entries(NotificationType).map((i) => {
-        return {
-            ...i,
-            label: capitalize(i[1].toLowerCase().replaceAll('_', ' ')),
-            value: i[0],
+    const notificationTypeEnumList = Object.entries(NotificationTypeEnum).map(
+        (i) => {
+            return {
+                ...i,
+                label: capitalize(i[1].toLowerCase().replaceAll('_', ' ')),
+                value: i[0],
+            }
         }
-    })
+    )
 
     const initialValues = useMemo<CreateNotificationInput>(
         () => ({
             content: '',
-            type: NotificationType.INFO,
+            type: NotificationTypeEnum.INFO,
             userIds: [],
             senderId: profile?.id ?? '',
             title: '',
@@ -262,7 +264,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
                                                 <p className="font-normal">
                                                     {usr.displayName}
                                                 </p>
-                                                <p className="text-text2">
+                                                <p className="text-text-muted">
                                                     {usr.email}
                                                 </p>
                                             </div>
@@ -300,7 +302,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
                                     formik.setFieldTouched('type', true, false)
                                 }}
                             >
-                                {notificationTypeList?.map((type) => (
+                                {notificationTypeEnumList?.map((type) => (
                                     <HeroSelectItem key={type.value}>
                                         {type.label}
                                     </HeroSelectItem>

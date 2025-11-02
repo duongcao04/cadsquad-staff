@@ -162,7 +162,7 @@ export default function AntdProvider({
                                 margin-top: 12px !important;
                                 overflow: auto !important;
                                 scrollbar-width: thin !important;
-                                scrollbar-color: var(--color-text-text3)
+                                scrollbar-color: var(--color-text-text-muted)
                                     transparent !important;
                                 scrollbar-gutter: stable !important;
                             }

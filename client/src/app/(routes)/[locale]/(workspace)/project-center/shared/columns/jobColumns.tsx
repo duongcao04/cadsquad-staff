@@ -1,15 +1,16 @@
+'use client'
+
 import { Link } from '@/i18n/navigation'
+import { envConfig } from '@/lib/config'
 import { VietnamDateFormat } from '@/lib/dayjs'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
+import { IMAGES, JOB_STATUS_CODES } from '@/lib/utils'
 import {
     CopyButton,
     handleCopy,
     JobStatusDropdown,
     PaidChip,
 } from '@/shared/components'
-import { envConfig } from '@/shared/config'
-import { IMAGE_CONSTANTS } from '@/shared/constants'
-import { DefaultJobStatusCode } from '@/shared/enums'
 import {
     Job,
     JobStatus,
@@ -66,7 +67,7 @@ export function jobColumns(
         {
             title: (
                 <p
-                    className="truncate text-text1"
+                    className="truncate text-default"
                     title={translations('jobColumns.thumbnail')}
                 >
                     {translations('jobColumns.thumbnail')}
@@ -78,7 +79,7 @@ export function jobColumns(
             width: 44,
             render: (_: unknown, record: JobWithKey) => {
                 const src =
-                    record.status.thumbnailUrl ?? IMAGE_CONSTANTS.loading
+                    record.status.thumbnailUrl ?? IMAGES.loadingPlaceholder
                 return (
                     <div className="flex items-center justify-center">
                         <div className="overflow-hidden rounded-full size-10">
@@ -122,7 +123,7 @@ export function jobColumns(
             render: (jobNo) => (
                 <div className="flex items-center justify-between gap-2 group size-full">
                     <p
-                        className="!text-text1 link uppercase hover:medium"
+                        className="!text-default link uppercase hover:medium"
                         onClick={() =>
                             handleCopy(jobNo, () => {
                                 addToast({
@@ -148,7 +149,7 @@ export function jobColumns(
                     <Link
                         href={`/project-center/${record?.no}`}
                         title={displayName}
-                        className="!text-text1 link font-semibold line-clamp-1"
+                        className="!text-default link font-semibold line-clamp-1"
                     >
                         {displayName}
                     </Link>
@@ -202,10 +203,8 @@ export function jobColumns(
                     <DueToField
                         data={record.dueAt}
                         disableCountdown={
-                            record.status.code ===
-                                DefaultJobStatusCode.FINISH ||
-                            record.status.code ===
-                                DefaultJobStatusCode.COMPLETED
+                            record.status.code === JOB_STATUS_CODES.finish ||
+                            record.status.code === JOB_STATUS_CODES.completed
                         }
                     />
                 </div>
@@ -352,7 +351,7 @@ export function jobColumns(
                             >
                                 <EyeIcon
                                     size={18}
-                                    className="text-text-fore2"
+                                    className="text-text-subdued"
                                 />
                             </Button>
                         </Tooltip>
@@ -380,7 +379,7 @@ export function jobColumns(
                         {!filtered ? (
                             <ListFilterPlus
                                 size={14}
-                                className="text-text2 transition duration-100"
+                                className="text-text-muted transition duration-100"
                             />
                         ) : (
                             <ListFilter
@@ -398,7 +397,7 @@ export function jobColumns(
                         {sortOrder ? (
                             <ChevronDown
                                 size={14}
-                                className="transition duration-150 text-text2"
+                                className="transition duration-150 text-text-muted"
                                 style={{
                                     transform:
                                         sortOrder === 'ascend'
@@ -409,7 +408,7 @@ export function jobColumns(
                         ) : (
                             <ChevronsLeftRight
                                 size={14}
-                                className="rotate-90 text-text2"
+                                className="rotate-90 text-text-muted"
                             />
                         )}
                     </>

@@ -7,7 +7,7 @@ import {
 } from '@/shared/actions'
 import { SettingsGearIcon } from '@/shared/components'
 import { RoleEnum } from '@/shared/enums'
-import { useProfile } from '@/shared/queries'
+import { useProfile } from '@/lib/queries'
 import {
     Button,
     Dropdown,
@@ -80,7 +80,7 @@ export function SettingsDropdown() {
                                             passHref
                                         >
                                             <p>{t(item.titleKey)}</p>
-                                            <p className="text-xs text-text2">
+                                            <p className="text-xs text-text-muted">
                                                 {t(item.descriptionKey)}
                                             </p>
                                         </Link>

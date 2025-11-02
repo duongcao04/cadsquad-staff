@@ -6,8 +6,8 @@ export const Description = ({}: { isLoading: boolean; data: Job }) => {
     return (
         // <div className="w-full">
         //     <Skeleton className="w-full h-fit rounded-md" isLoaded={!isLoading}>
-        //         <button className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background2 flex items-center justify-between cursor-pointer">
-        //             <p className="text-xs text-text2">Description</p>
+        //         <button className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background-muted flex items-center justify-between cursor-pointer">
+        //             <p className="text-xs text-text-muted">Description</p>
         //             <Settings size={16} />
         //         </button>
         //     </Skeleton>

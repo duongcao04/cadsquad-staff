@@ -22,7 +22,7 @@ export function DefaultPanel({
 }: Props) {
     const t = useTranslations()
     const { isOpen, onOpen, onClose } = useDisclosure({
-        id: 'FilterDrawer',
+        id: 'FilterDrawerWithPanel',
     })
     const [keywords, setKeywords] = useState(defaultKeywords)
     return (

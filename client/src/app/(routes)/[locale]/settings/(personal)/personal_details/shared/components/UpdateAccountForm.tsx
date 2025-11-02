@@ -1,9 +1,9 @@
 'use client'
 
-import { userApi } from '@/app/api/user.api'
+import { userApi } from '@/lib/api'
 import { Link } from '@/i18n/navigation'
-import { useProfile, useUpdateUserMutation } from '@/shared/queries'
-import { UpdateUserInput } from '@/shared/validationSchemas'
+import { useProfile, useUpdateUserMutation } from '@/lib/queries'
+import { UpdateUserInput } from '@/lib/validationSchemas'
 import { addToast, Button, Input, InputProps, Skeleton } from '@heroui/react'
 import { Image } from 'antd'
 import { useFormik } from 'formik'
@@ -76,7 +76,7 @@ export function UpdateAccountForm() {
 
     return (
         <form onSubmit={formik.handleSubmit} className="space-y-8">
-            <div className="size-full border-[1px] border-text3 rounded-xl px-6 pt-4 pb-7">
+            <div className="size-full border-[1px] border-text-muted rounded-xl px-6 pt-4 pb-7">
                 <h2 className="text-base font-semibold">
                     {t('generalInformation')}
                 </h2>
@@ -88,7 +88,7 @@ export function UpdateAccountForm() {
                                     isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
-                                    <p className="text-text1p5 text-sm">
+                                    <p className="text-defaultp5 text-sm">
                                         {t('fields.email')}
                                     </p>
                                 </Skeleton>
@@ -112,7 +112,7 @@ export function UpdateAccountForm() {
                                     isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
-                                    <p className="text-text1p5 text-sm">
+                                    <p className="text-defaultp5 text-sm">
                                         {t('fields.fullname')}
                                     </p>
                                 </Skeleton>
@@ -136,7 +136,7 @@ export function UpdateAccountForm() {
                                     isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
-                                    <p className="text-text1p5 text-sm">
+                                    <p className="text-defaultp5 text-sm">
                                         {t('fields.username')}
                                     </p>
                                 </Skeleton>
@@ -176,7 +176,7 @@ export function UpdateAccountForm() {
                                     isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
-                                    <p className="text-text1p5 text-sm">
+                                    <p className="text-defaultp5 text-sm">
                                         {t('fields.department')}
                                     </p>
                                 </Skeleton>
@@ -200,7 +200,7 @@ export function UpdateAccountForm() {
                                     isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
-                                    <p className="text-text1p5 text-sm">
+                                    <p className="text-defaultp5 text-sm">
                                         {t('fields.jobTitle')}
                                     </p>
                                 </Skeleton>
@@ -225,7 +225,7 @@ export function UpdateAccountForm() {
                                     isLoaded={!loadingProfile}
                                     className="w-fit h-fit rounded-md"
                                 >
-                                    <p className="text-text1p5 text-sm">
+                                    <p className="text-defaultp5 text-sm">
                                         {t('fields.phoneNumber')}
                                     </p>
                                 </Skeleton>

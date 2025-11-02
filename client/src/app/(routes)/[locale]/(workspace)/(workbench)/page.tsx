@@ -1,9 +1,9 @@
 'use client'
 
+import { useJobs } from '@/lib/queries'
 import { PageHeading } from '@/shared/components'
-import { useJobs } from '@/shared/queries'
 import { useTranslations } from 'next-intl'
-import { JobTable } from '../project-center/shared'
+import { WorkbenchTable } from './shared'
 
 export default function WorkbenchPage() {
     const t = useTranslations()
@@ -20,7 +20,7 @@ export default function WorkbenchPage() {
         <>
             <PageHeading title={t('workbench')} />
             <div className="w-full h-[calc(100%-54px-12px)]">
-                <JobTable
+                <WorkbenchTable
                     isLoading={loadingJobs}
                     data={jobs!}
                     showColumns={[

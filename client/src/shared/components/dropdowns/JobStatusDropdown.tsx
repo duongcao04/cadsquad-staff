@@ -1,14 +1,13 @@
 'use client'
 
-import { lightenHexColor } from '@/lib/utils'
-import { DefaultJobStatusCode } from '@/shared/enums'
-import { Job, JobStatus } from '@/shared/interfaces'
 import {
     useChangeStatusMutation,
     useJobStatusByOrder,
     useJobStatuses,
     useProfile,
-} from '@/shared/queries'
+} from '@/lib/queries'
+import { JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
+import { Job, JobStatus } from '@/shared/interfaces'
 import {
     addToast,
     Button,
@@ -41,7 +40,7 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
             await changeStatusMutation(
                 {
                     jobId: jobData.id?.toString(),
-                    changeStatusInput: {
+                    data: {
                         fromStatusId: jobData?.status.id?.toString(),
                         toStatusId: nextStatus.id?.toString(),
                     },
@@ -75,7 +74,7 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
             key: 'nextStatusOrder',
             data: isAdmin
                 ? nextStatus
-                : nextStatus?.code === DefaultJobStatusCode.DELIVERED
+                : nextStatus?.code === JOB_STATUS_CODES.delivered
                 ? nextStatus
                 : undefined,
             action: () => {
@@ -86,7 +85,7 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
             key: 'prevStatusOrder',
             data: isAdmin
                 ? prevStatus
-                : prevStatus?.code === DefaultJobStatusCode.DELIVERED
+                : prevStatus?.code === JOB_STATUS_CODES.delivered
                 ? prevStatus
                 : undefined,
             action: () => {
@@ -142,7 +141,7 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                     <Tab key="quick" title="Quick change">
                         <div className="size-full space-y-2.5">
                             {!dropdownActions.length ? (
-                                <p className="py-3 font-medium text-center text-text2">
+                                <p className="py-3 font-medium text-center text-text-muted">
                                     Cannot quick change
                                 </p>
                             ) : (
@@ -198,8 +197,10 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                     </Tab>
                     {isAdmin && (
                         <Tab key="force" title="Force change">
-                            <p className="text-text2 text-xs">Mark status as</p>
-                            <hr className="mt-2 mb-3 text-text3" />
+                            <p className="text-text-muted text-xs">
+                                Mark status as
+                            </p>
+                            <hr className="mt-2 mb-3 text-text-muted" />
                             {!jobStatuses ? (
                                 <p className="text-xs text-center">
                                     Không tìm thấy danh sách trạng thái

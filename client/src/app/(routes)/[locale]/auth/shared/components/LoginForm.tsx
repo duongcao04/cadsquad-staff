@@ -6,20 +6,20 @@ import { addToast, Button, Input } from '@heroui/react'
 import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
 
-import { Link, useRouter } from '@/i18n/navigation'
-import { envConfig } from '@/shared/config'
+import { Link, redirect } from '@/i18n/navigation'
+import { envConfig } from '@/lib/config'
+import { useLogin } from '@/lib/queries'
+import { LoginInput, LoginInputSchema } from '@/lib/validationSchemas'
 import { useSearchParam } from '@/shared/hooks'
-import { useLogin } from '@/shared/queries'
-import { LoginInput, LoginInputSchema } from '@/shared/validationSchemas'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 const HOME = String(envConfig.NEXT_PUBLIC_URL)
 
 export function LoginForm() {
     const t = useTranslations()
-    const router = useRouter()
+    const locale = useLocale()
     const { getSearchParam } = useSearchParam()
-    const redirect = getSearchParam('redirect') ?? '/'
+    const redirectUrl = getSearchParam('redirect') ?? '/'
 
     const [isVisible, setIsVisible] = useState(false)
     const toggleVisibility = () => setIsVisible(!isVisible)
@@ -39,9 +39,12 @@ export function LoginForm() {
                     password: values.password,
                 },
                 {
-                    onSuccess(res) {
+                    async onSuccess(res) {
                         addToast({ title: res.data.message, color: 'success' })
-                        router.replace(redirect)
+                        redirect({
+                            href: redirectUrl,
+                            locale: locale,
+                        })
                     },
                     onError(error) {
                         addToast({

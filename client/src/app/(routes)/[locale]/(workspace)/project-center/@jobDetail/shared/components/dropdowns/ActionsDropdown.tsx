@@ -3,9 +3,9 @@
 import { Link } from '@/i18n/navigation'
 import { ApiError } from '@/lib/axios'
 import { ConfirmDeleteModal, handleCopy } from '@/shared/components'
-import { envConfig } from '@/shared/config'
+import { envConfig } from '@/lib/config'
 import { Job } from '@/shared/interfaces'
-import { useDeleteJobMutation } from '@/shared/queries'
+import { useDeleteJobMutation } from '@/lib/queries'
 import {
     addToast,
     Button,
@@ -87,7 +87,7 @@ export function ActionsDropdown({ jobNo, data }: Props) {
                         size="sm"
                         isIconOnly
                     >
-                        <Ellipsis size={18} className="text-text-fore2" />
+                        <Ellipsis size={18} className="text-text-subdued" />
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Static Actions">

@@ -9,7 +9,7 @@ import {
     IconPeopleColorful,
     IconWorkColorful,
 } from '@/shared/components'
-import { useProfile } from '@/shared/queries'
+import { useProfile } from '@/lib/queries'
 import { ESidebarStatus, useUiStore } from '@/shared/stores'
 import {
     Button,

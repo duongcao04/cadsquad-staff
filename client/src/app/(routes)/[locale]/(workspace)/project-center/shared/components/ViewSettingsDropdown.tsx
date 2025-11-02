@@ -1,11 +1,8 @@
 'use client'
 
+import { useConfigByCode, useUpdateConfigByCodeMutation } from '@/lib/queries'
+import { USER_CONFIG_KEYS } from '@/lib/utils'
 import { HeroButton } from '@/shared/components'
-import { CONFIG_CONSTANTS } from '@/shared/constants'
-import {
-    useConfigByCode,
-    useUpdateConfigByCodeMutation,
-} from '@/shared/queries'
 import {
     Dropdown,
     DropdownItem,
@@ -29,7 +26,7 @@ export function ViewSettingsDropdown() {
     const t = useTranslations()
     const { isOpen, onClose, onOpen } = useDisclosure()
     const { value: isHideFinishItems } = useConfigByCode(
-        CONFIG_CONSTANTS.keys.hideFinishItems
+        USER_CONFIG_KEYS.hideFinishItems
     )
     const { mutateAsync: updateConfigByCodeMutate } =
         useUpdateConfigByCodeMutation()
@@ -61,7 +58,7 @@ export function ViewSettingsDropdown() {
                                 base: 'hover:!bg-background cursor-default',
                             }}
                             startContent={
-                                <EyeClosed size={16} className="text-text1p5" />
+                                <EyeClosed size={16} className="text-defaultp5" />
                             }
                         >
                             <div className="w-full flex items-center justify-between gap-3">
@@ -77,8 +74,7 @@ export function ViewSettingsDropdown() {
                                     color="success"
                                     onValueChange={(isSelected) => {
                                         updateConfigByCodeMutate({
-                                            code: CONFIG_CONSTANTS.keys
-                                                .hideFinishItems,
+                                            code: USER_CONFIG_KEYS.hideFinishItems,
                                             data: {
                                                 value: isSelected ? '1' : '0',
                                             },
@@ -92,7 +88,7 @@ export function ViewSettingsDropdown() {
                             startContent={
                                 <Columns3Cog
                                     size={16}
-                                    className="text-text1p5"
+                                    className="text-defaultp5"
                                 />
                             }
                             onPress={() => onOpen()}

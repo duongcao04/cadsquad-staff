@@ -1,20 +1,20 @@
 'use client'
 
 import { Link } from '@/i18n/navigation'
+import { useJobsByStatusCode } from '@/lib/queries'
+import { JOB_STATUS_CODES } from '@/lib/utils'
 import { PageHeading } from '@/shared/components'
-import { DefaultJobStatusCode } from '@/shared/enums'
-import { useJobsByStatusCode } from '@/shared/queries'
 import { useTranslations } from 'next-intl'
 import { JobCard, ProfileCard } from './shared'
 
 export default function ProfilePage() {
     const t = useTranslations()
     const { jobs: inprogressJobs, isLoading: inprogressLoading } =
-        useJobsByStatusCode(DefaultJobStatusCode.IN_PROGRESS)
+        useJobsByStatusCode(JOB_STATUS_CODES.inProgress)
     const { jobs: revisionJobs, isLoading: revisionLoading } =
-        useJobsByStatusCode(DefaultJobStatusCode.REVISION)
+        useJobsByStatusCode(JOB_STATUS_CODES.revision)
     const { jobs: deliveredJobs, isLoading: deliveredLoading } =
-        useJobsByStatusCode(DefaultJobStatusCode.DELIVERED)
+        useJobsByStatusCode(JOB_STATUS_CODES.delivered)
     const activeJobs = [...(inprogressJobs ?? []), ...(revisionJobs ?? [])]
 
     return (
@@ -42,11 +42,11 @@ export default function ProfilePage() {
                         }}
                     >
                         <div className="relative">
-                            <div className="sticky top-0 z-10 bg-background my-5 px-6 pb-4 pt-3 border-b border-text4 shadow-xs">
-                                <div className="px-4 py-2.5 border rounded-lg border-text3 shadow-xs">
+                            <div className="sticky top-0 z-10 bg-background my-5 px-6 pb-4 pt-3 border-b border-text-muted shadow-xs">
+                                <div className="px-4 py-2.5 border rounded-lg border-text-muted shadow-xs">
                                     <p className="text-lg font-medium">
                                         {t('activeJobs')} -{' '}
-                                        <span className="text-text2 font-semibold tracking-wider">
+                                        <span className="text-text-muted font-semibold tracking-wider">
                                             {activeJobs?.length}
                                         </span>
                                     </p>
@@ -68,7 +68,7 @@ export default function ProfilePage() {
                                     })}
                                 </ul>
                             ) : (
-                                <div className="py-12 flex flex-col items-center justify-center gap-2 text-text2">
+                                <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
                                     <p className="text-base font-semibold">
                                         {t('noActiveJobFound')}
                                     </p>
@@ -86,13 +86,13 @@ export default function ProfilePage() {
                         </div>
                         <div className="sticky top-0 pt-8 pb-4 z-10 px-5 bg-background">
                             <div className="flex items-center justify-start gap-4 pl-2">
-                                <p className="font-medium text-text1p5 text-nowrap">
+                                <p className="font-medium text-defaultp5 text-nowrap">
                                     {t('awaitingResponse')}
-                                    <span className="pl-2 font-semibold text-text2">
+                                    <span className="pl-2 font-semibold text-text-muted">
                                         ({deliveredJobs?.length})
                                     </span>
                                 </p>
-                                <div className="bg-text3 h-[1px] w-full" />
+                                <div className="bg-text-muted h-[1px] w-full" />
                             </div>
                         </div>
                         {deliveredJobs?.length ? (
@@ -108,7 +108,7 @@ export default function ProfilePage() {
                                 })}
                             </ul>
                         ) : (
-                            <div className="py-12 flex flex-col items-center justify-center gap-2 text-text2">
+                            <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
                                 <p className="text-base font-semibold">
                                     {t('noAwaitingResponseFound')}
                                 </p>

@@ -17,9 +17,9 @@ export function ProfileOverview({ data }: Props) {
         <div className="mt-2">
             <div className="space-y-4">
                 <div className="flex items-center justify-start gap-3">
-                    <MailOutlined size={16} className="!text-text2" />
+                    <MailOutlined size={16} className="!text-text-muted" />
                     <div>
-                        <p className="text-xs text-text2">Email</p>
+                        <p className="text-xs text-text-muted">Email</p>
                         <Link
                             href={`mailto:${data?.email}`}
                             className="text-sm link !text-blue-500"
@@ -31,9 +31,9 @@ export function ProfileOverview({ data }: Props) {
                 </div>
 
                 <div className="flex items-center justify-start gap-3">
-                    <MessageOutlined size={16} className="!text-text2" />
+                    <MessageOutlined size={16} className="!text-text-muted" />
                     <div>
-                        <p className="text-xs text-text2">Chat</p>
+                        <p className="text-xs text-text-muted">Chat</p>
                         <Link
                             href={`mailto:${data?.email}`}
                             className="text-sm link !text-blue-500"
@@ -45,9 +45,9 @@ export function ProfileOverview({ data }: Props) {
                 </div>
 
                 <div className="flex items-center justify-start gap-3">
-                    <ApartmentOutlined size={16} className="!text-text2" />
+                    <ApartmentOutlined size={16} className="!text-text-muted" />
                     <div>
-                        <p className="text-xs text-text2">Department</p>
+                        <p className="text-xs text-text-muted">Department</p>
 
                         <p className="text-sm mt-0.5">
                             {data?.department ? (
@@ -60,9 +60,9 @@ export function ProfileOverview({ data }: Props) {
                 </div>
 
                 <div className="flex items-center justify-start gap-3">
-                    <UserOutlined size={16} className="!text-text2" />
+                    <UserOutlined size={16} className="!text-text-muted" />
                     <div>
-                        <p className="text-xs text-text2">Job title</p>
+                        <p className="text-xs text-text-muted">Job title</p>
 
                         <p className="text-sm mt-0.5">
                             {data?.jobTitle ? (
@@ -75,9 +75,9 @@ export function ProfileOverview({ data }: Props) {
                 </div>
 
                 <div className="flex items-center justify-start gap-3">
-                    <MobileOutlined size={16} className="!text-text2" />
+                    <MobileOutlined size={16} className="!text-text-muted" />
                     <div>
-                        <p className="text-xs text-text2">Mobile</p>
+                        <p className="text-xs text-text-muted">Mobile</p>
                         {data?.phoneNumber ? (
                             <Link
                                 href={`tel:${data?.phoneNumber}`}

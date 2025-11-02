@@ -89,7 +89,7 @@ export default function AdminSettings() {
 
     return (
         <div className="p-4 max-w-[1400px]">
-            <div className="border-b-1 border-text4 flex items-center justify-start gap-8 pt-3 pb-5">
+            <div className="border-b-1 border-text-muted flex items-center justify-start gap-8 pt-3 pb-5">
                 <CadsquadLogo
                     classNames={{
                         logo: '!h-16',
@@ -99,7 +99,7 @@ export default function AdminSettings() {
                     <h1 className="text-2xl font-medium uppercase tracking-wide">
                         Cadsquad Vietnam
                     </h1>
-                    <p className="mt-0.5 text-text1p5">{t('adminWelcome')}</p>
+                    <p className="mt-0.5 text-defaultp5">{t('adminWelcome')}</p>
                 </div>
             </div>
             <FeatureBoard

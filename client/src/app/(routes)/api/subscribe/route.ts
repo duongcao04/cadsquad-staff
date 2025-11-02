@@ -1,5 +1,5 @@
 import { axiosClient } from '@/lib/axios';
-import { CreateBrowserSubscribeInput } from '@/shared/validationSchemas';
+import { CreateBrowserSubscribeInput } from '@/lib/validationSchemas';
 import { NextRequest, NextResponse } from 'next/server';
 import { PushSubscription } from 'web-push';
 

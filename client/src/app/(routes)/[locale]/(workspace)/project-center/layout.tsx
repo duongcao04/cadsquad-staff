@@ -1,5 +1,7 @@
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
+import { ProjectCenterTabs } from './shared'
+import { ProjectCenterHeader } from './shared/components/ProjectCenterHeader'
 
 type Props = {
     params: Promise<{ locale: string }>
@@ -42,16 +44,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
-export default function WorkbenchLayout({
+export default function ProjectCenterLayout({
     children,
     jobDetail,
     addMember,
 }: Props) {
     return (
-        <>
+        <div className="bg-background h-full">
+            <ProjectCenterHeader />
+            <div className="mt-1 mb-2">
+                <ProjectCenterTabs />
+            </div>
             {jobDetail}
             {addMember}
             {children}
-        </>
+        </div>
     )
 }

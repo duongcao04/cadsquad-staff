@@ -24,8 +24,8 @@ import {
     usePaymentChannels,
     useProfile,
     useUsers,
-} from '@/shared/queries'
-import { CreateJobInput, CreateJobSchema } from '@/shared/validationSchemas'
+} from '@/lib/queries'
+import { CreateJobInput, CreateJobSchema } from '@/lib/validationSchemas'
 import { HeroSelect, HeroSelectItem } from '../customize'
 import dayjs from 'dayjs'
 
@@ -436,7 +436,7 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                                                 <p className="font-normal">
                                                     {usr.displayName}
                                                 </p>
-                                                <p className="text-text2">
+                                                <p className="text-text-muted">
                                                     {usr.email}
                                                 </p>
                                             </div>

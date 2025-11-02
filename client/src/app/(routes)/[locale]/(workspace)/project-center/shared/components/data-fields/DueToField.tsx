@@ -1,37 +1,37 @@
 'use client'
 
-import { VietnamDateFormat } from '@/lib/dayjs'
-import { CountDown } from '@/shared/components'
+import { dateFormatter } from '@/lib/dayjs'
+import { Button } from '@heroui/react'
 import { useState } from 'react'
+import { Countdown } from '../../../../../../../../shared/components'
 
 type Props = { data: Date; disableCountdown?: boolean }
 export function DueToField({ data, disableCountdown = false }: Props) {
     const [showDate, setShowDate] = useState(false)
+
     return (
-        <button
-            className="size-full cursor-pointer"
-            onClick={() => {
-                setShowDate(!showDate)
-            }}
+        <Button
+            onPress={() => setShowDate(!showDate)}
+            className="!w-full !px-2 !h-7 flex items-center justify-start line-clamp-1 font-medium !rounded-md text-end"
+            variant="light"
         >
             {showDate ? (
-                <p className="tracking-wider">{VietnamDateFormat(data)}</p>
+                <span className="tracking-wider">{dateFormatter(data)}</span>
             ) : !disableCountdown ? (
-                <CountDown
-                    endedDate={data}
-                    options={{
-                        format: 'short',
-                        showYears: true,
-                        showMonths: true,
-                        showDays: true,
-                        showHours: true,
-                        showMinutes: true,
-                        showSeconds: false,
+                <Countdown
+                    targetDate={data}
+                    units={{
+                        days: true,
+                        hours: true,
+                        minutes: true,
+                        seconds: false,
+                        months: false,
+                        years: false,
                     }}
                 />
             ) : (
-                <p>-</p>
+                <span></span>
             )}
-        </button>
+        </Button>
     )
 }

@@ -1,0 +1,186 @@
+@import 'tailwindcss';
+@import './theme.css';
+
+/* 
+** Import heroui
+*/
+@plugin '../lib/hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-segoeui), 'Inter', Arial, Helvetica, sans-serif;
+}
+
+:root {
+    /*
+ * Thang màu 9 bước: Từ sáng (1) đến tối (9)
+ * - Các bước 1-4: Dùng cho nền, viền, các trạng thái UI.
+ * - Các bước 5-6: Dùng cho văn bản phụ, placeholder, text disabled.
+ * - Các bước 7-9: Dùng cho văn bản chính, tiêu đề.
+ */
+    /* Nền chính (Pure White) */
+    --text-1: hsl(0, 0%, 100%);
+    /* Nền mờ (Off-white) */
+    --text-2: hsl(0, 0%, 98%);
+    /* Viền, nền hover */
+    --text-3: hsl(0, 0%, 94%);
+    /* Viền đậm hơn, nền disabled */
+    --text-4: hsl(0, 0%, 88%);
+    /* Text placeholder, text disabled */
+    --text-5: hsl(0, 0%, 70%);
+    /* Text phụ, muted */
+    --text-6: hsl(0, 0%, 50%);
+    /* Text thứ cấp (secondary) */
+    --text-7: hsl(0, 0%, 30%);
+    /* Text chính (primary) */
+    --text-8: hsl(0, 0%, 15%);
+    /* Text tiêu đề, icon (Near-black) */
+    --text-9: hsl(0, 0%, 5%);
+
+    /*
+   * Các biến này đặt tên theo CHỨC NĂNG của chúng.
+   * Chúng chỉ tham chiếu đến Thang màu 9 bước.
+   */
+
+    --primary: var(--color-primary-900);
+    --secondary: var(--color-secondary-800);
+
+    /* Nền (Background) */
+    --background: var(--text-0);
+    /* Nền mờ, nền của khối code, v.v. */
+    --background-muted: var(--text-1);
+
+    /* Nền trước (Foreground) - Thường dùng cho các icon đậm */
+    --foreground: var(--text-8);
+
+
+    --foreground: hsl(0, 0%, 0%);
+
+    /* Viền (Border) */
+    --border: var(--text-4);
+    /* Viền mờ, ít thấy hơn */
+    --border-muted: var(--text-2);
+
+    /* Văn bản (Text) */
+    /* Chữ mặc định, mạnh nhất (thay cho --text-primary) */
+    --text-default: var(--text-7);
+    /* Chữ phụ, mờ hơn (thay cho --text-secondary) */
+    --text-subdued: var(--text-5);
+    /* Chữ mờ, timestamp, helper text */
+    --text-muted: var(--text-4);
+    /* Chữ bị vô hiệu hóa */
+    --text-disabled: var(--text-3);
+    /* Chữ trên nền tối */
+    --text-inverse: var(--text-0);
+
+    --color-link: #0000f7;
+}
+
+@media (prefers-color-scheme: dark) {
+    .dark {
+        /* Nền (Background) */
+        /* 5% - Nền tối */
+        --background: var(--text-9);
+        /* 15% - Nền tối mờ */
+        --background-muted: var(--text-8);
+
+        /* Nền trước (Foreground) - Dùng cho icon, v.v. */
+        /* 100% - Icon sáng */
+        --foreground: var(--text-1);
+
+        /* Viền (Border) */
+        /* 15% - Viền tối (hơi sáng hơn nền) */
+        --border: var(--text-6);
+        /* 5% - Viền siêu mờ (giống nền) */
+        --border-muted: var(--text-8);
+
+        /* Văn bản (Text) */
+        /* Lưu ý: Chúng ta dùng --text-2 (98%) cho text chính vì nó dịu mắt hơn --text-1 (100%) */
+        /* 98% - Text chính */
+        --text-default: var(--text-2);
+        /* 70% - Text phụ */
+        --text-subdued: var(--text-5);
+        /* 50% - Text mờ (timestamp) */
+        --text-muted: var(--text-6);
+        /* 30% - Text vô hiệu hóa */
+        --text-disabled: var(--text-7);
+        /* 5% - Text trên nền sáng (ví dụ: button) */
+        --text-inverse: var(--text-9);
+    }
+}
+
+@theme {
+    /* Nền chính (Pure White) */
+    --color-text-1: var(--text-1);
+    /* Nền mờ (Off-white) */
+    --color-text-2: var(--text-2);
+    /* Viền, nền hover */
+    --color-text-3: var(--text-3);
+    /* Viền đậm hơn, nền disabled */
+    --color-text-4: var(--text-4);
+    /* Text placeholder, text disabled */
+    --color-text-5: var(--text-5);
+    /* Text phụ, muted */
+    --color-text-6: var(--text-6);
+    /* Text thứ cấp (secondary) */
+    --color-text-7: var(--text-7);
+    /* Text chính (primary) */
+    --color-text-8: var(--text-8);
+    /* Text tiêu đề, icon (Near-black) */
+    --color-text-9: var(--text-9) --color-background: var(--background);
+    --color-background-muted: var(--background-muted);
+    --color-foreground: var(--foreground);
+
+    /* Viền (Border) */
+    /* 15% - Viền tối (hơi sáng hơn nền) */
+    --color-border: var(--border);
+    /* 5% - Viền siêu mờ (giống nền) */
+    --color-border-muted: var(--border-muted);
+
+    /* Văn bản (Text) */
+    /* Lưu ý: Chúng ta dùng --text-2 (98%) cho text chính vì nó dịu mắt hơn --text-1 (100%) */
+    /* 98% - Text chính */
+    --color-text-default: var(--text-default);
+    /* 70% - Text phụ */
+    --color-text-subdued: var(--text-subdued);
+    /* 50% - Text mờ (timestamp) */
+    --color-text-muted: var(--text-muted);
+    /* 30% - Text vô hiệu hóa */
+    --color-text-disabled: var(--text-disabled);
+    /* 5% - Text trên nền sáng (ví dụ: button) */
+    --color-text-inverse: var(--text-inverse);
+
+    --color-link: var(--color-link);
+
+    --color-currency: #252b5b
+}
+
+@utility container {
+    max-width: 100vw;
+    padding-inline: 20px;
+    margin-inline: auto;
+
+    @variant sm {
+        padding-inline: 20px;
+    }
+
+    @variant md {
+        padding-inline: 20px;
+    }
+
+    @variant lg {
+        padding-inline: 20px;
+    }
+
+    @variant xl {
+        padding-inline: 20px;
+    }
+}
+
+@layer utilities {
+    .link {
+        @apply no-underline text-default cursor-pointer transition duration-100 hover:!text-link;
+    }
+}

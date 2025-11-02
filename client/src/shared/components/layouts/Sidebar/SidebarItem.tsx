@@ -24,11 +24,11 @@ const SidebarItem = ({
         },
         animate: {
             opacity: 1,
-            color: 'var(--text-1p5)',
+            color: 'var(--text-subdued)',
         },
         active: {
             opacity: 1,
-            color: 'var(--color-text1)',
+            color: 'var(--color-default)',
         },
         hover: {
             opacity: 1,
@@ -60,10 +60,10 @@ const SidebarItem = ({
 
     const textVariants: Variants = {
         init: {
-            color: 'var(--color-text1p5)',
+            color: 'var(--color-defaultp5)',
         },
         animate: {
-            color: 'var(--color-text1)',
+            color: 'var(--color-default)',
         },
     }
 

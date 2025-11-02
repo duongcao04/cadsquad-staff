@@ -1,9 +1,9 @@
 'use client'
 
-import { jobTypeApi } from '@/app/api/jobType.api'
+import { jobTypeApi } from '@/lib/api'
 import { HeroSelect, HeroSelectItem } from '@/shared/components'
-import { useJobTypeDetail, useJobTypes } from '@/shared/queries'
-import { CreateJobInput } from '@/shared/validationSchemas'
+import { useJobTypeDetail, useJobTypes } from '@/lib/queries'
+import { CreateJobInput } from '@/lib/validationSchemas'
 import { Skeleton } from '@heroui/react'
 import { FormikProps } from 'formik'
 import lodash from 'lodash'
@@ -77,7 +77,7 @@ export function InsertJobNo({ formik }: Props) {
                     ))}
                 </HeroSelect>
 
-                <Slash className="rotate-[-20deg] text-text2" />
+                <Slash className="rotate-[-20deg] text-text-muted" />
 
                 {formik.values.typeId ? (
                     <Skeleton
@@ -98,7 +98,7 @@ export function InsertJobNo({ formik }: Props) {
                         </p>
                     </Skeleton>
                 ) : (
-                    <p className="text-lg text-text2">
+                    <p className="text-lg text-text-muted">
                         Vui lòng chọn phân loại dự án
                     </p>
                 )}

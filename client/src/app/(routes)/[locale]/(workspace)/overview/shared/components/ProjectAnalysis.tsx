@@ -10,7 +10,7 @@ import {
     IconDueSoon,
     IconMoneyIncome,
 } from '@/shared/components'
-import { useJobs } from '@/shared/queries'
+import { useJobs } from '@/lib/queries'
 
 export default function ProjectAnalysis() {
     const { jobs } = useJobs()

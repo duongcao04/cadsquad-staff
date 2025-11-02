@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/navigation'
 import { VietnamDateFormat } from '@/lib/dayjs'
-import { useJobsDueOnDate } from '@/shared/queries'
+import { useJobsDueOnDate } from '@/lib/queries'
 import { Modal } from 'antd'
 import { useTranslations } from 'next-intl'
 import React from 'react'
@@ -53,7 +53,7 @@ function JobDueModal({ isOpen, onClose, currentDate }: Props) {
                         )
                     })
                 ) : (
-                    <div className="py-12 flex flex-col items-center justify-center gap-2 text-text2">
+                    <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
                         <p className="text-base font-semibold">
                             {t('emptyDueOnToday')}
                         </p>

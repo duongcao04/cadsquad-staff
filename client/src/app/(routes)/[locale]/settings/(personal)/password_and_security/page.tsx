@@ -1,6 +1,6 @@
 'use client'
 
-import { useProfile } from '@/shared/queries'
+import { useProfile } from '@/lib/queries'
 import { Skeleton } from 'antd'
 import { ChangePasswordForm } from './shared'
 

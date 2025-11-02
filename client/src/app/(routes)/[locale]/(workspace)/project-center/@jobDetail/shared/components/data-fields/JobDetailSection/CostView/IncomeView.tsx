@@ -4,7 +4,7 @@ import { ApiError } from '@/lib/axios'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { HeroButton } from '@/shared/components'
 import { Job } from '@/shared/interfaces'
-import { useUpdateJobMutation } from '@/shared/queries'
+import { useUpdateJobMutation } from '@/lib/queries'
 import { addToast, NumberInput, Skeleton } from '@heroui/react'
 import { Settings } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -53,10 +53,10 @@ export function IncomeView({
         <div className="pr-2">
             <Skeleton className="w-full h-fit rounded-md" isLoaded={!isLoading}>
                 <button
-                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background2 flex items-center justify-between cursor-pointer"
+                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background-muted flex items-center justify-between cursor-pointer"
                     onClick={() => setIsEditMode(true)}
                 >
-                    <p className="text-sm text-text2">
+                    <p className="text-sm text-text-muted">
                         {t('jobColumns.incomeCost')}
                     </p>
                     <Settings size={16} />

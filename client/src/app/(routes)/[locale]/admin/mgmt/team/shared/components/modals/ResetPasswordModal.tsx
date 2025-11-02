@@ -3,7 +3,7 @@
 import { ApiError } from '@/lib/axios'
 import { handleCopy, HeroButton, PasswordInput } from '@/shared/components'
 import { User } from '@/shared/interfaces'
-import { useResetPasswordMutation } from '@/shared/queries'
+import { useResetPasswordMutation } from '@/lib/queries'
 import {
     addToast,
     Button,

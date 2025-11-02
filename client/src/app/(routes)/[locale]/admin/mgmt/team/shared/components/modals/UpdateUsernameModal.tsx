@@ -1,9 +1,9 @@
 'use client'
 
-import { userApi } from '@/app/api/user.api'
+import { userApi } from '@/lib/api'
 import { ApiError } from '@/lib/axios'
 import { User } from '@/shared/interfaces'
-import { useUpdateUserMutation } from '@/shared/queries'
+import { useUpdateUserMutation } from '@/lib/queries'
 import {
     addToast,
     Button,

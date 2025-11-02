@@ -2,9 +2,9 @@
 
 import * as React from 'react'
 
-import { JobTabEnum } from '@/shared/enums'
-import { useJobs } from '@/shared/queries'
-import { JobQueryInput } from '@/shared/validationSchemas'
+import { ProjectCenterTabEnum } from '@/shared/enums'
+import { useJobs } from '@/lib/queries'
+import { JobQueryInput } from '@/lib/validationSchemas'
 import { useDisclosure } from '@heroui/react'
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar'
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton'
@@ -42,12 +42,12 @@ function ServerDay(props: ServerDayProps) {
 }
 
 interface JobsCalendarProps {
-    tab?: JobTabEnum
+    tab?: ProjectCenterTabEnum
     queryParams?: Partial<JobQueryInput>
 }
 
 function SidebarCalendar({
-    tab = JobTabEnum.ACTIVE,
+    tab = ProjectCenterTabEnum.ACTIVE,
     queryParams,
 }: JobsCalendarProps) {
     const { isOpen, onClose, onOpen } = useDisclosure({ id: 'JobDueModal' })

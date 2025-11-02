@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // NOTE: Assuming routing includes { locales: [...], defaultLocale: 'en' }
 import { routing } from '@/i18n/routing'
-import { authApi } from './app/api/auth.api'
+import { authApi } from './lib/api/_auth.api'
 import { getLocale, removeLocale } from './i18n/utils'
 
 export const publicRoutes = ['/auth']

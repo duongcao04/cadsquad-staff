@@ -3,7 +3,7 @@
 import { ApiError } from '@/lib/axios'
 import { HeroButton } from '@/shared/components'
 import { Job } from '@/shared/interfaces'
-import { useUpdateJobMutation } from '@/shared/queries'
+import { useUpdateJobMutation } from '@/lib/queries'
 import { addToast, Input, Skeleton } from '@heroui/react'
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'

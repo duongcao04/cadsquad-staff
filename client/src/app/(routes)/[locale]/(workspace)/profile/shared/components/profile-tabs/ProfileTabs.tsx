@@ -1,6 +1,6 @@
 'use client'
 
-import { useProfile } from '@/shared/queries'
+import { useProfile } from '@/lib/queries'
 import { Tab, Tabs } from '@heroui/react'
 import { Building2, UserRound } from 'lucide-react'
 import { ProfileOrganization } from './ProfileOrganization'

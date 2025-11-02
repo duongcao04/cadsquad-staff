@@ -5,9 +5,8 @@ export * from './switchs'
 export * from './tables'
 
 export * from './drawers'
-export * from './JobTableTabs'
 export * from './SwitchCurrency'
 export * from './TableActionDropdown'
 export * from './ViewSettingsDropdown'
 
-export { default as JobTableTabs } from './JobTableTabs'
+export { default as ProjectCenterTabs } from './ProjectCenterTabs'

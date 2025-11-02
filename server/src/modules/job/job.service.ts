@@ -309,7 +309,7 @@ export class JobService {
         }),
         this.prisma.job.count({ where }),
       ])
-      const data = jobs.map((job) =>
+      const data = jobs.map((job) => ({ ...job, thumbnailUrl: job.status.thumbnailUrl })).map((job) =>
         plainToInstance(this.responseSchema(userRole), job, { excludeExtraneousValues: true }),
       ) as unknown as Job[]
 

@@ -7,8 +7,8 @@ import { useFormik } from 'formik'
 import { ApiError } from '@/lib/axios'
 import { capitalize } from '@/lib/utils'
 import { RoleEnum } from '@/shared/enums'
-import { useCreateUser, useDepartments, useJobTitles } from '@/shared/queries'
-import { CreateUserInput, CreateUserSchema } from '@/shared/validationSchemas'
+import { useCreateUser, useDepartments, useJobTitles } from '@/lib/queries'
+import { CreateUserInput, CreateUserSchema } from '@/lib/validationSchemas'
 import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
 
 const inputClassNames: InputProps['classNames'] = {

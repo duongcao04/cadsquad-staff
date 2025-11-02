@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Use server-side translations
     const tMetadata = await getTranslations({
         locale,
-        namespace: 'metadata.workbench',
+        namespace: 'metadata.projectCenter',
     })
 
     return {

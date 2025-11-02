@@ -28,7 +28,7 @@ const buttonVariants: Variants = {
     },
     hover: {
         opacity: 1,
-        background: 'var(--color-text3)',
+        background: 'var(--color-text-muted)',
     },
 }
 
@@ -50,12 +50,12 @@ export const Header = () => {
     return (
         <AntHeader
             style={{
-                background: 'transparent',
+                background: 'var(--background)',
                 padding: 0,
                 overflow: 'hidden',
                 height: '56px',
             }}
-            className="border-b border-border"
+            className="shadow-borderSM hover:shadow-borderMD"
         >
             {/* Logo */}
             <div className="h-full container grid grid-cols-[130px_1fr_220px] gap-5 items-center">
@@ -77,8 +77,8 @@ export const Header = () => {
                         >
                             <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">
                                 <div className="flex items-center justify-start gap-3">
-                                    <Search size={16} className="text-text2" />
-                                    <p className="block text-sm text-text2">
+                                    <Search size={16} className="text-text-muted" />
+                                    <p className="block text-sm text-text-muted">
                                         {t('search')} ...
                                     </p>
                                 </div>
@@ -100,7 +100,7 @@ export const Header = () => {
 
                 <div className="h-full flex justify-end items-center gap-3">
                     <div className="flex items-center justify-end gap-3">
-                        <NotificationDropdown />
+                        {/* <NotificationDropdown /> */}
                         <Button
                             variant="light"
                             startContent={<CircleHelpIcon size={18} />}

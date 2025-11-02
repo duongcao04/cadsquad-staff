@@ -21,7 +21,7 @@ import {
     useJobTypes,
     usePaymentChannels,
     useUsers,
-} from '@/shared/queries'
+} from '@/lib/queries'
 import { useTranslations } from 'use-intl'
 import { jobColumns } from '../../../project-center/shared'
 

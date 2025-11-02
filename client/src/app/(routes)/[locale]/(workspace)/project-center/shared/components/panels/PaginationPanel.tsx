@@ -54,7 +54,7 @@ function PaginationPanel({
                     className="inline-block w-fit h-fit rounded-md"
                     isLoaded={!isLoading}
                 >
-                    <p className="text-sm text-text2">
+                    <p className="text-sm text-text-muted">
                         {t('paginationShowing', {
                             from: showingFrom,
                             to: showingTo,
@@ -62,7 +62,7 @@ function PaginationPanel({
                         })}
                     </p>
                 </Skeleton>
-                <div className="h-5 w-[1px] bg-text3" />
+                <div className="h-5 w-[1px] bg-text-muted" />
                 <div className="flex items-center justify-end gap-2">
                     <p className="text-sm text-nowrap">
                         {t('listingsPerPage')}

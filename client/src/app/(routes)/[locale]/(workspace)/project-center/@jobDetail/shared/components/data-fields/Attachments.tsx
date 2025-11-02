@@ -4,7 +4,7 @@ import { Link } from '@/i18n/navigation'
 import { ApiError } from '@/lib/axios'
 import { HeroButton } from '@/shared/components'
 import { Job } from '@/shared/interfaces'
-import { useProfile, useUpdateJobMutation } from '@/shared/queries'
+import { useProfile, useUpdateJobMutation } from '@/lib/queries'
 import {
     Input,
     Popover,
@@ -90,12 +90,12 @@ export const Attachments = ({
                         isLoaded={!isLoading}
                     >
                         <button
-                            className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background2 flex items-center justify-between"
+                            className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background-muted flex items-center justify-between"
                             style={{
                                 cursor: isAdmin ? 'pointer' : 'default',
                             }}
                         >
-                            <p className="text-xs text-text2">
+                            <p className="text-xs text-text-muted">
                                 {t('jobColumns.attachmentUrls')} (
                                 {data?.attachmentUrls?.length ?? 0})
                             </p>
@@ -148,7 +148,7 @@ export const Attachments = ({
                                 target="_blank"
                                 className="link !block"
                             >
-                                <button className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background2 flex items-start justify-start cursor-pointer gap-2 group">
+                                <button className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background-muted flex items-start justify-start cursor-pointer gap-2 group">
                                     <SquareArrowOutUpRight
                                         size={12}
                                         className="mt-1.5 hidden group-hover:block transition duration-150"

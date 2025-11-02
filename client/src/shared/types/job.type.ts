@@ -1,1 +1,0 @@
-export type JobColumn = 'no' | 'type' | 'thumbnail' | 'displayName' | 'description' | 'attachmentUrls' | 'clientName' | 'incomeCost' | 'staffCost' | 'assignee' | 'paymentChannel' | 'status' | 'isPaid' | 'dueAt' | 'completedAt' | 'createdAt' | 'updatedAt' | 'action'

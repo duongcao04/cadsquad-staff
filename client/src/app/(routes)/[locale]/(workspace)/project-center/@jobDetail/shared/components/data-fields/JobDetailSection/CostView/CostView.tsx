@@ -1,5 +1,5 @@
 import { Job } from '@/shared/interfaces'
-import { useProfile } from '@/shared/queries'
+import { useProfile } from '@/lib/queries'
 import { IncomeView } from './IncomeView'
 import { PaymentChannelView } from './PaymentChannelView'
 import { StaffCostView } from './StaffCostView'
@@ -13,7 +13,7 @@ export function CostView({ isLoading = false, data }: Props) {
 
     return (
         <div
-            className="border-1 border-text3 grid grid-cols-3 gap-3 px-4 py-3 rounded-lg divide-x-1 divide-text3"
+            className="border-1 border-text-muted grid grid-cols-3 gap-3 px-4 py-3 rounded-lg divide-x-1 divide-text-muted"
             style={{
                 width: isAdmin ? '100%' : 'fit-content',
             }}

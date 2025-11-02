@@ -3,14 +3,14 @@
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { useAddMemberModal } from '@/shared/actions'
 import { handleCopy } from '@/shared/components'
-import { envConfig } from '@/shared/config'
+import { envConfig } from '@/lib/config'
 import { RoleEnum } from '@/shared/enums'
-import { useProfile, useUsers } from '@/shared/queries'
+import { useProfile, useUsers } from '@/lib/queries'
 import {
     useAssignMemberMutation,
     useJobByNo,
     useRemoveMemberMutation,
-} from '@/shared/queries/useJob'
+} from '@/lib/queries/useJob'
 import { addToast, Button, Input } from '@heroui/react'
 import { Image, Modal, Select } from 'antd'
 import { X } from 'lucide-react'
@@ -95,7 +95,7 @@ export default function AddMemberModal() {
                     <p className="text-lg font-semibold">
                         {t('memberAssignedIn', { jobNo: job?.no ?? '' })}
                     </p>
-                    <p className="text-sm font-normal text-text2">
+                    <p className="text-sm font-normal text-text-muted">
                         {t('systemWillSendNotificationThemInstruction')}
                     </p>
                 </div>
@@ -113,7 +113,7 @@ export default function AddMemberModal() {
             <div className="px-2">
                 {userRole === RoleEnum.ADMIN && (
                     <div className="space-y-1.5 mb-6">
-                        <p className="font-semibold text-text2">
+                        <p className="font-semibold text-text-muted">
                             {t('assignMembersNumber', {
                                 number: memberSelected.length,
                             })}
@@ -178,7 +178,7 @@ export default function AddMemberModal() {
                                                 <p className="font-semibold">
                                                     {option.label}
                                                 </p>
-                                                <p className="text-text2 !font-normal">
+                                                <p className="text-text-muted !font-normal">
                                                     {option.data.email}
                                                 </p>
                                             </div>
@@ -197,14 +197,14 @@ export default function AddMemberModal() {
                         </div>
                     </div>
                 )}
-                <hr className="mb-4 text-text3" />
+                <hr className="mb-4 text-text-muted" />
                 <div className="space-y-2.5">
-                    <p className="font-semibold text-text2">
+                    <p className="font-semibold text-text-muted">
                         {t('members')} ({job?.assignee?.length})
                     </p>
                     <div className="space-y-1.5 max-h-[430px] overflow-y-auto -mx-2">
                         {job?.assignee.length === 0 && (
-                            <p className="my-8 text-center text-text2">
+                            <p className="my-8 text-center text-text-muted">
                                 No members have been assigned yet.
                             </p>
                         )}
@@ -212,7 +212,7 @@ export default function AddMemberModal() {
                             return (
                                 <div
                                     key={mem.username}
-                                    className="group flex items-center justify-between px-2 py-1.5 hover:bg-text3 rounded-md"
+                                    className="group flex items-center justify-between px-2 py-1.5 hover:bg-text-muted rounded-md"
                                 >
                                     <div className="flex items-center justify-start gap-4">
                                         <Image
@@ -226,7 +226,7 @@ export default function AddMemberModal() {
                                             <p className="font-semibold">
                                                 {mem?.displayName}
                                             </p>
-                                            <p className="text-text2 !font-normal">
+                                            <p className="text-text-muted !font-normal">
                                                 {mem?.email}
                                             </p>
                                         </div>
@@ -253,9 +253,9 @@ export default function AddMemberModal() {
                         })}
                     </div>
                 </div>
-                <hr className="mt-6 mb-4 text-text3" />
+                <hr className="mt-6 mb-4 text-text-muted" />
                 <div className="space-y-2.5">
-                    <p className="font-semibold text-text2">{t('copyLink')}</p>
+                    <p className="font-semibold text-text-muted">{t('copyLink')}</p>
                     <div className="grid grid-cols-[1fr_80px] gap-5">
                         <Input
                             value={JOB_DETAIL_URL}

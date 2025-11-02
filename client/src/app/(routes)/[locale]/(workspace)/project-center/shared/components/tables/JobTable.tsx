@@ -1,23 +1,26 @@
 'use client'
 
-import { parseSortParam } from '@/lib/utils'
-import { useAddMemberModal, useDetailModal } from '@/shared/actions'
-import { Job } from '@/shared/interfaces'
 import {
     useJobStatuses,
     useJobTypes,
     usePaymentChannels,
     useUsers,
-} from '@/shared/queries'
+} from '@/lib/queries'
+import { parseSortParam } from '@/lib/utils'
+import { useAddMemberModal, useDetailModal } from '@/shared/actions'
+import { Job } from '@/shared/interfaces'
 import { JobColumn } from '@/shared/types'
 import type { TableProps } from 'antd'
 import { Table } from 'antd'
 import { SorterResult, SortOrder } from 'antd/es/table/interface'
 import { useLocale, useTranslations } from 'next-intl'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { DataType } from '../../../page'
+import React, { Key, useCallback, useEffect, useMemo, useState } from 'react'
 import { jobColumns } from '../../columns'
-import { useJobStore } from '../../store'
+import { useJobStore } from '../../stores'
+
+type DataType = Job & {
+    key: Key
+}
 
 type JobTableProps = {
     data: Job[]

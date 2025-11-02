@@ -2,7 +2,7 @@
 
 import { Image } from 'antd'
 
-import { useProfile } from '@/shared/queries'
+import { useProfile } from '@/lib/queries'
 import { ProfileTabs } from './profile-tabs'
 
 export function ProfileCard() {

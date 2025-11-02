@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from '@/i18n/navigation'
-import { useLogout, useProfile } from '@/shared/queries'
+import { useLogout, useProfile } from '@/lib/queries'
 import {
     addToast,
     Avatar,

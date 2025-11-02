@@ -1,4 +1,4 @@
-import { useComments } from '@/shared/queries'
+import { useComments } from '@/lib/queries'
 import { CommentRefAll } from '@/shared/types'
 import { Spinner } from '@heroui/react'
 import { useTranslations } from 'next-intl'
@@ -47,7 +47,7 @@ export function CommentTab({ jobId }: Props) {
                         )
                     })
                 ) : (
-                    <div className="flex flex-col items-center justify-center gap-0.5 text-text1p5 pt-6 pb-8">
+                    <div className="flex flex-col items-center justify-center gap-0.5 text-defaultp5 pt-6 pb-8">
                         <h3 className="text-sm font-semibold">
                             {t('noComments')}
                         </h3>

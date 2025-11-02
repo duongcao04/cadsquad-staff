@@ -18,7 +18,7 @@ type Props = {
 function JobCard({ data, isLoading = false }: Props) {
     const t = useTranslations()
     return (
-        <div className="grid grid-cols-[400px_1fr_1fr_1fr_1fr_40px] gap-3 items-center border-1 rounded-lg px-6 pt-3 pb-5 border-text3 bg-background hover:bg-background2">
+        <div className="grid grid-cols-[400px_1fr_1fr_1fr_1fr_40px] gap-3 items-center border-1 rounded-lg px-6 pt-3 pb-5 border-text-muted bg-background hover:bg-background-muted">
             <div className="flex items-center justify-start gap-3">
                 <Skeleton
                     isLoaded={!isLoading}
@@ -38,7 +38,7 @@ function JobCard({ data, isLoading = false }: Props) {
                         className="size-fit rounded-md"
                     >
                         <button
-                            className="text-sm text-text2 cursor-pointer hover:underline underline-offset-2"
+                            className="text-sm text-text-muted cursor-pointer hover:underline underline-offset-2"
                             title={t('copiedToClipboard')}
                             onClick={() => {
                                 try {
@@ -71,7 +71,7 @@ function JobCard({ data, isLoading = false }: Props) {
             </div>
             <div className="flex flex-col items-center justify-center gap-1">
                 <Skeleton isLoaded={!isLoading} className="size-fit rounded-md">
-                    <p className="text-xs text-text2">
+                    <p className="text-xs text-text-muted">
                         {t('jobColumns.clientName')}
                     </p>
                 </Skeleton>
@@ -83,7 +83,7 @@ function JobCard({ data, isLoading = false }: Props) {
             </div>
             <div className="flex flex-col items-center justify-center gap-1">
                 <Skeleton isLoaded={!isLoading} className="size-fit rounded-md">
-                    <p className="text-xs text-text2">
+                    <p className="text-xs text-text-muted">
                         {t('jobColumns.staffCost')}
                     </p>
                 </Skeleton>
@@ -95,20 +95,20 @@ function JobCard({ data, isLoading = false }: Props) {
             </div>
             <div className="flex flex-col items-center justify-center gap-0.5">
                 <Skeleton isLoaded={!isLoading} className="size-fit rounded-md">
-                    <p className="text-xs text-text2">
+                    <p className="text-xs text-text-muted">
                         {t('jobColumns.dueAt')}
                     </p>
                 </Skeleton>
                 <Skeleton isLoaded={!isLoading} className="size-fit rounded-md">
                     <p className="font-semibold !text-sm flex items-center justify-center gap-2">
-                        <Clock2 size={14} className="text-text1p5" />
+                        <Clock2 size={14} className="text-defaultp5" />
                         <DueToField data={data.dueAt} />
                     </p>
                 </Skeleton>
             </div>
             <div className="flex flex-col items-center justify-center gap-1">
                 <Skeleton isLoaded={!isLoading} className="size-fit rounded-md">
-                    <p className="text-xs text-text2">
+                    <p className="text-xs text-text-muted">
                         {t('jobColumns.status')}
                     </p>
                 </Skeleton>

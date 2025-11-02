@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/navigation'
 import { HeroButton } from '@/shared/components'
-import { CreateJobInput } from '@/shared/validationSchemas'
+import { CreateJobInput } from '@/lib/validationSchemas'
 import { Input, InputProps } from '@heroui/react'
 import { FormikProps } from 'formik'
 import { PlusIcon, SquareArrowOutUpRight, X } from 'lucide-react'

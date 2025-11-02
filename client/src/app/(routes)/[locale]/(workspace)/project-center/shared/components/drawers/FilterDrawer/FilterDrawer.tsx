@@ -10,7 +10,7 @@ import {
     usePaymentChannels,
     useUpdateConfigByCodeMutation,
     useUsers,
-} from '@/shared/queries'
+} from '@/lib/queries'
 import { JobColumn } from '@/shared/types'
 import { Button, Slider, Spinner } from '@heroui/react'
 import {
@@ -100,7 +100,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-text1p5">
+                                <p className="font-medium text-defaultp5">
                                     Create at
                                 </p>
                                 <div>
@@ -120,7 +120,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-text1p5">
+                                <p className="font-medium text-defaultp5">
                                     Due at
                                 </p>
                                 <div>
@@ -140,7 +140,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-text1p5">
+                                <p className="font-medium text-defaultp5">
                                     Completed at
                                 </p>
                                 <div>
@@ -159,14 +159,14 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             />
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text4" />
+                    <hr className="mt-6 mb-4 w-full text-text-muted" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <p className="font-medium text-base">Cost range</p>
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-text1p5">
+                                <p className="font-medium text-defaultp5">
                                     Income cost
                                 </p>
                                 <div>
@@ -189,7 +189,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-text1p5">
+                                <p className="font-medium text-defaultp5">
                                     Staff cost
                                 </p>
                                 <div>
@@ -211,11 +211,11 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             />
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text4" />
+                    <hr className="mt-6 mb-4 w-full text-text-muted" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
-                                <Loader size={14} className="text-text1p5" />
+                                <Loader size={14} className="text-defaultp5" />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.status')}
                                 </p>
@@ -298,15 +298,15 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             </HeroSelect>
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text4" />
+                    <hr className="mt-6 mb-4 w-full text-text-muted" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-start gap-1.5">
-                            <Landmark size={14} className="text-text1p5" />
+                            <Landmark size={14} className="text-defaultp5" />
                             <p className="font-medium text-base">Payment</p>
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-text1p5">
+                                <p className="font-medium text-defaultp5">
                                     {t('jobColumns.paymentChannel')}
                                 </p>
                                 <div>
@@ -397,7 +397,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                         </div>
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                                <p className="font-medium text-text1p5">
+                                <p className="font-medium text-defaultp5">
                                     Status
                                 </p>
                                 <div>
@@ -463,13 +463,13 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             </HeroSelect>
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text4" />
+                    <hr className="mt-6 mb-4 w-full text-text-muted" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
                                 <UsersRound
                                     size={14}
-                                    className="text-text1p5"
+                                    className="text-defaultp5"
                                 />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.assignee')}
@@ -573,7 +573,7 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                                                 <p className="font-normal">
                                                     {usr.displayName}
                                                 </p>
-                                                <p className="text-text2">
+                                                <p className="text-text-muted">
                                                     {usr.email}
                                                 </p>
                                             </div>
@@ -583,11 +583,11 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             })}
                         </HeroSelect>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text4" />
+                    <hr className="mt-6 mb-4 w-full text-text-muted" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
-                                <Layers2 size={14} className="text-text1p5" />
+                                <Layers2 size={14} className="text-defaultp5" />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.type')}
                                 </p>
@@ -668,11 +668,11 @@ export function FilterDrawer({ isOpen, onClose }: Props) {
                             </HeroSelect>
                         </div>
                     </div>
-                    <hr className="mt-6 mb-4 w-full text-text4" />
+                    <hr className="mt-6 mb-4 w-full text-text-muted" />
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center justify-start gap-1.5">
-                                <Handshake size={14} className="text-text1p5" />
+                                <Handshake size={14} className="text-defaultp5" />
                                 <p className="font-medium text-base">
                                     {t('jobColumns.clientName')}
                                 </p>

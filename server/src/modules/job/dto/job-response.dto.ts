@@ -1,10 +1,10 @@
 import { Expose, Type } from 'class-transformer'
 
-import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-channel-response.dto'
+import { OmitType } from '@nestjs/swagger'
 import { JobStatusResponseDto } from '../../job-status/dto/job-status-response.dto'
 import { JobTypeResponseDto } from '../../job-type/dto/job-type-response.dto'
+import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-channel-response.dto'
 import { UserResponseDto } from '../../user/dto/user-response.dto'
-import { OmitType } from '@nestjs/swagger'
 
 export class JobResponseDto {
 	@Expose()
@@ -15,6 +15,9 @@ export class JobResponseDto {
 
 	@Expose()
 	displayName: string
+
+	@Expose()
+	thumbnailUrl: string
 
 	@Expose()
 	description?: string

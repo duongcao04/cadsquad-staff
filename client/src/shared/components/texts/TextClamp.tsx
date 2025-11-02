@@ -29,7 +29,7 @@ export function TextClamp({
 
             <button
                 className={cn(
-                    'inline-block text-sm font-medium hover:underline cursor-pointer text-text1p5',
+                    'inline-block text-sm font-medium hover:underline cursor-pointer text-defaultp5',
                     classNames?.button
                 )}
                 onClick={() => setExpanded(!expanded)}

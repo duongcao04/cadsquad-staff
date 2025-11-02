@@ -36,7 +36,7 @@ export function FeatureCard({
             <div className="pl-6 pr-4 py-4 flex items-center justify-between">
                 <div>
                     <p className="text-xl">{title}</p>
-                    <p className="text-text2">{description}</p>
+                    <p className="text-text-muted">{description}</p>
                 </div>
                 {actionButton}
             </div>

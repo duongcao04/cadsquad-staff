@@ -1,25 +1,49 @@
-import type { NextConfig } from 'next'
-
-import createNextIntlPlugin from 'next-intl/plugin'
+import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
-    allowedDevOrigins: ['local-origin.dev', '*.local-origin.dev'],
+    async redirects() {
+        return [
+            {
+                source: '/project-center',
+                destination: '/project-center/priority',
+                permanent: true,
+            },
+        ];
+    },
+
     images: {
         unoptimized: process.env.NODE_ENV === 'development',
         remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: '**', // Cho phép tất cả hostname
-            },
+            // Replace with your real hosts
+            { protocol: 'https', hostname: 'cdn.yourapp.com' },
+            { protocol: 'https', hostname: 'images.example.com' },
         ],
     },
-    eslint: {
-        ignoreDuringBuilds: true,
-    },
-    typescript: {
-        ignoreBuildErrors: true,
-    },
-}
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
-export default withNextIntl(nextConfig)
+    experimental: {
+        // Keep only packages that benefit:
+        optimizePackageImports: ['lucide-react', 'date-fns', 'lodash'],
+    },
+
+    logging: {
+        fetches: {
+            fullUrl: true,
+        },
+    },
+
+    webpack(config) {
+        config.module.rules.push({
+            test: /\.svg$/i,
+            issuer: /\.[jt]sx?$/,
+            use: ['@svgr/webpack'],
+        });
+        return config;
+    },
+
+    eslint: { ignoreDuringBuilds: true },
+    typescript: { ignoreBuildErrors: true },
+};
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+export default withNextIntl(nextConfig);
