@@ -9,7 +9,7 @@ export default async function DashboardLayout({
     return (
         <div
             id="dashboard-page"
-            className="max-w-screen max-h-screen overflow-auto"
+            className="max-w-screen max-h-screen overflow-auto bg-background"
         >
             <div className="fixed top-0 w-full z-[99]">
                 <Header />

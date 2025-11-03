@@ -1,7 +1,13 @@
 import { envConfig } from "@/lib/config";
 import { JobColumn, JobColumnKey } from "@/shared/types";
 
+
 export const LS_OIDC_REDIRECT_URI_KEY = "oidc:redirect_uri" as const;
+
+export const URLS = {
+	home: String(envConfig.NEXT_PUBLIC_URL),
+	projectCenterDetail: (jobNo: string) => [String(envConfig.NEXT_PUBLIC_URL), 'project-center', jobNo].join('/'),
+}
 
 export const apiBaseUrl = envConfig.NEXT_PUBLIC_API_ENDPOINT
 	? `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/api`

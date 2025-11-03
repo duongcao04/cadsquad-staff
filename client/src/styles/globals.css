@@ -135,8 +135,11 @@ body {
     /* Text chính (primary) */
     --color-text-8: var(--text-8);
     /* Text tiêu đề, icon (Near-black) */
-    --color-text-9: var(--text-9) --color-background: var(--background);
+    --color-text-9: var(--text-9);
+
+    --color-background: var(--background);
     --color-background-muted: var(--background-muted);
+    
     --color-foreground: var(--foreground);
 
     /* Viền (Border) */

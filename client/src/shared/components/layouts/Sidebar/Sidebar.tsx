@@ -7,7 +7,7 @@ import {
 import { usePathname } from '@/i18n/navigation'
 import { MotionAside } from '@/lib/motion'
 import {
-    IconCalendar,
+    IconCalendarOutline,
     IconCollapse,
     IconCollapseOutline,
 } from '@/shared/components'
@@ -15,6 +15,7 @@ import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+import CollapseSidebarCalendar from './CollapseSidebarCalendar'
 import SidebarCalendar from './SidebarCalendar'
 import SidebarItem from './SidebarItem'
 
@@ -74,7 +75,7 @@ export function Sidebar() {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col gap-0.5 pr-2">
                     {sidebarActions.map((item, index) => {
                         const isActivated = activated?.path === item.path
                         return (
@@ -89,26 +90,17 @@ export function Sidebar() {
                 </div>
             </div>
             <div>
-                <div className="flex items-center justify-between cursor-pointer">
-                    <div className="pl-4 pr-1.5">
-                        {sidebarStatus === ESidebarStatus.EXPAND && (
-                            <p className="p-2 text-sm font-semibold leading-5 text-nowrap overflow-hidden">
-                                {t('calendar')}
-                            </p>
-                        )}
+                {sidebarStatus === ESidebarStatus.EXPAND && (
+                    <div className="w-full pl-4 pr-1.5 flex items-center justify-start">
+                        <IconCalendarOutline />
+                        <p className="p-2 text-sm font-semibold leading-5 text-nowrap overflow-hidden">
+                            Calendar
+                        </p>
                     </div>
-                    <div className="pl-2">
-                        {sidebarStatus === ESidebarStatus.COLLAPSE && (
-                            <div className="py-2 px-2.5">
-                                <IconCalendar
-                                    width={20}
-                                    height={20}
-                                    strokeWidth={0}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
+                )}
+                {sidebarStatus === ESidebarStatus.COLLAPSE && (
+                    <CollapseSidebarCalendar />
+                )}
                 <div className="mt-1.5 pl-2 size-full bg-background rounded-lg">
                     {sidebarStatus === ESidebarStatus.EXPAND && (
                         <SidebarCalendar />

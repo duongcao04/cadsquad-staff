@@ -1,15 +1,14 @@
 'use client'
 
-import * as React from 'react'
-
-import { ProjectCenterTabEnum } from '@/shared/enums'
 import { useJobs } from '@/lib/queries'
 import { JobQueryInput } from '@/lib/validationSchemas'
+import { ProjectCenterTabEnum } from '@/shared/enums'
 import { useDisclosure } from '@heroui/react'
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar'
 import { DayCalendarSkeleton } from '@mui/x-date-pickers/DayCalendarSkeleton'
 import { PickersDay, PickersDayProps } from '@mui/x-date-pickers/PickersDay'
 import dayjs, { Dayjs } from 'dayjs'
+import * as React from 'react'
 import { JobDueModal } from '../../modals'
 
 interface ServerDayProps extends PickersDayProps {
@@ -93,6 +92,7 @@ function SidebarCalendar({
                 onClose={onClose}
                 currentDate={currentDate}
             />
+
             <DateCalendar
                 sx={{ width: '100%' }}
                 loading={isLoading}
