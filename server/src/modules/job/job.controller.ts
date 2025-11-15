@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, SetMetadata, UseGuards } from '@nestjs/common'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { AdminGuard } from '../auth/admin.guard'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
@@ -41,6 +41,15 @@ export class JobController {
   async searchJob(@Req() request: Request, @Query() query: { keywords?: string }) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.findAllNoPaginate(userPayload.sub, userPayload.role, query)
+  }
+
+  @Get('deadline/:isoDate')
+  @HttpCode(200)
+  @UseGuards(JwtGuard)
+  @ResponseMessage('Get jobs by deadline successfully')
+  async findJobDeadline(@Req() request: Request, @Param('isoDate') isoDate: string) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.findJobDeadline(userPayload.sub, userPayload.role, isoDate)
   }
 
   @Get("no/:jobNo")

@@ -373,6 +373,67 @@ export class JobService {
   }
 
   /**
+   * Find job by deadline.
+   */
+  async findJobDeadline(
+    userId: string,
+    userRole: RoleEnum,
+    isoDate: string,
+  ): Promise<Job[]> {
+    if (!isoDate) {
+      throw new BadRequestException('ISO date invalid')
+    }
+
+    const date = new Date(isoDate); // e.g. "2025-06-12"
+    const startOfDayUtc = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      0, 0, 0, 0
+    ));
+    const endOfDayUtc = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      23, 59, 59, 999
+    ));
+    try {
+      const result = await this.prisma.job.findMany({
+        where: {
+          AND: [
+            { dueAt: { gte: startOfDayUtc, lt: endOfDayUtc } },
+            this.buildPermission(userRole, userId)
+          ]
+        },
+        include: {
+          type: true,
+          assignee: true,
+          createdBy: true,
+          paymentChannel: true,
+          status: true,
+          comment: true,
+          activityLog: {
+            include: {
+              modifiedBy: true,
+            },
+          },
+        },
+      })
+
+      console.log(isoDate);
+
+
+      if (!result) throw new NotFoundException('Jobs not found')
+
+      return plainToInstance(this.responseSchema(userRole), result, {
+        excludeExtraneousValues: true,
+      }) as unknown as Job[]
+    } catch (error) {
+      throw new InternalServerErrorException("Get job by no failed")
+    }
+  }
+
+  /**
    * Find job by ID.
    */
   async findById(jobId: string): Promise<Job> {
