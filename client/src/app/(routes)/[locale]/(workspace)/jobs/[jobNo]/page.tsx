@@ -15,7 +15,6 @@ import {
     JobDetailSection,
 } from '../../project-center/@jobDetail/shared'
 import { DueToField } from '../../project-center/shared'
-import { PageBreadcrumbs } from './shared'
 
 export default function JobDetailPage({
     params,
@@ -32,7 +31,7 @@ export default function JobDetailPage({
         <>
             <PageHeading title={t('projectCenter')} />
             <div className="ml-2 pb-3">
-                <PageBreadcrumbs jobNo={jobNo} />
+                {/* <PageBreadcrumbs jobNo={jobNo} /> */}
             </div>
             <div className="size-full bg-background py-4 px-6 rounded-md w-full h-[calc(100%-54px-32px-12px)] overflow-y-auto">
                 <>

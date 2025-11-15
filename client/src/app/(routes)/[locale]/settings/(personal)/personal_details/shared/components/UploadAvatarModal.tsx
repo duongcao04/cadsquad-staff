@@ -1,9 +1,8 @@
 'use client'
 
-import { ApiError } from '@/lib/axios'
+import { useResetPasswordMutation } from '@/lib/queries'
 import { handleCopy, HeroButton, PasswordInput } from '@/shared/components'
 import { User } from '@/shared/interfaces'
-import { useResetPasswordMutation } from '@/lib/queries'
 import {
     addToast,
     Button,
@@ -18,25 +17,13 @@ import {
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
 
-const generatePassword = () => {
-    const length = 12
-    const charset =
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    let password = ''
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * charset.length)
-        password += charset[randomIndex]
-    }
-    return password
-}
-
 type Props = {
     isOpen: boolean
     onClose: () => void
     isLoading?: boolean
     data?: User
 }
-export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
+export default function UploadAvatarModal({ isOpen, onClose, data }: Props) {
     const [resetOption, setResetOption] = React.useState('automatic')
     const [passwordInput, setPasswordInput] = useState('')
     const [isSuccess, setSuccess] = useState(false)
@@ -50,46 +37,45 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
         setSuccess(false)
     }
 
-    const { mutateAsync: resetPasswordMutation, isPending: isResetting } =
-        useResetPasswordMutation()
+    const { isPending: isResetting } = useResetPasswordMutation()
 
-    const handleResetPassword = async () => {
-        if (data?.id) {
-            if (resetOption === 'automatic') {
-                setPasswordInput(generatePassword())
-            }
-            await resetPasswordMutation(
-                {
-                    userId: data.id,
-                    resetPasswordInput: {
-                        newPassword: passwordInput,
-                    },
-                },
-                {
-                    onSuccess: (res) => {
-                        addToast({
-                            title: t('success'),
-                            description: res.data.message,
-                            color: 'success',
-                        })
-                        setSuccess(true)
-                    },
-                    onError: (error) => {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: t('failed'),
-                            description: err.message,
-                            color: 'danger',
-                        })
-                    },
-                }
-            )
-        } else {
-            addToast({
-                title: t('error'),
-                color: 'danger',
-            })
-        }
+    const handleDone = async () => {
+        // if (data?.id) {
+        // 	if (resetOption === 'automatic') {
+        // 		setPasswordInput(generatePassword())
+        // 	}
+        // 	await resetPasswordMutation(
+        // 		{
+        // 			userId: data.id,
+        // 			resetPasswordInput: {
+        // 				newPassword: passwordInput,
+        // 			},
+        // 		},
+        // 		{
+        // 			onSuccess: (res) => {
+        // 				addToast({
+        // 					title: t('success'),
+        // 					description: res.data.message,
+        // 					color: 'success',
+        // 				})
+        // 				setSuccess(true)
+        // 			},
+        // 			onError: (error) => {
+        // 				const err = error as unknown as ApiError
+        // 				addToast({
+        // 					title: t('failed'),
+        // 					description: err.message,
+        // 					color: 'danger',
+        // 				})
+        // 			},
+        // 		}
+        // 	)
+        // } else {
+        // 	addToast({
+        // 		title: t('error'),
+        // 		color: 'danger',
+        // 	})
+        // }
     }
 
     return (
@@ -221,7 +207,7 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
                             <Button
                                 color="primary"
                                 isLoading={isResetting}
-                                onPress={handleResetPassword}
+                                onPress={handleDone}
                             >
                                 {t('reset')}
                             </Button>

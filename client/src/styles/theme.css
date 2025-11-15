@@ -86,3 +86,53 @@
     --color-secondary-900: hsl(347.1 84.3% 24.9%);
     --color-secondary-950: hsl(348.4 91.8% 14.3%);
 }
+
+
+@theme {
+    /* Nền chính (Pure White) */
+    --color-text-1: var(--text-1);
+    /* Nền mờ (Off-white) */
+    --color-text-2: var(--text-2);
+    /* Viền, nền hover */
+    --color-text-3: var(--text-3);
+    /* Viền đậm hơn, nền disabled */
+    --color-text-4: var(--text-4);
+    /* Text placeholder, text disabled */
+    --color-text-5: var(--text-5);
+    /* Text phụ, muted */
+    --color-text-6: var(--text-6);
+    /* Text thứ cấp (secondary) */
+    --color-text-7: var(--text-7);
+    /* Text chính (primary) */
+    --color-text-8: var(--text-8);
+    /* Text tiêu đề, icon (Near-black) */
+    --color-text-9: var(--text-9);
+
+    --color-background: var(--background);
+    --color-background-muted: var(--background-muted);
+
+    --color-foreground: var(--foreground);
+
+    /* Viền (Border) */
+    /* 15% - Viền tối (hơi sáng hơn nền) */
+    --color-border-default: var(--border);
+    /* 5% - Viền siêu mờ (giống nền) */
+    --color-border-muted: var(--border-muted);
+
+    /* Văn bản (Text) */
+    /* Lưu ý: Chúng ta dùng --text-2 (98%) cho text chính vì nó dịu mắt hơn --text-1 (100%) */
+    /* 98% - Text chính */
+    --color-text-default: var(--text-default);
+    /* 70% - Text phụ */
+    --color-text-subdued: var(--text-subdued);
+    /* 50% - Text mờ (timestamp) */
+    --color-text-muted: var(--text-muted);
+    /* 30% - Text vô hiệu hóa */
+    --color-text-disabled: var(--text-disabled);
+    /* 5% - Text trên nền sáng (ví dụ: button) */
+    --color-text-inverse: var(--text-inverse);
+
+    --color-link: var(--color-link);
+
+    --color-currency: var(--color-currency);
+}

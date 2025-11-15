@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import { useConfigByCode, useJobColumns, useJobs } from '@/lib/queries'
@@ -13,6 +12,7 @@ import {
     ProjectCenterTable,
     useProjectCenter,
 } from '../shared'
+import { TableContextMenu } from './shared'
 
 export type JobQueryParams = Omit<JobQueryInput, 'hideFinishItems'>
 export type JobFilterParams = JobFiltersInput
@@ -70,13 +70,15 @@ export default function ProjectCenterTabPage({
 
     return (
         <div className="py-3 size-full max-h-[calc(100%-150px)]">
-            <ProjectCenterTable
-                data={jobs ?? []}
-                onRefresh={refreshJobs}
-                isLoading={loadingJobs}
-                visibleColumns={showColumns ?? []}
-                options={{ fillContainerHeight: true }}
-            />
+            <TableContextMenu>
+                <ProjectCenterTable
+                    data={jobs ?? []}
+                    onRefresh={refreshJobs}
+                    isLoading={loadingJobs}
+                    visibleColumns={showColumns ?? []}
+                    options={{ fillContainerHeight: true }}
+                />
+            </TableContextMenu>
         </div>
     )
 }

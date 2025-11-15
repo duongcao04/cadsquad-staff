@@ -5,6 +5,7 @@ import { Button, ButtonProps } from '@heroui/react'
 import { CheckCheck, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 type Props = ButtonProps & {
     textValue: string
@@ -20,6 +21,7 @@ export default function HeroCopyButton({
     onCopySuccess,
     ...props
 }: Props) {
+    const t = useTranslations()
     const [copied, setCopied] = useState(false)
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -49,6 +51,7 @@ export default function HeroCopyButton({
             onPress={onCopy}
             aria-label={copied ? 'Copied' : 'Copy'}
             size="sm"
+            title={t('copiedToClipboard')}
             className="!w-7 !h-7 flex items-center justify-center"
             isIconOnly
             {...props}

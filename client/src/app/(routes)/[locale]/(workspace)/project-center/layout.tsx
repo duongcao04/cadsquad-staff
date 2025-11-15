@@ -51,13 +51,15 @@ export default function ProjectCenterLayout({
 }: Props) {
     return (
         <div className="bg-background h-full flex flex-col">
-            <ProjectCenterHeader />
-            <div className="mt-1 mb-2">
-                <ProjectCenterTabs />
+            <div className="border-b border-border-default">
+                <ProjectCenterHeader />
+                <div className="pt-1 pb-3 pl-5 pr-3.5">
+                    <ProjectCenterTabs />
+                </div>
             </div>
             {jobDetail}
             {addMember}
-            {children}
+            <div className="pl-5 pr-3.5 pt-1">{children}</div>
         </div>
     )
 }

@@ -178,10 +178,12 @@ function ProjectCenterTabs({ defaultTab }: Props) {
         <Tabs
             aria-label="Options"
             color="primary"
+            size="sm"
             classNames={{
                 tabWrapper: 'border-[1px]',
-                tabList: 'hover:shadow-SM transition duration-150',
+                tabList: 'border-1',
             }}
+            variant="bordered"
             selectedKey={defaultTab ?? tabState}
             onSelectionChange={handleChangeTab}
         >

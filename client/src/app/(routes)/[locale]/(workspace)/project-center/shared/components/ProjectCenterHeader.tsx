@@ -28,7 +28,7 @@ export function ProjectCenterHeader() {
             title={t('projectCenter')}
             description={tMetadata('description')}
             classNames={{
-                wrapper: '!pb-3',
+                wrapper: '!py-3 pl-6 pr-3.5',
             }}
             breadcrumbs={
                 false && (

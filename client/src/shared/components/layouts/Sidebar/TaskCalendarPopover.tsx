@@ -7,9 +7,9 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { IconCalendar, IconCalendarOutline } from '../../icons'
-import SidebarCalendar from './SidebarCalendar'
+import TaskCalendar from './TaskCalendar'
 
-export default function CollapseSidebarCalendar() {
+export default function TaskCalendarPopover() {
     const { isOpen, onClose, onOpen } = useDisclosure({
         id: 'CollapseSidebarCalendarDropdown',
     })
@@ -53,7 +53,7 @@ export default function CollapseSidebarCalendar() {
                         </button>
                     </PopoverTrigger>
                     <PopoverContent aria-label="Calendar" className="">
-                        <SidebarCalendar />
+                        <TaskCalendar />
                     </PopoverContent>
                 </Popover>
             </div>

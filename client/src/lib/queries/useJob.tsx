@@ -81,6 +81,29 @@ export const useSearchJobs = (keywords?: string) => {
     }
 }
 
+export const useJobsByDeadline = (isoDate?: string) => {
+    const {
+        data,
+        isFetching,
+        isLoading: isFirstLoading,
+    } = useQuery({
+        queryKey: ['jobs', `deadline=${isoDate}`],
+        queryFn: () => {
+            if (!isoDate) {
+                return
+            }
+            return jobApi.findByDeadline(isoDate)
+        },
+        enabled: !!isoDate,
+        select: (res) => res?.data.result,
+    })
+
+    return {
+        data,
+        isLoading: isFirstLoading || isFetching,
+    }
+}
+
 export const useJobColumns = () => {
     const { data: jobColumns } = useQuery({
         queryKey: ['configs', 'code', USER_CONFIG_KEYS.jobShowColumns],

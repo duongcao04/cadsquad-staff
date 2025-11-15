@@ -27,3 +27,14 @@ export function capitalize(string: string) {
 export function padToFourDigits(num: number | string): string {
 	return num.toString().padStart(4, '0')
 }
+
+type PadDigitsOptions = { numberDigits?: number, redirect?: 'start' | 'end', charToPad?: string }
+export function padDigits(value: number | string, options: PadDigitsOptions): string {
+	const { numberDigits = 2, redirect = 'start', charToPad = '0' } = options
+	if (redirect === 'start') {
+		return value.toString().padStart(numberDigits, charToPad)
+	} else {
+		return value.toString().padEnd(numberDigits, charToPad)
+
+	}
+}

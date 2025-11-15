@@ -17,7 +17,7 @@ export default async function DashboardLayout({
             {/* Height for header */}
             <div className="h-[56px]" />
             <main className="size-full flex items-start justify-start h-[calc(100vh-56px)] max-h-[calc(100vh-56px)] overflow-auto">
-                <div className="h-full">
+                <div className="h-full !bg-[#fafafa] dark:!bg-[#171717]">
                     <div className="my-4 pl-4">
                         <ActionButton />
                     </div>
@@ -26,7 +26,7 @@ export default async function DashboardLayout({
                     </div>
                 </div>
                 <div className="w-[1px] h-full bg-text-disabled" />
-                <div className="size-full pl-7 pr-3.5 overflow-y-auto overflow-x-auto">
+                <div className="size-full overflow-y-auto overflow-x-auto">
                     {children}
                 </div>
             </main>

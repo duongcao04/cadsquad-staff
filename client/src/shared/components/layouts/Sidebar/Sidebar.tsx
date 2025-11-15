@@ -10,14 +10,14 @@ import {
     IconCalendarOutline,
     IconCollapse,
     IconCollapseOutline,
+    TaskCalendar,
 } from '@/shared/components'
 import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import CollapseSidebarCalendar from './CollapseSidebarCalendar'
-import SidebarCalendar from './SidebarCalendar'
 import SidebarItem from './SidebarItem'
+import TaskCalendarPopover from './TaskCalendarPopover'
 
 export function Sidebar() {
     const t = useTranslations()
@@ -43,7 +43,7 @@ export function Sidebar() {
             animate={
                 sidebarStatus === ESidebarStatus.EXPAND ? 'expand' : 'collapse'
             }
-            className="size-full rounded-full my-3 flex flex-col justify-between"
+            className="size-full my-3 flex flex-col justify-between"
         >
             <div id="sidebar-actions">
                 <div className="w-full pl-4 pr-1.5">
@@ -99,11 +99,11 @@ export function Sidebar() {
                     </div>
                 )}
                 {sidebarStatus === ESidebarStatus.COLLAPSE && (
-                    <CollapseSidebarCalendar />
+                    <TaskCalendarPopover />
                 )}
-                <div className="mt-1.5 pl-2 size-full bg-background rounded-lg">
+                <div className="mt-1.5 px-2 size-full bg-background overflow-hidden">
                     {sidebarStatus === ESidebarStatus.EXPAND && (
-                        <SidebarCalendar />
+                        <TaskCalendar />
                     )}
                 </div>
             </div>

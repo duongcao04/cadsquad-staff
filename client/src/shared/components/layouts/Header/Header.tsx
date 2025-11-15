@@ -55,7 +55,7 @@ export const Header = () => {
                 overflow: 'hidden',
                 height: '56px',
             }}
-            className="shadow-borderSM hover:shadow-borderMD"
+            className="shadow-borderSM"
         >
             {/* Logo */}
             <div className="h-full container grid grid-cols-[130px_1fr_220px] gap-5 items-center">
@@ -77,7 +77,10 @@ export const Header = () => {
                         >
                             <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">
                                 <div className="flex items-center justify-start gap-3">
-                                    <Search size={16} className="text-text-muted" />
+                                    <Search
+                                        size={16}
+                                        className="text-text-muted"
+                                    />
                                     <p className="block text-sm text-text-muted">
                                         {t('search')} ...
                                     </p>

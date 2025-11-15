@@ -1,7 +1,7 @@
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { JobColumnKey } from '@/shared/types'
 import { BulkChangeStatusInput, ChangeStatusInput, CreateJobInput, JobQueryWithFiltersInput, UpdateJobMembersInput } from '@/lib/validationSchemas'
 import { Job, Paginate } from '@/shared/interfaces'
+import { JobColumnKey } from '@/shared/types'
 import queryString from 'query-string'
 
 export const jobApi = {
@@ -15,6 +15,11 @@ export const jobApi = {
 		return axiosClient.get<
 			ApiResponse<{ data: Job[], paginate: Paginate }>
 		>(`/v1/jobs?${queryStringFormatter}`)
+	},
+	findByDeadline: (isoDate: string) => {
+		return axiosClient.get<
+			ApiResponse<Job[]>
+		>(`/v1/jobs/deadline/${isoDate}`)
 	},
 	searchJobs: (keywords: string) => {
 		return axiosClient.get<

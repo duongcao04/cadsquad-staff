@@ -42,7 +42,7 @@ export function UserDropdown() {
             showArrow
             classNames={{
                 base: 'before:bg-default-200',
-                content: 'p-0 border-small border-divider bg-background',
+                content: 'p-0 border-small border-divider',
             }}
             radius="sm"
             placement="bottom-end"
@@ -61,7 +61,13 @@ export function UserDropdown() {
                     suppressHydrationWarning
                 />
             </DropdownTrigger>
-            <DropdownMenu aria-label="User menu" className="p-3">
+            <DropdownMenu
+                aria-label="User menu"
+                className="p-3"
+                style={{
+                    backgroundColor: 'var(--background)',
+                }}
+            >
                 <DropdownSection showDivider aria-label="Profile">
                     <DropdownItem
                         key="profile"

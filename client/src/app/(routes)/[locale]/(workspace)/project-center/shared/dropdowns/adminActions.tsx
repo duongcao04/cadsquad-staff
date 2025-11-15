@@ -27,7 +27,7 @@ export function adminActions(
                     icon: <SquareArrowOutUpRight size={14} />,
                     childProps: {
                         onPress: () => {
-                            window.open(`/project-center/${jobNo}`, '_blank')
+                            window.open(`/jobs/${jobNo}`, '_blank')
                         },
                     },
                 },

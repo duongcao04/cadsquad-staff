@@ -24,7 +24,8 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const IMAGES = {
-	loadingPlaceholder: 'https://placehold.co/400x400?text=Loading'
+	loadingPlaceholder: 'https://placehold.co/400x400?text=Loading',
+	emptyAvatar: "https://res.cloudinary.com/dqx1guyc0/image/upload/v1762496668/.temp/empty_avatar_wai3iw.webp",
 } as const
 
 const allJobColumns: JobColumn[] = ['no', 'type', 'thumbnail', 'displayName', 'description', 'attachmentUrls', 'clientName', 'incomeCost', 'staffCost', 'assignee', 'paymentChannel', 'status', 'isPaid', 'dueAt', 'completedAt', 'createdAt', 'updatedAt', 'action']

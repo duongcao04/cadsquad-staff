@@ -1,7 +1,15 @@
 'use client'
 
-import React from 'react'
-
+import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { ApiError } from '@/lib/axios'
+import {
+    useDeleteJobMutation,
+    useProfile,
+    useUpdateJobMutation,
+} from '@/lib/queries'
+import { useAddMemberModal } from '@/shared/actions'
+import { ConfirmDeleteModal } from '@/shared/components'
+import { Job } from '@/shared/interfaces'
 import {
     addToast,
     Button,
@@ -14,21 +22,17 @@ import {
     DropdownTrigger,
     useDisclosure,
 } from '@heroui/react'
-
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
-import { ApiError } from '@/lib/axios'
 import {
-    useDeleteJobMutation,
-    useProfile,
-    useUpdateJobMutation,
-} from '@/lib/queries'
-import { useAddMemberModal } from '@/shared/actions'
-import { ConfirmDeleteModal } from '@/shared/components'
-import { RoleEnum } from '@/shared/enums'
-import { Job } from '@/shared/interfaces'
-import { EllipsisVerticalIcon } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { accountingActions, adminActions, userActions } from '../dropdowns'
+    CircleCheck,
+    CircleDollarSign,
+    EllipsisVerticalIcon,
+    PinIcon,
+    SquareArrowOutUpRight,
+    Trash,
+    UserPlus,
+} from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import React from 'react'
 import { UpdateCostModal } from './modals'
 
 export type ActionGroup = {
@@ -49,8 +53,10 @@ type Props = {
 export function TableActionDropdown({ data }: Props) {
     const t = useTranslations()
 
+    const locale = useLocale()
+
     const { openModal } = useAddMemberModal()
-    const { userRole } = useProfile()
+    const { isAdmin, isAccounting } = useProfile()
     const { mutateAsync: updateJobMutation, isPending: isUpdating } =
         useUpdateJobMutation()
 
@@ -154,25 +160,6 @@ export function TableActionDropdown({ data }: Props) {
         }
     }
 
-    const getActions: () => ActionGroup[] = () => {
-        if (userRole === RoleEnum.ADMIN) {
-            return adminActions(
-                data.no,
-                () => {
-                    openModal(data.no)
-                },
-                onOpenModal,
-                onOpenUCostModal,
-                handleOpenMarkAsPaidModal
-            )
-        }
-        if (userRole === RoleEnum.USER) {
-            return userActions(data.no)
-        }
-        return accountingActions(data.no)
-    }
-    const actionsDropdown = getActions()
-
     return (
         <>
             <ConfirmDeleteModal
@@ -217,31 +204,103 @@ export function TableActionDropdown({ data }: Props) {
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Job menu actions">
-                    {actionsDropdown.map((group) => {
-                        return (
-                            <DropdownSection
-                                key={group.key}
-                                title={group.groupTitle}
-                                {...group.groupProps}
-                            >
-                                {group.children.map((item) => {
-                                    return (
-                                        <DropdownItem
-                                            key={item.key}
-                                            startContent={
-                                                <div className="text-text-subdued">
-                                                    {item.icon}
-                                                </div>
-                                            }
-                                            {...item.childProps}
-                                        >
-                                            {item.title}
-                                        </DropdownItem>
-                                    )
-                                })}
-                            </DropdownSection>
-                        )
-                    })}
+                    <DropdownSection key="feature_actions" title="View">
+                        <DropdownItem
+                            key="openInNewTab"
+                            startContent={
+                                <SquareArrowOutUpRight
+                                    className="text-text-subdued"
+                                    size={14}
+                                />
+                            }
+                            onPress={() =>
+                                window.open(
+                                    `/${locale}/jobs/${data.no}`,
+                                    '_blank'
+                                )
+                            }
+                        >
+                            Open in new tab
+                        </DropdownItem>
+                    </DropdownSection>
+                    <DropdownSection key="job_actions" title="Job">
+                        <DropdownItem
+                            key="pin"
+                            startContent={
+                                <PinIcon
+                                    size={14}
+                                    className="text-text-subdued rotate-45"
+                                />
+                            }
+                            onPress={() =>
+                                alert('Tính năng đang được phát triển')
+                            }
+                        >
+                            Pin Job
+                        </DropdownItem>
+                        <DropdownItem
+                            key="assignReassign"
+                            style={{
+                                display: isAdmin ? 'flex' : 'none',
+                            }}
+                            startContent={
+                                <UserPlus
+                                    size={14}
+                                    className="text-text-subdued"
+                                />
+                            }
+                            onPress={() => openModal(data.no as string)}
+                        >
+                            Assign / Reassign
+                        </DropdownItem>
+                        <DropdownItem
+                            key="deleteJob"
+                            style={{
+                                display: isAdmin ? 'flex' : 'none',
+                            }}
+                            startContent={
+                                <Trash
+                                    size={14}
+                                    className="text-text-subdued"
+                                />
+                            }
+                            onPress={() => onOpenModal()}
+                        >
+                            Delete
+                        </DropdownItem>
+                    </DropdownSection>
+                    <DropdownSection
+                        key="payment_actions"
+                        title="Payment"
+                        style={{
+                            display: isAdmin || isAccounting ? 'block' : 'none',
+                        }}
+                    >
+                        <DropdownItem
+                            key="updateCost"
+                            startContent={
+                                <CircleDollarSign
+                                    size={14}
+                                    className="text-text-subdued"
+                                />
+                            }
+                            onPress={() => onOpenUCostModal()}
+                        >
+                            Update Cost
+                        </DropdownItem>
+                        <DropdownItem
+                            key="markAsPaid"
+                            startContent={
+                                <CircleCheck
+                                    size={14}
+                                    className="text-text-subdued"
+                                />
+                            }
+                            onPress={() => handleOpenMarkAsPaidModal()}
+                        >
+                            Mark as Paid
+                        </DropdownItem>
+                    </DropdownSection>
                 </DropdownMenu>
             </Dropdown>
         </>
