@@ -98,6 +98,12 @@ export const ACTIVITY_LOG_TYPE = {
 	deleteJob: "DeleteJob",
 }
 
+export const THEME_SELECTS = [
+	{ key: "system", label: "System" },
+	{ key: "light", label: "Light" },
+	{ key: "dark", label: "Dark" },
+];
+
 export const PAID_STATUS_COLOR: Record<string, { title: string, hexColor: string }> = {
 	paid: {
 		title: 'Paid',
@@ -213,4 +219,11 @@ export const JOB_COLUMNS: { displayName: string, uid: JobColumnKey, sortable: bo
 		"sortable": false,
 		"description": "Available actions such as view, edit, or delete."
 	}
+]
+
+export const TABLE_ROW_PER_PAGE_OPTIONS = [
+	{ displayName: '5 items', value: 5 },
+	{ displayName: '10 items', value: 10 },
+	{ displayName: '15 items', value: 15 },
+	{ displayName: '20 items', value: 20 },
 ]

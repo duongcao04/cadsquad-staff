@@ -1,7 +1,7 @@
+import { ProjectCenterHeader } from '@/shared/components/project-center/ProjectCenterHeader'
+import ProjectCenterTabs from '@/shared/components/project-center/ProjectCenterTabs'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { ProjectCenterTabs } from './shared'
-import { ProjectCenterHeader } from './shared/components/ProjectCenterHeader'
 
 type Props = {
     params: Promise<{ locale: string }>

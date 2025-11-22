@@ -25,7 +25,7 @@ export const UpdatePasswordInputSchema = yup.object().shape({
         .oneOf([yup.ref("newPassword")], "Passwords must match")
     ,
 })
-export type UpdatePasswordInput = yup.InferType<typeof UpdatePasswordInputSchema>
+export type TUpdatePasswordInput = yup.InferType<typeof UpdatePasswordInputSchema>
 
 
 export const ResetPasswordSchema = yup.object().shape({
@@ -37,5 +37,5 @@ export const ResetPasswordSchema = yup.object().shape({
             "Password must be at least 8 characters"
         ),
 })
-export type ResetPasswordInput = yup.InferType<typeof ResetPasswordSchema>
+export type TResetPasswordInput = yup.InferType<typeof ResetPasswordSchema>
 

@@ -23,8 +23,7 @@ export const CreatePaymentChannelSchema = yup.object({
         .string()
         .optional(),
 })
-export type CreatePaymentChannelInput = yup.InferType<typeof CreatePaymentChannelSchema>
+export type TCreatePaymentChannelInput = yup.InferType<typeof CreatePaymentChannelSchema>
 
 export const UpdatePaymentChannelInputSchema = CreatePaymentChannelSchema.partial()
-
-export type UpdatePaymentChannelInput = yup.InferType<typeof UpdatePaymentChannelInputSchema>
+export type TUpdatePaymentChannelInput = yup.InferType<typeof UpdatePaymentChannelInputSchema>

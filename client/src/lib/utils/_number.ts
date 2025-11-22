@@ -45,7 +45,7 @@ export const regionCurrencyMap: { [key: string]: RegionCurrency } = {
 
 export const currencyFormatter = (
 	amount: string | number,
-	region: keyof typeof regionCurrencyMap,
+	region?: keyof typeof regionCurrencyMap,
 ) => {
 	const numberValue = typeof amount === 'string' ? parseFloat(amount) : amount
 	const regionMatch: RegionCurrency = region

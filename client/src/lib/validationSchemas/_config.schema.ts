@@ -6,8 +6,8 @@ export const CreateConfigInputSchema = yup.object({
   value: yup.string().required('Value is required'),
 })
 
-export type CreateConfigInput = yup.InferType<typeof CreateConfigInputSchema>
+export type TCreateUserConfigInput = yup.InferType<typeof CreateConfigInputSchema>
 
 export const UpdateConfigInputSchema = CreateConfigInputSchema.partial()
 
-export type UpdateConfigInput = yup.InferType<typeof UpdateConfigInputSchema>
+export type TUpdateUserConfigInput = yup.InferType<typeof UpdateConfigInputSchema>

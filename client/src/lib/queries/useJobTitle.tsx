@@ -1,9 +1,9 @@
 import { jobTitleApi } from '@/lib/api'
-import {
-    CreateJobTitleInput,
-    UpdateJobTitleInput,
-} from '@/lib/validationSchemas/job-title.schema'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+    TCreateJobTitleInput,
+    TUpdateJobTitleInput,
+} from '../validationSchemas'
 
 export const useJobTitles = () => {
     const { data, isLoading, isFetching } = useQuery({
@@ -33,7 +33,7 @@ export const useJobTitleById = (id: string) =>
 export const useCreateJobTitle = () => {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (data: CreateJobTitleInput) => jobTitleApi.create(data),
+        mutationFn: (data: TCreateJobTitleInput) => jobTitleApi.create(data),
         onSuccess: () =>
             queryClient.invalidateQueries({ queryKey: ['job-titles'] }),
     })
@@ -42,8 +42,13 @@ export const useCreateJobTitle = () => {
 export const useUpdateJobTitle = () => {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: UpdateJobTitleInput }) =>
-            jobTitleApi.update(id, data),
+        mutationFn: ({
+            id,
+            data,
+        }: {
+            id: string
+            data: TUpdateJobTitleInput
+        }) => jobTitleApi.update(id, data),
         onSuccess: () =>
             queryClient.invalidateQueries({ queryKey: ['job-titles'] }),
     })

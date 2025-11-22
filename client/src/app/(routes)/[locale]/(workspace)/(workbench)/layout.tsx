@@ -1,11 +1,10 @@
+import { PageHeading } from '@/shared/components'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
 type Props = {
     params: Promise<{ locale: string }>
     children: React.ReactNode
-    jobDetail: React.ReactNode
-    addMember: React.ReactNode
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Get locale and check if it's valid
@@ -42,16 +41,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
-export default function WorkbenchLayout({
-    children,
-    jobDetail,
-    addMember,
-}: Props) {
+export default function WorkbenchLayout({ children }: Props) {
     return (
-        <>
-            {jobDetail}
-            {addMember}
-            {children}
-        </>
+        <div className="bg-background h-full flex flex-col">
+            <div className="border-b border-border-default">
+                <PageHeading
+                    title="Workbench"
+                    classNames={{
+                        wrapper: '!py-3 pl-6 pr-3.5',
+                    }}
+                />
+            </div>
+            <div className="pl-5 pr-3.5 pt-1">{children}</div>
+        </div>
     )
 }

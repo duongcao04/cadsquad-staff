@@ -1,12 +1,11 @@
 import { notificationApi } from '@/lib/api'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { Notification } from '@/shared/interfaces/_notification.interface'
-import {
-    CreateNotificationInput,
-    UpdateNotificationInput,
-} from '@/lib/validationSchemas/notification.schema'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import {
+    TCreateNotificationInput,
+    TUpdateNotificationInput,
+} from '../validationSchemas'
 
 export const useNotifications = () => {
     const { data, isFetching, isLoading, refetch } = useQuery({
@@ -26,7 +25,7 @@ export const useNotifications = () => {
 export const useSendNotificationMutation = () => {
     return useMutation({
         mutationKey: ['createNotification'],
-        mutationFn: (sendNotification: CreateNotificationInput) => {
+        mutationFn: (sendNotification: TCreateNotificationInput) => {
             return axiosClient.post('notifications/send', sendNotification)
         },
         onSuccess: () => {
@@ -44,7 +43,7 @@ export const useUpdateNotification = (onSuccess?: () => void) => {
             data,
         }: {
             id: string
-            data: UpdateNotificationInput
+            data: TUpdateNotificationInput
         }) => {
             const res = await notificationApi.update(id, data)
             return res.data

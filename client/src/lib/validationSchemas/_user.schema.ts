@@ -16,7 +16,7 @@ export const CreateUserSchema = yup.object().shape({
         .oneOf(['USER', 'ADMIN', 'ACCOUNTING'], 'Invalid role')
         .default('USER'),
 })
-export type CreateUserInput = yup.InferType<typeof CreateUserSchema>
+export type TCreateUserInput = yup.InferType<typeof CreateUserSchema>
 
 export const UpdateUserSchema = CreateUserSchema.partial()
-export type UpdateUserInput = yup.InferType<typeof UpdateUserSchema>
+export type TUpdateUserInput = yup.InferType<typeof UpdateUserSchema>

@@ -1,16 +1,12 @@
 import { RoleEnum } from "../enums/_role.enum"
-import { Account } from "./_account.interface"
-import { Config } from "./_config.interface"
-import { Department } from "./_department.interface"
-import { Job } from "./_job.interface"
-import { JobActivityLog } from "./_jobActivityLog.interface"
-import { JobTitle } from "./_jobTitle.interface"
+import { TDepartment, TJob, TJobActivityLog, TJobTitle, TUserConfig } from "../types"
+import { TAccount } from "../types/_account.type"
 
 /**
  * Represents a user entity with profile details, relations,
  * and metadata about their activity in the system.
  */
-export interface User {
+export interface IUserResponse {
 	/** Unique identifier (UUIDv4) */
 	id: string
 
@@ -33,13 +29,13 @@ export interface User {
 	jobTitleId?: string | null
 
 	/** Job title information (nullable) */
-	jobTitle?: JobTitle | null
+	jobTitle?: TJobTitle | null
 
 	/** Department ID (nullable) */
 	departmentId?: string | null
 
 	/** Department information (nullable) */
-	department?: Department | null
+	department?: TDepartment | null
 
 	/** Phone number (nullable) */
 	phoneNumber?: string | null
@@ -57,10 +53,10 @@ export interface User {
 	notifications: Notification[]
 
 	/** List of jobs assigned to the user */
-	jobsAssigned: Job[]
+	jobsAssigned: TJob[]
 
 	/** List of jobs created by the user */
-	jobsCreated: Job[]
+	jobsCreated: TJob[]
 
 	/** List of files created by the user */
 	filesCreated: FileSystem[]
@@ -69,16 +65,16 @@ export interface User {
 	files: FileSystem[]
 
 	/** Connected accounts (e.g., Google, GitHub) */
-	accounts: Account[]
+	accounts: TAccount[]
 
 	/** Notifications sent by the user */
 	sendedNotifications: Notification[]
 
 	/** Log of job-related activities performed by the user */
-	jobActivityLog: JobActivityLog[]
+	jobActivityLog: TJobActivityLog[]
 
 	/** Personal configuration settings for the user */
-	configs: Config[]
+	configs: TUserConfig[]
 
 	/** Date and time when the user was created */
 	createdAt: Date
@@ -86,3 +82,4 @@ export interface User {
 	/** Date and time when the user was last updated */
 	updatedAt: Date
 }
+

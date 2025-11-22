@@ -19,7 +19,7 @@ export default function ProjectAnalysis() {
         return [
             {
                 title: 'Assigned projects',
-                value: `${jobs?.length}`,
+                value: `${jobs.length}`,
                 icon: IconAssignee,
                 color: '#c65808',
                 href: '',

@@ -1,12 +1,12 @@
 'use client'
 
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { commentApi } from '@/lib/api'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { commentApi } from '@/lib/api'
 import {
-    CreateCommentInput,
-    UpdateCommentInput,
-} from '@/lib/validationSchemas/comment.schema'
+    TCreateCommentInput,
+    TUpdateCommentInput,
+} from '@/lib/validationSchemas'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 export const useComments = (jobId?: string) => {
     const { data, isFetching, isLoading } = useQuery({
@@ -46,7 +46,7 @@ export const useCommentById = (commentId?: string) => {
 
 export const useCreateComment = () => {
     return useMutation({
-        mutationFn: (data: CreateCommentInput) => commentApi.create(data),
+        mutationFn: (data: TCreateCommentInput) => commentApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['comments'] })
         },
@@ -54,7 +54,7 @@ export const useCreateComment = () => {
 }
 export const useUpdateComment = () => {
     return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: UpdateCommentInput }) =>
+        mutationFn: ({ id, data }: { id: string; data: TUpdateCommentInput }) =>
             commentApi.update(id, data).then((res) => res.data.result),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({

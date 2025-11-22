@@ -1,4 +1,4 @@
-export interface BrowserSubscribes {
+export interface IBrowserSubscribeResponse {
   /**
    * The unique identifier for the subscription.
    * @type {string}

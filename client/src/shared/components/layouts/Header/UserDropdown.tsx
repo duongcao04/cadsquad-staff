@@ -10,14 +10,27 @@ import {
     DropdownMenu,
     DropdownSection,
     DropdownTrigger,
+    Select,
+    SelectItem,
     User as UserComp,
 } from '@heroui/react'
-import { LogOut, User, UserCircle } from 'lucide-react'
+import {
+    ChartArea,
+    LogOut,
+    SunMoon,
+    User,
+    UserCircle,
+    UserCog,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { THEME_SELECTS } from '../../../../lib/utils'
+import { useTheme } from 'next-themes'
 
 export function UserDropdown() {
     const tSettings = useTranslations('settings')
     const tCommon = useTranslations()
+
+    const { theme, setTheme } = useTheme()
 
     const pathname = usePathname()
     const router = useRouter()
@@ -39,21 +52,18 @@ export function UserDropdown() {
 
     return (
         <Dropdown
+            placement="bottom-end"
             showArrow
             classNames={{
-                base: 'before:bg-default-200',
-                content: 'p-0 border-small border-divider',
+                base: 'top-2',
+                content: 'rounded-lg',
             }}
-            radius="sm"
-            placement="bottom-end"
         >
             <DropdownTrigger>
                 <Avatar
-                    isBordered
                     className="cursor-pointer"
-                    color="danger"
                     icon={<User size={18} />}
-                    src={profile?.avatar ?? ''}
+                    src={profile.avatar}
                     classNames={{
                         base: '!size-6',
                     }}
@@ -63,10 +73,10 @@ export function UserDropdown() {
             </DropdownTrigger>
             <DropdownMenu
                 aria-label="User menu"
-                className="p-3"
-                style={{
-                    backgroundColor: 'var(--background)',
+                classNames={{
+                    base: 'min-w-[250px] overflow-y-auto',
                 }}
+                // disabledKeys={['changeTheme']}
             >
                 <DropdownSection showDivider aria-label="Profile">
                     <DropdownItem
@@ -82,15 +92,16 @@ export function UserDropdown() {
                                 src: profile?.avatar ?? '',
                             }}
                             classNames={{
-                                name: 'text-default-600',
-                                description: 'text-default-500',
+                                name: 'text-text-default font-medium',
+                                description: 'text-text-subdued',
                             }}
-                            name={profile?.displayName}
+                            name={profile.displayName}
                             description={`@${profile?.username}`}
                         />
                     </DropdownItem>
                     <DropdownItem
                         key="overview"
+                        startContent={<ChartArea size={16} />}
                         onClick={() => {
                             router.push('/overview')
                         }}
@@ -99,11 +110,39 @@ export function UserDropdown() {
                     </DropdownItem>
                     <DropdownItem
                         key="settings"
+                        startContent={<UserCog size={16} />}
                         onClick={() => {
                             router.push('/setting')
                         }}
                     >
                         {tSettings('accountSettings')}
+                    </DropdownItem>
+                </DropdownSection>
+
+                <DropdownSection aria-label="Other actions" showDivider>
+                    <DropdownItem
+                        isReadOnly
+                        key="changeTheme"
+                        startContent={<SunMoon size={16} />}
+                        className="hover:!bg-transparent"
+                        endContent={
+                            <Select
+                                className="max-w-[100px]"
+                                size="sm"
+                                defaultSelectedKeys={[theme as 'dark']}
+                                onSelectionChange={(keys) => {
+                                    setTheme(keys.currentKey as 'dark')
+                                }}
+                            >
+                                {THEME_SELECTS.map((theme) => (
+                                    <SelectItem key={theme.key}>
+                                        {theme.label}
+                                    </SelectItem>
+                                ))}
+                            </Select>
+                        }
+                    >
+                        Theme mode
                     </DropdownItem>
                 </DropdownSection>
 

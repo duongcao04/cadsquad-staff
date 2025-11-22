@@ -1,10 +1,10 @@
-import { User } from "./_user.interface"
+import { User } from "../types"
 
 /**
  * Represents an organizational department within the company.
  * Each department can have multiple users assigned to it.
  */
-export interface Department {
+export interface IDepartmentResponse {
 	/**
 	 * The unique identifier for the department.
 	 * @type {string}

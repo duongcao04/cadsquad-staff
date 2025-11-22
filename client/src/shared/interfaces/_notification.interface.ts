@@ -1,11 +1,11 @@
 import { NotificationStatusEnum, NotificationTypeEnum } from "@/shared/enums"
-import { User } from "./_user.interface"
+import { TUser } from "../types"
 
 /**
  * Represents a notification sent to a user.
  * Notifications can be of various types and have different statuses (e.g., seen, unseen).
  */
-export interface Notification {
+export interface IUserNotificationResponse {
 	/**
 	 * The unique identifier for the notification.
 	 * @type {string}
@@ -22,7 +22,7 @@ export interface Notification {
 	 * A reference to the User object who is the recipient of the notification.
 	 * @type {User}
 	 */
-	user: User
+	user: TUser
 
 	/**
 	 * The title of the notification.
@@ -53,7 +53,7 @@ export interface Notification {
 	 * A reference to the User object who sent the notification.
 	 * @type {User | null | undefined}
 	 */
-	sender?: User | null
+	sender?: TUser | null
 
 	/**
 	 * A url for redirect action

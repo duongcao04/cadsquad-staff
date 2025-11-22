@@ -1,21 +1,63 @@
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { jobApi, jobStatusApi } from '@/lib/api'
-import { ApiResponse, axiosClient } from '@/lib/axios'
+import { ApiError, ApiResponse, axiosClient } from '@/lib/axios'
 import { USER_CONFIG_KEYS } from '@/lib/utils'
 import {
-    BulkChangeStatusInput,
     ChangeStatusInput,
-    CreateJobInput,
-    JobQueryWithFiltersInput,
+    TBulkChangeStatusInput,
+    TCreateJobInput,
+    TJobQueryWithFiltersInput,
+    TUpdateJobInput,
+    TUpdateJobMembersInput,
 } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
-import { Job, JobActivityLog } from '@/shared/interfaces'
+import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import lodash from 'lodash'
+import { useTranslations } from 'next-intl'
 import queryString from 'query-string'
+import { useMemo } from 'react'
+import { IJobActivityLogResponse, IJobResponse } from '../../shared/interfaces'
+import { TJob } from '../../shared/types'
 
+const mapItem: (item: IJobResponse) => TJob = (item) => ({
+    no: item.no,
+    displayName: item.displayName,
+    assignee: item.assignee ?? [],
+    activityLog: item.activityLog ?? [],
+    attachmentUrls: item.attachmentUrls ?? [],
+    clientName: item.clientName ?? '',
+    createdBy: item.createdBy,
+    files: item.files,
+    id: item.id,
+    incomeCost:
+        typeof item.incomeCost === 'number'
+            ? item.incomeCost
+            : parseInt(item.incomeCost),
+    staffCost:
+        typeof item.staffCost === 'number'
+            ? item.staffCost
+            : parseInt(item.staffCost),
+    isPaid: Boolean(item.isPaid),
+    isPinned: Boolean(item.isPinned),
+    isPublished: Boolean(item.isPublished),
+    paymentChannel: item.paymentChannel,
+    priority: item.priority,
+    status: item.status,
+    thumbnailUrl: item.thumbnailUrl,
+    description: item.description,
+    paidAt: item.paidAt,
+    type: item.type,
+    updatedAt: new Date(item.updatedAt),
+    finishedAt: item.finishedAt ? new Date(item.finishedAt) : null,
+    createdAt: new Date(item.createdAt),
+    dueAt: new Date(item.dueAt),
+    completedAt: item.completedAt ? new Date(item.completedAt) : null,
+    deletedAt: item.deletedAt ? new Date(item.deletedAt) : null,
+    startedAt: new Date(item.startedAt),
+})
 export const useJobs = (
-    params: JobQueryWithFiltersInput = {
+    params: TJobQueryWithFiltersInput = {
         hideFinishItems: 0,
         page: 1,
         limit: 10,
@@ -49,11 +91,22 @@ export const useJobs = (
         select: (res) => res.data,
     })
 
+    const jobs = useMemo(() => {
+        const jobsData = data?.result?.data
+
+        if (!Array.isArray(jobsData)) {
+            return []
+        }
+
+        return jobsData.map((item) => mapItem(item))
+    }, [data?.result?.data])
+
     return {
         refetch,
         isLoading: isFirstLoading || isFetching,
         error,
-        jobs: data?.result?.data,
+        jobs,
+        data: jobs,
         paginate: data?.result?.paginate,
     }
 }
@@ -64,7 +117,7 @@ export const useSearchJobs = (keywords?: string) => {
         isFetching,
         isLoading: isFirstLoading,
     } = useQuery({
-        queryKey: ['jobs', `search=${keywords}`],
+        queryKey: ['jobs', 'search', keywords],
         queryFn: () => {
             if (!keywords) {
                 return
@@ -105,12 +158,12 @@ export const useJobsByDeadline = (isoDate?: string) => {
 }
 
 export const useJobColumns = () => {
-    const { data: jobColumns } = useQuery({
+    const { data } = useQuery({
         queryKey: ['configs', 'code', USER_CONFIG_KEYS.jobShowColumns],
         queryFn: () => jobApi.columns(),
         select: (res) => res.data.result,
     })
-    return { jobColumns }
+    return { jobColumns: data ?? [] }
 }
 
 export const useJobsDueOnDate = (dueAt?: string) => {
@@ -173,9 +226,21 @@ export const useJobByNo = (jobNo?: string) => {
         enabled: jobNo !== null && jobNo !== undefined,
         select: (res) => res?.data,
     })
+
+    const job = useMemo(() => {
+        const jobData = data?.result
+
+        if (lodash.isEmpty(jobData)) {
+            return {} as TJob
+        }
+
+        return mapItem(jobData)
+    }, [data?.result])
+
     return {
         refetch,
-        job: data?.result,
+        data: data?.result,
+        job,
         error,
         isLoading,
     }
@@ -225,7 +290,7 @@ export const useJobActivityLogs = (jobId?: string) => {
     const { data, refetch, error, isLoading } = useQuery({
         queryKey: jobId ? ['jobActivityLog', jobId] : ['jobActivityLog'],
         queryFn: () =>
-            axiosClient.get<ApiResponse<JobActivityLog[]>>(
+            axiosClient.get<ApiResponse<IJobActivityLogResponse[]>>(
                 `jobs/${jobId}/activity-log`
             ),
         enabled: !!jobId,
@@ -242,7 +307,7 @@ export const useJobActivityLogs = (jobId?: string) => {
 export const useCreateJobMutation = () => {
     return useMutation({
         mutationKey: ['createJob'],
-        mutationFn: (createJobInput: CreateJobInput) => {
+        mutationFn: (createJobInput: TCreateJobInput) => {
             return axiosClient.post('jobs', createJobInput)
         },
         onSuccess: () => {
@@ -272,6 +337,10 @@ export const useChangeStatusMutation = () => {
             return jobApi.changeStatus(jobId, data)
         },
         onSuccess: (res) => {
+            addToast({
+                title: res.data.message,
+                color: 'success',
+            })
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],
             })
@@ -282,16 +351,21 @@ export const useChangeStatusMutation = () => {
                 queryKey: ['jobActivityLog', String(res.data.result?.id)],
             })
         },
+        onError: (error) => {
+            const err = error as unknown as ApiError
+            addToast({
+                title: err.message,
+                color: 'danger',
+            })
+        },
     })
 }
 
 export const useBulkChangeStatusMutation = () => {
     return useMutation({
         mutationKey: ['changeStatus', 'job'],
-        mutationFn: ({ data }: { data: BulkChangeStatusInput }) => {
+        mutationFn: ({ data }: { data: TBulkChangeStatusInput }) => {
             return jobApi.bulkChangeStatus(data)
-        },
-        onSuccess: () => {
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],
             })
@@ -299,8 +373,7 @@ export const useBulkChangeStatusMutation = () => {
     })
 }
 
-type Props = { onSuccess?: (data: ApiResponse<Job>) => void }
-export const useAssignMemberMutation = ({ onSuccess }: Props = {}) => {
+export const useAssignMemberMutation = () => {
     return useMutation({
         mutationKey: ['assignMember', 'job'],
         mutationFn: ({
@@ -308,25 +381,33 @@ export const useAssignMemberMutation = ({ onSuccess }: Props = {}) => {
             assignMemberInput,
         }: {
             jobId?: string
-            assignMemberInput: {
-                prevMemberIds?: string
-                updateMemberIds?: string
-            }
+            assignMemberInput: TUpdateJobMembersInput
         }) => {
-            return axiosClient.patch<ApiResponse<Job>>(
+            return jobApi.assignMember(
                 `jobs/${jobId}/assign-member`,
                 assignMemberInput
             )
         },
         onSuccess: (data) => {
-            const res = data.data
+            queryClient.invalidateQueries({
+                queryKey: ['jobs'],
+            })
             queryClient.invalidateQueries({
                 queryKey: ['jobDetail', data.data.result?.no],
             })
             queryClient.invalidateQueries({
                 queryKey: ['jobActivityLog', String(data.data.result?.id)],
             })
-            onSuccess?.(res)
+            addToast({
+                title: 'Phân công thành viên thành công',
+                color: 'success',
+            })
+        },
+        onError: () => {
+            addToast({
+                title: 'Phân công thành viên thất bại',
+                color: 'danger',
+            })
         },
     })
 }
@@ -368,7 +449,7 @@ export const useUpdateJobMutation = () => {
             updateJobInput,
         }: {
             jobId?: string
-            updateJobInput: Partial<Job>
+            updateJobInput: TUpdateJobInput
         }) => {
             return axiosClient.patch(`jobs/${jobId}`, updateJobInput)
         },
@@ -384,14 +465,34 @@ export const useUpdateJobMutation = () => {
 }
 
 export const useDeleteJobMutation = () => {
+    const t = useTranslations()
     return useMutation({
         mutationKey: ['deleteJob'],
-        mutationFn: (id: string) => {
-            return jobApi.remove(id)
+        mutationFn: (jobId?: string) => {
+            if (jobId) {
+                return jobApi.remove(jobId)
+            } else {
+                throw new Error('JobID is required')
+            }
         },
-        onSuccess: () => {
+        onSuccess: (res) => {
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],
+            })
+            addToast({
+                title: t('successfully'),
+                description: t('deletedJob', {
+                    jobNo: `#${res.data.result?.jobNo}`,
+                }),
+                color: 'success',
+            })
+        },
+        onError(error) {
+            const err = error as unknown as ApiError
+            addToast({
+                title: t('failed'),
+                description: err.message,
+                color: 'danger',
             })
         },
     })

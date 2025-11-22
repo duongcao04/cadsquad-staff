@@ -11,7 +11,7 @@ export const CreateJobStatusInputSchema = yup.object({
   nextStatusOrder: yup.number().integer().optional(),
   prevStatusOrder: yup.number().integer().optional(),
 })
-export type CreateJobStatusInput = yup.InferType<typeof CreateJobStatusInputSchema>
+export type TCreateJobStatusInput = yup.InferType<typeof CreateJobStatusInputSchema>
 
 export const changeStatusInputSchema = z.object({
   fromStatusId: z.string(),
@@ -20,4 +20,4 @@ export const changeStatusInputSchema = z.object({
 export type ChangeStatusInput = z.infer<typeof changeStatusInputSchema>;
 
 export const UpdateJobStatusInputSchema = CreateJobStatusInputSchema.partial()
-export type UpdateJobStatusInput = yup.InferType<typeof UpdateJobStatusInputSchema>
+export type TUpdateJobStatusInput = yup.InferType<typeof UpdateJobStatusInputSchema>

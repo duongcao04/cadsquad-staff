@@ -420,9 +420,6 @@ export class JobService {
         },
       })
 
-      console.log(isoDate);
-
-
       if (!result) throw new NotFoundException('Jobs not found')
 
       return plainToInstance(this.responseSchema(userRole), result, {

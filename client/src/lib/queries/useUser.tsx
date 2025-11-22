@@ -3,15 +3,13 @@
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { userApi } from '@/lib/api'
 import { axiosClient } from '@/lib/axios'
-import {
-    ResetPasswordInput,
-    UpdatePasswordInput,
-} from '@/lib/validationSchemas/auth.schema'
-import {
-    CreateUserInput,
-    UpdateUserInput,
-} from '@/lib/validationSchemas/user.schema'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import {
+    TCreateUserInput,
+    TResetPasswordInput,
+    TUpdatePasswordInput,
+    TUpdateUserInput,
+} from '../validationSchemas'
 
 export const useUsers = () => {
     const { data, isLoading, isFetching } = useQuery({
@@ -33,7 +31,7 @@ export const useUpdateUserMutation = () => {
             updateUserInput,
         }: {
             userId?: string
-            updateUserInput: UpdateUserInput
+            updateUserInput: TUpdateUserInput
         }) => {
             return axiosClient.patch(`users/${userId}`, updateUserInput)
         },
@@ -51,7 +49,7 @@ export const useUpdatePasswordMutation = () => {
         mutationFn: ({
             updatePasswordInput,
         }: {
-            updatePasswordInput: UpdatePasswordInput
+            updatePasswordInput: TUpdatePasswordInput
         }) => {
             return userApi.updatePassword(updatePasswordInput)
         },
@@ -71,7 +69,7 @@ export const useResetPasswordMutation = () => {
             resetPasswordInput,
         }: {
             userId: string
-            resetPasswordInput: ResetPasswordInput
+            resetPasswordInput: TResetPasswordInput
         }) => {
             return userApi.resetPassword(userId, resetPasswordInput)
         },
@@ -85,7 +83,8 @@ export const useResetPasswordMutation = () => {
 
 export const useCreateUser = () => {
     return useMutation({
-        mutationFn: async (data: CreateUserInput) => await userApi.create(data),
+        mutationFn: async (data: TCreateUserInput) =>
+            await userApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] })
         },

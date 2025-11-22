@@ -5,7 +5,8 @@ import { useJobsByStatusCode } from '@/lib/queries'
 import { JOB_STATUS_CODES } from '@/lib/utils'
 import { PageHeading } from '@/shared/components'
 import { useTranslations } from 'next-intl'
-import { JobCard, ProfileCard } from './shared'
+import { ProfileCard } from '../../../../../shared/components/profile/ProfileCard'
+import JobCard from '../../../../../shared/components/profile/JobCard'
 
 export default function ProfilePage() {
     const t = useTranslations()
@@ -59,10 +60,10 @@ export default function ProfilePage() {
                                             <JobCard
                                                 key={aJob.id}
                                                 data={aJob}
-                                                isLoading={
-                                                    inprogressLoading ||
-                                                    revisionLoading
-                                                }
+                                                // isLoading={
+                                                //     inprogressLoading ||
+                                                //     revisionLoading
+                                                // }
                                             />
                                         )
                                     })}
@@ -102,7 +103,7 @@ export default function ProfilePage() {
                                         <JobCard
                                             key={aJob.id}
                                             data={aJob}
-                                            isLoading={deliveredLoading}
+                                            // isLoading={deliveredLoading}
                                         />
                                     )
                                 })}

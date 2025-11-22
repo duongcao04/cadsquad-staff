@@ -21,7 +21,7 @@ export const CreateCommentSchema = yup.object({
 		.required("Author ID is required"),
 })
 
-export type CreateCommentInput = yup.InferType<typeof CreateCommentSchema>
+export type TCreateCommentInput = yup.InferType<typeof CreateCommentSchema>
 
 // Update Comment Schema (partial of create)
 export const UpdateCommentSchema = CreateCommentSchema.shape({
@@ -34,4 +34,4 @@ export const UpdateCommentSchema = CreateCommentSchema.shape({
 	authorId: yup.string().optional(),
 }).partial()
 
-export type UpdateCommentInput = yup.InferType<typeof UpdateCommentSchema>
+export type TUpdateCommentInput = yup.InferType<typeof UpdateCommentSchema>

@@ -11,7 +11,7 @@ import { ActionsDropdown } from './dropdowns'
 
 type Props = {
     closeModal?: () => void
-    data?: Job
+    data: Job
     isEditJobName: boolean
     setEditJobName: React.Dispatch<React.SetStateAction<boolean>>
 }

@@ -19,8 +19,8 @@ export const CreateDepartmentSchema = yup.object({
 		.optional(),
 })
 
-export type CreateDepartmentInput = yup.InferType<typeof CreateDepartmentSchema>
+export type TCreateDepartmentInput = yup.InferType<typeof CreateDepartmentSchema>
 
 export const UpdateDepartmentSchema = CreateDepartmentSchema.partial()
 
-export type UpdateDepartmentInput = yup.InferType<typeof UpdateDepartmentSchema>
+export type TUpdateDepartmentInput = yup.InferType<typeof UpdateDepartmentSchema>

@@ -1,12 +1,11 @@
 import { ActivityTypeEnum } from "@/shared/enums"
-import { Job } from "./_job.interface"
-import { User } from "./_user.interface"
+import { TJob, TUser } from "../types"
 
 /**
  * Represents a log entry for an activity performed on a job.
  * This is used to track the history of a job, such as status changes, assignments, and updates.
  */
-export interface JobActivityLog {
+export interface IJobActivityLogResponse {
 	/**
 	 * The unique identifier for the activity log entry.
 	 * @type {string}
@@ -17,7 +16,7 @@ export interface JobActivityLog {
 	 * A reference to the Job object that this activity log belongs to.
 	 * @type {Job}
 	 */
-	job: Job
+	job: TJob
 
 	/**
 	 * The ID of the job associated with this activity.
@@ -48,7 +47,7 @@ export interface JobActivityLog {
 	 * The user who performed the modification.
 	 * @type {User}
 	 */
-	modifiedBy: User
+	modifiedBy: TUser
 
 	/**
 	 * The ID of the user who performed the modification.

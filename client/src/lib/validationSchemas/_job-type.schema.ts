@@ -14,8 +14,8 @@ export const CreateJobTypeSchema = yup.object({
 		.matches(/^#([0-9A-Fa-f]{6})$/, "hexColor must be a valid hex color code (e.g. #FFFFFF)")
 		.optional(),
 })
-export type CreateJobTypeInput = yup.InferType<typeof CreateJobTypeSchema>
+export type TCreateJobTypeInput = yup.InferType<typeof CreateJobTypeSchema>
 
 export const UpdateJobTypeInputSchema = CreateJobTypeSchema.partial()
 
-export type UpdateJobTypeInput = yup.InferType<typeof UpdateJobTypeInputSchema>
+export type TUpdateJobTypeInput = yup.InferType<typeof UpdateJobTypeInputSchema>

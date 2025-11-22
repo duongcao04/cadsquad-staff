@@ -8,11 +8,8 @@ import { Modal } from 'antd'
 import { CalendarDays } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import {
-    JobCard,
-    JobCardSkeleton,
-} from '../../../app/(routes)/[locale]/(workspace)/profile/shared'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
+import JobCard, { JobCardSkeleton } from '../profile/JobCard'
 
 type Props = {
     isOpen: boolean

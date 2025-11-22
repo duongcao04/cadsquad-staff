@@ -1,9 +1,6 @@
 'use client'
 
-import {
-    sidebarActions,
-    type SidebarItem as SidebarItemType,
-} from '@/app/(routes)/[locale]/(workspace)/shared'
+import { type SidebarItem as SidebarItemType } from '@/app/(routes)/[locale]/(workspace)/shared'
 import { usePathname } from '@/i18n/navigation'
 import { MotionAside } from '@/lib/motion'
 import {
@@ -18,6 +15,55 @@ import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import SidebarItem from './SidebarItem'
 import TaskCalendarPopover from './TaskCalendarPopover'
+import {
+    IconWorkbench,
+    IconWorkbenchOutline,
+} from '@/shared/components/icons/sidebar-icons/IconWorkbench'
+import {
+    IconOnboard,
+    IconOnboardOutline,
+} from '@/shared/components/icons/sidebar-icons/IconOnboard'
+import { SVGProps } from 'react'
+
+export type SidebarItem = {
+    icon: (props: SVGProps<SVGSVGElement>) => React.ReactElement
+    iconFill: (props: SVGProps<SVGSVGElement>) => React.ReactElement
+    titleKey: string
+    path: string
+}
+export const sidebarActions: SidebarItem[] = [
+    {
+        icon: IconWorkbenchOutline,
+        iconFill: IconWorkbench,
+        titleKey: 'workbench',
+        path: '/',
+    },
+    // { icon: Grip, title: 'Overview', path: '/' },
+    {
+        icon: IconOnboardOutline,
+        iconFill: IconOnboard,
+        titleKey: 'projectCenter',
+        path: '/project-center',
+    },
+    // {
+    //     icon: IconDocumentsOutline,
+    //     iconFill: IconDocuments,
+    //     title: 'Documents',
+    //     path: '/documents',
+    // },
+    // {
+    //     icon: IconProjectCenterOutline,
+    //     iconFill: IconProjectCenter,
+    //     title: 'Project Center',
+    //     path: '/projects-center',
+    // },
+    // {
+    //     icon: IconTeamOutline,
+    //     iconFill: IconTeam,
+    //     title: 'Team',
+    //     path: '/team',
+    // },
+]
 
 export function Sidebar() {
     const t = useTranslations()

@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
 import { jobStatusApi } from '@/lib/api'
+import { useQuery } from '@tanstack/react-query'
 
 export const useJobStatuses = () => {
     const { data, isLoading, isFetching } = useQuery({
@@ -38,7 +38,7 @@ export const useJobStatusByOrder = (orderNumber?: number | null) => {
         queryKey: orderNumber ? ['job-statuses', 'order', orderNumber] : [],
         queryFn: () => {
             if (!orderNumber) {
-                return undefined
+                return 
             }
             return jobStatusApi.findByOrder(orderNumber)
         },

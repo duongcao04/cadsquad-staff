@@ -4,9 +4,13 @@ import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { authApi } from '@/lib/api'
 import { ApiError } from '@/lib/axios'
 import { cookie } from '@/lib/cookie'
+import { IMAGES } from '@/lib/utils'
 import { LoginInput } from '@/lib/validationSchemas'
 import { RoleEnum } from '@/shared/enums'
+import { TUser } from '@/shared/types'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import lodash from 'lodash'
+import { useMemo } from 'react'
 
 function parseExpires(expiresAt: string | number) {
     if (typeof expiresAt === 'number') {
@@ -52,11 +56,7 @@ export const useLogout = () => {
 }
 
 export function useProfile() {
-    const {
-        data: profile,
-        isLoading,
-        isFetching,
-    } = useQuery({
+    const { data, isLoading, isFetching } = useQuery({
         queryKey: ['profile'],
         queryFn: () => authApi.getProfile(),
         select: (res) => res.data.result,
@@ -64,7 +64,42 @@ export function useProfile() {
 
     const accessToken = cookie.get('authentication')
 
-    const userRole = profile?.role as RoleEnum
+    const profile = useMemo(() => {
+        const profileData = data
+
+        if (lodash.isEmpty(profileData)) {
+            return {} as TUser
+        }
+
+        return {
+            id: data?.id,
+            configs: data?.configs,
+            displayName: data?.displayName ?? '',
+            email: data?.email ?? '',
+            files: data?.files ?? [],
+            accounts: data?.accounts ?? [],
+            createdAt: data?.createdAt ? new Date(data?.createdAt) : null,
+            updatedAt: data?.updatedAt ? new Date(data?.updatedAt) : null,
+            role: data?.role ?? RoleEnum.USER,
+            filesCreated: data?.filesCreated ?? [],
+            isActive: data?.isActive ?? false,
+            jobActivityLog: data?.jobActivityLog ?? [],
+            jobsAssigned: data?.jobsAssigned ?? [],
+            jobsCreated: data?.jobsCreated ?? [],
+            notifications: data?.notifications ?? [],
+            sendedNotifications: data?.sendedNotifications ?? [],
+            username: data?.username ?? '',
+            avatar: data?.avatar ?? IMAGES.emptyAvatar,
+            department: data?.department ?? null,
+            jobTitle: data?.jobTitle ?? null,
+            lastLoginAt: data?.lastLoginAt
+                ? new Date(data?.lastLoginAt)
+                : new Date(),
+            phoneNumber: data?.phoneNumber ?? '',
+        } as TUser
+    }, [data])
+
+    const userRole = profile?.role
 
     const isAdmin = userRole === RoleEnum.ADMIN
     const isStaff = userRole === RoleEnum.USER

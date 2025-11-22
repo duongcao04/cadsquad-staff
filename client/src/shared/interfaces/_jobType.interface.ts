@@ -1,10 +1,10 @@
-import { Job } from "./_job.interface"
+import { TJob } from "../types"
 
 /**
  * Represents a category or type of job (e.g., "Drafting", "3D Modeling").
  * This helps in organizing and filtering jobs.
  */
-export interface JobType {
+export interface IJobTypeResponse {
 	/**
 	 * The unique identifier for the job type.
 	 * @type {string}
@@ -33,7 +33,7 @@ export interface JobType {
 	 * A list of jobs that belong to this type.
 	 * @type {Job[]}
 	 */
-	jobs: Job[]
+	jobs: TJob[]
 
 	_count?: Record<string, string>
 }

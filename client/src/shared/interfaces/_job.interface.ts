@@ -1,15 +1,12 @@
 import { JobPriorityEnum } from "@/shared/enums"
-import { JobActivityLog } from "./_jobActivityLog.interface"
-import { JobStatus } from "./_jobStatus.interface"
-import { JobType } from "./_jobType.interface"
-import { PaymentChannel } from "./_paymentChannel.interface"
-import { User } from "./_user.interface"
+import { TJobActivityLog, TJobStatus, TJobType, TPaymentChannel, TUser } from "../types"
 import { FileSystem } from "./_fileSystem.interface"
+
 /**
  * Represents a job, project, or task within the system.
  * It contains all details related to the job, including its status, assignments, costs, and associated files.
  */
-export interface Job {
+export interface IJobResponse {
 	/**
 	 * The unique identifier for the job.
 	 * @type {string}
@@ -24,9 +21,9 @@ export interface Job {
 
 	/**
 	 * The type of the job (e.g., "Drafting", "Modeling").
-	 * @type {JobType}
+	 * @type {TJobType}
 	 */
-	type: JobType
+	type: TJobType
 
 	/**
 	 * The ID of the job's type.
@@ -80,13 +77,13 @@ export interface Job {
 	 * A list of users assigned to work on the job.
 	 * @type {User[]}
 	 */
-	assignee: User[]
+	assignee: TUser[]
 
 	/**
 	 * The user who created the job.
 	 * @type {User}
 	 */
-	createdBy: User
+	createdBy: TUser
 
 	/**
 	 * The ID of the user who created the job.
@@ -98,7 +95,7 @@ export interface Job {
 	 * The payment channel used for the job's transactions.
 	 * @type {PaymentChannel}
 	 */
-	paymentChannel: PaymentChannel
+	paymentChannel: TPaymentChannel
 
 	/**
 	 * The ID of the payment channel.
@@ -110,7 +107,7 @@ export interface Job {
 	 * The current status of the job (e.g., "In Progress", "Completed").
 	 * @type {JobStatus}
 	 */
-	status: JobStatus
+	status: TJobStatus
 
 	/**
 	 * The ID of the job's current status.
@@ -122,7 +119,7 @@ export interface Job {
 	 * A log of all activities and changes related to the job.
 	 * @type {JobActivityLog[]}
 	 */
-	activityLog: JobActivityLog[]
+	activityLog: TJobActivityLog[]
 
 	/**
 	 * The date and time when the job was started.

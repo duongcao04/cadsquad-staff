@@ -1,10 +1,10 @@
-import { Job } from "./_job.interface"
+import { TJob } from "../types"
 
 /**
  * Represents the status of a job within a workflow.
  * Each status has properties that define its appearance and position in the sequence.
  */
-export interface JobStatus {
+export interface IJobStatusResponse {
 	/**
 	 * The unique identifier for the job status.
 	 * @type {string}
@@ -65,7 +65,7 @@ export interface JobStatus {
 	 * A list of jobs that currently have this status.
 	 * @type {Job[]}
 	 */
-	jobs: Job[]
+	jobs: TJob[]
 
 	/**
 	 * The timestamp when the job status was created.

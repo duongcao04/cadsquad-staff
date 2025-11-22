@@ -1,4 +1,4 @@
-export interface Comment {
+export interface ICommentResponse {
 	id: string
 	content: string
 	jobId: string

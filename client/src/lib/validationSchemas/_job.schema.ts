@@ -61,10 +61,10 @@ export const CreateJobSchema = yup.object({
         .date()
         .optional(),
 })
-export type CreateJobInput = yup.InferType<typeof CreateJobSchema>
+export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>
 
 export const UpdateJobSchema = CreateJobSchema.partial()
-export type UpdateJobInput = yup.InferType<typeof UpdateJobSchema>
+export type TUpdateJobInput = yup.InferType<typeof UpdateJobSchema>
 
 export const JobFiltersSchema = yup.object({
     clientName: yup.array().of(yup.string().required()).optional(), // Client names split as ","
@@ -87,7 +87,7 @@ export const JobFiltersSchema = yup.object({
     finishedAtFrom: yup.string().optional(),
     finishedAtTo: yup.string().optional(),
 });
-export type JobFiltersInput = yup.InferType<typeof JobFiltersSchema>;
+export type TJobFiltersInput = yup.InferType<typeof JobFiltersSchema>;
 
 export const JobQuerySchema = yup.object({
     tab: yup.string().optional(),
@@ -97,16 +97,16 @@ export const JobQuerySchema = yup.object({
     page: yup.number().optional(),
     sort: yup.string().optional(),
 });
-export type JobQueryInput = yup.InferType<typeof JobQuerySchema>;
+export type TJobQueryInput = yup.InferType<typeof JobQuerySchema>;
 
 export const JobQueryWithFiltersSchema = JobQuerySchema.concat(JobFiltersSchema)
-export type JobQueryWithFiltersInput = yup.InferType<typeof JobQueryWithFiltersSchema>;
+export type TJobQueryWithFiltersInput = yup.InferType<typeof JobQueryWithFiltersSchema>;
 
 export const ChangeStatusSchema = yup.object({
     fromStatusId: yup.string().required(),
     toStatusId: yup.string().required(),
 });
-export type ChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>;
+export type TChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>;
 
 import { z } from "zod";
 
@@ -115,12 +115,12 @@ export const BulkChangeStatusInputSchema = z.object({
     toStatusId: z.string().min(1, "toStatusId is required"),
 });
 
-export type BulkChangeStatusInput = z.infer<typeof BulkChangeStatusInputSchema>;
+export type TBulkChangeStatusInput = z.infer<typeof BulkChangeStatusInputSchema>;
 
 
 export const UpdateJobMembersSchema = yup.object({
     prevMemberIds: yup.string().required(),
     updateMemberIds: yup.string().required(),
 });
-export type UpdateJobMembersInput = yup.InferType<typeof UpdateJobMembersSchema>;
+export type TUpdateJobMembersInput = yup.InferType<typeof UpdateJobMembersSchema>;
 

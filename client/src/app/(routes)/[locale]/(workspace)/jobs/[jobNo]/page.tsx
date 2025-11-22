@@ -14,7 +14,7 @@ import {
     ActionsDropdown,
     JobDetailSection,
 } from '../../project-center/@jobDetail/shared'
-import { DueToField } from '../../project-center/shared'
+import { DueToView } from '../../../../../../shared/components/project-center/DueToView'
 
 export default function JobDetailPage({
     params,
@@ -165,7 +165,7 @@ export default function JobDetailPage({
                             </div>
                             <div className="flex items-center justify-end gap-2">
                                 <div className="text-sm font-medium">
-                                    <DueToField
+                                    <DueToView
                                         data={job?.dueAt ?? new Date()}
                                     />
                                 </div>

@@ -1,10 +1,10 @@
-import { Job } from "./_job.interface"
+import { Job } from "../types"
 
 /**
  * Represents a payment channel, such as a bank account or online payment service.
  * It is used to track financial transactions related to jobs.
  */
-export interface PaymentChannel {
+export interface IPaymentChannelResponse {
 	/**
 	 * The unique identifier for the payment channel.
 	 * @type {string}

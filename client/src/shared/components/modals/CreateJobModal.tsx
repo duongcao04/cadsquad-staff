@@ -13,11 +13,6 @@ import {
 import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 
-import { useJobStore } from '@/app/(routes)/[locale]/(workspace)/project-center/shared'
-import {
-    InsertAttachments,
-    InsertJobNo,
-} from '@/app/(routes)/[locale]/(workspace)/shared/components/formFields'
 import { ApiError } from '@/lib/axios'
 import {
     useCreateJobMutation,
@@ -28,6 +23,9 @@ import {
 import { CreateJobInput, CreateJobSchema } from '@/lib/validationSchemas'
 import { HeroSelect, HeroSelectItem } from '../customize'
 import dayjs from 'dayjs'
+import { useJobStore } from '../../stores'
+import { InsertJobNo } from '../app/InsertJobNo'
+import { InsertAttachments } from '../app/InsertAttachments'
 
 export const jobModalInputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',

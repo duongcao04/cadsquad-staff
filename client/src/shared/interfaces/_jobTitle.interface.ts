@@ -1,10 +1,10 @@
-import { User } from "./_user.interface"
+import { TUser } from "../types"
 
 /**
  * Represents a job title within the organization (e.g., "Software Engineer", "Project Manager").
  * It can be assigned to multiple users.
  */
-export interface JobTitle {
+export interface IJobTitleResponse {
 	/**
 	 * The unique identifier for the job title.
 	 * @type {string}
@@ -31,9 +31,9 @@ export interface JobTitle {
 
 	/**
 	 * A list of users who hold this job title.
-	 * @type {User[]}
+	 * @type {TUser[]}
 	 */
-	users: User[]
+	users: TUser[]
 
 	/**
 	 * The timestamp when the job title was created.

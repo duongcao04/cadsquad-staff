@@ -1,21 +1,23 @@
 import { ApiResponse, axiosClient } from '@/lib/axios'
-import { LoginUserDto, RegisterUserDto, User } from '@/shared/interfaces'
+import { ILoginResponse, IRegisterUserInput, IValidateTokenResponse } from '@/shared/interfaces'
+import { TUser } from '@/shared/types'
+import { LoginInput } from '../validationSchemas'
 
 export const authApi = {
 	validateToken: async (token: string) => {
-		return axiosClient.get('/v1/auth/validate-token', {
+		return axiosClient.get<ApiResponse<IValidateTokenResponse>>('/v1/auth/validate-token', {
 			headers: {
 				Authorization: `Bearer ${token}`
 			}
-		}).then(res => res.data.result.isValid)
+		}).then(res => res?.data?.result?.isValid)
 	},
-	register: async (data: RegisterUserDto) => {
+	register: async (data: IRegisterUserInput) => {
 		return axiosClient.post('/v1/auth/register', data)
 	},
-	login: async (data: LoginUserDto) => {
-		return axiosClient.post('/v1/auth/login', data)
+	login: async (data: LoginInput) => {
+		return axiosClient.post<Required<ApiResponse<ILoginResponse>>>('/v1/auth/login', data)
 	},
 	getProfile: () => {
-		return axiosClient.get<ApiResponse<User>>('/v1/auth/profile')
+		return axiosClient.get<ApiResponse<TUser>>('/v1/auth/profile')
 	},
 }

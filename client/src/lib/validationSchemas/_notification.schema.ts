@@ -32,8 +32,8 @@ export const CreateNotificationInputSchema = yup.object({
         .mixed<NotificationStatusEnum>()
         .oneOf(Object.values(NotificationStatusEnum), `Status must be one of: ${Object.values(NotificationStatusEnum).join(", ")}`)
 })
-export type CreateNotificationInput = yup.InferType<typeof CreateNotificationInputSchema>
+export type TCreateNotificationInput = yup.InferType<typeof CreateNotificationInputSchema>
 
 export const UpdateNotificationInputSchema = CreateNotificationInputSchema.partial()
 
-export type UpdateNotificationInput = yup.InferType<typeof UpdateNotificationInputSchema>
+export type TUpdateNotificationInput = yup.InferType<typeof UpdateNotificationInputSchema>

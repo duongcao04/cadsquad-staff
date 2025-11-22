@@ -1,12 +1,12 @@
 'use client'
 
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { configApi } from '@/lib/api'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import {
-    CreateConfigInput,
-    UpdateConfigInput,
-} from '@/lib/validationSchemas/config.schema'
+    TCreateUserConfigInput,
+    TUpdateUserConfigInput,
+} from '@/lib//validationSchemas'
+import { configApi } from '@/lib/api'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 export const useConfigs = () => {
     return useQuery({
@@ -41,7 +41,7 @@ export const useConfigByCode = (code: string) => {
 export const useCreateConfigMutation = () => {
     return useMutation({
         mutationKey: ['createConfig'],
-        mutationFn: (data: CreateConfigInput) => configApi.create(data),
+        mutationFn: (data: TCreateUserConfigInput) => configApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['configs'] })
         },
@@ -56,7 +56,7 @@ export const useUpdateConfigByCodeMutation = () => {
             data,
         }: {
             code: string
-            data: UpdateConfigInput
+            data: TUpdateUserConfigInput
         }) => configApi.updateByCode(code, data),
         onSuccess: (_, { code }) => {
             queryClient.invalidateQueries({

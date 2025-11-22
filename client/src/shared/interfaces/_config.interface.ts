@@ -1,10 +1,10 @@
-import { User } from "./_user.interface"
+import { User } from "../types"
 
 /**
  * Represents a configuration setting within the system.
  * This can be a user-specific preference or a global system parameter.
  */
-export interface Config {
+export interface IConfigResponse {
 	/**
 	 * The unique identifier for the configuration entry.
 	 * @type {string}

@@ -1,21 +1,22 @@
-import { axiosClient } from '@/lib/axios'
-import { CreateConfigInput, UpdateConfigInput } from '@/lib/validationSchemas'
+import { ApiResponse, axiosClient } from '@/lib/axios'
+import { TCreateUserConfigInput, TUpdateUserConfigInput } from '@/lib/validationSchemas'
+import { IConfigResponse } from '@/shared/interfaces'
 
 export const configApi = {
-	create: (data: CreateConfigInput) => {
-		return axiosClient.post('/v1/configs', data)
+	create: (data: TCreateUserConfigInput) => {
+		return axiosClient.post<ApiResponse<IConfigResponse>>('/v1/configs', data)
 	},
 	findAll: () => {
-		return axiosClient.get('/v1/configs')
+		return axiosClient.get<ApiResponse<IConfigResponse[]>>('/v1/configs')
 	},
 	findById: (id: string) => {
-		return axiosClient.get(`/v1/configs/${id}`)
+		return axiosClient.get<ApiResponse<IConfigResponse>>(`/v1/configs/${id}`)
 	},
 	findByCode: (code: string) => {
-		return axiosClient.get(`/v1/configs/code/${code}`)
+		return axiosClient.get<ApiResponse<IConfigResponse>>(`/v1/configs/code/${code}`)
 	},
-	updateByCode: (code: string, data: UpdateConfigInput) => {
-		return axiosClient.patch(`/v1/configs/code/${code}`, data)
+	updateByCode: (code: string, data: TUpdateUserConfigInput) => {
+		return axiosClient.patch<ApiResponse<{ code: string }>>(`/v1/configs/code/${code}`, data)
 	},
 	remove: (id: string) => {
 		return axiosClient.delete(`/v1/configs/${id}`)

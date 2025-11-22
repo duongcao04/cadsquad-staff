@@ -1,15 +1,18 @@
-import { Comment, Job, User } from "@/shared/interfaces"
+import { ICommentResponse } from "@/shared/interfaces"
+import { TJob, TUser } from "../types"
 
-export type CommentWithJob = Comment & {
-	job: Job
+export type TCommentWithJob = Comment & {
+	job: TJob
 }
-export type CommentWithUser = Comment & {
-	user: User
+export type TCommentWithUser = Comment & {
+	user: TUser
 }
-export type CommentWithParent = Comment & {
+export type TCommentWithParent = Comment & {
 	parent: Comment
 }
-export type CommentWithReply = Comment & {
+export type TCommentWithReply = Comment & {
 	replies: Comment[]
 }
-export type CommentRefAll = CommentWithJob & CommentWithUser & CommentWithParent & CommentWithReply
+export type TCommentRefAll = TCommentWithJob & TCommentWithUser & TCommentWithParent & TCommentWithReply
+
+export type TComment = Omit<ICommentResponse, 'parentId' | 'jobId' | 'userId'>

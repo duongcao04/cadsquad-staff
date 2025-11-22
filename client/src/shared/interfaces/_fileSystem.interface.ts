@@ -4,8 +4,7 @@
  * @license MIT
  */
 
-import { Job } from "./_job.interface"
-import { User } from "./_user.interface"
+import { TJob, TUser } from "../types"
 
 /**
  * Represents a file or folder within the application's virtual file system.
@@ -63,21 +62,21 @@ export interface FileSystem {
 
 	/**
 	 * A reference to the User object who created the entry.
-	 * @type {User}
+	 * @type {TUser}
 	 */
-	createdBy: User
+	createdBy: TUser
 
 	/**
 	 * A list of users who have visibility or access to this file/folder.
-	 * @type {User[]}
+	 * @type {TUser[]}
 	 */
-	visibleToUsers: User[]
+	visibleToUsers: TUser[]
 
 	/**
 	 * An optional reference to a Job object if the file/folder is associated with a job.
 	 * @type {Job | undefined}
 	 */
-	job?: Job
+	job?: TJob
 
 	/**
 	 * The ID of the job this file/folder is associated with, if any.

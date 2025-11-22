@@ -1,11 +1,11 @@
 import { AccountProviderEnum } from "@/shared/enums"
-import { User } from "./_user.interface"
+import { TUser } from "../types"
 
 /**
  * Represents a user's linked account from an external provider (e.g., Google, GitHub).
  * This interface stores details about the authentication provider and links back to the primary user account.
  */
-export interface Account {
+export interface IAccountResponse {
 	/**
 	 * The unique identifier for the account record.
 	 * @type {string}
@@ -34,5 +34,5 @@ export interface Account {
 	 * A reference to the full User object associated with this account.
 	 * @type {User}
 	 */
-	user: User
+	user: TUser
 }

@@ -6,7 +6,7 @@ export const CreateJobTitleSchema = yup.object({
 	code: yup.string().required("Code is required"),
 })
 
-export type CreateJobTitleInput = yup.InferType<typeof CreateJobTitleSchema>
+export type TCreateJobTitleInput = yup.InferType<typeof CreateJobTitleSchema>
 
 export const UpdateJobTitleSchema = CreateJobTitleSchema.partial()
-export type UpdateJobTitleInput = yup.InferType<typeof UpdateJobTitleSchema>
+export type TUpdateJobTitleInput = yup.InferType<typeof UpdateJobTitleSchema>

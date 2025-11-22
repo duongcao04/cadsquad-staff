@@ -1,9 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+'use client'
+
 import { departmentApi } from '@/lib/api'
 import {
-    CreateDepartmentInput,
-    UpdateDepartmentInput,
-} from '@/lib/validationSchemas/department.schema'
+    TCreateDepartmentInput,
+    TUpdateDepartmentInput,
+} from '@/lib/validationSchemas'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export const useDepartments = () => {
     const { data, isFetching, isLoading } = useQuery({
@@ -39,7 +41,7 @@ export const useUpdateDepartment = () => {
             data,
         }: {
             id: string
-            data: UpdateDepartmentInput
+            data: TUpdateDepartmentInput
         }) => departmentApi.update(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['departments'] })
@@ -60,7 +62,8 @@ export const useDeleteDepartment = () => {
 export const useCreateDepartment = () => {
     const queryClient = useQueryClient()
     return useMutation({
-        mutationFn: (data: CreateDepartmentInput) => departmentApi.create(data),
+        mutationFn: (data: TCreateDepartmentInput) =>
+            departmentApi.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['departments'] })
         },
