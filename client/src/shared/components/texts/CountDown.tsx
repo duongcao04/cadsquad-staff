@@ -1,164 +1,163 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import dayjs, { Dayjs } from 'dayjs'
+import React, { useEffect, useMemo, useState } from 'react'
 
-import { calcLeftTime, cn } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
-
-type CountDownProps = {
-    endedDate: Date | string
-    className?: string
-    options?: {
-        showYears?: boolean
-        showMonths?: boolean
-        showDays?: boolean
-        showHours?: boolean
-        showMinutes?: boolean
-        showSeconds?: boolean
-        format?: 'auto' | 'full' | 'short' // 'auto' shows highest unit only, 'full' shows all enabled units
-    }
+type CountdownUnits = {
+    years?: boolean
+    months?: boolean
+    days?: boolean
+    hours?: boolean
+    minutes?: boolean
+    seconds?: boolean
 }
 
-export type CountDownOptions = CountDownProps['options']
-export const CountDown: React.FC<CountDownProps> = ({
-    endedDate,
-    className = '',
-    options = {
-        showYears: true,
-        showMonths: true,
-        showDays: true,
-        showHours: true,
-        showMinutes: true,
-        showSeconds: false,
-        format: 'full',
-    },
-}) => {
-    const t = useTranslations()
-    const [timeText, setTimeText] = useState('')
+type CountdownProps = {
+    targetDate: string | Date | Dayjs
+    units?: CountdownUnits
+    tickMs?: number // default 1000
+    onEndText?: string // shown when time is up
+    showZero?: boolean // shown 0 value of part
+}
+
+type Parts = {
+    years: number
+    months: number
+    days: number
+    hours: number
+    minutes: number
+    seconds: number
+    done: boolean
+}
+
+function computeParts(
+    now: Dayjs,
+    targetDate: Dayjs,
+    units: Required<CountdownUnits>
+): Parts {
+    if (targetDate.isBefore(now)) {
+        return {
+            years: 0,
+            months: 0,
+            days: 0,
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            done: true,
+        }
+    }
+
+    let cursor = now
+    let years = 0,
+        months = 0,
+        days = 0,
+        hours = 0,
+        minutes = 0,
+        seconds = 0
+
+    // Years
+    if (units.years) {
+        years = targetDate.diff(cursor, 'year')
+        cursor = cursor.add(years, 'year')
+    }
+
+    // Months
+    if (units.months) {
+        months = targetDate.diff(cursor, 'month')
+        cursor = cursor.add(months, 'month')
+    }
+    // If months are hidden, we DON'T advance the cursor here — so the "days" diff below
+    // will absorb the remaining months as days.
+
+    // Days
+    if (units.days) {
+        days = targetDate.diff(cursor, 'day')
+        cursor = cursor.add(days, 'day')
+    }
+
+    // Hours
+    if (units.hours) {
+        hours = targetDate.diff(cursor, 'hour')
+        cursor = cursor.add(hours, 'hour')
+    }
+
+    // Minutes
+    if (units.minutes) {
+        minutes = targetDate.diff(cursor, 'minute')
+        cursor = cursor.add(minutes, 'minute')
+    }
+
+    // Seconds
+    if (units.seconds) {
+        seconds = targetDate.diff(cursor, 'second')
+        // cursor = cursor.add(seconds, "second"); // not needed further
+    }
+
+    return { years, months, days, hours, minutes, seconds, done: false }
+}
+
+export function Countdown({
+    targetDate,
+    units,
+    tickMs = 1000,
+    onEndText = 'Time’s up!',
+    showZero = false,
+}: CountdownProps) {
+    const targetD = useMemo(() => dayjs(targetDate), [targetDate])
+
+    // Defaults: show all units
+    const u: Required<CountdownUnits> = {
+        years: units?.years ?? true,
+        months: units?.months ?? true,
+        days: units?.days ?? true,
+        hours: units?.hours ?? true,
+        minutes: units?.minutes ?? true,
+        seconds: units?.seconds ?? true,
+    }
+
+    const [parts, setParts] = useState<Parts>(() =>
+        computeParts(dayjs(), targetD, u)
+    )
 
     useEffect(() => {
-        const calculateTimeLeft = () => {
-            const difference = calcLeftTime(endedDate)
-
-            if (difference <= 0) {
-                setTimeText(t('expired'))
-                return
-            }
-
-            // Calculate time units
-            const years = Math.floor(difference / (1000 * 60 * 60 * 24 * 365))
-            const months = Math.floor(
-                (difference % (1000 * 60 * 60 * 24 * 365)) /
-                    (1000 * 60 * 60 * 24 * 30)
-            )
-            const days = Math.floor(
-                (difference % (1000 * 60 * 60 * 24 * 30)) /
-                    (1000 * 60 * 60 * 24)
-            )
-            const hours = Math.floor(
-                (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-            )
-            const minutes = Math.floor(
-                (difference % (1000 * 60 * 60)) / (1000 * 60)
-            )
-            const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-            if (options.format === 'full') {
-                // Show all enabled units
-                const parts = []
-
-                if (years > 0 && options.showYears) {
-                    parts.push(`${years} year${years > 1 ? 's' : ''}`)
-                }
-                if (months > 0 && options.showMonths) {
-                    parts.push(`${months} month${months > 1 ? 's' : ''}`)
-                }
-                if (days > 0 && options.showDays) {
-                    parts.push(`${days} day${days > 1 ? 's' : ''}`)
-                }
-                if (hours > 0 && options.showHours) {
-                    parts.push(`${hours} hour${hours > 1 ? 's' : ''}`)
-                }
-                if (minutes > 0 && options.showMinutes) {
-                    parts.push(`${minutes} minute${minutes > 1 ? 's' : ''}`)
-                }
-                if (seconds > 0 && options.showSeconds) {
-                    parts.push(`${seconds} second${seconds > 1 ? 's' : ''}`)
-                }
-                const textFull =
-                    parts.length > 0 ? parts.join(', ') + ' left' : t('expired')
-                setTimeText(textFull)
-            } else if (options.format === 'short') {
-                // Show all enabled units
-                const temp = []
-
-                if (years > 0 && options.showYears) {
-                    temp.push(`${years}y`)
-                }
-                if (months > 0 && options.showMonths) {
-                    temp.push(`${months}m`)
-                }
-                if (days > 0 && options.showDays) {
-                    temp.push(`${days}d`)
-                }
-                if (hours >= 0 && options.showHours) {
-                    temp.push(`${hours}h`)
-                }
-                if (minutes >= 0 && options.showMinutes) {
-                    temp.push(`${minutes}m`)
-                }
-                if (seconds > 0 && options.showSeconds) {
-                    temp.push(`${seconds}s`)
-                }
-                const textShort =
-                    temp.length > 0 ? temp.join(', ') : t('expired')
-                setTimeText(textShort)
-            } else {
-                // Show only the highest significant unit
-                let textAuto = ''
-
-                if (years > 0 && options.showYears) {
-                    textAuto = `${years} year${years > 1 ? 's' : ''} left`
-                } else if (months > 0 && options.showMonths) {
-                    textAuto = `${months} month${months > 1 ? 's' : ''} left`
-                } else if (days > 0 && options.showDays) {
-                    textAuto = `${days} day${days > 1 ? 's' : ''} left`
-                } else if (hours > 0 && options.showHours) {
-                    textAuto = `${hours} hour${hours > 1 ? 's' : ''} left`
-                } else if (minutes > 0 && options.showMinutes) {
-                    textAuto = `${minutes} minute${minutes > 1 ? 's' : ''} left`
-                } else if (options.showSeconds) {
-                    textAuto = `${seconds} second${seconds > 1 ? 's' : ''} left`
-                }
-
-                setTimeText(textAuto)
-            }
-        }
-
-        calculateTimeLeft()
-        const timer = setInterval(calculateTimeLeft, 1000)
-
-        return () => clearInterval(timer)
+        const id = setInterval(() => {
+            setParts(computeParts(dayjs(), targetD, u))
+        }, tickMs)
+        return () => clearInterval(id)
     }, [
-        endedDate,
-        options.showYears,
-        options.showMonths,
-        options.showDays,
-        options.showHours,
-        options.showMinutes,
-        options.showSeconds,
-        options.format,
+        targetD,
+        tickMs,
+        u.years,
+        u.months,
+        u.days,
+        u.hours,
+        u.minutes,
+        u.seconds,
     ])
 
-    const oneDayMs = 24 * 60 * 60 * 1000
-    return (
-        <span
-            className={cn(
-                `${calcLeftTime(endedDate) < oneDayMs ? 'text-danger' : ''}`,
-                className
-            )}
-        >
-            {timeText}
-        </span>
-    )
+    if (parts.done) {
+        return <span>{onEndText}</span>
+    }
+
+    // Build display based on toggles
+    const items: string[] = []
+    if (showZero) {
+        if (u.years) items.push(`${parts.years}y`)
+        if (u.months) items.push(`${parts.months}mo`)
+        if (u.days) items.push(`${parts.days}d`)
+        if (u.hours) items.push(`${parts.hours}h`)
+        if (u.minutes) items.push(`${parts.minutes}m`)
+        if (u.seconds) items.push(`${parts.seconds}s`)
+    } else {
+        if (u.years && parts.years > 0) items.push(`${parts.years}y`)
+        if (u.months && parts.months > 0) items.push(`${parts.months}mo`)
+        if (u.days && parts.days > 0) items.push(`${parts.days}d`)
+        if (u.hours && parts.hours > 0) items.push(`${parts.hours}h`)
+        if (u.minutes && parts.minutes > 0) items.push(`${parts.minutes}m`)
+        if (u.seconds && parts.seconds > 0) items.push(`${parts.seconds}s`)
+    }
+
+    return <span>{items.join(' ')}</span>
 }
+
+export default React.memo(Countdown)

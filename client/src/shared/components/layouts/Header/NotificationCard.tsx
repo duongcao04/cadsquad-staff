@@ -1,7 +1,7 @@
-import { NotificationStatus } from '@/shared/enums/notificationStatus.enum'
-import { useUpdateNotification } from '@/shared/queries/useNotification'
+import { NotificationStatusEnum } from '@/shared/enums/_notification-status.enum'
+import { useUpdateNotification } from '@/lib/queries/useNotification'
 
-import { Notification } from '@/shared/interfaces/notification.interface'
+import { Notification } from '@/shared/interfaces/_notification.interface'
 import CadsquadLogo from '@/shared/components/CadsquadLogo'
 import { Image } from 'antd'
 
@@ -15,7 +15,7 @@ export function NotificationCard({ data }: { data: Notification }) {
                 await updateNotificationMutate({
                     id: data.id,
                     data: {
-                        status: NotificationStatus.SEEN,
+                        status: NotificationStatusEnum.SEEN,
                     },
                 })
             }}
@@ -47,7 +47,7 @@ export function NotificationCard({ data }: { data: Notification }) {
                 </p>
                 <p className="text-sm line-clamp-2">{data?.content}</p>
             </div>
-            {data.status === NotificationStatus.UNSEEN && (
+            {data.status === NotificationStatusEnum.UNSEEN && (
                 <div className="w-full aspect-square rounded-full bg-gray-500"></div>
             )}
         </div>

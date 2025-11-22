@@ -3,7 +3,7 @@ import { BanIcon, BotIcon, TvIcon } from 'lucide-react'
 import { FolderIcon } from '../../icons/file-icons/FolderIcon'
 import { PDFIcon } from '../../icons/file-icons/PDFIcon'
 import { WordIcon } from '../../icons/file-icons/WordIcon'
-import { FileType } from '@/shared/interfaces/file.interface'
+import { FileType } from '@/shared/interfaces/_file.interface'
 
 export const getFileIcon = (type: FileType, folderColor: string) => {
     const iconClass = 'h-5 w-5'

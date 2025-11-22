@@ -1,3 +1,5 @@
+import { ProjectCenterHeader } from '@/shared/components/project-center/ProjectCenterHeader'
+import ProjectCenterTabs from '@/shared/components/project-center/ProjectCenterTabs'
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 
@@ -42,16 +44,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
 }
 
-export default function WorkbenchLayout({
+export default function ProjectCenterLayout({
     children,
     jobDetail,
     addMember,
 }: Props) {
     return (
-        <>
+        <div className="bg-background h-full flex flex-col">
+            <div className="border-b border-border-default">
+                <ProjectCenterHeader />
+                <div className="pt-1 pb-3 pl-5 pr-3.5">
+                    <ProjectCenterTabs />
+                </div>
+            </div>
             {jobDetail}
             {addMember}
-            {children}
-        </>
+            <div className="pl-5 pr-3.5 pt-1">{children}</div>
+        </div>
     )
 }

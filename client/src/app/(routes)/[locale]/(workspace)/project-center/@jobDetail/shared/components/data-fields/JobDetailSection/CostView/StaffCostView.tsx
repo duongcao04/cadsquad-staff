@@ -4,7 +4,7 @@ import { ApiError } from '@/lib/axios'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { HeroButton } from '@/shared/components'
 import { Job } from '@/shared/interfaces'
-import { useProfile, useUpdateJobMutation } from '@/shared/queries'
+import { useProfile, useUpdateJobMutation } from '@/lib/queries'
 import { addToast, NumberInput, Skeleton } from '@heroui/react'
 import { Settings } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -54,7 +54,7 @@ export function StaffCostView({
         <div className="w-full pr-2">
             <Skeleton className="w-full h-fit rounded-md" isLoaded={!isLoading}>
                 <button
-                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background2 flex items-center justify-between"
+                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background-muted flex items-center justify-between"
                     style={{
                         cursor: isAdmin ? 'pointer' : 'default',
                     }}
@@ -65,7 +65,7 @@ export function StaffCostView({
                         setIsEditMode(true)
                     }}
                 >
-                    <p className="text-sm text-text2">
+                    <p className="text-sm text-text-muted">
                         {t('jobColumns.staffCost')}
                     </p>
                     {isAdmin && <Settings size={16} />}

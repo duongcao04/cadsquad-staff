@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, SetMetadata, UseGuards } from '@nestjs/common'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { AdminGuard } from '../auth/admin.guard'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
@@ -11,6 +11,7 @@ import { JobQueryDto } from './dto/job-query.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { JobService } from './job.service'
+import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 
 @Controller('jobs')
 export class JobController {
@@ -40,6 +41,15 @@ export class JobController {
   async searchJob(@Req() request: Request, @Query() query: { keywords?: string }) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.findAllNoPaginate(userPayload.sub, userPayload.role, query)
+  }
+
+  @Get('deadline/:isoDate')
+  @HttpCode(200)
+  @UseGuards(JwtGuard)
+  @ResponseMessage('Get jobs by deadline successfully')
+  async findJobDeadline(@Req() request: Request, @Param('isoDate') isoDate: string) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.findJobDeadline(userPayload.sub, userPayload.role, isoDate)
   }
 
   @Get("no/:jobNo")
@@ -104,6 +114,15 @@ export class JobController {
   async changeStatus(@Req() request: Request, @Param('id') id: string, @Body() data: ChangeStatusDto) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.changeStatus(id, userPayload.sub, data)
+  }
+
+  @Post('bulk/change-status')
+  @HttpCode(200)
+  @ResponseMessage('Bulk change status successfully')
+  @UseGuards(JwtGuard)
+  async bulkChangeStatus(@Req() request: Request, @Body() data: BulkChangeStatusDto) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.bulkChangeStatus(userPayload.sub, data)
   }
 
   @Patch(':id/assign-member')

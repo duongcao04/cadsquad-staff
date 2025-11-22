@@ -19,7 +19,7 @@ import { useRouter } from '@/i18n/navigation'
 import { ApiError } from '@/lib/axios'
 import { ConfirmDeleteModal } from '@/shared/components'
 import { User } from '@/shared/interfaces'
-import { useDeleteUser } from '@/shared/queries'
+import { useDeleteUser } from '@/lib/queries'
 import {
     EllipsisVerticalIcon,
     Mail,
@@ -139,7 +139,7 @@ export function TableActionsDropdown({ data }: Props) {
                             key="emailUser"
                             onPress={handleEmailUser}
                             startContent={
-                                <Mail size={14} className="text-text1p5" />
+                                <Mail size={14} className="text-defaultp5" />
                             }
                         >
                             {t('emailUser')}
@@ -149,7 +149,7 @@ export function TableActionsDropdown({ data }: Props) {
                         <DropdownItem
                             key="sendNotification"
                             startContent={
-                                <Send size={14} className="text-text1p5" />
+                                <Send size={14} className="text-defaultp5" />
                             }
                         >
                             {t('sendNotification')}
@@ -159,7 +159,7 @@ export function TableActionsDropdown({ data }: Props) {
                         <DropdownItem
                             key="resetPassword"
                             startContent={
-                                <RotateCcw size={14} className="text-text1p5" />
+                                <RotateCcw size={14} className="text-defaultp5" />
                             }
                             onPress={onOpenResetPWModal}
                         >
@@ -168,7 +168,7 @@ export function TableActionsDropdown({ data }: Props) {
                         <DropdownItem
                             key="renameUser"
                             startContent={
-                                <UserPen size={14} className="text-text1p5" />
+                                <UserPen size={14} className="text-defaultp5" />
                             }
                             onPress={onOpenUpdateUsernameModal}
                         >
@@ -180,7 +180,7 @@ export function TableActionsDropdown({ data }: Props) {
                             key="delete"
                             color="danger"
                             startContent={
-                                <Trash2 size={14} className="text-text1p5" />
+                                <Trash2 size={14} className="text-defaultp5" />
                             }
                             onPress={onOpenModal}
                         >

@@ -1,8 +1,10 @@
+'use client'
+
 import { VietnamDateFormat } from '@/lib/dayjs'
 import { CopyButton, handleCopy, UserActiveChip } from '@/shared/components'
 import { DepartmentChip } from '@/shared/components/chips'
 import { User } from '@/shared/interfaces'
-import { UserColumn } from '@/shared/types/user.type'
+import { UserColumn } from '@/shared/types/_user.type'
 import { addToast, Button, Tooltip } from '@heroui/react'
 import { Image, TableColumnsType } from 'antd'
 import { SortOrder } from 'antd/es/table/interface'
@@ -73,7 +75,7 @@ export function userColumns(
                                 })
                             }
                         >
-                            <p className="line-clamp-1 text-text2 text-xs">
+                            <p className="line-clamp-1 text-text-muted text-xs">
                                 @{record.username}
                             </p>
                         </button>
@@ -191,7 +193,7 @@ export function userColumns(
                     {record.department ? (
                         <DepartmentChip data={record.department} />
                     ) : (
-                        <p className="link !text-text2">Add department</p>
+                        <p className="link !text-text-muted">Add department</p>
                     )}
                 </div>
             ),
@@ -222,7 +224,7 @@ export function userColumns(
                             {record.jobTitle?.displayName}
                         </p>
                     ) : (
-                        <p className="link !text-text2">Add job title</p>
+                        <p className="link !text-text-muted">Add job title</p>
                     )}
                 </div>
             ),
@@ -360,7 +362,7 @@ export function userColumns(
                         {!filtered ? (
                             <ListFilterPlus
                                 size={14}
-                                className="text-text2 transition duration-100"
+                                className="text-text-muted transition duration-100"
                             />
                         ) : (
                             <ListFilter
@@ -378,7 +380,7 @@ export function userColumns(
                         {sortOrder ? (
                             <ChevronDown
                                 size={14}
-                                className="transition duration-150 text-text2"
+                                className="transition duration-150 text-text-muted"
                                 style={{
                                     transform:
                                         sortOrder === 'ascend'
@@ -389,7 +391,7 @@ export function userColumns(
                         ) : (
                             <ChevronsLeftRight
                                 size={14}
-                                className="rotate-90 text-text2"
+                                className="rotate-90 text-text-muted"
                             />
                         )}
                     </>

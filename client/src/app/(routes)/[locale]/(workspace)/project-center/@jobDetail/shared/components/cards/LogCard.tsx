@@ -2,7 +2,7 @@
 
 import { JobStatusChip, SwitchDateFormat } from '@/shared/components'
 import { JobActivityLog } from '@/shared/interfaces'
-import { useJobStatusDetail } from '@/shared/queries'
+import { useJobStatusDetail } from '@/lib/queries'
 import { Image } from 'antd'
 import { MoveRight } from 'lucide-react'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { CreateUserModal, HeroButton, PageHeading } from '@/shared/components'
-import { useUsers } from '@/shared/queries'
+import { useUsers } from '@/lib/queries'
 import { Badge, useDisclosure } from '@heroui/react'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'

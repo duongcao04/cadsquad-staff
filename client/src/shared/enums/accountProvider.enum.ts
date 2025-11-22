@@ -1,7 +1,0 @@
-export enum AccountProvider {
-	GOOGLE = "GOOGLE",
-	GITHUB = "GITHUB",
-	MICROSOFT = "MICROSOFT",
-	FACEBOOK = "FACEBOOK",
-	LOCAL = "LOCAL",
-}

@@ -1,11 +1,11 @@
 'use client'
 
 import { ApiResponse } from '@/lib/axios'
-import { useUpdatePasswordMutation } from '@/shared/queries'
+import { useUpdatePasswordMutation } from '@/lib/queries'
 import {
     UpdatePasswordInput,
     UpdatePasswordInputSchema,
-} from '@/shared/validationSchemas'
+} from '@/lib/validationSchemas'
 import { addToast, Button, Input, InputProps } from '@heroui/react'
 import { AxiosError } from 'axios'
 import { useFormik } from 'formik'
@@ -61,7 +61,7 @@ export function ChangePasswordForm() {
 
     return (
         <form onSubmit={formik.handleSubmit} className="space-y-8">
-            <div className="size-full border-[1px] border-text3 rounded-xl px-6 pt-4 pb-7">
+            <div className="size-full border-[1px] border-text-muted rounded-xl px-6 pt-4 pb-7">
                 <h2 className="text-base font-semibold">Đổi mật khẩu</h2>
                 <div className="mt-4 space-y-3">
                     <Input

@@ -1,41 +1,51 @@
 'use client'
 
-import React from 'react'
-import { cn, lightenHexColor } from '@/lib/utils'
+import {
+    cn,
+    darkenHexColor,
+    lightenHexColor,
+    PAID_STATUS_COLOR,
+} from '@/lib/utils'
 import { Chip, ChipProps } from '@heroui/react'
-
-const paidStatus = {
-    paid: {
-        title: 'Paid',
-        hexColor: '#2a9174',
-    },
-    unpaid: {
-        title: 'Unpaid',
-        hexColor: '#f83640',
-    },
-}
+import { useTheme } from 'next-themes'
 
 type Props = {
     status: 'paid' | 'unpaid'
     classNames?: ChipProps['classNames']
     props?: ChipProps
+    childrenRender?: (paidStatus: {
+        title: string
+        hexColor: string
+    }) => React.ReactNode
 }
-export function PaidChip({ status, classNames, props }: Props) {
+export function PaidChip({ status, classNames, props, childrenRender }: Props) {
+    const { resolvedTheme } = useTheme()
+
+    const backgroundColor =
+        resolvedTheme === 'light'
+            ? lightenHexColor(
+                  PAID_STATUS_COLOR[status]?.hexColor
+                      ? PAID_STATUS_COLOR[status].hexColor
+                      : '#ffffff',
+                  90
+              )
+            : darkenHexColor(
+                  PAID_STATUS_COLOR[status]?.hexColor
+                      ? PAID_STATUS_COLOR[status].hexColor
+                      : '#000000',
+                  70
+              )
+
     return (
         <Chip
             style={{
-                color: paidStatus[status]?.hexColor
-                    ? paidStatus[status].hexColor
+                color: PAID_STATUS_COLOR[status]?.hexColor
+                    ? PAID_STATUS_COLOR[status].hexColor
                     : '#ffffff',
-                backgroundColor: lightenHexColor(
-                    paidStatus[status]?.hexColor
-                        ? paidStatus[status].hexColor
-                        : '#ffffff',
-                    90
-                ),
+                backgroundColor: backgroundColor,
                 border: '1px solid',
-                borderColor: paidStatus[status]?.hexColor
-                    ? paidStatus[status].hexColor
+                borderColor: PAID_STATUS_COLOR[status]?.hexColor
+                    ? PAID_STATUS_COLOR[status].hexColor
                     : '#ffffff',
             }}
             variant="solid"
@@ -48,7 +58,9 @@ export function PaidChip({ status, classNames, props }: Props) {
             }}
             {...props}
         >
-            {paidStatus[status].title}
+            {!childrenRender
+                ? PAID_STATUS_COLOR[status].title
+                : childrenRender(PAID_STATUS_COLOR[status])}
         </Chip>
     )
 }

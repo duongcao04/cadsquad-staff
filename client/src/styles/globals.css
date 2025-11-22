@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+@import './foundation.css';
+@import './theme.css';
+@import './utility.css';
+@import "tw-animate-css";
+/* 
+---break---
+*/
+@custom-variant dark (&:is(.dark *));
+
+/* 
+** Import heroui
+*/
+@plugin '../lib/hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+body {
+    color: var(--color-text-default) !important;
+    font-family: var(--font-segoeui), 'Inter', Arial, Helvetica, sans-serif;
+}
+
+a {
+    color: var(--color-text-default) !important;
+}

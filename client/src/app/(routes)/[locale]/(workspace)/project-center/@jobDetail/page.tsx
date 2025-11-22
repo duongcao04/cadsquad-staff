@@ -4,13 +4,13 @@ import { ApiError } from '@/lib/axios'
 import { VietnamDateFormat } from '@/lib/dayjs'
 import { lightenHexColor } from '@/lib/utils'
 import { useDetailModal } from '@/shared/actions'
-import { CountDown, JobStatusChip, PaidChip } from '@/shared/components'
+import { Countdown, JobStatusChip, PaidChip } from '@/shared/components'
 import { JobStatus } from '@/shared/interfaces'
 import {
     useChangeStatusMutation,
     useJobByNo,
     useJobStatusByOrder,
-} from '@/shared/queries'
+} from '@/lib/queries'
 import { addToast, Button, Skeleton } from '@heroui/react'
 import { Drawer } from 'antd'
 import { Clock9 } from 'lucide-react'
@@ -82,7 +82,7 @@ export default function JobDetailView() {
                             className="h-fit w-[200px] rounded-md"
                             isLoaded={!isLoading}
                         >
-                            <p className="align-bottom text-lg text-text2 font-normal underline-offset-2 tracking-wider line-clamp-1">
+                            <p className="align-bottom text-lg text-text-muted font-normal underline-offset-2 tracking-wider line-clamp-1">
                                 #{job?.no}
                             </p>
                         </Skeleton>
@@ -123,8 +123,8 @@ export default function JobDetailView() {
                         </div>
                         <div className="flex items-center justify-end gap-2">
                             <div className="text-sm font-medium">
-                                <CountDown
-                                    endedDate={new Date(job?.dueAt ?? '')}
+                                <Countdown
+                                    targetDate={new Date(job?.dueAt ?? '')}
                                 />
                             </div>
                             <Clock9 size={16} />

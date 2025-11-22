@@ -1,25 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-
+import { Link, redirect } from '@/i18n/navigation'
+import { useLogin } from '@/lib/queries'
+import { URLS } from '@/lib/utils'
+import { LoginInput, LoginInputSchema } from '@/lib/validationSchemas'
+import { useDevice, useSearchParam } from '@/shared/hooks'
 import { addToast, Button, Input } from '@heroui/react'
 import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
-
-import { Link, useRouter } from '@/i18n/navigation'
-import { envConfig } from '@/shared/config'
-import { useSearchParam } from '@/shared/hooks'
-import { useLogin } from '@/shared/queries'
-import { LoginInput, LoginInputSchema } from '@/shared/validationSchemas'
-import { useTranslations } from 'next-intl'
-
-const HOME = String(envConfig.NEXT_PUBLIC_URL)
+import { useLocale, useTranslations } from 'next-intl'
+import { useState } from 'react'
 
 export function LoginForm() {
     const t = useTranslations()
-    const router = useRouter()
+    const locale = useLocale()
+
+    const { isMobile, isTablet } = useDevice()
+
     const { getSearchParam } = useSearchParam()
-    const redirect = getSearchParam('redirect') ?? '/'
+    const redirectUrl = getSearchParam('redirect') ?? '/'
 
     const [isVisible, setIsVisible] = useState(false)
     const toggleVisibility = () => setIsVisible(!isVisible)
@@ -39,9 +38,12 @@ export function LoginForm() {
                     password: values.password,
                 },
                 {
-                    onSuccess(res) {
+                    async onSuccess(res) {
                         addToast({ title: res.data.message, color: 'success' })
-                        router.replace(redirect)
+                        redirect({
+                            href: redirectUrl,
+                            locale: locale,
+                        })
                     },
                     onError(error) {
                         addToast({
@@ -58,17 +60,18 @@ export function LoginForm() {
     return (
         <form
             onSubmit={formik.handleSubmit}
-            className="min-w-[600px] shadow-lg rounded-sm py-8 p-16 bg-background"
+            className="min-w-[90%] lg:min-w-[600px] shadow-SM rounded-lg px-8 py-6 lg:py-8 lg:px-16 bg-background-muted space-y-1"
         >
-            <h1 className="text-2xl font-bold text-left font-saira">
+            <h1 className="text-lg lg:text-2xl font-bold text-center lg:text-left font-saira">
                 {t('signIn')}
             </h1>
-            <p>
+            <p className="text-center lg:text-left text-xs lg:text-base">
                 {t('toContinueTo')}
                 <Link
-                    href={HOME}
+                    href={URLS.home}
                     className="text-blue-700 hover:underline underline-offset-2"
                 >
+                    {' '}
                     staff.cadsquad.vn
                 </Link>
             </p>
@@ -80,6 +83,11 @@ export function LoginForm() {
                     label={t('email')}
                     value={formik.values.email}
                     onChange={formik.handleChange}
+                    variant="bordered"
+                    classNames={{
+                        inputWrapper: '!shadow-SM',
+                    }}
+                    size={isMobile || isTablet ? 'sm' : undefined}
                     isInvalid={
                         Boolean(formik.touched.email) &&
                         Boolean(formik.errors.email)
@@ -96,6 +104,11 @@ export function LoginForm() {
                     type={isVisible ? 'text' : 'password'}
                     value={formik.values.password}
                     onChange={formik.handleChange}
+                    variant="bordered"
+                    classNames={{
+                        inputWrapper: '!shadow-SM',
+                    }}
+                    size={isMobile || isTablet ? 'sm' : 'md'}
                     endContent={
                         <Button
                             isIconOnly
@@ -114,7 +127,7 @@ export function LoginForm() {
                         formik.errors.password
                     }
                 />
-                <p className="ml-1 text-sm">
+                <p className="ml-1 text-center lg:text-left text-xs lg:text-base">
                     {t('support')}? {t('contactTo')}{' '}
                     <Link
                         href={'mailto:ch.duong@cadsquad.vn'}
@@ -123,7 +136,7 @@ export function LoginForm() {
                         Ch.duong@cadsquad.vn
                     </Link>
                 </p>
-                <div className="mt-10 w-[80%] mx-auto grid place-items-center">
+                <div className="mt-5 lg:mt-10 w-[80%] mx-auto grid place-items-center">
                     <Button
                         color="danger"
                         className="w-full rounded-sm"

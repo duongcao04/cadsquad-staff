@@ -7,7 +7,7 @@ import {
     usePaymentChannels,
     useProfile,
     useUpdateJobMutation,
-} from '@/shared/queries'
+} from '@/lib/queries'
 import { addToast, Skeleton } from '@heroui/react'
 import { Settings } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -62,7 +62,7 @@ export function PaymentChannelView({
         <div>
             <Skeleton className="w-full h-fit rounded-md" isLoaded={!isLoading}>
                 <button
-                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background2 flex items-center justify-between"
+                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background-muted flex items-center justify-between"
                     style={{
                         cursor: isAdmin ? 'pointer' : 'default',
                     }}
@@ -73,7 +73,7 @@ export function PaymentChannelView({
                         setIsEditMode(!isEditMode)
                     }}
                 >
-                    <p className="text-sm text-text2">
+                    <p className="text-sm text-text-muted">
                         {t('jobColumns.paymentChannel')}
                     </p>
                     {isAdmin && <Settings size={16} />}

@@ -1,42 +1,11 @@
 'use client'
 
-import React from 'react'
-
 import { Button } from '@heroui/react'
-import { Table } from 'antd'
 import { ChevronRight } from 'lucide-react'
 
 import { Link } from '@/i18n/navigation'
 
-import {
-    Job,
-    JobStatus,
-    JobType,
-    PaymentChannel,
-    User,
-} from '@/shared/interfaces'
-import {
-    useJobs,
-    useJobStatuses,
-    useJobTypes,
-    usePaymentChannels,
-    useUsers,
-} from '@/shared/queries'
-import { useTranslations } from 'use-intl'
-import { jobColumns } from '../../../project-center/shared'
-
-type DataType = Job & {
-    key: React.Key
-}
-
 export default function ProjectManage() {
-    const t = useTranslations()
-    const { jobs } = useJobs()
-    const { data: jobStatuses } = useJobStatuses()
-    const { data: jobTypes } = useJobTypes()
-    const { data: paymentChannels } = usePaymentChannels()
-    const { users } = useUsers()
-
     return (
         <div
             className="p-2 rounded-2xl h-full border border-gray-100"
@@ -61,29 +30,6 @@ export default function ProjectManage() {
                     </Button>
                 </Link>
             </div>
-            <Table<DataType>
-                columns={jobColumns(
-                    {
-                        jobs: jobs as Job[],
-                        jobStatuses: jobStatuses as JobStatus[],
-                        jobTypes: jobTypes as JobType[],
-                        paymentChannels: paymentChannels as PaymentChannel[],
-                        users: users as User[],
-                    },
-                    {},
-                    { translations: t }
-                )}
-                rowKey="jobNo"
-                dataSource={jobs?.map((prj, index) => ({
-                    ...prj,
-                    key: prj?.id ?? index,
-                }))}
-                // loading={loadingProjects && validatingProjects}
-                pagination={false}
-                // size={table.size}
-                rowClassName="h-8! transition duration-500"
-                showSorterTooltip
-            />
         </div>
     )
 }

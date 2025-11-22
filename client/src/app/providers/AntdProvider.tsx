@@ -42,8 +42,9 @@ export default function AntdProvider({
                     }}
                     drawer={{
                         classNames: {
-                            wrapper: '!p-2.5 !shadow-none',
-                            content: 'rounded-lg shadow-lg',
+                            wrapper: '!p-2.5 !shadow-none !bg-transparent',
+                            content:
+                                'rounded-lg shadow-lg !bg-background-muted !text-text-default',
                             body: '!py-3 !px-5',
                         },
                         styles: {
@@ -162,7 +163,7 @@ export default function AntdProvider({
                                 margin-top: 12px !important;
                                 overflow: auto !important;
                                 scrollbar-width: thin !important;
-                                scrollbar-color: var(--color-text-text3)
+                                scrollbar-color: var(--color-text-text-muted)
                                     transparent !important;
                                 scrollbar-gutter: stable !important;
                             }

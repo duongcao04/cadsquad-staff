@@ -3,7 +3,7 @@
 import { ApiError } from '@/lib/axios'
 import { handleCopy, HeroButton, PasswordInput } from '@/shared/components'
 import { User } from '@/shared/interfaces'
-import { useResetPasswordMutation } from '@/shared/queries'
+import { useResetPasswordMutation } from '@/lib/queries'
 import {
     addToast,
     Button,
@@ -36,7 +36,7 @@ type Props = {
     isLoading?: boolean
     data?: User
 }
-export function ResetPasswordModal({ isOpen, onClose, data }: Props) {
+export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
     const [resetOption, setResetOption] = React.useState('automatic')
     const [passwordInput, setPasswordInput] = useState('')
     const [isSuccess, setSuccess] = useState(false)

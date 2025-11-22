@@ -1,10 +1,7 @@
-'use client'
-
 import '@ant-design/v5-patch-for-react-19'
 
-import '@/app/globals.css'
+import '@/styles/globals.css'
 import { geistMono, geistSans, quicksand, saira } from '@/fonts'
-import { UseSocketOnBoot } from '@/shared/hooks/useSocketOnBoot'
 import PushSubscriber from '@/shared/components/PushSubscriber'
 
 export default function RootLayout({
@@ -12,11 +9,10 @@ export default function RootLayout({
 }: {
     children: React.ReactNode
 }) {
-    UseSocketOnBoot()
     return (
         <html suppressHydrationWarning>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} ${saira.variable} ${quicksand.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} ${saira.variable} ${quicksand.variable} antialiased bg-background-muted`}
                 suppressHydrationWarning
             >
                 <PushSubscriber />

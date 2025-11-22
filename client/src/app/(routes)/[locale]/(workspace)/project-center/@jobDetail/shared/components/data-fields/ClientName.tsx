@@ -3,7 +3,7 @@
 import { ApiError } from '@/lib/axios'
 import { HeroButton } from '@/shared/components'
 import { Job } from '@/shared/interfaces'
-import { useProfile, useUpdateJobMutation } from '@/shared/queries'
+import { useProfile, useUpdateJobMutation } from '@/lib/queries'
 import { addToast, Input, Skeleton } from '@heroui/react'
 import { Settings } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -56,7 +56,7 @@ export const ClientName = ({
         <div className="w-full overflow-hidden">
             <Skeleton className="w-full h-fit rounded-md" isLoaded={!isLoading}>
                 <button
-                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background2 flex items-center justify-between"
+                    className="w-full pl-2 pr-3 py-1.5 rounded-lg hover:bg-background-muted flex items-center justify-between"
                     style={{
                         cursor: isAdmin ? 'pointer' : 'default',
                     }}
@@ -67,7 +67,7 @@ export const ClientName = ({
                         setIsEditMode(true)
                     }}
                 >
-                    <p className="text-xs text-text2">
+                    <p className="text-xs text-text-muted">
                         {t('jobColumns.clientName')}
                     </p>
                     {isAdmin && <Settings size={16} />}

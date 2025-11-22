@@ -23,6 +23,7 @@ import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { JobTabEnum } from './enums/job-tab.enum'
+import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 
 @Injectable()
 export class JobService {
@@ -220,7 +221,7 @@ export class JobService {
       limit = '10',
       search,
       tab = JobTabEnum.ACTIVE,
-      sort = '-createdAt',
+      sort = 'no',
       assignee,
       clientName,
       type,
@@ -309,7 +310,7 @@ export class JobService {
         }),
         this.prisma.job.count({ where }),
       ])
-      const data = jobs.map((job) =>
+      const data = jobs.map((job) => ({ ...job, thumbnailUrl: job.status.thumbnailUrl })).map((job) =>
         plainToInstance(this.responseSchema(userRole), job, { excludeExtraneousValues: true }),
       ) as unknown as Job[]
 
@@ -366,6 +367,64 @@ export class JobService {
       return plainToInstance(this.responseSchema(userRole), job, {
         excludeExtraneousValues: true,
       }) as unknown as Job
+    } catch (error) {
+      throw new InternalServerErrorException("Get job by no failed")
+    }
+  }
+
+  /**
+   * Find job by deadline.
+   */
+  async findJobDeadline(
+    userId: string,
+    userRole: RoleEnum,
+    isoDate: string,
+  ): Promise<Job[]> {
+    if (!isoDate) {
+      throw new BadRequestException('ISO date invalid')
+    }
+
+    const date = new Date(isoDate); // e.g. "2025-06-12"
+    const startOfDayUtc = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      0, 0, 0, 0
+    ));
+    const endOfDayUtc = new Date(Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      23, 59, 59, 999
+    ));
+    try {
+      const result = await this.prisma.job.findMany({
+        where: {
+          AND: [
+            { dueAt: { gte: startOfDayUtc, lt: endOfDayUtc } },
+            this.buildPermission(userRole, userId)
+          ]
+        },
+        include: {
+          type: true,
+          assignee: true,
+          createdBy: true,
+          paymentChannel: true,
+          status: true,
+          comment: true,
+          activityLog: {
+            include: {
+              modifiedBy: true,
+            },
+          },
+        },
+      })
+
+      if (!result) throw new NotFoundException('Jobs not found')
+
+      return plainToInstance(this.responseSchema(userRole), result, {
+        excludeExtraneousValues: true,
+      }) as unknown as Job[]
     } catch (error) {
       throw new InternalServerErrorException("Get job by no failed")
     }
@@ -508,6 +567,30 @@ export class JobService {
       return { id: jobId }
     } catch (error) {
       throw new InternalServerErrorException('Change status failed')
+    }
+  }
+
+  async bulkChangeStatus(
+    modifierId: string,
+    data: BulkChangeStatusDto,
+  ): Promise<{ jobIds: string }> {
+    try {
+      const results = await Promise.all(
+        data.jobIds.map(async (jobId) => {
+          const job = await this.prisma.job.findUnique({
+            where: { id: jobId },
+            select: { statusId: true },
+          })
+
+          return this.changeStatus(jobId, modifierId, {
+            fromStatusId: job?.statusId ?? '',
+            toStatusId: data.toStatusId,
+          })
+        })
+      )
+      return { jobIds: data.jobIds.toString() }
+    } catch (error) {
+      throw new InternalServerErrorException('Bulk change status failed')
     }
   }
 

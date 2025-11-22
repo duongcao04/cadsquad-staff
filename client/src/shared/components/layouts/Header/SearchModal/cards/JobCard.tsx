@@ -17,7 +17,7 @@ export function JobCard({ data, onClose }: Props) {
                 router.push(`/project-center/${data.no}`)
                 onClose()
             }}
-            className="bg-background2 size-full rounded-md px-4 py-3 flex items-center justify-between hover:bg-primary hover:text-white transition duration-50 cursor-pointer"
+            className="bg-background-muted size-full rounded-md px-4 py-3 flex items-center justify-between hover:bg-primary hover:text-white transition duration-50 cursor-pointer"
         >
             <div className="flex items-center justify-start gap-3">
                 <Image

@@ -4,11 +4,8 @@ import '@ant-design/v5-patch-for-react-19'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
-import '@/app/globals.css'
 import { AppProvider } from '@/app/providers'
 import { SupportLanguages, routing } from '@/i18n/routing'
-
-import { GlassBackground } from '@/shared/components'
 import AppLoader from './loading'
 
 export default async function LocaleLayout({
@@ -32,9 +29,7 @@ export default async function LocaleLayout({
 
     return (
         <AppProvider key="root" locale={locale} messages={messages}>
-            <Suspense fallback={<AppLoader />}>
-                <GlassBackground>{children}</GlassBackground>
-            </Suspense>
+            <Suspense fallback={<AppLoader />}>{children}</Suspense>
         </AppProvider>
     )
 }

@@ -27,7 +27,7 @@ function CadsquadLogo({
     href = '/',
     classNames,
 }: Props) {
-    const { theme, systemTheme } = useTheme()
+    const { resolvedTheme } = useTheme()
 
     const Wrapper = ({ children }: { children: React.ReactNode }) => {
         const wrapperClassName = cn('block w-fit', classNames?.root)
@@ -40,14 +40,10 @@ function CadsquadLogo({
         )
     }
 
-    if (theme === 'light') {
+    if (resolvedTheme === 'light') {
         logoTheme = 'default'
     } else {
-        if (systemTheme === 'light') {
-            logoTheme = 'default'
-        } else {
-            logoTheme = 'white'
-        }
+        logoTheme = 'white'
     }
 
     return (

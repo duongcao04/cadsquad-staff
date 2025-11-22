@@ -24,7 +24,7 @@ export const CommentCard = ({
                 className="!size-full !rounded-full"
             />
             <div>
-                <div className="pl-3 pr-4 py-2 w-fit bg-background2 rounded-xl">
+                <div className="pl-3 pr-4 py-2 w-fit bg-background-muted rounded-xl">
                     <p className="font-semibold">{data?.user?.displayName}</p>
                     <div
                         dangerouslySetInnerHTML={{ __html: data.content }}
@@ -34,7 +34,7 @@ export const CommentCard = ({
                     <SwitchDateFormat data={data.createdAt} />
                     {isReply && (
                         <button
-                            className="text-xs text-text2 hover:underline cursor-pointer"
+                            className="text-xs text-text-muted hover:underline cursor-pointer"
                             onClick={() => {
                                 setShowReply(!showReply)
                             }}

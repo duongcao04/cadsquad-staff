@@ -1,2 +1,5 @@
 export * from './useSocket'
 export * from './useSearchParam'
+export * from './useDevice'
+export * from './useSocket'
+export * from './useSocketOnBoot'

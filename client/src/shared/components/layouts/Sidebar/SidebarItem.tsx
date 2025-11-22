@@ -24,11 +24,11 @@ const SidebarItem = ({
         },
         animate: {
             opacity: 1,
-            color: 'var(--text-1p5)',
+            color: 'var(--text-subdued)',
         },
         active: {
             opacity: 1,
-            color: 'var(--color-text1)',
+            color: 'var(--color-default)',
         },
         hover: {
             opacity: 1,
@@ -60,10 +60,10 @@ const SidebarItem = ({
 
     const textVariants: Variants = {
         init: {
-            color: 'var(--color-text1p5)',
+            color: 'var(--color-text-default)',
         },
         animate: {
-            color: 'var(--color-text1)',
+            color: 'var(--color-text-default)',
         },
     }
 
@@ -91,7 +91,7 @@ const SidebarItem = ({
                 <MotionButton
                     variants={buttonVariants}
                     animate="animate"
-                    className="w-full group cursor-pointer flex items-center justify-start rounded-lg hover:bg-[hsl(0,0%,93%)] transition duration-200"
+                    className="w-full group cursor-pointer flex items-center justify-start rounded-lg hover:bg-text-disabled transition duration-200"
                 >
                     <div className="py-2 px-2.5">
                         {isActivated ? (
@@ -101,7 +101,11 @@ const SidebarItem = ({
                                 height={20}
                             />
                         ) : (
-                            <data.icon width={20} height={20} />
+                            <data.icon
+                                width={20}
+                                height={20}
+                                className="text-text-default"
+                            />
                         )}
                     </div>
 
@@ -109,7 +113,7 @@ const SidebarItem = ({
                         <MotionP
                             variants={textVariants}
                             className={`text-sm ${
-                                isActivated ? 'font-semibold' : ''
+                                isActivated ? 'font-semibold !text-primary' : ''
                             } text-nowrap overflow-hidden py-2 pr-2 pl-0.5`}
                         >
                             {t(data.titleKey)}

@@ -24,7 +24,7 @@ const buttonVariants: Variants = {
     },
     hover: {
         opacity: 1,
-        background: 'var(--color-text3)',
+        background: 'var(--color-text-muted)',
     },
 }
 
@@ -53,7 +53,7 @@ export const AdminHeader = () => {
                         }}
                         canRedirect={false}
                     />
-                    <p className="pl-1 font-medium font-quicksand text-2xl text-text1p5 group-hover:underline">
+                    <p className="pl-1 font-medium font-quicksand text-2xl text-defaultp5 group-hover:underline">
                         Admin
                     </p>
                 </Link>
@@ -68,8 +68,8 @@ export const AdminHeader = () => {
                         >
                             <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">
                                 <div className="flex items-center justify-start gap-3">
-                                    <Search size={16} className="text-text2" />
-                                    <p className="block text-sm text-text2">
+                                    <Search size={16} className="text-text-muted" />
+                                    <p className="block text-sm text-text-muted">
                                         {t('search')} ...
                                     </p>
                                 </div>

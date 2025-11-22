@@ -1,7 +1,7 @@
 import { CopyButton } from '@/shared/components'
-import { envConfig } from '@/shared/config'
+import { envConfig } from '@/lib/config'
 import { Job } from '@/shared/interfaces'
-import { useProfile } from '@/shared/queries'
+import { useProfile } from '@/lib/queries'
 import { Button, Tooltip } from '@heroui/react'
 import { X } from 'lucide-react'
 import { useLocale } from 'next-intl'
@@ -11,7 +11,7 @@ import { ActionsDropdown } from './dropdowns'
 
 type Props = {
     closeModal?: () => void
-    data?: Job
+    data: Job
     isEditJobName: boolean
     setEditJobName: React.Dispatch<React.SetStateAction<boolean>>
 }
@@ -31,7 +31,7 @@ export function JobDetailActions({
                 <Button
                     size="sm"
                     variant="solid"
-                    className="bg-text3"
+                    className="bg-text-muted"
                     onPress={() => setEditJobName(true)}
                 >
                     <p className="text-sm font-medium">{t('edit')}</p>
@@ -66,7 +66,7 @@ export function JobDetailActions({
                         closeModal?.()
                     }}
                 >
-                    <X size={18} className="text-text-fore2" />
+                    <X size={18} className="text-text-subdued" />
                 </Button>
             </Tooltip>
         </div>

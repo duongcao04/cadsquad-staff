@@ -9,7 +9,7 @@ export const HeroInput = extendVariants(Input, {
                 inputWrapper: [
                     'shadow-none',
                     'border',
-                    'border-text3',
+                    'border-text-muted',
                     '!bg-background',
                     'transition',
                     'duration-100',

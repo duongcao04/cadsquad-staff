@@ -1,14 +1,13 @@
 'use client'
 
-import { lightenHexColor } from '@/lib/utils'
-import { DefaultJobStatusCode } from '@/shared/enums'
-import { Job, JobStatus } from '@/shared/interfaces'
 import {
     useChangeStatusMutation,
     useJobStatusByOrder,
     useJobStatuses,
     useProfile,
-} from '@/shared/queries'
+} from '@/lib/queries'
+import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
+import { TJob, TJobStatus } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -19,13 +18,16 @@ import {
     Tabs,
 } from '@heroui/react'
 import { ChevronDown } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { JobStatusChip } from '../chips'
 
 type Props = {
-    jobData: Job
-    statusData: JobStatus
+    jobData: TJob
+    statusData: TJobStatus
 }
 export default function JobStatusDropdown({ jobData, statusData }: Props) {
+    const { resolvedTheme } = useTheme()
+
     const { isAdmin } = useProfile()
     const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
     const { jobStatus: nextStatus } = useJobStatusByOrder(
@@ -36,12 +38,12 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
     )
     const { data: jobStatuses } = useJobStatuses()
 
-    const handleChangeStatus = async (nextStatus: JobStatus) => {
+    const handleChangeStatus = async (nextStatus: TJobStatus) => {
         try {
             await changeStatusMutation(
                 {
                     jobId: jobData.id?.toString(),
-                    changeStatusInput: {
+                    data: {
                         fromStatusId: jobData?.status.id?.toString(),
                         toStatusId: nextStatus.id?.toString(),
                     },
@@ -70,33 +72,46 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
         }
     }
 
-    const actions: { key: string; data?: JobStatus; action: () => void }[] = [
+    const actions: { key: string; data?: TJobStatus; action: () => void }[] = [
         {
             key: 'nextStatusOrder',
             data: isAdmin
                 ? nextStatus
-                : nextStatus?.code === DefaultJobStatusCode.DELIVERED
+                : nextStatus?.code === JOB_STATUS_CODES.delivered
                 ? nextStatus
                 : undefined,
             action: () => {
-                handleChangeStatus(nextStatus as JobStatus)
+                handleChangeStatus(nextStatus as TJobStatus)
             },
         },
         {
             key: 'prevStatusOrder',
             data: isAdmin
                 ? prevStatus
-                : prevStatus?.code === DefaultJobStatusCode.DELIVERED
+                : prevStatus?.code === JOB_STATUS_CODES.delivered
                 ? prevStatus
                 : undefined,
             action: () => {
-                handleChangeStatus(prevStatus as JobStatus)
+                handleChangeStatus(prevStatus as TJobStatus)
             },
         },
     ]
     const dropdownActions = actions.filter(
         (item) => typeof item.data !== 'undefined'
     )
+
+    const getBackgroundColor = (data?: TJobStatus) => {
+        return resolvedTheme === 'light'
+            ? data
+                ? lightenHexColor(
+                      data?.hexColor ? data.hexColor : '#ffffff',
+                      90
+                  )
+                : '#ffffff'
+            : data
+            ? darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
+            : '#000000'
+    }
 
     return (
         <Popover
@@ -142,7 +157,7 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                     <Tab key="quick" title="Quick change">
                         <div className="size-full space-y-2.5">
                             {!dropdownActions.length ? (
-                                <p className="py-3 font-medium text-center text-text2">
+                                <p className="py-3 font-medium text-center text-text-muted">
                                     Cannot quick change
                                 </p>
                             ) : (
@@ -153,12 +168,8 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                                             className="w-full"
                                             style={{
                                                 backgroundColor:
-                                                    lightenHexColor(
-                                                        item.data?.hexColor
-                                                            ? item.data
-                                                                  ?.hexColor
-                                                            : '#ffffff',
-                                                        90
+                                                    getBackgroundColor(
+                                                        item.data
                                                     ),
                                             }}
                                             onPress={item.action}
@@ -198,8 +209,6 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                     </Tab>
                     {isAdmin && (
                         <Tab key="force" title="Force change">
-                            <p className="text-text2 text-xs">Mark status as</p>
-                            <hr className="mt-2 mb-3 text-text3" />
                             {!jobStatuses ? (
                                 <p className="text-xs text-center">
                                     Không tìm thấy danh sách trạng thái
@@ -213,11 +222,8 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                                                 className="w-full"
                                                 style={{
                                                     backgroundColor:
-                                                        lightenHexColor(
-                                                            item?.hexColor
-                                                                ? item?.hexColor
-                                                                : '#ffffff',
-                                                            90
+                                                        getBackgroundColor(
+                                                            item
                                                         ),
                                                 }}
                                                 onPress={() => {
@@ -255,6 +261,10 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                         </Tab>
                     )}
                 </Tabs>
+                <p className="border-t-1 border-text-muted pt-1.5 w-full text-center text-text-muted">
+                    <span className="font-bold">#{jobData?.no}</span> / Update
+                    status
+                </p>
             </PopoverContent>
         </Popover>
     )

@@ -15,9 +15,9 @@ import { Bell } from 'lucide-react'
 import { useRouter } from '@/i18n/navigation'
 import { cookie } from '@/lib/cookie'
 import { authSocket } from '@/lib/socket'
-import { NotificationStatus } from '@/shared/enums/notificationStatus.enum'
+import { NotificationStatusEnum } from '@/shared/enums'
 import { Notification } from '@/shared/interfaces'
-import { useNotifications } from '@/shared/queries/useNotification'
+import { useNotifications } from '@/lib/queries/useNotification'
 import { useEffect, useState } from 'react'
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { NotificationCard } from './NotificationCard'
@@ -32,7 +32,7 @@ export function NotificationDropdown() {
 
     const countUnseen =
         notifications?.filter(
-            (item) => item.status === NotificationStatus.UNSEEN
+            (item) => item.status === NotificationStatusEnum.UNSEEN
         ).length ?? 0
 
     const socket = authSocket()
@@ -95,7 +95,7 @@ export function NotificationDropdown() {
                     >
                         <p className="font-semibold">
                             Notifications
-                            <span className="pl-0.5 tracking-wider text-text2">
+                            <span className="pl-0.5 tracking-wider text-text-muted">
                                 ({countUnseen ?? 0})
                             </span>
                         </p>
@@ -119,7 +119,8 @@ export function NotificationDropdown() {
                         {notifications && notifications.length > 0 ? (
                             notifications.map((data, index) => {
                                 const isUnseen =
-                                    data.status === NotificationStatus.UNSEEN
+                                    data.status ===
+                                    NotificationStatusEnum.UNSEEN
                                 return (
                                     <DropdownItem
                                         key={data.id ?? index}

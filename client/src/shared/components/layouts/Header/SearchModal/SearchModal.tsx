@@ -2,7 +2,7 @@
 
 import { useRef } from 'react'
 
-import { useSearchJobs } from '@/shared/queries/useJob'
+import { useSearchJobs } from '@/lib/queries/useJob'
 import { Input, Kbd, Tab, Tabs } from '@heroui/react'
 import { Modal } from 'antd'
 import {
@@ -45,19 +45,19 @@ export function SearchModal({ isOpen, onClose }: Props) {
                         <>
                             <div className="sticky top-0 z-10 bg-background pr-2 pt-2 pb-3">
                                 <div className="flex items-center justify-start gap-4">
-                                    <p className="font-medium text-text1p5 text-nowrap">
+                                    <p className="font-medium text-defaultp5 text-nowrap">
                                         {t('job')}
-                                        <span className="pl-2 font-semibold text-text2">
+                                        <span className="pl-2 font-semibold text-text-muted">
                                             ({jobs?.length})
                                         </span>
                                     </p>
-                                    <div className="bg-text3 h-[1px] w-full" />
+                                    <div className="bg-text-muted h-[1px] w-full" />
                                 </div>
                             </div>
                             <JobList data={jobs} onClose={handleClose} />
                         </>
                     ) : (
-                        <p className="py-5 text-base font-medium text-text2 text-center">
+                        <p className="py-5 text-base font-medium text-text-muted text-center">
                             {t('plsEnterKeywords')}
                         </p>
                     )}
@@ -73,19 +73,19 @@ export function SearchModal({ isOpen, onClose }: Props) {
                         <>
                             <div className="sticky top-0 z-10 bg-background pr-2 pt-2 pb-3">
                                 <div className="flex items-center justify-start gap-4">
-                                    <p className="font-medium text-text1p5 text-nowrap">
+                                    <p className="font-medium text-defaultp5 text-nowrap">
                                         {t('job')}
-                                        <span className="pl-2 font-semibold text-text2">
+                                        <span className="pl-2 font-semibold text-text-muted">
                                             ({jobs?.length})
                                         </span>
                                     </p>
-                                    <div className="bg-text3 h-[1px] w-full" />
+                                    <div className="bg-text-muted h-[1px] w-full" />
                                 </div>
                             </div>
                             <JobList data={jobs} onClose={handleClose} />{' '}
                         </>
                     ) : (
-                        <p className="py-5 text-base font-medium text-text2 text-center">
+                        <p className="py-5 text-base font-medium text-text-muted text-center">
                             {t('plsEnterKeywords')}
                         </p>
                     )}

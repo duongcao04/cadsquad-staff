@@ -1,0 +1,76 @@
+'use client'
+
+import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { commentApi } from '@/lib/api'
+import {
+    TCreateCommentInput,
+    TUpdateCommentInput,
+} from '@/lib/validationSchemas'
+import { useMutation, useQuery } from '@tanstack/react-query'
+
+export const useComments = (jobId?: string) => {
+    const { data, isFetching, isLoading } = useQuery({
+        queryKey: ['comments', 'jobs', jobId],
+        queryFn: () => {
+            if (!jobId) {
+                return undefined
+            }
+            return commentApi.getByJob(jobId)
+        },
+        enabled: !!jobId,
+        select: (res) => res?.data.result,
+    })
+    return {
+        comments: data,
+        isLoading: isFetching || isLoading,
+    }
+}
+
+export const useCommentById = (commentId?: string) => {
+    const { data, isFetching, isLoading } = useQuery({
+        queryKey: ['comments', 'id', commentId],
+        queryFn: () => {
+            if (!commentId) {
+                return undefined
+            }
+            return commentApi.getById(commentId)
+        },
+        enabled: !!commentId,
+        select: (res) => res?.data.result,
+    })
+    return {
+        comment: data,
+        isLoading: isFetching || isLoading,
+    }
+}
+
+export const useCreateComment = () => {
+    return useMutation({
+        mutationFn: (data: TCreateCommentInput) => commentApi.create(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['comments'] })
+        },
+    })
+}
+export const useUpdateComment = () => {
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string; data: TUpdateCommentInput }) =>
+            commentApi.update(id, data).then((res) => res.data.result),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({
+                queryKey: ['comment', variables.id],
+            })
+            queryClient.invalidateQueries({ queryKey: ['comments'] })
+        },
+    })
+}
+
+export const useDeleteCommentMutation = () => {
+    return useMutation({
+        mutationKey: ['deleteComment'],
+        mutationFn: (id: string) => commentApi.delete(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['comments'] })
+        },
+    })
+}

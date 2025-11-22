@@ -11,9 +11,9 @@ export function JobDetailPanel({ isLoading = false, data }: Props) {
     return (
         <div className="w-full space-y-2.5">
             <ClientName isLoading={isLoading} data={data} />
-            <hr className="text-text3" />
+            <hr className="text-text-muted" />
             <Assignee isLoading={isLoading} data={data} />
-            <hr className="text-text3" />
+            <hr className="text-text-muted" />
             <Attachments isLoading={isLoading} data={data} />
         </div>
     )

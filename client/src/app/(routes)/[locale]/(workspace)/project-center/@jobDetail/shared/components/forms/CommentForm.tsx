@@ -1,6 +1,6 @@
 import { ApiError } from '@/lib/axios'
 import { HeroButton, QuillEditor } from '@/shared/components'
-import { useCreateComment, useProfile } from '@/shared/queries'
+import { useCreateComment, useProfile } from '@/lib/queries'
 import { addToast } from '@heroui/react'
 import { Image } from 'antd'
 import { useTranslations } from 'next-intl'

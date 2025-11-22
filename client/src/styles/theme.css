@@ -1,22 +1,46 @@
-@theme {
-    --color-background: var(--background);
-    --color-background2: var(--background2);
-    --color-foreground: var(--foreground);
-    --color-border: var(--border);
+@theme inline {
+    /*
+   * Nhóm 1: Shadow dùng cho viền (border) và hiệu ứng UI (inset)
+   * Các giá trị này nhỏ, tinh tế, dùng để phân biệt ranh giới.
+   */
 
-    --color-text1: var(--text1);
-    /* 1p5 ===  1,5 */
-    --color-text1p5: var(--text-1p5);
-    --color-text2: var(--text2);
-    --color-text3: var(--text3);
-    --color-text4: var(--text4);
-    --color-text-fore1: var(--text-fore1);
-    --color-text-fore2: var(--text-fore2);
-    --color-text-fore3: var(--text-fore3);
+    /* Một đường viền 1px rất nhạt */
+    --shadow-borderXS: 0 0 0 1px rgba(0, 0, 0, 0.05);
 
-    --color-link: var(--color-link);
+    /* Một đường viền 1px rõ hơn một chút */
+    --shadow-borderSM: 0 0 0 1px rgba(0, 0, 0, 0.08);
 
-    --color-currency: #252b5b
+    /* Hiệu ứng inset (nhấn vào trong) cơ bản, dùng cho input/textarea */
+    --shadow-borderMD: inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+    /* Hiệu ứng inset rõ hơn */
+    --shadow-borderLG: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+    /* Một hiệu ứng viền ngoài 2px (ví dụ khi focus) */
+    --shadow-borderXL: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    /* Ví dụ màu xanh focus */
+
+    ---
+    /*
+   * Nhóm 2: Shadow dùng để nâng (Elevation)
+   * Các giá trị này tạo độ sâu và phân cấp rõ ràng.
+   * Tôi đã thêm 'XS' và 'XL' vào nhóm này để hoàn thiện thang đo.
+   */
+
+    /* Rất nhỏ, chỉ vừa đủ nâng element lên */
+    --shadow-XS: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+    /* Nhỏ, shadow tiêu chuẩn cho các element nhỏ */
+    --shadow-SM: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+
+    /* Trung bình, shadow "mặc định" cho card */
+    --shadow-MD: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+    /* Lớn, dùng cho các element cần nổi bật */
+    --shadow-LG: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+    /* Rất lớn, dùng cho modal, popover */
+    --shadow-XL: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
 @theme inline {
@@ -61,4 +85,54 @@
     --color-secondary-800: hsl(346.8 77.2% 49.8%);
     --color-secondary-900: hsl(347.1 84.3% 24.9%);
     --color-secondary-950: hsl(348.4 91.8% 14.3%);
+}
+
+
+@theme {
+    /* Nền chính (Pure White) */
+    --color-text-1: var(--text-1);
+    /* Nền mờ (Off-white) */
+    --color-text-2: var(--text-2);
+    /* Viền, nền hover */
+    --color-text-3: var(--text-3);
+    /* Viền đậm hơn, nền disabled */
+    --color-text-4: var(--text-4);
+    /* Text placeholder, text disabled */
+    --color-text-5: var(--text-5);
+    /* Text phụ, muted */
+    --color-text-6: var(--text-6);
+    /* Text thứ cấp (secondary) */
+    --color-text-7: var(--text-7);
+    /* Text chính (primary) */
+    --color-text-8: var(--text-8);
+    /* Text tiêu đề, icon (Near-black) */
+    --color-text-9: var(--text-9);
+
+    --color-background: var(--background);
+    --color-background-muted: var(--background-muted);
+
+    --color-foreground: var(--foreground);
+
+    /* Viền (Border) */
+    /* 15% - Viền tối (hơi sáng hơn nền) */
+    --color-border-default: var(--border);
+    /* 5% - Viền siêu mờ (giống nền) */
+    --color-border-muted: var(--border-muted);
+
+    /* Văn bản (Text) */
+    /* Lưu ý: Chúng ta dùng --text-2 (98%) cho text chính vì nó dịu mắt hơn --text-1 (100%) */
+    /* 98% - Text chính */
+    --color-text-default: var(--text-default);
+    /* 70% - Text phụ */
+    --color-text-subdued: var(--text-subdued);
+    /* 50% - Text mờ (timestamp) */
+    --color-text-muted: var(--text-muted);
+    /* 30% - Text vô hiệu hóa */
+    --color-text-disabled: var(--text-disabled);
+    /* 5% - Text trên nền sáng (ví dụ: button) */
+    --color-text-inverse: var(--text-inverse);
+
+    --color-link: var(--color-link);
+
+    --color-currency: var(--color-currency);
 }

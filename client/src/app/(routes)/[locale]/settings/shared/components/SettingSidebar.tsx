@@ -25,14 +25,14 @@ export function SettingSidebar({
         active: {
             opacity: 1,
             fontWeight: '600',
-            background: 'var(--color-text3)',
+            background: 'var(--color-text-muted)',
             transition: {
                 duration: 0.05,
             },
         },
         hover: {
             opacity: 1,
-            background: 'var(--color-text3)',
+            background: 'var(--color-text-muted)',
             transition: {
                 duration: 0.05,
             },
@@ -56,7 +56,7 @@ export function SettingSidebar({
         },
         hover: {
             opacity: 1,
-            background: 'var(--color-text3)',
+            background: 'var(--color-text-muted)',
             transition: {
                 duration: 0.05,
             },
@@ -78,7 +78,7 @@ export function SettingSidebar({
             {sidebarData.map((group) => {
                 return (
                     <div key={group.id}>
-                        <p className="pl-4 text-sm font-medium text-text2">
+                        <p className="pl-4 text-sm font-medium text-text-muted">
                             {tSettings(group.groupTitleKey)}
                         </p>
                         {group.children.map((item) => {
@@ -117,7 +117,7 @@ export function SettingSidebar({
                                             <item.icon
                                                 size={20}
                                                 strokeWidth="1.5"
-                                                className="text-text1p5"
+                                                className="text-defaultp5"
                                             />
                                             <p className="text-sm">
                                                 {tSettings(item.titleKey)}

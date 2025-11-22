@@ -26,13 +26,13 @@ export function EditAppearanceForm() {
 
     return (
         <div className="space-y-8">
-            <div className="size-full border-[1px] border-text3 rounded-xl px-6 py-4">
+            <div className="size-full border-[1px] border-text-muted rounded-xl px-6 py-4">
                 <div className="grid grid-cols-[330px_1fr] gap-8">
                     <div>
                         <h2 className="text-base font-semibold">
                             {t('themeColor')}
                         </h2>
-                        <p className="text-xs text-text2">
+                        <p className="text-xs text-text-muted">
                             {t('themeColorDesc')}
                         </p>
                     </div>
@@ -62,13 +62,13 @@ export function EditAppearanceForm() {
                     </div>
                 </div>
             </div>
-            <div className="size-full border-[1px] border-text3 rounded-xl px-6 py-4">
+            <div className="size-full border-[1px] border-text-muted rounded-xl px-6 py-4">
                 <div className="grid grid-cols-[330px_1fr] gap-8">
                     <div>
                         <h2 className="text-base font-semibold">
                             {t('theme')}
                         </h2>
-                        <p className="text-xs text-text2">{t('themeDesc')}</p>
+                        <p className="text-xs text-text-muted">{t('themeDesc')}</p>
                     </div>
                     <div className="flex items-center justify-start gap-6">
                         {appTheme.map((themeI) => {
@@ -99,7 +99,7 @@ export function EditAppearanceForm() {
                                         }}
                                         preview={false}
                                     />
-                                    <p className="text-xs font-medium text-text1p5">
+                                    <p className="text-xs font-medium text-defaultp5">
                                         {themeI.title}
                                     </p>
                                 </div>
@@ -108,13 +108,13 @@ export function EditAppearanceForm() {
                     </div>
                 </div>
             </div>
-            <div className="size-full border-[1px] border-text3 rounded-xl px-6 py-4">
+            <div className="size-full border-[1px] border-text-muted rounded-xl px-6 py-4">
                 <div className="grid grid-cols-[330px_1fr] gap-8">
                     <div>
                         <h2 className="text-base font-semibold">
                             {t('tables')}
                         </h2>
-                        <p className="text-xs text-text2">{t('tablesDesc')}</p>
+                        <p className="text-xs text-text-muted">{t('tablesDesc')}</p>
                         <Link
                             href={'/project-center'}
                             className="block mt-1 text-xs font-semibold underline text-primary"
@@ -152,7 +152,7 @@ export function EditAppearanceForm() {
                                         }}
                                         preview={false}
                                     />
-                                    <p className="text-xs font-medium text-text1p5">
+                                    <p className="text-xs font-medium text-defaultp5">
                                         {size.title}
                                     </p>
                                 </div>

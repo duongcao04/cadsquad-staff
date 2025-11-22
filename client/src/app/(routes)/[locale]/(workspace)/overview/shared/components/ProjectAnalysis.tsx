@@ -10,7 +10,7 @@ import {
     IconDueSoon,
     IconMoneyIncome,
 } from '@/shared/components'
-import { useJobs } from '@/shared/queries'
+import { useJobs } from '@/lib/queries'
 
 export default function ProjectAnalysis() {
     const { jobs } = useJobs()
@@ -19,7 +19,7 @@ export default function ProjectAnalysis() {
         return [
             {
                 title: 'Assigned projects',
-                value: `${jobs?.length}`,
+                value: `${jobs.length}`,
                 icon: IconAssignee,
                 color: '#c65808',
                 href: '',

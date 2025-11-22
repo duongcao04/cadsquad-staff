@@ -1,6 +1,6 @@
 'use client'
 
-import { useJobActivityLogs } from '@/shared/queries'
+import { useJobActivityLogs } from '@/lib/queries'
 import { Spinner } from '@heroui/react'
 import { useTranslations } from 'next-intl'
 import { LogCard } from '../cards'
@@ -28,7 +28,7 @@ export function WorkLogTab({ jobId }: Props) {
                         )
                     })
                 ) : (
-                    <div className="flex flex-col items-center justify-center gap-0.5 text-text1p5 pt-6 pb-8">
+                    <div className="flex flex-col items-center justify-center gap-0.5 text-defaultp5 pt-6 pb-8">
                         <h3 className="text-sm font-semibold">
                             {t('noRecord')}
                         </h3>
