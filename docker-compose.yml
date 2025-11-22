@@ -9,13 +9,13 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - "D:/.database/redis:/data"
+    networks:
+      - app-network
 
   database:
     image: postgres:16
     container_name: database
     restart: always
-    env_file:
-      ./server/.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -24,40 +24,30 @@ services:
       - "5432:5432"
     volumes:
       - "D:/.database/postgres:/var/lib/postgresql/data"
-
-  web-frontend:
-    build: ./client
-    container_name: cadsquad-staff-web
-    ports:
-      - "3000:3000"
-    depends_on:
-      - database
-      - backend
-    env_file:
-      ./client/.env
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION:-0.0.0-release}
-      NEXT_PUBLIC_APP_TITLE: ${NEXT_PUBLIC_APP_TITLE:-Cadsquad Staff}
-      NEXT_PUBLIC_API_ENDPOINT: ${NEXT_PUBLIC_API_ENDPOINT}
-      NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
-      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
-      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cadsquaddb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
   backend:
     build: ./server
-    container_name: cadsquad-staff-backend
+    container_name: backend
     ports:
       - "8080:8080"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
     env_file:
-      ./server/.env
+      - ./server/.env
     environment:
       BACKEND_PORT: ${BACKEND_PORT:-8080}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${DB_HOST:-database}:${POSTGRES_HOST:-5432}/${POSTGRES_DB:-cadsquaddb}?schema=public}
-      CLIENT_URL: ${CLIENT_URL}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@database:5432/${POSTGRES_DB:-cadsquaddb}?schema=public
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
       MAIL_HOST: ${MAIL_HOST}
       MAIL_PORT: ${MAIL_PORT}
       MAILER_SECURE: ${MAILER_SECURE}
@@ -75,3 +65,35 @@ services:
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
       CLOUDINARY_FOLDER_ROOT: ${CLOUDINARY_FOLDER_ROOT:-Cadsquad}
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    networks:
+      - app-network
+
+  # Uncomment when ready to use frontend
+  # web-frontend:
+  #   build: ./client
+  #   container_name: cadsquad-staff-web
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - database
+  #     - backend
+  #   env_file:
+  #     - ./client/.env
+  #   environment:
+  #     NODE_ENV: ${NODE_ENV:-development}
+  #     NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION:-0.0.0-release}
+  #     NEXT_PUBLIC_APP_TITLE: ${NEXT_PUBLIC_APP_TITLE:-Cadsquad Staff}
+  #     NEXT_PUBLIC_API_ENDPOINT: ${NEXT_PUBLIC_API_ENDPOINT}
+  #     NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
+  #     NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+  #     NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+  #     VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+  #   networks:
+  #     - app-network
+
+networks:
+  app-network:
+    driver: bridge

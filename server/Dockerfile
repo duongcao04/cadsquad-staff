@@ -54,8 +54,11 @@ RUN npm run build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Install OpenSSL for Prisma
-RUN apk add --no-cache openssl libc6-compat
+# Install OpenSSL for Prisma AND postgresql-client for psql command
+RUN apk update && apk add --no-cache \
+    openssl \
+    libc6-compat \
+    postgresql16-client
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs && \
@@ -70,12 +73,19 @@ COPY --from=builder /app/dist ./dist
 # copy package.json to allow running npm scripts if necessary
 COPY --from=builder /app/package*.json ./
 
-USER nodejs
+COPY database ./database
+# make entrypoint executable
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Change ownership AFTER copying all files
+RUN chown -R nodejs:nodejs /app
 
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
 
-# At container start, deploy migrations then start app
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+ENTRYPOINT ["/entrypoint.sh"]
+# The entrypoint will handle migrations and seeding, then exec this CMD
+CMD ["node", "dist/main.js"]
