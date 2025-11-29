@@ -74,9 +74,10 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
 
 COPY database ./database
-# make entrypoint executable
-COPY ./entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+
+# Copy entrypoint script and make it executable
+COPY --chown=nodejs:nodejs ./entrypoint.sh ./
+RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
 # Change ownership AFTER copying all files
 RUN chown -R nodejs:nodejs /app
@@ -86,6 +87,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["sh","./entrypoint.sh"]
 # The entrypoint will handle migrations and seeding, then exec this CMD
 CMD ["node", "dist/main.js"]
