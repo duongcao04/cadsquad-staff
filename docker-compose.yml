@@ -3,10 +3,10 @@ version: "3.8"
 services:
   redis:
     container_name: cache
-    image: redis:latest
+    image: redis:alpine3.22
     ports:
-      - '6379:6379'
-    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      - '${REDIS_PORT:-6379}:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes:
       - "D:/.database/redis:/data"
     networks:
@@ -31,6 +31,25 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
+
+  ngrok:
+    image: ngrok/ngrok:3
+    container_name: ngrok
+    restart: unless-stopped
+    ports:
+      - "4040:4040"
+    depends_on:
+      - backend
+      # - web_client
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml:ro
+    env_file:
+      ./.env
+    command: ["start", "--all", "--config", "/etc/ngrok.yml"]
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     networks:
       - app-network
 
@@ -62,12 +81,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-    env_file:
-      - ./server/.env
     environment:
-      BACKEND_PORT: ${BACKEND_PORT:-8080}
+      NODE_ENV: ${NODE_ENV}
+      BACKEND_PORT: ${BACKEND_PORT}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-database}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-cadsquaddb}?schema=public
-      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      CLIENT_URL: ${CLIENT_URL}
       MAIL_HOST: ${MAIL_HOST}
       MAIL_PORT: ${MAIL_PORT}
       MAILER_SECURE: ${MAILER_SECURE}
@@ -78,41 +96,38 @@ services:
       BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_EXPIRES_AT: ${JWT_EXPIRES_AT}
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-test}
-      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-test}
-      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-test}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
       CLOUDINARY_NAME: ${CLOUDINARY_NAME}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-      CLOUDINARY_FOLDER_ROOT: ${CLOUDINARY_FOLDER_ROOT:-Cadsquad}
+      CLOUDINARY_FOLDER_ROOT: ${CLOUDINARY_FOLDER_ROOT}
       REDIS_HOST: cache
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks:
       - app-network
 
-# Uncomment when ready to use frontend
-# web-frontend:
-#   build: ./client
-#   container_name: cadsquad-staff-web
-#   ports:
-#     - "3000:3000"
-#   depends_on:
-#     - database
-#     - backend
-#   env_file:
-#     - ./client/.env
-#   environment:
-#     NODE_ENV: ${NODE_ENV:-development}
-#     NEXT_PUBLIC_APP_VERSION: ${NEXT_PUBLIC_APP_VERSION:-0.0.0-release}
-#     NEXT_PUBLIC_APP_TITLE: ${NEXT_PUBLIC_APP_TITLE:-Cadsquad Staff}
-#     NEXT_PUBLIC_API_ENDPOINT: ${NEXT_PUBLIC_API_ENDPOINT}
-#     NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL}
-#     NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
-#     NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
-#     VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
-#   networks:
-#     - app-network
+  # web_client:
+  #   build: ./client
+  #   container_name: web_client
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - database
+  #     - backend
+  #   environment:
+  #     NODE_ENV: ${NODE_ENV}
+  #     NEXT_PUBLIC_APP_VERSION: ${CLIENT_VERSION:-0.0.0-release}
+  #     NEXT_PUBLIC_APP_TITLE: ${CLIENT_APP_TITLE}
+  #     NEXT_PUBLIC_API_ENDPOINT: ${API_URL}
+  #     NEXT_PUBLIC_URL: ${CLIENT_URL}
+  #     NEXT_PUBLIC_WS_URL: ${WS_URL}
+  #     NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+  #     VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+  #   networks:
+  #     - app-network
 
 networks:
   app-network:

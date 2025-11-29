@@ -65,6 +65,7 @@ model User {
   comment             Comment[]
   gallery             Gallery[]
   userDevices         UserDevices[]
+  statusChanges JobStatusHistory[]
 }
 
 model Gallery {
@@ -214,6 +215,7 @@ model Job {
   updatedAt        DateTime         @updatedAt
   deletedAt        DateTime?
   comment          Comment[]
+  statusHistory JobStatusHistory[]
 
   @@index([no])
   @@index([statusId])
@@ -262,10 +264,42 @@ model JobStatus {
   nextStatusOrder Int?
   prevStatusOrder Int?
   jobs            Job[]
+  history JobStatusHistory[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   @@index([order])
+}
+
+// Tracking chặt chẽ thời gian job nằm ở mỗi trạng thái bao lâu
+model JobStatusHistory {
+  id String @id @default(uuid())
+
+  // Liên kết với Job
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Liên kết với Trạng thái (để biết đang ở trạng thái nào)
+  statusId String
+  status   JobStatus @relation(fields: [statusId], references: [id])
+
+  // Ai là người đã chuyển sang trạng thái này?
+  changedById String
+  changedBy   User   @relation(fields: [changedById], references: [id])
+
+  // Thời gian
+  startedAt DateTime  @default(now()) // Thời điểm bắt đầu vào trạng thái này
+  endedAt   DateTime? // Thời điểm rời khỏi trạng thái này. Nếu null nghĩa là Job vẫn đang ở trạng thái này.
+
+  // Optional: Lưu duration (tính bằng giây) để query báo cáo cho nhanh, không cần tính toán lại
+  durationSeconds Int? 
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([jobId])
+  @@index([statusId])
+  @@index([startedAt])
 }
 
 model JobActivityLog {

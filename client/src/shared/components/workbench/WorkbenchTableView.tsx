@@ -12,7 +12,7 @@ export default function WorkbenchTableView() {
         workbenchStore,
         (state) => state.searchKeywords
     )
-    const { projects } = useJobs({
+    const { jobs } = useJobs({
         search: searchKeywords,
     })
 
@@ -35,5 +35,5 @@ export default function WorkbenchTableView() {
         setSearchParams({ q: searchKeywords })
     }, [searchKeywords])
 
-    return <WorkbenchTable data={projects} />
+    return <WorkbenchTable data={jobs} />
 }

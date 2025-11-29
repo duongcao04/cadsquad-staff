@@ -236,6 +236,21 @@ export function WorkbenchTableQuickActions({
                             Assign / Reassign
                         </DropdownItem>
                         <DropdownItem
+                            key="assignReassign"
+                            style={{
+                                display: isAdmin ? 'flex' : 'none',
+                            }}
+                            startContent={
+                                <UserPlus
+                                    size={14}
+                                    className="text-text-subdued"
+                                />
+                            }
+                            onPress={() => onOpenAssignModal()}
+                        >
+                            
+                        </DropdownItem>
+                        <DropdownItem
                             key="deleteJob"
                             style={{
                                 display: isAdmin ? 'flex' : 'none',
