@@ -1,4 +1,6 @@
 @theme inline {
+    --color-highlight: var(--highlight);
+    --color-brand: var(--brand);
     /*
    * Nhóm 1: Shadow dùng cho viền (border) và hiệu ứng UI (inset)
    * Các giá trị này nhỏ, tinh tế, dùng để phân biệt ranh giới.

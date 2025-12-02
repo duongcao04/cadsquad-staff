@@ -2,8 +2,8 @@
 
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { ApiError } from '@/lib/axios'
-import { Job } from '@/shared/interfaces'
 import { useUpdateJobMutation } from '@/lib/queries'
+import { TJob } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -18,7 +18,7 @@ import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
 type Props = {
-    data: Job
+    data: TJob
     isOpen: boolean
     onClose: () => void
     isLoading?: boolean
@@ -99,6 +99,31 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
                 base: '!p-0',
             }}
             size="lg"
+            motionProps={{
+                variants: {
+                    enter: {
+                        y: 0,
+                        opacity: 1,
+                        scale: 1,
+                        transition: {
+                            duration: 0.2,
+                            type: 'spring',
+                            bounce: 0,
+                            damping: 25,
+                            stiffness: 300,
+                        },
+                    },
+                    exit: {
+                        y: 20,
+                        opacity: 0,
+                        scale: 0.95,
+                        transition: {
+                            duration: 0.1,
+                            ease: 'easeIn',
+                        },
+                    },
+                },
+            }}
         >
             <ModalContent className="p-2">
                 <ModalHeader

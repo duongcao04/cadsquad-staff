@@ -2,7 +2,7 @@
 
 import { useConfigByCode, useUpdateConfigByCodeMutation } from '@/lib/queries'
 import { USER_CONFIG_KEYS } from '@/lib/utils'
-import { HeroButton } from '@/shared/components'
+import { HeroButton } from '@/shared/components/ui/hero-button'
 import {
     Dropdown,
     DropdownItem,

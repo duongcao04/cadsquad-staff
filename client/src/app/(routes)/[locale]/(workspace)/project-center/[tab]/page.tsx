@@ -1,19 +1,22 @@
 'use client'
 
-import { JobFiltersInput, JobQueryInput } from '@/lib/validationSchemas'
 import ProjectCenterTableView from '@/shared/components/project-center/ProjectCenterTableView'
 import TableContextMenu from '@/shared/components/project-center/TableContextMenu'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { useSearchParam } from '@/shared/hooks'
-import { Job } from '@/shared/interfaces'
 import { projectCenterStore } from '@/shared/stores'
 import React, { use, useEffect } from 'react'
+import {
+    TJobFiltersInput,
+    TJobQueryInput,
+} from '../../../../../../lib/validationSchemas'
+import { TJob } from '../../../../../../shared/types'
 
-export type JobQueryParams = Omit<JobQueryInput, 'hideFinishItems'>
-export type JobFilterParams = JobFiltersInput
-export type JobSearchParams = JobQueryInput & JobFiltersInput & {}
+export type JobQueryParams = Omit<TJobQueryInput, 'hideFinishItems'>
+export type JobFilterParams = TJobFiltersInput
+export type JobSearchParams = TJobQueryInput & TJobFiltersInput & {}
 
-const updateQueryParamsState = (params?: JobQueryInput) => {
+const updateQueryParamsState = (params?: TJobQueryInput) => {
     projectCenterStore.setState((state) => {
         return {
             ...state,
@@ -22,7 +25,7 @@ const updateQueryParamsState = (params?: JobQueryInput) => {
     })
 }
 
-export type DataType = Job & {
+export type DataType = TJob & {
     key: React.Key
 }
 export default function ProjectCenterTabPage({

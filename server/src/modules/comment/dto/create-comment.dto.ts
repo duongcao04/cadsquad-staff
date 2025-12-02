@@ -9,10 +9,6 @@ export class CreateCommentDto {
 	@IsNotEmpty()
 	jobId: string
 
-	@IsString()
-	@IsNotEmpty()
-	userId: string
-
 	@IsOptional()
 	@IsString()
 	parentId?: string

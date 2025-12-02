@@ -42,6 +42,7 @@ export class AuthService {
     const newUser: Prisma.UserCreateInput = {
       ...registerDto,
       displayName: registerDto.firstName + ' ' + registerDto.lastName,
+      avatar: "",
       password,
       username,
     }

@@ -1,5 +1,6 @@
--- Upsert seed data for Department table
--- Updates fields if an existing record with the same id or code is found
+-- =============================================
+-- 1. SEED DEPARTMENT
+-- =============================================
 INSERT INTO
 	"Department" (
 		id,
@@ -54,11 +55,11 @@ UPDATE
 SET
 	"displayName" = EXCLUDED."displayName",
 	"hexColor" = EXCLUDED."hexColor",
-	"createdAt" = EXCLUDED."createdAt",
 	"updatedAt" = NOW ();
 
--- Upsert seed data for JobStatus table
--- Updates fields if an existing record with the same id or code is found
+-- =============================================
+-- 2. SEED JOB STATUS
+-- =============================================
 INSERT INTO
 	"JobStatus" (
 		id,
@@ -150,8 +151,9 @@ SET
 	"order" = EXCLUDED."order",
 	"updatedAt" = NOW ();
 
--- Upsert seed data for JobTitle table
--- If a row with the same (code) exists, update its fields; otherwise insert.
+-- =============================================
+-- 3. SEED JOB TITLE
+-- =============================================
 INSERT INTO
 	"JobTitle" (id, "displayName", code, "createdAt", "updatedAt")
 VALUES
@@ -190,7 +192,6 @@ VALUES
 		NOW (),
 		NOW ()
 	),
-	-- Marketing
 	(
 		'4b6c02ae-2f8d-4baf-95f4-143bfe4a17e3',
 		'SEO Specialist',
@@ -205,7 +206,6 @@ VALUES
 		NOW (),
 		NOW ()
 	),
-	-- Customer Support
 	(
 		'0d8d3d59-f1cb-48ff-b815-21cb930f5e67',
 		'Customer Service Representative',
@@ -220,7 +220,6 @@ VALUES
 		NOW (),
 		NOW ()
 	),
-	-- Machine Engineer
 	(
 		'e8c4a5b4-1af9-44a6-8d0d-d5f3c9fa07ef',
 		'Mechanical Engineer',
@@ -305,7 +304,6 @@ VALUES
 		NOW (),
 		NOW ()
 	),
-	-- Management
 	(
 		'4a1fdd62-b77d-4c18-a7b6-56c7f44a4d1e',
 		'CEO',
@@ -339,8 +337,9 @@ SET
 	"displayName" = EXCLUDED."displayName",
 	"updatedAt" = NOW ();
 
--- Upsert seed data for JobType table
--- If a row with the same (code) exists, update its fields; otherwise insert.
+-- =============================================
+-- 4. SEED JOB TYPE
+-- =============================================
 INSERT INTO
 	"JobType" (id, "displayName", code, "createdAt", "updatedAt")
 VALUES
@@ -364,9 +363,11 @@ VALUES
 		'V',
 		NOW (),
 		NOW ()
-	) ;
+	) ON CONFLICT DO NOTHING;
 
--- Upsert seed data for PaymentChannel table
+-- =============================================
+-- 5. SEED PAYMENT CHANNEL
+-- =============================================
 INSERT INTO
 	"PaymentChannel" (
 		id,
@@ -426,7 +427,10 @@ VALUES
 		NOW ()
 	);
 
--- Upsert seed data for User table
+-- =============================================
+-- 6. SEED USER (Updated for Better Auth Schema)
+--    Note: Mapped old 'avatar' values to new 'image' column.
+-- =============================================
 INSERT INTO
 	"User" (
 		id,
@@ -436,8 +440,9 @@ INSERT INTO
 		"avatar",
 		"phoneNumber",
 		"role",
-		"password",
 		"departmentId",
+		"emailVerified", -- Required for Better Auth
+		"password",
 		"createdAt",
 		"updatedAt"
 	)
@@ -450,8 +455,9 @@ VALUES
 		'https://res.cloudinary.com/dqx1guyc0/image/upload/v1761629822/Cadsquad/STAFF/Avatar/IMG_5728_voiiwf.jpg',
 		'+1-555-0002',
 		'ADMIN',
-		'cadsquad123',
 		'5aac88f8-e4f7-47e2-a9ef-652c44116c8c',
+		true,
+		'cadsquad123',
 		NOW (),
 		NOW ()
 	),
@@ -463,8 +469,9 @@ VALUES
 		'https://res.cloudinary.com/dqx1guyc0/image/upload/v1761629744/Cadsquad/STAFF/Avatar/IMG_5738_q2akh9.jpg',
 		'+84-862-248-332',
 		'ADMIN',
-		'cadsquad123',
 		'b92a66c3-a0e6-4b4c-a4c6-2759ea97a9c2',
+		true,
+		'cadsquad123',
 		NOW (),
 		NOW ()
 	),
@@ -476,8 +483,9 @@ VALUES
 		'https://res.cloudinary.com/dqx1guyc0/image/upload/v1761629761/Cadsquad/STAFF/Avatar/IMG_5750_qs3sdq.jpg',
 		'+1-555-0003',
 		'USER',
-		'cadsquad123',
 		'760a1ffa-2ce5-435c-b778-7a109b74e220',
+		true,
+		'cadsquad123',
 		NOW (),
 		NOW ()
 	),
@@ -489,8 +497,9 @@ VALUES
 		'https://res.cloudinary.com/dqx1guyc0/image/upload/v1761629776/Cadsquad/STAFF/Avatar/IMG_5775_waq2pb.jpg',
 		'+1-555-0004',
 		'USER',
-		'cadsquad123',
 		'760a1ffa-2ce5-435c-b778-7a109b74e220',
+		true,
+		'cadsquad123',
 		NOW (),
 		NOW ()
 	),
@@ -502,8 +511,9 @@ VALUES
 		'https://res.cloudinary.com/dqx1guyc0/image/upload/v1761629795/Cadsquad/STAFF/Avatar/IMG_5763_poxt5k.jpg',
 		'+1-555-0005',
 		'USER',
-		'cadsquad123',
 		'760a1ffa-2ce5-435c-b778-7a109b74e220',
+		true,
+		'cadsquad123',
 		NOW (),
 		NOW ()
 	),
@@ -515,8 +525,9 @@ VALUES
 		'https://res.cloudinary.com/dqx1guyc0/image/upload/v1761629833/Cadsquad/STAFF/Avatar/IMG_5804_xa2rnm.jpg',
 		'+1-555-0006',
 		'USER',
-		'cadsquad123',
 		'760a1ffa-2ce5-435c-b778-7a109b74e220',
+		true,
+		'cadsquad123',
 		NOW (),
 		NOW ()
 	),
@@ -528,8 +539,9 @@ VALUES
 		'https://res.cloudinary.com/dqx1guyc0/image/upload/v1761629788/Cadsquad/STAFF/Avatar/IMG_5786_aylevs.jpg',
 		'+1-555-0007',
 		'ACCOUNTING',
-		'cadsquad123',
 		'09f4216e-e20c-4bf5-aa3e-3c65da7613eb',
+		true,
+		'cadsquad123',
 		NOW (),
 		NOW ()
 	) ON CONFLICT (email) DO
@@ -542,3 +554,74 @@ SET
 	"password" = EXCLUDED."password",
 	"departmentId" = EXCLUDED."departmentId",
 	"updatedAt" = NOW ();
+
+-- =============================================
+-- 7. SEED ACCOUNT (For Local Login/Password)
+--    Note: Schema moved password here. Assuming "credential" provider.
+-- =============================================
+INSERT INTO
+	"Account" (
+		id,
+		"userId",
+		"accountId",
+		"providerId",
+		"createdAt",
+		"updatedAt"
+	)
+VALUES
+	(
+		'acc-a9f843e6-01',
+		'a9f843e6-dce5-47b4-a6a9-97f7a38b9a0d',
+		'a9f843e6-dce5-47b4-a6a9-97f7a38b9a0d',
+		'credential',
+		NOW (),
+		NOW ()
+	),
+	(
+		'acc-2d17d7c3-02',
+		'2d17d7c3-1b1f-4b3b-9551-f1cdbdb69b70',
+		'2d17d7c3-1b1f-4b3b-9551-f1cdbdb69b70',
+		'credential',
+		NOW (),
+		NOW ()
+	),
+	(
+		'acc-bc08c27c-03',
+		'bc08c27c-1dd3-4e88-9b3f-8c8a9d71b290',
+		'bc08c27c-1dd3-4e88-9b3f-8c8a9d71b290',
+		'credential',
+		NOW (),
+		NOW ()
+	),
+	(
+		'acc-e3f41716-04',
+		'e3f41716-3f91-4e6c-8f4c-2df89a9cf403',
+		'e3f41716-3f91-4e6c-8f4c-2df89a9cf403',
+		'credential',
+		NOW (),
+		NOW ()
+	),
+	(
+		'acc-f77e8bb3-05',
+		'f77e8bb3-d633-46cb-a269-4e2f17e91173',
+		'f77e8bb3-d633-46cb-a269-4e2f17e91173',
+		'credential',
+		NOW (),
+		NOW ()
+	),
+	(
+		'acc-b9f2ab5c-06',
+		'b9f2ab5c-8442-4f1c-84b8-6471e6a51c65',
+		'b9f2ab5c-8442-4f1c-84b8-6471e6a51c65',
+		'credential',
+		NOW (),
+		NOW ()
+	),
+	(
+		'acc-c4d35f1b-07',
+		'c4d35f1b-9b37-4a3f-804b-373f7b0e1a24',
+		'c4d35f1b-9b37-4a3f-804b-373f7b0e1a24',
+		'credential',
+		NOW (),
+		NOW ()
+	) ON CONFLICT (id) DO NOTHING;

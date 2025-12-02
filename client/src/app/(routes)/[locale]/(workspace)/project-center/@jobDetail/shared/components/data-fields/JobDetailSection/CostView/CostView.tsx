@@ -1,12 +1,12 @@
-import { Job } from '@/shared/interfaces'
 import { useProfile } from '@/lib/queries'
 import { IncomeView } from './IncomeView'
 import { PaymentChannelView } from './PaymentChannelView'
 import { StaffCostView } from './StaffCostView'
+import { TJob } from '../../../../../../../../../../../shared/types'
 
 type Props = {
     isLoading?: boolean
-    data?: Job
+    data: TJob
 }
 export function CostView({ isLoading = false, data }: Props) {
     const { isAdmin } = useProfile()

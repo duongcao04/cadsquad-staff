@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/navigation'
 import { ApiError } from '@/lib/axios'
-import { HeroButton } from '@/shared/components'
+import { HeroButton } from '@/shared/components/ui/hero-button'
 import { Job } from '@/shared/interfaces'
 import { useProfile, useUpdateJobMutation } from '@/lib/queries'
 import {

@@ -7,14 +7,21 @@ import {
     useJobByNo,
     useRemoveMemberMutation,
 } from '@/lib/queries/useJob'
-import { handleCopy } from '@/shared/components'
-import { RoleEnum } from '@/shared/enums'
-import { Button, Input } from '@heroui/react'
-import { Image, Modal, Select } from 'antd'
-import { X } from 'lucide-react'
+import { Button, Input, Skeleton } from '@heroui/react'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { Key, useState } from 'react'
+import HeroCopyButton from '../ui/hero-copy-button'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalHeader,
+} from '../ui/hero-modal'
+import { HeroTooltip } from '../ui/hero-tooltip'
+import AssignMemberCard, { AssignMemberCardSkeleton } from './AssignMemberCard'
+import AssignMemberSelect from './AssignMemberSelect'
 
+// TODO: FIX giật
 type AssignMemberModalProps = {
     jobNo: string
     isOpen: boolean
@@ -27,18 +34,17 @@ export default function AssignMemberModal({
 }: AssignMemberModalProps) {
     const t = useTranslations()
 
-    const { job } = useJobByNo(jobNo)
+    const { job, isLoading: loadingJob } = useJobByNo(jobNo)
+    const { users, isLoading: loadingUsers } = useUsers()
 
-    const { userRole, isAdmin } = useProfile()
+    const { isAdmin } = useProfile()
 
     const JOB_DETAIL_URL =
         envConfig.NEXT_PUBLIC_URL + `/project-center?detail=${jobNo}`
 
-    const [memberSelected, setMemberSelected] = useState<string[]>([])
-    const { mutateAsync: assignMemberMutate } = useAssignMemberMutation()
-    const { mutateAsync: removeMemberMutate } = useRemoveMemberMutation()
-
-    const { users } = useUsers()
+    const [memberSelected, setMemberSelected] = useState<Key | null>(null)
+    const { mutateAsync: assignMemberMutate } = useAssignMemberMutation(jobNo)
+    const { mutateAsync: removeMemberMutate } = useRemoveMemberMutation(jobNo)
 
     const onAssignMember = async (updateMemberIds: string[]) => {
         await assignMemberMutate({
@@ -52,204 +58,130 @@ export default function AssignMemberModal({
         })
     }
 
-    const onRemoveMember = async (jobId: string, memberId: string) =>
+    const onRemoveMember = async (memberId: string) =>
         await removeMemberMutate({
-            jobId,
+            jobId: job.id,
             memberId,
         })
 
-    const handleChange = (value: string[]) => {
-        setMemberSelected(value)
+    const onSelectMember = (userId: Key | null) => {
+        setMemberSelected(userId)
     }
 
     return (
-        <Modal
-            open={isOpen}
-            onCancel={() => {
-                setMemberSelected([])
+        <HeroModal
+            isOpen={isOpen}
+            onClose={() => {
+                setMemberSelected(null)
                 onClose()
             }}
-            title={
-                <div className="p-2">
-                    <p className="text-lg font-semibold">
-                        {t('memberAssignedIn', { jobNo: job?.no ?? '' })}
-                    </p>
-                    <p className="text-sm font-normal text-text-muted">
-                        {t('systemWillSendNotificationThemInstruction')}
-                    </p>
-                </div>
-            }
-            width={{
-                xs: '90%',
-                sm: '80%',
-                md: '70%',
-                lg: '60%',
-                xl: '40%',
-                xxl: '40%',
+            classNames={{
+                base: 'max-w-[90%] sm:max-w-[80%] md:max-w-[80%] xl:max-w-[50%]',
             }}
-            footer={<></>}
+            placement="center"
         >
-            <div className="px-2">
-                {isAdmin && (
-                    <div className="space-y-1.5 mb-6">
-                        <p className="font-semibold text-text-muted">
-                            {t('assignMembersNumber', {
-                                number: memberSelected?.length,
-                            })}
+            <HeroModalContent>
+                <HeroModalHeader>
+                    <div className="size-full">
+                        <p className="text-lg font-semibold mb-2.5">
+                            {t('assignMemberTo', { jobNo: `#${job.no}` })}
                         </p>
-                        <div className="grid grid-cols-[1fr_100px] gap-4">
-                            <Select
-                                mode="multiple"
-                                style={{ width: '100%' }}
-                                placeholder={t('assignMemberHint')}
-                                value={memberSelected}
-                                onChange={handleChange}
-                                options={users
-                                    ?.filter(
-                                        (user) =>
-                                            !job?.assignee?.some(
-                                                (selected) =>
-                                                    selected.id === user.id
-                                            )
-                                    )
-                                    ?.map((user) => {
-                                        return {
-                                            ...user,
-                                            value: user.id,
-                                            label: user.displayName,
-                                        }
-                                    })}
-                                filterOption={(input, option) =>
-                                    (option?.label ?? '')
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase()) ||
-                                    (option?.email ?? '')
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase()) ||
-                                    (option?.username ?? '')
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase()) ||
-                                    (option?.department?.displayName ?? '')
-                                        .toLowerCase()
-                                        .includes(input.toLowerCase())
-                                }
-                                optionRender={(option) => {
-                                    const departmentColor = option.data
-                                        .department
-                                        ? option.data.department?.hexColor
-                                        : 'transparent'
-                                    return (
-                                        <div className="flex items-center justify-start gap-4 !p-0">
-                                            <Image
-                                                src={
-                                                    option.data.avatar as string
-                                                }
-                                                alt="user avatar"
-                                                rootClassName="!size-10 rounded-full"
-                                                className="!size-full rounded-full p-[1px] border-2"
-                                                preview={false}
-                                                style={{
-                                                    borderColor:
-                                                        departmentColor,
-                                                }}
+                        {isAdmin && (
+                            <div className="space-y-1.5">
+                                <p className="font-semibold text-sm text-text-subdued">
+                                    Select member
+                                </p>
+                                <div className="grid grid-cols-[1fr_100px] gap-4">
+                                    <AssignMemberSelect
+                                        job={job}
+                                        users={users}
+                                        loading={loadingUsers}
+                                        onSelectMember={onSelectMember}
+                                    />
+                                    <Button
+                                        onPress={async () => {
+                                            if (memberSelected) {
+                                                const newAssignee =
+                                                    job?.assignee?.map(
+                                                        (mem) => mem.id
+                                                    ) || []
+                                                newAssignee.push(
+                                                    memberSelected as string
+                                                )
+                                                await onAssignMember(
+                                                    newAssignee
+                                                )
+                                                setMemberSelected(null)
+                                            }
+                                        }}
+                                        color="primary"
+                                    >
+                                        {t('assign')}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </HeroModalHeader>
+                <HeroModalBody className="pb-6">
+                    <hr className="text-text-muted" />
+                    <div>
+                        <div className="space-y-2.5 min-h-[40vh] max-h-[60vh]">
+                            <div className="font-medium">
+                                <span>Members assigned</span>
+                                <Skeleton
+                                    className="ml-1 inline-block w-8 h-5 rounded-md"
+                                    isLoaded={!loadingJob}
+                                >
+                                    <span>({job?.assignee?.length})</span>
+                                </Skeleton>
+                            </div>
+                            <div className="space-y-1.5 max-h-[430px] overflow-y-auto -mx-2">
+                                {loadingJob &&
+                                    new Array(6).fill(0).map((_, idx) => {
+                                        return (
+                                            <AssignMemberCardSkeleton
+                                                key={idx}
                                             />
-                                            <div>
-                                                <p className="font-semibold">
-                                                    {option.label}
-                                                </p>
-                                                <p className="text-text-muted !font-normal">
-                                                    {option.data.email}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )
-                                }}
+                                        )
+                                    })}
+                                {!loadingJob && job?.assignee?.length === 0 && (
+                                    <p className="my-8 text-center text-text-subdued">
+                                        No members have been assigned yet.
+                                    </p>
+                                )}
+                                {!loadingJob &&
+                                    job?.assignee?.map((member) => {
+                                        return (
+                                            <AssignMemberCard
+                                                key={member.username}
+                                                data={member}
+                                                onRemoveMember={onRemoveMember}
+                                            />
+                                        )
+                                    })}
+                            </div>
+                        </div>
+                        <hr className="mb-2 text-text-muted" />
+                        <div className="flex items-center justify-start gap-4">
+                            <p className="font-medium text-nowrap h-full">
+                                {t('copyLink')}
+                            </p>
+                            <Input
+                                value={JOB_DETAIL_URL}
+                                className="opacity-70!"
+                                endContent={
+                                    <HeroTooltip content={t('copy')}>
+                                        <HeroCopyButton
+                                            textValue={JOB_DETAIL_URL}
+                                        />
+                                    </HeroTooltip>
+                                }
                             />
-                            <Button
-                                onPress={async () => {
-                                    onAssignMember(memberSelected)
-                                }}
-                                color="primary"
-                            >
-                                {t('assign')}
-                            </Button>
                         </div>
                     </div>
-                )}
-                <hr className="mb-4 text-text-muted" />
-                <div className="space-y-2.5">
-                    <p className="font-semibold text-text-muted">
-                        {t('members')} ({job?.assignee?.length})
-                    </p>
-                    <div className="space-y-1.5 max-h-[430px] overflow-y-auto -mx-2">
-                        {job?.assignee?.length === 0 && (
-                            <p className="my-8 text-center text-text-muted">
-                                No members have been assigned yet.
-                            </p>
-                        )}
-                        {job?.assignee?.map((mem) => {
-                            return (
-                                <div
-                                    key={mem.username}
-                                    className="group flex items-center justify-between px-2 py-1.5 hover:bg-text-muted rounded-md"
-                                >
-                                    <div className="flex items-center justify-start gap-4">
-                                        <Image
-                                            src={mem?.avatar as string}
-                                            alt="user avatar"
-                                            rootClassName="!size-10 rounded-full"
-                                            className="!size-full rounded-full"
-                                            preview={false}
-                                        />
-                                        <div>
-                                            <p className="font-semibold">
-                                                {mem?.displayName}
-                                            </p>
-                                            <p className="text-text-muted !font-normal">
-                                                {mem?.email}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {userRole === RoleEnum.ADMIN && (
-                                        <Button
-                                            isIconOnly
-                                            size="sm"
-                                            color="danger"
-                                            className="hidden group-hover:flex"
-                                            title="Remove"
-                                            onPress={() =>
-                                                onRemoveMember(job.id, mem.id)
-                                            }
-                                        >
-                                            <X size={14} />
-                                        </Button>
-                                    )}
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div>
-                <hr className="mt-6 mb-4 text-text-muted" />
-                <div className="space-y-2.5">
-                    <p className="font-semibold text-text-muted">
-                        {t('copyLink')}
-                    </p>
-                    <div className="grid grid-cols-[1fr_80px] gap-5">
-                        <Input
-                            value={JOB_DETAIL_URL}
-                            isDisabled
-                            className="!opacity-70"
-                        />
-                        <Button
-                            color="primary"
-                            className="text-white"
-                            onPress={() => handleCopy(JOB_DETAIL_URL)}
-                        >
-                            {t('copy')}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </Modal>
+                </HeroModalBody>
+            </HeroModalContent>
+        </HeroModal>
     )
 }

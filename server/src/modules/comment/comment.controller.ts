@@ -8,12 +8,14 @@ import {
   Delete,
   HttpCode,
   UseGuards,
+  Req,
 } from '@nestjs/common'
 import { CommentService } from './comment.service'
 import { CreateCommentDto } from './dto/create-comment.dto'
 import { UpdateCommentDto } from './dto/update-comment.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { TokenPayload } from '../auth/dto/token-payload.dto'
 
 @Controller('comments')
 export class CommentController {
@@ -23,8 +25,9 @@ export class CommentController {
   @HttpCode(201)
   @ResponseMessage('Insert new comment successfully')
   @UseGuards(JwtGuard)
-  async create(@Body() createCommentDto: CreateCommentDto) {
-    return this.commentService.create(createCommentDto)
+  async create(@Req() request: Request, @Body() createCommentDto: CreateCommentDto) {
+    const userPayload: TokenPayload = await request['user']
+    return this.commentService.create(userPayload.sub, createCommentDto)
   }
 
   @Get('job/:jobId')

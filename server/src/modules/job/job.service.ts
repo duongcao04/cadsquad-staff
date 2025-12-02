@@ -15,15 +15,16 @@ import { ConfigService } from '../config/config.service'
 import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
 import { UserService } from '../user/user.service'
+import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 import { ChangeStatusDto } from './dto/change-status.dto'
 import { CreateJobDto } from './dto/create-job.dto'
 import { JobFiltersDto } from './dto/job-filters.dto'
 import { JobQueryDto } from './dto/job-query.dto'
 import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
+import { RescheduleJobDto } from './dto/reschedule-job.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { JobTabEnum } from './enums/job-tab.enum'
-import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 
 @Injectable()
 export class JobService {
@@ -221,7 +222,7 @@ export class JobService {
       limit = '10',
       search,
       tab = JobTabEnum.ACTIVE,
-      sort = 'no',
+      sort = 'displayName',
       assignee,
       clientName,
       type,
@@ -353,7 +354,17 @@ export class JobService {
           createdBy: true,
           paymentChannel: true,
           status: true,
-          comment: true,
+          comments: {
+            include: {
+              user: {
+                select: {
+                  username: true,
+                  displayName: true,
+                  avatar: true
+                }
+              }
+            }
+          },
           activityLog: {
             include: {
               modifiedBy: true,
@@ -411,7 +422,7 @@ export class JobService {
           createdBy: true,
           paymentChannel: true,
           status: true,
-          comment: true,
+          comments: true,
           activityLog: {
             include: {
               modifiedBy: true,
@@ -496,30 +507,52 @@ export class JobService {
   /**
    * Update job by ID.
    */
-  async update(jobId: string, data: UpdateJobDto): Promise<Job> {
+  async update(modifierId: string, jobId: string, data: UpdateJobDto): Promise<{ id: string, no: string }> {
     try {
       const { typeId, ...restData } = data
-      const updated = await this.prisma.job.update({
-        where: { id: jobId },
-        data: {
-          ...restData,
-          attachmentUrls: data.attachmentUrls
-            ? Array.isArray(data.attachmentUrls)
-              ? data.attachmentUrls
-              : [data.attachmentUrls]
-            : undefined,
-        },
-        include: {
-          type: true,
-          assignee: true,
-          createdBy: true,
-          paymentChannel: true,
-          status: true,
-        },
+
+      const updated = await this.prisma.$transaction(async (tx) => {
+        // 1. Find job
+        const job = await tx.job.findUnique({
+          where: { id: jobId },
+          select: { statusId: true },
+        })
+        if (!job) throw new NotFoundException('Job not found')
+
+        // 2. Update job
+        const updateJob = await this.prisma.job.update({
+          where: { id: jobId },
+          data: {
+            ...restData,
+            attachmentUrls: data.attachmentUrls
+              ? Array.isArray(data.attachmentUrls)
+                ? data.attachmentUrls
+                : [data.attachmentUrls]
+              : undefined,
+          },
+          include: {
+            type: true,
+            assignee: true,
+            createdBy: true,
+            paymentChannel: true,
+            status: true,
+          },
+        })
+
+        // 3. Create activity log
+        await tx.jobActivityLog.create({
+          data: {
+            jobId: jobId,
+            previousValue: JSON.stringify(data),
+            currentValue: '',
+            modifiedById: modifierId,
+            fieldName: 'information',
+            activityType: ActivityType.UpdateInformation,
+          },
+        })
+        return updateJob.no
       })
-      return plainToInstance(this.responseSchema(RoleEnum.ADMIN), updated, {
-        excludeExtraneousValues: true,
-      }) as unknown as Job
+      return { id: jobId, no: updated }
     } catch (error) {
       throw new InternalServerErrorException('Update job failed')
     }
@@ -529,7 +562,7 @@ export class JobService {
     jobId: string,
     modifierId: string,
     data: ChangeStatusDto,
-  ): Promise<{ id: string }> {
+  ): Promise<{ id: string, no: string }> {
     if (!jobId) {
       throw new BadRequestException('Job ID invalid')
     }
@@ -547,7 +580,7 @@ export class JobService {
         })
 
         // 2. Update job
-        await tx.job.update({
+        const updateJob = await tx.job.update({
           where: { id: jobId },
           data: { statusId: data.toStatusId, completedAt: toStatus?.code === 'completed' ? new Date() : null, finishedAt: toStatus?.code === 'finish' ? new Date() : null, isPaid: toStatus?.code === 'finish' ? true : false },
         })
@@ -563,8 +596,9 @@ export class JobService {
             activityType: ActivityType.ChangeStatus,
           },
         })
+        return updateJob.no
       })
-      return { id: jobId }
+      return { id: jobId, no: updated }
     } catch (error) {
       throw new InternalServerErrorException('Change status failed')
     }
@@ -603,7 +637,6 @@ export class JobService {
       throw new BadRequestException('Job ID invalid')
     }
     try {
-
       return await this.prisma.$transaction(async (tx) => {
         // 1. Find job
         const job = await tx.job.findUnique({
@@ -638,11 +671,73 @@ export class JobService {
             jobId,
           },
         })
-
-        return { id: jobId }
+        return { id: jobId, no: updatedJob.no }
       })
     } catch (error) {
       throw new InternalServerErrorException('Update members failed')
+    }
+  }
+
+  async rescheduleJob(
+    jobId: string,
+    modifierId: string,
+    data: RescheduleJobDto) {
+    if (!jobId) {
+      throw new Error('Job ID invalid')
+    }
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        // 1. Find job
+        const job = await tx.job.findUnique({
+          where: { id: jobId },
+          select: { dueAt: true },
+        })
+        if (!job) throw new NotFoundException('Job not found')
+
+        // 2. Update due at
+        const updatedJob = await tx.job.update({
+          where: { id: jobId },
+          data: {
+            dueAt: data.toDate,
+          },
+        })
+
+        // 3. Create activity log
+        await tx.jobActivityLog.create({
+          data: {
+            activityType: ActivityType.UpdateInformation,
+            previousValue: data.fromDate,
+            currentValue: data.toDate,
+            fieldName: 'Due to',
+            modifiedById: modifierId,
+            jobId,
+          },
+        })
+
+        return { id: jobId, no: updatedJob.no }
+      })
+    } catch (error) {
+      throw new InternalServerErrorException('Reschedule job failed')
+    }
+  }
+
+  async getAssignee(jobId: string) {
+    if (!jobId) {
+      throw new BadRequestException('Job ID invalid')
+    } try {
+      const job = await this.prisma.job.findUnique({
+        where: { id: jobId },
+        select: {
+          assignee: true
+        },
+      })
+      if (!job) throw new NotFoundException('Job not found')
+      return {
+        assignees: job.assignee,
+        totalAssignees: job.assignee.length
+      }
+    } catch (error) {
+      throw new InternalServerErrorException('Remove member failed')
     }
   }
 

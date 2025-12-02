@@ -32,6 +32,7 @@ export class UserService {
         data: {
           ...rest,
           password,
+          displayName: data.displayName,
           avatar,
           username,
           ...(jobTitleId

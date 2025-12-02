@@ -20,7 +20,7 @@ import {
     useProfile,
     useUsers,
 } from '@/lib/queries'
-import { CreateJobInput, CreateJobSchema } from '@/lib/validationSchemas'
+import { TCreateJobInput, CreateJobSchema } from '@/lib/validationSchemas'
 import { HeroSelect, HeroSelectItem } from '../customize'
 import dayjs from 'dayjs'
 import { useJobStore } from '../../stores'
@@ -53,7 +53,7 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
         useCreateJobMutation()
 
     // TODO: DEFAULT @nb.vy by API
-    const initialValues = useMemo<CreateJobInput>(
+    const initialValues = useMemo<TCreateJobInput>(
         () => ({
             clientName: '',
             typeId: '',
@@ -71,7 +71,7 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
         [profile?.id]
     )
 
-    const formik = useFormik<CreateJobInput>({
+    const formik = useFormik<TCreateJobInput>({
         initialValues,
         validationSchema: CreateJobSchema,
         onSubmit: async (values) => {

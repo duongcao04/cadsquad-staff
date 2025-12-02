@@ -3,7 +3,6 @@
 import { use } from 'react'
 
 import { JobStatusChip, PageHeading, PaidChip } from '@/shared/components'
-import { Job } from '@/shared/interfaces/_job.interface'
 import { useProfile } from '@/lib/queries/useAuth'
 import { useJobByNo } from '@/lib/queries/useJob'
 import { addToast, Button, Input, Skeleton, Tooltip } from '@heroui/react'
@@ -15,6 +14,7 @@ import {
     JobDetailSection,
 } from '../../project-center/@jobDetail/shared'
 import { DueToView } from '../../../../../../shared/components/project-center/DueToView'
+import { TJob } from '../../../../../../shared/types'
 
 export default function JobDetailPage({
     params,
@@ -132,7 +132,7 @@ export default function JobDetailPage({
                                 </Tooltip>
                                 <Tooltip content="Actions">
                                     <ActionsDropdown
-                                        data={job as Job}
+                                        data={job as TJob}
                                         jobNo={jobNo as string}
                                     />
                                 </Tooltip>

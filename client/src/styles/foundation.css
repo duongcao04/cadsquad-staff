@@ -62,10 +62,16 @@
 	--color-link: var(--color-blue-600);
 
 	--color-currency: #252b5b;
+	
+	--highlight: oklch(0.852 0.199 91.936);
+	--brand: oklch(0.623 0.214 259.815);
 }
 
 @media (prefers-color-scheme: dark) {
 	.dark {
+		--highlight: oklch(0.852 0.199 91.936);
+		--brand: oklch(0.707 0.165 254.624);
+
 		--primary: var(--color-primary-500);
 		--secondary: var(--color-secondary-500);
 		/* Nền (Background) */

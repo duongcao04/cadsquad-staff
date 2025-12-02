@@ -20,7 +20,7 @@ export interface IUserResponse {
 	displayName: string
 
 	/** Encrypted password */
-	password: string
+	password?: string
 
 	/** Avatar URL (nullable) */
 	avatar?: string | null

@@ -106,7 +106,8 @@ export function useProfile() {
     const isAccounting = userRole === RoleEnum.ACCOUNTING
 
     return {
-        profile,
+        data: profile,
+        profile: profile,
         isLoading: isLoading || isFetching,
         isStaff,
         isAdmin,

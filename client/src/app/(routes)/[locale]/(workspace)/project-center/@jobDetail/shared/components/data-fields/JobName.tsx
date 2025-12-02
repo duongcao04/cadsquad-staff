@@ -1,7 +1,7 @@
 'use client'
 
 import { ApiError } from '@/lib/axios'
-import { HeroButton } from '@/shared/components'
+import { HeroButton } from '@/shared/components/ui/hero-button'
 import { Job } from '@/shared/interfaces'
 import { useUpdateJobMutation } from '@/lib/queries'
 import { addToast, Input, Skeleton } from '@heroui/react'

@@ -5,6 +5,7 @@ import { JobStatusResponseDto } from '../../job-status/dto/job-status-response.d
 import { JobTypeResponseDto } from '../../job-type/dto/job-type-response.dto'
 import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-channel-response.dto'
 import { UserResponseDto } from '../../user/dto/user-response.dto'
+import { CommentResponseDto } from '../../comment/dto/comment-response.dto'
 
 export class JobResponseDto {
 	@Expose()
@@ -76,6 +77,10 @@ export class JobResponseDto {
 	@Expose()
 	@Type(() => UserResponseDto)
 	createdBy: UserResponseDto
+
+	@Expose()
+	@Type(() => CommentResponseDto)
+	comments: CommentResponseDto
 
 	@Expose()
 	@Type(() => JobTypeResponseDto)

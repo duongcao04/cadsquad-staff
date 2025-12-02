@@ -1,5 +1,5 @@
 import { JobPriorityEnum } from "@/shared/enums"
-import { TJobActivityLog, TJobStatus, TJobType, TPaymentChannel, TUser } from "../types"
+import { TComment, TJobActivityLog, TJobStatus, TJobType, TPaymentChannel, TUser } from "../types"
 import { FileSystem } from "./_fileSystem.interface"
 
 /**
@@ -62,6 +62,12 @@ export interface IJobResponse {
 	incomeCost: number
 
 	/**
+	 * A list of comments.
+	 * @type {TComment[]}
+	 */
+	comments: TComment[]
+
+	/**
 	 * Url of job by job status
 	 * @type {string}
 	 */
@@ -105,7 +111,7 @@ export interface IJobResponse {
 
 	/**
 	 * The current status of the job (e.g., "In Progress", "Completed").
-	 * @type {JobStatus}
+	 * @type {TJobStatus}
 	 */
 	status: TJobStatus
 

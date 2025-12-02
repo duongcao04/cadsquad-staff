@@ -2,18 +2,20 @@
 
 import { Link, redirect } from '@/i18n/navigation'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { HeroCopyButton, JobStatusChip } from '@/shared/components'
+import { JobStatusChip } from '@/shared/components'
 import { useDevice } from '@/shared/hooks'
-import { Job } from '@/shared/interfaces'
 import { Skeleton } from '@heroui/react'
 import { Image } from 'antd'
+import dayjs from 'dayjs'
 import { Clock2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import React from 'react'
-import { DueToView } from '../project-center/DueToView'
+import { TJob } from '../../types'
+import CountdownTimer from '../ui/countdown-timer'
+import HeroCopyButton from '../ui/hero-copy-button'
 
 type Props = {
-    data: Job
+    data: TJob
     onPress?: () => void
 }
 function JobCard({ data, onPress }: Props) {
@@ -21,6 +23,7 @@ function JobCard({ data, onPress }: Props) {
     const { isMobile, isTablet } = useDevice()
     const t = useTranslations()
     const jobDetailUrl = `/jobs/${data.no}`
+    const targetDate = dayjs(data.dueAt)
 
     const clickable = isMobile || isTablet
 
@@ -40,12 +43,12 @@ function JobCard({ data, onPress }: Props) {
                 }
             }}
         >
-            <div className="flex items-center justify-start gap-3">
+            <div className="flex items-center justify-start gap-4">
                 <Image
                     src={String(data.status.thumbnailUrl)}
                     alt={data.displayName}
                     rootClassName="!size-16 rounded-full !aspect-square"
-                    className="!size-full rounded-full !aspect-square"
+                    className="size-full! rounded-full aspect-square!"
                     preview={false}
                 />
                 <div>
@@ -57,7 +60,7 @@ function JobCard({ data, onPress }: Props) {
                     </div>
                     <Link
                         href={`/project-center/${data.no}`}
-                        className="mt-0.5 block font-semibold !line-clamp-1"
+                        className="mt-0.5 block font-semibold line-clamp-1!"
                         title="View detail"
                         target="_blank"
                     >
@@ -86,8 +89,11 @@ function JobCard({ data, onPress }: Props) {
                     {t('jobColumns.dueAt')}
                 </p>
                 <p className="font-semibold text-sm flex items-center justify-center">
-                    <Clock2 size={14} className="text-text-subdued" />
-                    <DueToView data={data.dueAt} />
+                    <Clock2 size={14} className="text-text-subdued mr-2" />
+                    <CountdownTimer
+                        targetDate={targetDate}
+                        hiddenUnits={['second', 'year']}
+                    />
                 </p>
             </div>
             <div className="flex flex-col items-center justify-center gap-1">
@@ -97,7 +103,7 @@ function JobCard({ data, onPress }: Props) {
                 <JobStatusChip data={data.status} />
             </div>
             <Link
-                className="hidden lg:block text-sm font-semibold hover:!underline underline-offset-2 text-end !text-link"
+                className="hidden lg:block text-sm font-semibold hover:underline! underline-offset-2 text-end text-link!"
                 href={`/project-center/${data.no}`}
                 target="_blank"
             >
@@ -112,8 +118,8 @@ export function JobCardSkeleton() {
     return (
         <div className="max-w-full grid grid-cols-[250px_1fr] md:grid-cols-[300px_1fr_1fr] lg:grid-cols-[300px_1fr_1fr_1fr] xl:grid-cols-[300px_1fr_1fr_1fr_1fr_40px] gap-3 items-center border rounded-lg px-6 pt-3 pb-5 border-text-muted bg-background">
             {/* Left: avatar + code + title */}
-            <div className="flex items-center justify-start gap-3">
-                <Skeleton className="!size-16 rounded-full !aspect-square" />
+            <div className="flex items-center justify-start gap-4">
+                <Skeleton className="size-16! rounded-full aspect-square!" />
                 <div className="space-y-1">
                     <div className="flex items-center gap-1">
                         <Skeleton className="h-4 w-16 rounded-md" />{' '}

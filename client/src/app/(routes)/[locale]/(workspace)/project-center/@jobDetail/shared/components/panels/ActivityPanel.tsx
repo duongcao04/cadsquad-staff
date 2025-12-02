@@ -1,12 +1,12 @@
 'use client'
 
-import { Job } from '@/shared/interfaces'
 import { Skeleton, Tab, Tabs } from '@heroui/react'
 import { useTranslations } from 'next-intl'
-import { CommentTab, WorkLogTab } from '../tabs'
+import { WorkLogTab } from '../tabs'
+import { TJob } from '../../../../../../../../../shared/types'
 
 type Props = {
-    data: Job
+    data: TJob
     isLoading?: boolean
 }
 export function ActivityPanel({ isLoading = false, data }: Props) {
@@ -20,9 +20,6 @@ export function ActivityPanel({ isLoading = false, data }: Props) {
                 <Tabs aria-label="Job action tabs">
                     <Tab key="1" title={t('workLog')}>
                         <WorkLogTab jobId={data?.id?.toString()} />
-                    </Tab>
-                    <Tab key="2" title={t('comments')}>
-                        <CommentTab jobId={data?.id?.toString()} />
                     </Tab>
                 </Tabs>
             </div>

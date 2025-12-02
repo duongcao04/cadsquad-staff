@@ -1,7 +1,7 @@
 'use client'
 
 import { Link } from '@/i18n/navigation'
-import { HeroButton } from '@/shared/components'
+import { HeroButton } from '@/shared/components/ui/hero-button'
 import { CreateJobInput } from '@/lib/validationSchemas'
 import { Input, InputProps } from '@heroui/react'
 import { FormikProps } from 'formik'

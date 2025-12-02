@@ -10,15 +10,57 @@ import {
     TUpdatePasswordInput,
     TUpdateUserInput,
 } from '../validationSchemas'
+import { IUserResponse } from '../../shared/interfaces'
+import { TUser } from '../../shared/types'
+import { IMAGES } from '../utils'
 
+export const mapUser: (item: IUserResponse) => TUser = (item) => ({
+    id: item.id,
+
+    displayName: item.displayName ?? 'Unknown User',
+    avatar: item.avatar ?? IMAGES.emptyAvatar,
+    email: item.email,
+    username: item.username,
+    phoneNumber: item.phoneNumber,
+
+    department: item.department,
+    jobTitle: item.jobTitle,
+
+    isActive: Boolean(item.isActive),
+
+    role: item.role,
+
+    files: item.files ?? [],
+    accounts: item.accounts ?? [],
+    notifications: item.notifications ?? [],
+    configs: item.configs ?? [],
+    filesCreated: item.filesCreated ?? [],
+    jobActivityLog: item.jobActivityLog ?? [],
+    jobsAssigned: item.jobsAssigned ?? [],
+    jobsCreated: item.jobsCreated ?? [],
+    sendedNotifications: item.sendedNotifications ?? [],
+
+    lastLoginAt: item.lastLoginAt ? new Date(item.lastLoginAt) : null,
+    createdAt: new Date(item.createdAt),
+    updatedAt: new Date(item.updatedAt),
+})
 export const useUsers = () => {
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ['users'],
         queryFn: () => userApi.findAll(),
-        select: (res) => res.data.result,
+        select: (res) => {
+            // Giả sử API trả về cấu trúc: { data: { result: User[] } }
+            // Nếu API trả về mảng trực tiếp thì bỏ .result
+            const rawUsers = res.data?.result || []
+            return rawUsers.map(mapUser)
+        },
+
+        // Giữ data cũ trong khi fetch mới để UI không bị nháy
+        placeholderData: (previousData) => previousData,
     })
     return {
-        users: data,
+        data: data ?? [],
+        users: data ?? [],
         isLoading: isLoading || isFetching,
     }
 }

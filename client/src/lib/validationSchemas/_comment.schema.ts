@@ -15,10 +15,6 @@ export const CreateCommentSchema = yup.object({
 		.string()
 		.nullable()
 		.optional(), // For replies
-
-	userId: yup
-		.string()
-		.required("Author ID is required"),
 })
 
 export type TCreateCommentInput = yup.InferType<typeof CreateCommentSchema>

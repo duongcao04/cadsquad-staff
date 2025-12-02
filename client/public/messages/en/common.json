@@ -20,6 +20,7 @@
     "copiedToClipboard": "Copied to clipboard",
     "reply": "Reply",
     "calendar": "Calendar",
+    "assignMemberTo":"Assign member to {jobNo}",
     "commentCannotBeEmpty": "Please input comment before sending",
     "finishAtTime": "Finish at {time}",
     "openInNewTab": "Open in new tab",

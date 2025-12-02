@@ -6,22 +6,43 @@ import {
     TCreateCommentInput,
     TUpdateCommentInput,
 } from '@/lib/validationSchemas'
+import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import lodash from 'lodash'
+import { useMemo } from 'react'
+import { ICommentResponse } from '../../shared/interfaces'
+import { TComment } from '../../shared/types'
 
-export const useComments = (jobId?: string) => {
+const mapItem: (item: ICommentResponse) => TComment = (item) => ({
+    content: item.content ?? '',
+    user: item.user ?? null,
+    id: item.id,
+    updatedAt: new Date(item.updatedAt),
+    createdAt: new Date(item.createdAt),
+})
+export const useComments = (jobId: string) => {
     const { data, isFetching, isLoading } = useQuery({
-        queryKey: ['comments', 'jobs', jobId],
+        queryKey: ['comments', 'jobs', 'id', jobId],
         queryFn: () => {
-            if (!jobId) {
-                return undefined
-            }
             return commentApi.getByJob(jobId)
         },
         enabled: !!jobId,
         select: (res) => res?.data.result,
     })
+
+    const comments = useMemo(() => {
+        const commentsData = data
+
+        if (!Array.isArray(commentsData)) {
+            return []
+        }
+
+        return commentsData.map((item) => mapItem(item))
+    }, [data])
+
     return {
-        comments: data,
+        comments: comments ?? [],
+        data: comments ?? [],
         isLoading: isFetching || isLoading,
     }
 }
@@ -38,17 +59,34 @@ export const useCommentById = (commentId?: string) => {
         enabled: !!commentId,
         select: (res) => res?.data.result,
     })
+    const comment = useMemo(() => {
+        const commentData = data
+
+        if (lodash.isEmpty(commentData)) {
+            return {} as TComment
+        }
+
+        return mapItem(commentData)
+    }, [data])
     return {
-        comment: data,
+        comment: comment,
+        data: comment,
         isLoading: isFetching || isLoading,
     }
 }
 
 export const useCreateComment = () => {
     return useMutation({
+        mutationKey: ['comment'],
         mutationFn: (data: TCreateCommentInput) => commentApi.create(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['comments'] })
+        onSuccess: (res) => {
+            addToast({
+                title: 'Bình luận thành công',
+                color: 'success',
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['comments', 'jobs', 'id', res.data.result?.jobId],
+            })
         },
     })
 }

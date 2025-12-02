@@ -7,11 +7,7 @@ import {
     JOB_COLUMNS,
     JOB_STATUS_CODES,
 } from '@/lib/utils'
-import {
-    HeroCopyButton,
-    JobStatusDropdown,
-    PaymentStatusDropdown,
-} from '@/shared/components'
+import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { useSearchParam } from '@/shared/hooks'
 import { JobColumnKey, TJob } from '@/shared/types'
@@ -30,11 +26,11 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
-    Tooltip,
     useDisclosure,
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
+import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { EyeIcon, SearchIcon, UserRoundPlus } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
@@ -44,9 +40,12 @@ import {
     projectCenterStore,
     workbenchStore,
 } from '../../stores'
-import { DueToView } from '../project-center/DueToView'
-import JobDetailDrawer from '../project-center/JobDetailDrawer'
+import AssignMemberModal from '../project-center/AssignMemberModal'
+import CountdownTimer from '../ui/countdown-timer'
+import HeroCopyButton from '../ui/hero-copy-button'
+import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
+import { optimizeCloudinary } from '../../../lib/cloudinary'
 
 const ROW_PER_PAGE_OPTIONS = [
     { displayName: '5 items', value: 5 },
@@ -81,8 +80,16 @@ export default function WorkbenchTable({
     } = useDisclosure({
         id: 'JobDetailDrawer',
     })
+    const {
+        isOpen: isOpenAssignMemberModal,
+        onOpen: onOpenAssignMemberModal,
+        onClose: onCloseAssignMemberModal,
+    } = useDisclosure({
+        id: 'AssignMemberModal',
+    })
 
     const [viewDetailNo, setViewDetailNo] = useState<string | null>(null)
+    const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
 
     const searchValue = useStore(
         workbenchStore,
@@ -259,12 +266,12 @@ export default function WorkbenchTable({
                     return (
                         <div className="flex items-center justify-between gap-2 group size-full">
                             <span className="uppercase">{data.no}</span>
-                            <Tooltip content="Copy">
+                            <HeroTooltip content="Copy">
                                 <HeroCopyButton
                                     textValue={data.no}
-                                    className="!opacity-70"
+                                    className="opacity-70!"
                                 />
-                            </Tooltip>
+                            </HeroTooltip>
                         </div>
                     )
                 case 'displayName':
@@ -294,12 +301,16 @@ export default function WorkbenchTable({
                 case 'assignee':
                     return !data.assignee.length ? (
                         <div className="size-full flex items-center justify-center">
-                            <Tooltip content={t('assignMembers')}>
+                            <HeroTooltip content={t('assignMembers')}>
                                 <Button
                                     isIconOnly
                                     variant="light"
                                     size="sm"
-                                    className="!size-8 flex items-center justify-center"
+                                    className="size-8! flex items-center justify-center"
+                                    onPress={() => {
+                                        setAssignMemberTo(data.no)
+                                        onOpenAssignMemberModal()
+                                    }}
                                 >
                                     <p className="inline-flex items-center leading-none">
                                         <UserRoundPlus
@@ -308,7 +319,7 @@ export default function WorkbenchTable({
                                         />
                                     </p>
                                 </Button>
-                            </Tooltip>
+                            </HeroTooltip>
                         </div>
                     ) : (
                         <div
@@ -335,7 +346,7 @@ export default function WorkbenchTable({
                                 {data.assignee.map((member) => (
                                     <Avatar
                                         key={member.id}
-                                        src={member.avatar}
+                                        src={optimizeCloudinary(member.avatar)}
                                     />
                                 ))}
                             </Avatar.Group>
@@ -343,16 +354,20 @@ export default function WorkbenchTable({
                     )
                 case 'isPaid':
                     return <PaymentStatusDropdown jobData={data} />
-                case 'dueAt':
+                case 'dueAt': {
+                    const targetDate = dayjs(data.dueAt)
                     return (
-                        <DueToView
-                            data={data.dueAt}
-                            disableCountdown={
+                        <CountdownTimer
+                            targetDate={targetDate}
+                            hiddenUnits={['second', 'year']}
+                            paused={
                                 data.status.code === JOB_STATUS_CODES.finish ||
                                 data.status.code === JOB_STATUS_CODES.completed
                             }
+                            className="text-right!"
                         />
                     )
+                }
                 case 'status':
                     return (
                         <div className="flex items-center justify-center z-0">
@@ -365,12 +380,12 @@ export default function WorkbenchTable({
                 case 'action':
                     return (
                         <div className="flex items-center justify-end gap-2">
-                            <Tooltip content={t('viewDetail')}>
+                            <HeroTooltip content={t('viewDetail')}>
                                 <Button
                                     isIconOnly
                                     variant="light"
                                     size="sm"
-                                    className="!size-8 flex items-center justify-center"
+                                    className="size-8! flex items-center justify-center"
                                     onPress={() => {
                                         setViewDetailNo(data.no)
                                     }}
@@ -382,15 +397,15 @@ export default function WorkbenchTable({
                                         />
                                     </p>
                                 </Button>
-                            </Tooltip>
-                            <Tooltip content={t('copyLink')}>
+                            </HeroTooltip>
+                            <HeroTooltip content={t('copyLink')}>
                                 <HeroCopyButton
-                                    className="!size-8 flex items-center justify-center"
+                                    className="size-8! flex items-center justify-center"
                                     iconSize={16}
                                     iconClassName="opacity-60"
                                     textValue={`${envConfig.NEXT_PUBLIC_URL}/${locale}/jobs/${data.no}`}
                                 />
-                            </Tooltip>
+                            </HeroTooltip>
                             <WorkbenchTableQuickActions data={data} />
                         </div>
                     )
@@ -401,10 +416,20 @@ export default function WorkbenchTable({
 
     return (
         <>
-            <JobDetailDrawer
+            {/* <JobDetailDrawer
                 jobNo={viewDetailNo ?? ''}
                 isOpen={Boolean(viewDetailNo) && isOpenJobDetailDrawer}
-                onClose={onCloseJobDetailDrawer}
+                onClose={() => {
+                    onCloseJobDetailDrawer()
+                    setAssignMemberTo(null)
+                }}
+            /> */}
+            <AssignMemberModal
+                jobNo={assignMemberTo ?? ''}
+                isOpen={
+                    !lodash.isNull(assignMemberTo) && isOpenAssignMemberModal
+                }
+                onClose={onCloseAssignMemberModal}
             />
             <Table
                 key="no"
@@ -417,7 +442,7 @@ export default function WorkbenchTable({
                 topContent={topContent}
                 BaseComponent={(found) => {
                     return (
-                        <ScrollArea className="size-full !h-full border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
+                        <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
                             <ScrollBar orientation="horizontal" />
                             <ScrollBar orientation="vertical" />
                             {found.children}

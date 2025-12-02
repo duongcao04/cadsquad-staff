@@ -1,6 +1,5 @@
 'use client'
 
-import { redirect } from '@/i18n/navigation'
 import { envConfig } from '@/lib/config'
 import { dateFormatter } from '@/lib/dayjs'
 import { useConfigByCode, useUpdateConfigByCodeMutation } from '@/lib/queries'
@@ -11,15 +10,10 @@ import {
     JOB_STATUS_CODES,
     USER_CONFIG_KEYS,
 } from '@/lib/utils'
-import {
-    HeroCopyButton,
-    JobStatusDropdown,
-    PaymentStatusDropdown,
-} from '@/shared/components'
+import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { useSearchParam } from '@/shared/hooks'
-import type { Job, JobStatus } from '@/shared/interfaces'
-import { JobColumnKey } from '@/shared/types'
+import { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import {
     Button,
     Dropdown,
@@ -65,10 +59,12 @@ import {
 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import React, { useState } from 'react'
-import { DueToView } from './DueToView'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
 import { pCenterTableStore, projectCenterStore } from '../../stores'
+import HeroCopyButton from '../ui/hero-copy-button'
+import dayjs from 'dayjs'
+import CountdownTimer from '../ui/countdown-timer'
 
 const ROW_PER_PAGE_OPTIONS = [
     { displayName: '5 items', value: 5 },
@@ -81,13 +77,14 @@ type ProjectCenterOptions = {
     fillContainerHeight?: boolean
 }
 type Props = {
-    data: Job[]
+    data: TJob[]
     isLoading?: boolean
     onRefresh?: () => void
     visibleColumns: 'all' | JobColumnKey[]
     options?: ProjectCenterOptions
     openFilterDrawer: () => void
     openViewColDrawer: () => void
+    openJobDetailDrawer: () => void
 }
 export default function ProjectCenterTable({
     data,
@@ -97,6 +94,7 @@ export default function ProjectCenterTable({
     options = { fillContainerHeight: false },
     openFilterDrawer,
     openViewColDrawer,
+    openJobDetailDrawer,
 }: Props) {
     const t = useTranslations()
 
@@ -108,7 +106,7 @@ export default function ProjectCenterTable({
     const hasSearchFilter = Boolean(searchKeywords)
     const [searchValue, setSearchValue] = useState('')
 
-    const setContextItem = (value: Job | null) => {
+    const setContextItem = (value: TJob | null) => {
         return pCenterTableStore.setState((state) => ({
             ...state,
             contextItem: value,
@@ -197,7 +195,7 @@ export default function ProjectCenterTable({
                             onValueChange={onSearchChange}
                         />
 
-                        <div className="w-[1px] mx-3 h-5 bg-text-muted"></div>
+                        <div className="w-px mx-3 h-5 bg-text-muted"></div>
                         <div className="flex gap-3">
                             <Button
                                 startContent={
@@ -332,9 +330,10 @@ export default function ProjectCenterTable({
                                                 <p>{t('hideFinishItems')}</p>
                                                 <Switch
                                                     isSelected={Boolean(
-                                                        parseInt(
-                                                            isHideFinishItems
-                                                        )
+                                                        1
+                                                        // parseInt(
+                                                        //     isHideFinishItems
+                                                        // )
                                                     )}
                                                     size="sm"
                                                     aria-label="Hide finish items"
@@ -375,7 +374,7 @@ export default function ProjectCenterTable({
                             </Dropdown>
                         </div>
 
-                        <div className="w-[1px] mx-3 h-5 bg-text-muted"></div>
+                        <div className="w-px mx-3 h-5 bg-text-muted"></div>
                         {(selectedKeys === 'all' || selectedKeys.size > 0) && (
                             <div className="flex items-center justify-start gap-3">
                                 <p className="text-sm">
@@ -406,7 +405,7 @@ export default function ProjectCenterTable({
                 </div>
             </div>
         )
-    }, [visibleColumns, data.length, hasSearchFilter, selectedKeys])
+    }, [visibleColumns, data?.length, hasSearchFilter, selectedKeys])
 
     const bottomContent = React.useMemo(() => {
         return (
@@ -457,10 +456,10 @@ export default function ProjectCenterTable({
                 </div>
             </div>
         )
-    }, [selectedKeys, data.length, pagination, hasSearchFilter])
+    }, [selectedKeys, data?.length, pagination, hasSearchFilter])
 
-    const renderCell: (data: Job, columnKey: JobColumnKey) => React.ReactNode =
-        React.useCallback((data: Job, columnKey: JobColumnKey) => {
+    const renderCell: (data: TJob, columnKey: JobColumnKey) => React.ReactNode =
+        React.useCallback((data: TJob, columnKey: JobColumnKey) => {
             const cellValue = lodash.has(data, columnKey)
                 ? (data[columnKey] as string)
                 : ''
@@ -495,7 +494,7 @@ export default function ProjectCenterTable({
                             <Tooltip content="Copy">
                                 <HeroCopyButton
                                     textValue={data.no}
-                                    className="!opacity-70"
+                                    className="opacity-70!"
                                 />
                             </Tooltip>
                         </div>
@@ -523,20 +522,24 @@ export default function ProjectCenterTable({
                         <div className="flex items-center justify-center z-0">
                             <JobStatusDropdown
                                 jobData={data}
-                                statusData={data.status as JobStatus}
+                                statusData={data.status as TJobStatus}
                             />
                         </div>
                     )
-                case 'dueAt':
+                case 'dueAt': {
+                    const targetDate = dayjs(data.dueAt)
                     return (
-                        <DueToView
-                            data={data.dueAt}
-                            disableCountdown={
+                        <CountdownTimer
+                            targetDate={targetDate}
+                            hiddenUnits={['second', 'year']}
+                            paused={
                                 data.status.code === JOB_STATUS_CODES.finish ||
                                 data.status.code === JOB_STATUS_CODES.completed
                             }
+                            className="text-right!"
                         />
                     )
+                }
                 case 'attachmentUrls':
                     return !data.attachmentUrls?.length ? (
                         <div className="size-full flex items-center justify-center">
@@ -545,7 +548,7 @@ export default function ProjectCenterTable({
                                     isIconOnly
                                     variant="light"
                                     size="sm"
-                                    className="!size-8 flex items-center justify-center"
+                                    className="size-8! flex items-center justify-center"
                                 >
                                     <p className="inline-flex items-center leading-none">
                                         <FilePlus
@@ -567,7 +570,7 @@ export default function ProjectCenterTable({
                                     isIconOnly
                                     variant="light"
                                     size="sm"
-                                    className="!size-8 flex items-center justify-center"
+                                    className="size-8! flex items-center justify-center"
                                 >
                                     <p className="inline-flex items-center leading-none">
                                         <UserRoundPlus
@@ -646,12 +649,13 @@ export default function ProjectCenterTable({
                                     isIconOnly
                                     variant="light"
                                     size="sm"
-                                    className="!size-8 flex items-center justify-center"
+                                    className="size-8! flex items-center justify-center"
                                     onPress={() => {
-                                        redirect({
-                                            href: `/jobs/${data.no}`,
-                                            locale,
-                                        })
+                                        openJobDetailDrawer()
+                                        pCenterTableStore.setState((state) => ({
+                                            ...state,
+                                            viewDetail: data.no,
+                                        }))
                                     }}
                                 >
                                     <p className="inline-flex items-center leading-none">
@@ -664,7 +668,7 @@ export default function ProjectCenterTable({
                             </Tooltip>
                             <Tooltip content={t('copyLink')}>
                                 <HeroCopyButton
-                                    className="!size-8 flex items-center justify-center"
+                                    className="size-8! flex items-center justify-center"
                                     iconSize={16}
                                     iconClassName="opacity-60"
                                     textValue={`${envConfig.NEXT_PUBLIC_URL}/${locale}/jobs/${data.no}`}
@@ -690,7 +694,7 @@ export default function ProjectCenterTable({
             topContent={topContent}
             BaseComponent={(found) => {
                 return (
-                    <ScrollArea className="size-full !h-full border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
+                    <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
                         <ScrollBar orientation="horizontal" />
                         <ScrollBar orientation="vertical" />
                         {found.children}

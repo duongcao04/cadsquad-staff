@@ -2,7 +2,7 @@
 
 import { ApiError } from '@/lib/axios'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { HeroButton } from '@/shared/components'
+import { HeroButton } from '@/shared/components/ui/hero-button'
 import { Job } from '@/shared/interfaces'
 import { useProfile, useUpdateJobMutation } from '@/lib/queries'
 import { addToast, NumberInput, Skeleton } from '@heroui/react'

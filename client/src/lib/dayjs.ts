@@ -78,7 +78,7 @@ export const VietnamDateFormat = (value: string | Date, options: Options = {
 export const dateFormatter = (
 	value: string | Date,
 	options: DateFormatterOptions = {
-		format: 'shortDate',
+		format: 'semiLongDate',
 		timezone: TIMEZONE,
 	},
 ) => {

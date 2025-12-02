@@ -1,17 +1,18 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, SetMetadata, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { AdminGuard } from '../auth/admin.guard'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { ActivityLogService } from './activity-log.service'
+import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 import { ChangeStatusDto } from './dto/change-status.dto'
 import { CreateJobDto } from './dto/create-job.dto'
 import { GetJobsDueDto } from './dto/get-jobs-due.dto'
 import { JobQueryDto } from './dto/job-query.dto'
+import { RescheduleJobDto } from './dto/reschedule-job.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { JobService } from './job.service'
-import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 
 @Controller('jobs')
 export class JobController {
@@ -98,13 +99,21 @@ export class JobController {
   async getJobActivityLog(@Param('id') id: string) {
     return this.activityLogService.findByJobId(id)
   }
+  @Get(':id/assignees')
+  @HttpCode(200)
+  @ResponseMessage('Get assignees successfully')
+  @UseGuards(JwtGuard)
+  async getAssignees(@Param('id') id: string) {
+    return this.jobService.getAssignee(id)
+  }
 
   @Patch(':id')
   @HttpCode(200)
   @ResponseMessage('Update job successfully')
   @UseGuards(JwtGuard, AdminGuard)
-  async update(@Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
-    return this.jobService.update(id, updateJobDto)
+  async update(@Req() request: Request, @Param('id') id: string, @Body() updateJobDto: UpdateJobDto) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.update(userPayload.sub, id, updateJobDto)
   }
 
   @Patch(':id/change-status')
@@ -114,6 +123,15 @@ export class JobController {
   async changeStatus(@Req() request: Request, @Param('id') id: string, @Body() data: ChangeStatusDto) {
     const userPayload: TokenPayload = await request['user']
     return this.jobService.changeStatus(id, userPayload.sub, data)
+  }
+
+  @Patch(':id/reschedule')
+  @HttpCode(200)
+  @ResponseMessage('Reschedule job successfully')
+  @UseGuards(JwtGuard)
+  async rescheduleJob(@Req() request: Request, @Param('id') id: string, @Body() data: RescheduleJobDto) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.rescheduleJob(id, userPayload.sub, data)
   }
 
   @Post('bulk/change-status')

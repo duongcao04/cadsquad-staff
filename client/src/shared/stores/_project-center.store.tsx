@@ -4,7 +4,7 @@ import { Store } from '@tanstack/react-store'
 export const projectCenterStore = new Store({
     tab: ProjectCenterTabEnum.PRIORITY,
     page: 1,
-    sort: '',
+    sort: 'displayName',
     search: '',
     limit: 10,
     isHideFinishItems: false,

@@ -10,8 +10,13 @@ import { CommentResponseDto } from './dto/comment-response.dto'
 export class CommentService {
   constructor(private readonly prismaService: PrismaService) { }
 
-  async create(data: CreateCommentDto): Promise<Comment> {
-    const comment = await this.prismaService.comment.create({ data })
+  async create(userId: string, data: CreateCommentDto): Promise<Comment> {
+    const comment = await this.prismaService.comment.create({
+      data: {
+        ...data,
+        userId: userId
+      }
+    })
     return plainToInstance(CommentResponseDto, comment, {
       excludeExtraneousValues: true,
     }) as unknown as Comment

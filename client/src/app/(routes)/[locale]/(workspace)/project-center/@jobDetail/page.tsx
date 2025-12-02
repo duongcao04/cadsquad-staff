@@ -4,8 +4,7 @@ import { ApiError } from '@/lib/axios'
 import { VietnamDateFormat } from '@/lib/dayjs'
 import { lightenHexColor } from '@/lib/utils'
 import { useDetailModal } from '@/shared/actions'
-import { Countdown, JobStatusChip, PaidChip } from '@/shared/components'
-import { JobStatus } from '@/shared/interfaces'
+import { JobStatusChip, PaidChip } from '@/shared/components'
 import {
     useChangeStatusMutation,
     useJobByNo,
@@ -16,7 +15,9 @@ import { Drawer } from 'antd'
 import { Clock9 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
-import { JobDetailActions, JobDetailSection, JobName } from './shared'
+import { JobDetailActions, JobName } from './shared'
+import { TJobStatus } from '../../../../../../shared/types'
+import CountdownTimer from '../../../../../../shared/components/ui/countdown-timer'
 
 export default function JobDetailView() {
     const t = useTranslations()
@@ -32,15 +33,15 @@ export default function JobDetailView() {
      * Fetch data
      */
     const { jobStatus: prevStatus } = useJobStatusByOrder(
-        job?.status.prevStatusOrder
+        job?.status?.prevStatusOrder
     )
     const { jobStatus: nextStatus } = useJobStatusByOrder(
-        job?.status.nextStatusOrder
+        job?.status?.nextStatusOrder
     )
     /**
      * Change status action
      */
-    const handleChangeStatus = async (nextStatus: JobStatus) => {
+    const handleChangeStatus = async (nextStatus: TJobStatus) => {
         await changeStatusMutation(
             {
                 jobId: String(job?.id),
@@ -123,7 +124,7 @@ export default function JobDetailView() {
                         </div>
                         <div className="flex items-center justify-end gap-2">
                             <div className="text-sm font-medium">
-                                <Countdown
+                                <CountdownTimer
                                     targetDate={new Date(job?.dueAt ?? '')}
                                 />
                             </div>
@@ -135,12 +136,14 @@ export default function JobDetailView() {
             footer={
                 <div
                     style={{
-                        display: job?.status.prevStatusOrder ? 'grid' : 'block',
+                        display: job?.status?.prevStatusOrder
+                            ? 'grid'
+                            : 'block',
                         gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                         gap: 12,
                     }}
                 >
-                    {job?.status.prevStatusOrder && prevStatus && (
+                    {job?.status?.prevStatusOrder && prevStatus && (
                         <Button
                             color="danger"
                             className="w-full font-semibold font-saira"
@@ -158,7 +161,7 @@ export default function JobDetailView() {
                             Mark as {prevStatus.displayName}
                         </Button>
                     )}
-                    {job?.status.nextStatusOrder && nextStatus && (
+                    {job?.status?.nextStatusOrder && nextStatus && (
                         <Button
                             color="danger"
                             className="w-full font-semibold font-saira"
@@ -176,14 +179,14 @@ export default function JobDetailView() {
                             Mark as {nextStatus.displayName}
                         </Button>
                     )}
-                    {job && !job?.status.nextStatusOrder && (
+                    {job && !job?.status?.nextStatusOrder && (
                         <Button
                             color="danger"
                             className="w-full !opacity-100"
                             isDisabled
                             style={{
                                 color: '#ffffff',
-                                backgroundColor: job?.status.hexColor,
+                                backgroundColor: job?.status?.hexColor,
                             }}
                         >
                             {t('finishAtTime', {
@@ -205,7 +208,7 @@ export default function JobDetailView() {
                 body: '!py-4 !px-3',
             }}
         >
-            <JobDetailSection data={job} isLoading={isLoading} />
+            {/* <JobDetailSection data={job} isLoading={isLoading} /> */}
         </Drawer>
     )
 }

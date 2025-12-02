@@ -7,6 +7,7 @@ import {
     TBulkChangeStatusInput,
     TCreateJobInput,
     TJobQueryWithFiltersInput,
+    TRescheduleJob,
     TUpdateJobInput,
     TUpdateJobMembersInput,
 } from '@/lib/validationSchemas'
@@ -19,6 +20,7 @@ import queryString from 'query-string'
 import { useMemo } from 'react'
 import { IJobActivityLogResponse, IJobResponse } from '../../shared/interfaces'
 import { TJob } from '../../shared/types'
+import { mapUser } from './useUser'
 
 const mapItem: (item: IJobResponse) => TJob = (item) => ({
     no: item.no,
@@ -30,6 +32,7 @@ const mapItem: (item: IJobResponse) => TJob = (item) => ({
     createdBy: item.createdBy,
     files: item.files,
     id: item.id,
+    comments: item.comments ?? [],
     incomeCost:
         typeof item.incomeCost === 'number'
             ? item.incomeCost
@@ -105,8 +108,8 @@ export const useJobs = (
         refetch,
         isLoading: isFirstLoading || isFetching,
         error,
-        jobs,
-        data: jobs,
+        jobs: jobs ?? [],
+        data: jobs ?? [],
         paginate: data?.result?.paginate,
     }
 }
@@ -239,8 +242,37 @@ export const useJobByNo = (jobNo?: string) => {
 
     return {
         refetch,
-        data: data?.result,
-        job,
+        data: job,
+        job: job,
+        error,
+        isLoading,
+    }
+}
+
+export const useJobAssignees = (jobId: string) => {
+    const { data, refetch, error, isLoading } = useQuery({
+        queryKey: ['jobs', 'assignees', 'id', jobId],
+        queryFn: () => {
+            return jobApi.getAssignees(jobId)
+        },
+        enabled: !!jobId,
+        select: (res) => res?.data,
+    })
+
+    const assignees = useMemo(() => {
+        const assigneesData = data?.result?.assignees
+
+        if (!Array.isArray(assigneesData)) {
+            return []
+        }
+
+        return assigneesData.map((item) => mapUser(item))
+    }, [data?.result?.assignees])
+
+    return {
+        refetch,
+        data: assignees ?? [],
+        totalAssignees: data?.result?.totalAssignees ?? 0,
         error,
         isLoading,
     }
@@ -361,6 +393,46 @@ export const useChangeStatusMutation = () => {
     })
 }
 
+export const useRescheduleMutation = () => {
+    return useMutation({
+        mutationKey: ['reschedule', 'job'],
+        mutationFn: ({
+            jobId,
+            data,
+        }: {
+            jobId?: string
+            data: TRescheduleJob
+        }) => {
+            if (!jobId) {
+                throw new Error()
+            }
+            return jobApi.reschedule(jobId, data)
+        },
+        onSuccess: (res) => {
+            addToast({
+                title: res.data.message,
+                color: 'success',
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['jobs'],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['jobs', 'no', res.data.result?.no],
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['jobActivityLog', String(res.data.result?.id)],
+            })
+        },
+        onError: (error) => {
+            const err = error as unknown as ApiError
+            addToast({
+                title: err.message,
+                color: 'danger',
+            })
+        },
+    })
+}
+
 export const useBulkChangeStatusMutation = () => {
     return useMutation({
         mutationKey: ['changeStatus', 'job'],
@@ -373,7 +445,7 @@ export const useBulkChangeStatusMutation = () => {
     })
 }
 
-export const useAssignMemberMutation = () => {
+export const useAssignMemberMutation = (jobNo?: string) => {
     return useMutation({
         mutationKey: ['assignMember', 'job'],
         mutationFn: ({
@@ -383,17 +455,17 @@ export const useAssignMemberMutation = () => {
             jobId?: string
             assignMemberInput: TUpdateJobMembersInput
         }) => {
-            return jobApi.assignMember(
-                `jobs/${jobId}/assign-member`,
-                assignMemberInput
-            )
+            if (!jobId) {
+                throw new Error('jobId is required')
+            }
+            return jobApi.assignMember(jobId, assignMemberInput)
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],
             })
             queryClient.invalidateQueries({
-                queryKey: ['jobDetail', data.data.result?.no],
+                queryKey: ['jobs', 'no', jobNo],
             })
             queryClient.invalidateQueries({
                 queryKey: ['jobActivityLog', String(data.data.result?.id)],
@@ -403,16 +475,18 @@ export const useAssignMemberMutation = () => {
                 color: 'success',
             })
         },
-        onError: () => {
+        onError: (error) => {
+            const err = error as unknown as ApiError
             addToast({
                 title: 'Phân công thành viên thất bại',
+                description: err.message,
                 color: 'danger',
             })
         },
     })
 }
 
-export const useRemoveMemberMutation = () => {
+export const useRemoveMemberMutation = (jobNo?: string) => {
     return useMutation({
         mutationKey: ['removeMember', 'job'],
         mutationFn: ({
@@ -429,7 +503,7 @@ export const useRemoveMemberMutation = () => {
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobDetail', data.data.result?.no],
+                queryKey: ['jobs', 'no', jobNo],
             })
             queryClient.invalidateQueries({
                 queryKey: ['jobActivityLog', String(data.data.result?.id)],
@@ -446,14 +520,18 @@ export const useUpdateJobMutation = () => {
         mutationKey: ['updateJob'],
         mutationFn: ({
             jobId,
-            updateJobInput,
+            data,
         }: {
-            jobId?: string
-            updateJobInput: TUpdateJobInput
+            jobId: string
+            data: TUpdateJobInput
         }) => {
-            return axiosClient.patch(`jobs/${jobId}`, updateJobInput)
+            return jobApi.update(jobId, data)
         },
         onSuccess: (res) => {
+            addToast({
+                title: 'Cập nhật job thành công',
+                color: 'success',
+            })
             queryClient.invalidateQueries({
                 queryKey: ['jobs', 'no', res.data.result?.no],
             })

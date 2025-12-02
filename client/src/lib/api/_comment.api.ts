@@ -1,7 +1,6 @@
 import { ApiResponse, axiosClient } from '@/lib/axios'
 import { TCreateCommentInput, TUpdateCommentInput } from '@/lib/validationSchemas'
 import { ICommentResponse } from '@/shared/interfaces'
-import { TCommentRefAll } from '@/shared/types'
 
 export const commentApi = {
 	/**
@@ -15,7 +14,7 @@ export const commentApi = {
 	 * Get all comments for a job
 	 */
 	getByJob: (jobId: string) => {
-		return axiosClient.get<ApiResponse<TCommentRefAll[]>>(`/v1/comments/job/${jobId}`)
+		return axiosClient.get<ApiResponse<ICommentResponse[]>>(`/v1/comments/job/${jobId}`)
 	},
 
 	/**

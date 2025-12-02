@@ -37,35 +37,84 @@ model UserDevices {
 }
 
 model User {
-  id                  String           @id @default(uuid())
-  email               String           @unique
-  username            String           @unique
+  id                  String             @id @default(uuid())
+  email               String             @unique
+  username            String             @unique
   displayName         String
-  password            String
-  avatar              String?
+  avatar              String
   jobTitleId          String?
-  jobTitle            JobTitle?        @relation(fields: [jobTitleId], references: [id])
+  password            String
+  emailVerified       Boolean            @default(false)
+  jobTitle            JobTitle?          @relation(fields: [jobTitleId], references: [id])
   departmentId        String?
-  department          Department?      @relation(fields: [departmentId], references: [id])
+  department          Department?        @relation(fields: [departmentId], references: [id])
   phoneNumber         String?
-  role                RoleEnum         @default(USER)
-  isActive            Boolean          @default(true)
+  role                RoleEnum           @default(USER)
+  isActive            Boolean            @default(true)
   lastLoginAt         DateTime?
-  notifications       Notification[]   @relation("UserNotifications")
-  jobsAssigned        Job[]            @relation("UserJobs") // Jobs assigned 
-  jobsCreated         Job[]            @relation("JobCreator")
-  filesCreated        FileSystem[]     @relation("CreatedFiles")
-  files               FileSystem[]     @relation("UserFiles")
-  accounts            Account[]
-  sendedNotifications Notification[]   @relation("UserSendedNotifications")
+  notifications       Notification[]     @relation("UserNotifications")
+  jobsAssigned        Job[]              @relation("UserJobs") // Jobs assigned 
+  jobsCreated         Job[]              @relation("JobCreator")
+  filesCreated        FileSystem[]       @relation("CreatedFiles")
+  files               FileSystem[]       @relation("UserFiles")
+  sendedNotifications Notification[]     @relation("UserSendedNotifications")
   jobActivityLog      JobActivityLog[]
   configs             Config[]
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
   comment             Comment[]
   gallery             Gallery[]
   userDevices         UserDevices[]
-  statusChanges JobStatusHistory[]
+  statusChanges       JobStatusHistory[]
+
+  // Quan hệ Auth
+  sessions Session[]
+  accounts Account[]
+}
+
+// Model Session bắt buộc cho Better Auth
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+}
+
+// Model Account cần update để lưu Token từ Azure
+model Account {
+  id           String    @id @default(uuid())
+  userId       String
+  accountId    String // ID của user bên Azure
+  providerId   String // Tên provider: "microsoft" hoặc "azure"
+  accessToken  String?
+  refreshToken String?
+  idToken      String?
+  expiresAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Xóa enum AccountProvider cũ vì Better Auth dùng string cho linh hoạt
+}
+
+// Model Verification bắt buộc cho Better Auth (xác thực email)
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt // Thêm field này nếu Prisma báo lỗi thiếu
 }
 
 model Gallery {
@@ -139,16 +188,6 @@ enum RoleEnum {
   ACCOUNTING
 }
 
-model Account {
-  id         String          @id @default(uuid())
-  provider   AccountProvider
-  providerId String
-  userId     String
-  user       User            @relation(fields: [userId], references: [id])
-
-  @@unique([provider, providerId])
-}
-
 enum AccountProvider {
   GOOGLE
   GITHUB
@@ -183,39 +222,39 @@ model FileSystem {
 }
 
 model Job {
-  id               String           @id @default(uuid())
-  no               String           @unique // Job No. example FV-0001
-  type             JobType          @relation(fields: [typeId], references: [id])
+  id               String             @id @default(uuid())
+  no               String             @unique // Job No. example FV-0001
+  type             JobType            @relation(fields: [typeId], references: [id])
   typeId           String
   displayName      String
   description      String?
-  attachmentUrls   String[]         @default([])
+  attachmentUrls   String[]           @default([])
   clientName       String
   incomeCost       Int
   staffCost        Int
-  assignee         User[]           @relation("UserJobs") // Member assigned
-  createdBy        User             @relation("JobCreator", fields: [createdById], references: [id])
+  assignee         User[]             @relation("UserJobs") // Member assigned
+  createdBy        User               @relation("JobCreator", fields: [createdById], references: [id])
   createdById      String
-  paymentChannel   PaymentChannel?  @relation(fields: [paymentChannelId], references: [id])
+  paymentChannel   PaymentChannel?    @relation(fields: [paymentChannelId], references: [id])
   paymentChannelId String?
-  status           JobStatus        @relation(fields: [statusId], references: [id])
+  status           JobStatus          @relation(fields: [statusId], references: [id])
   statusId         String
   activityLog      JobActivityLog[]
-  startedAt        DateTime         @default(now())
-  priority         JobPriority      @default(MEDIUM)
+  startedAt        DateTime           @default(now())
+  priority         JobPriority        @default(MEDIUM)
   files            FileSystem[]
-  isPinned         Boolean          @default(false)
-  isPublished      Boolean          @default(false)
-  isPaid           Boolean          @default(false)
+  isPinned         Boolean            @default(false)
+  isPublished      Boolean            @default(false)
+  isPaid           Boolean            @default(false)
   dueAt            DateTime
   completedAt      DateTime?
   finishedAt       DateTime?
   paidAt           DateTime?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   deletedAt        DateTime?
-  comment          Comment[]
-  statusHistory JobStatusHistory[]
+  comments          Comment[]
+  statusHistory    JobStatusHistory[]
 
   @@index([no])
   @@index([statusId])
@@ -254,19 +293,19 @@ model JobType {
 }
 
 model JobStatus {
-  id              String   @id @default(uuid())
+  id              String             @id @default(uuid())
   displayName     String
-  code            String   @unique
+  code            String             @unique
   thumbnailUrl    String?
   hexColor        String
-  order           Int      @unique
+  order           Int                @unique
   icon            String?
   nextStatusOrder Int?
   prevStatusOrder Int?
   jobs            Job[]
-  history JobStatusHistory[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  history         JobStatusHistory[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
   @@index([order])
 }
@@ -292,7 +331,7 @@ model JobStatusHistory {
   endedAt   DateTime? // Thời điểm rời khỏi trạng thái này. Nếu null nghĩa là Job vẫn đang ở trạng thái này.
 
   // Optional: Lưu duration (tính bằng giây) để query báo cáo cho nhanh, không cần tính toán lại
-  durationSeconds Int? 
+  durationSeconds Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

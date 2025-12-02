@@ -25,6 +25,6 @@ export type UserSummary = {
 export type UserColumn = 'email' | 'username' | 'displayName' | 'displayName' | 'avatar' | 'jobTitle' | 'department' | 'phoneNumber' | 'role' | 'isActive' | 'lastLoginAt' | 'jobsAssigned' | 'accounts' | 'createdAt' | 'updatedAt' | 'action'
 
 
-export type TUser = Omit<IUserResponse, 'jobTitleId' | 'departmentId' | 'avatar'> & {
+export type TUser = Omit<IUserResponse, 'jobTitleId' | 'departmentId' | 'avatar' | 'password'> & {
 	avatar: string
 }

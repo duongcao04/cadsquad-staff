@@ -15,6 +15,7 @@
     "user": "Người dùng",
     "markJobAsPaid": "Đánh dấu dự án {jobNo} là đã thanh toán",
     "markJobAsPaidDesc": "Bạn có chắc chắn muốn đánh dấu dự án {jobNo} là đã thanh toán không? Hành động này sẽ xác nhận rằng khoản thanh toán đã được nhận.",
+    "assignMemberTo": "Gán thành viên cho dự án {jobNo}",
     "jobPaid": "Dự án {jobNo} đã được thanh toán",
     "markJobAsPaidSuccess": "Đánh dấu dự án {jobNo} là đã thanh toán thành công",
     "inputNewUsername": "Nhập tên người dùng mới",

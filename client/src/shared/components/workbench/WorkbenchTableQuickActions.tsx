@@ -7,7 +7,6 @@ import {
     useProfile,
     useUpdateJobMutation,
 } from '@/lib/queries'
-import { ConfirmDeleteModal } from '@/shared/components'
 import { TJob } from '@/shared/types'
 import {
     addToast,
@@ -20,6 +19,7 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import {
+    CalendarClock,
     CircleCheck,
     CircleDollarSign,
     EllipsisVerticalIcon,
@@ -31,6 +31,8 @@ import {
 import { useLocale, useTranslations } from 'next-intl'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'
+import ConfirmModal from '../ui/confirm-modal'
+import ReScheduleModal from '../modals/ReScheduleModal'
 
 type WorkbenchTableQuickActionsProps = {
     data: TJob
@@ -60,6 +62,13 @@ export function WorkbenchTableQuickActions({
         onClose: onCloseModal,
     } = useDisclosure({
         id: 'ConfirmDeleteModal',
+    })
+    const {
+        isOpen: isOpenRescheduleModal,
+        onOpen: onOpenRescheduleModal,
+        onClose: onCloseRescheduleModal,
+    } = useDisclosure({
+        id: 'RescheduleModal',
     })
 
     const {
@@ -137,40 +146,40 @@ export function WorkbenchTableQuickActions({
 
     return (
         <>
-            <ConfirmDeleteModal
+            <ConfirmModal
                 isOpen={isOpenModal}
                 onClose={onCloseModal}
                 onConfirm={onDeleteJob}
                 title={t('deleteJob')}
-                description={t('deleteJobDesc', {
+                content={t('deleteJobDesc', {
                     jobNo: `#${data?.no}`,
                 })}
+                confirmLabel={t('yes')}
                 isLoading={isDeleting}
-                style={{
-                    zIndex: 9999999999,
-                }}
             />
             <UpdateCostModal
                 isOpen={isOpenUCostModal}
                 onClose={onCloseUCostModal}
                 data={data}
             />
-            <ConfirmDeleteModal
+            <ConfirmModal
                 isOpen={isOpenMAPModal}
                 onClose={onCloseMAPModal}
                 onConfirm={handleMarkAsPaid}
                 title={t('markJobAsPaid', {
                     jobNo: `#${data.no}`,
                 })}
-                description={t('markJobAsPaidDesc', {
+                content={t('markJobAsPaidDesc', {
                     jobNo: `#${data.no}`,
                 })}
-                confirmText={t('yes')}
+                variant="warning"
+                confirmLabel={t('yes')}
                 isLoading={isUpdating}
-                style={{
-                    zIndex: 9999999999,
-                }}
-                color="primary"
+            />
+            <ReScheduleModal
+                isOpen={isOpenRescheduleModal}
+                onClose={onCloseRescheduleModal}
+                job={data}
             />
 
             <AssignMemberModal
@@ -241,14 +250,14 @@ export function WorkbenchTableQuickActions({
                                 display: isAdmin ? 'flex' : 'none',
                             }}
                             startContent={
-                                <UserPlus
+                                <CalendarClock
                                     size={14}
                                     className="text-text-subdued"
                                 />
                             }
-                            onPress={() => onOpenAssignModal()}
+                            onPress={() => onOpenRescheduleModal()}
                         >
-                            
+                            Reschedule
                         </DropdownItem>
                         <DropdownItem
                             key="deleteJob"

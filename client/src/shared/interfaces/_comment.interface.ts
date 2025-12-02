@@ -1,9 +1,12 @@
+import { TUser } from "../types"
+
 export interface ICommentResponse {
 	id: string
 	content: string
 	jobId: string
 	userId: string
+	user: TUser
 	parentId?: string
-	createdAt: string
-	updatedAt: string
+	createdAt: Date
+	updatedAt: Date
 }
