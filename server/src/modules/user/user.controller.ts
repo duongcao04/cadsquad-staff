@@ -10,16 +10,25 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common'
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger'
+import { AdminGuard } from '../auth/admin.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { CreateUserDto } from './dto/create-user.dto'
+import { ProtectUserResponseDto } from './dto/protect-user-response.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { UserResponseDto } from './dto/user-response.dto'
 import { UserService } from './user.service'
-import { AdminGuard } from '../auth/admin.guard'
 
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) { }
@@ -28,6 +37,13 @@ export class UserController {
   @HttpCode(201)
   @ResponseMessage('Create user successfully')
   @UseGuards(JwtGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'The user has been successfully created.',
+    type: UserResponseDto,
+  })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto)
   }
@@ -36,6 +52,13 @@ export class UserController {
   @HttpCode(200)
   @ResponseMessage('Get list of users successfully')
   @UseGuards(JwtGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return a list of users.',
+    type: [ProtectUserResponseDto],
+  })
   async findAll() {
     return this.userService.findAll()
   }
@@ -43,8 +66,15 @@ export class UserController {
   @Patch('update-password')
   @HttpCode(200)
   @UseGuards(JwtGuard)
+  @ApiBearerAuth()
   @ResponseMessage('Update password successfully')
-  async updatePassword(@Req() request: Request,
+  @ApiOperation({ summary: 'Update the password for the current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The password has been successfully updated.',
+  })
+  async updatePassword(
+    @Req() request: Request,
     @Body() dto: UpdatePasswordDto,
   ) {
     const userPayload: TokenPayload = await request['user']
@@ -55,17 +85,29 @@ export class UserController {
   @HttpCode(200)
   @ResponseMessage('Reset password successfully')
   @UseGuards(JwtGuard, AdminGuard)
-  async resetPassword(@Param('id') id: string,
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Reset the password for a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The password has been successfully reset.',
+  })
+  async resetPassword(
+    @Param('id') id: string,
     @Body() dto: ResetPasswordDto,
   ) {
     return this.userService.resetPassword(id, dto)
   }
 
-
   @Get('username/:username')
   @HttpCode(200)
   @ResponseMessage('Check username successfully')
   @UseGuards(JwtGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check if a username is valid' })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns a boolean indicating if the username is valid.',
+  })
   async checkUsernameValid(@Param('username') username: string) {
     return this.userService.checkUsernameValid(username)
   }
@@ -74,6 +116,13 @@ export class UserController {
   @HttpCode(200)
   @ResponseMessage('Get user detail successfully')
   @UseGuards(JwtGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get a user by their ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return a single user.',
+    type: UserResponseDto,
+  })
   async findOne(@Param('id') id: string) {
     return this.userService.findById(id)
   }
@@ -82,7 +131,17 @@ export class UserController {
   @HttpCode(200)
   @ResponseMessage('Update user successfully')
   @UseGuards(JwtGuard, AdminGuard)
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully updated.',
+    type: UserResponseDto,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.userService.update(id, updateUserDto)
   }
 
@@ -90,6 +149,12 @@ export class UserController {
   @HttpCode(200)
   @ResponseMessage('Delete user successfully')
   @UseGuards(JwtGuard, AdminGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a user' })
+  @ApiResponse({
+    status: 200,
+    description: 'The user has been successfully deleted.',
+  })
   async remove(@Param('id') id: string) {
     return this.userService.delete(id)
   }
