@@ -7,7 +7,7 @@ import {
     useJobByNo,
     useRemoveMemberMutation,
 } from '@/lib/queries/useJob'
-import { Button, Input, Skeleton } from '@heroui/react'
+import { Button, Input, Skeleton, Spinner } from '@heroui/react'
 import { useTranslations } from 'next-intl'
 import { Key, useState } from 'react'
 import HeroCopyButton from '../ui/hero-copy-button'
@@ -60,7 +60,7 @@ export default function AssignMemberModal({
 
     const onRemoveMember = async (memberId: string) =>
         await removeMemberMutate({
-            jobId: job.id,
+            jobId: job?.id,
             memberId,
         })
 
@@ -68,6 +68,9 @@ export default function AssignMemberModal({
         setMemberSelected(userId)
     }
 
+    if (!job || loadingJob) {
+        return <Spinner></Spinner>
+    }
     return (
         <HeroModal
             isOpen={isOpen}
@@ -84,7 +87,7 @@ export default function AssignMemberModal({
                 <HeroModalHeader>
                     <div className="size-full">
                         <p className="text-lg font-semibold mb-2.5">
-                            {t('assignMemberTo', { jobNo: `#${job.no}` })}
+                            {t('assignMemberTo', { jobNo: `#${job?.no}` })}
                         </p>
                         {isAdmin && (
                             <div className="space-y-1.5">

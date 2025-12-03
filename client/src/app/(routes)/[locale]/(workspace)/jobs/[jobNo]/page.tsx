@@ -1,182 +1,221 @@
 'use client'
 
-import { use } from 'react'
-
-import { JobStatusChip, PageHeading, PaidChip } from '@/shared/components'
-import { useProfile } from '@/lib/queries/useAuth'
+import { Link } from '@/i18n/navigation'
 import { useJobByNo } from '@/lib/queries/useJob'
-import { addToast, Button, Input, Skeleton, Tooltip } from '@heroui/react'
-import { Image } from 'antd'
-import { Clock9, Copy, Settings } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { INTERNAL_URLS } from '@/lib/utils'
+import { JobStatusChip, PageHeading, PaidChip } from '@/shared/components'
+import { JobDetailView } from '@/shared/components/job-detail/JobDetailView'
+import CountdownTimer from '@/shared/components/ui/countdown-timer'
 import {
-    ActionsDropdown,
-    JobDetailSection,
-} from '../../project-center/@jobDetail/shared'
-import { DueToView } from '../../../../../../shared/components/project-center/DueToView'
-import { TJob } from '../../../../../../shared/types'
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+} from '@/shared/components/ui/hero-breadcrumbs'
+import {
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
+} from '@/shared/components/ui/hero-card'
+import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
+import { Divider, Skeleton, Spacer, Spinner } from '@heroui/react'
+import dayjs from 'dayjs'
+import lodash from 'lodash'
+import { CalendarDays, House, LibraryBig, UserRound } from 'lucide-react'
+import { use } from 'react'
+import { HeroButton } from '../../../../../../shared/components/ui/hero-button'
 
 export default function JobDetailPage({
     params,
 }: {
     params: Promise<{ jobNo: string }>
 }) {
-    const t = useTranslations()
-    const { isAdmin } = useProfile()
     const { jobNo } = use(params)
 
-    const { job, isLoading } = useJobByNo(jobNo)
-    const isEditMode = false
+    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
+
+    const isLoading = lodash.isEmpty(job) || loadingJob
+
     return (
         <>
-            <PageHeading title={t('projectCenter')} />
-            <div className="ml-2 pb-3">
-                {/* <PageBreadcrumbs jobNo={jobNo} /> */}
-            </div>
-            <div className="size-full bg-background py-4 px-6 rounded-md w-full h-[calc(100%-54px-32px-12px)] overflow-y-auto">
-                <>
-                    <div className="space-y-2">
-                        <div className="grid grid-cols-[1fr_170px] items-start gap-2">
-                            <div className="w-full space-y-2.5">
-                                <div className="w-full flex items-center justify-start gap-2">
-                                    <Skeleton
-                                        className="w-full h-full rounded-md"
-                                        isLoaded={!isLoading}
-                                    >
-                                        {!isEditMode ? (
-                                            <div className="flex items-center justify-start gap-4">
-                                                <Image
-                                                    preview={false}
-                                                    alt={job?.displayName}
-                                                    src={String(
-                                                        job?.status.thumbnailUrl
-                                                    )}
-                                                    rootClassName="size-20 rounded-full"
-                                                    className="!size-full rounded-full"
-                                                />
-                                                <div>
-                                                    <p className="align-bottom text-lg text-text-muted font-normal underline-offset-2 tracking-wider line-clamp-1">
-                                                        #{job?.no}
-                                                    </p>
-                                                    <p className="align-bottom text-3xl font-semibold">
-                                                        {job?.displayName}
-                                                    </p>
-                                                </div>
-                                            </div>
+            <div className="bg-background h-full flex flex-col">
+                {/* HEADING */}
+                <div className="border-b border-border-default">
+                    <PageHeading
+                        title="Project Center"
+                        classNames={{
+                            wrapper: 'py-3! pl-6 pr-3.5',
+                        }}
+                    />
+                </div>
+
+                <HeroBreadcrumbs className="pt-4! pb-3! pl-6 pr-3.5">
+                    <HeroBreadcrumbItem>
+                        <Link
+                            href={INTERNAL_URLS.home}
+                            className="text-text-subdued!"
+                        >
+                            <House size={16} />
+                        </Link>
+                    </HeroBreadcrumbItem>
+                    <HeroBreadcrumbItem>
+                        <Link
+                            href={INTERNAL_URLS.projectCenter}
+                            className="text-text-subdued!"
+                        >
+                            Jobs
+                        </Link>
+                    </HeroBreadcrumbItem>
+                    <HeroBreadcrumbItem>
+                        {isLoading ? (
+                            <Skeleton className="w-20 h-6 rounded-md" />
+                        ) : (
+                            <p className="font-medium text-text-7">#{job.no}</p>
+                        )}
+                    </HeroBreadcrumbItem>
+                </HeroBreadcrumbs>
+
+                <Spacer className="h-1" />
+
+                <div className="pl-5 pr-3.5">
+                    <HeroCard>
+                        <HeroCardBody className="flex flex-row gap-3">
+                            <HeroButton size="sm" variant="bordered">
+                                Finance
+                            </HeroButton>
+                            <HeroButton size="sm" variant="bordered">
+                                Finance
+                            </HeroButton>
+                            <HeroButton size="sm" variant="bordered">
+                                Finance
+                            </HeroButton>
+                        </HeroCardBody>
+                    </HeroCard>
+                </div>
+
+                <Spacer className="h-3" />
+
+                <div className="pl-5 pr-3.5">
+                    {/* MAIN CONTENT */}
+                    <HeroCard>
+                        <HeroCardHeader>
+                            <div className="flex flex-col gap-2">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        {isLoading ? (
+                                            <Skeleton className="w-20 h-6 rounded-md" />
                                         ) : (
-                                            <Input
-                                                value={job?.displayName}
-                                                style={{
-                                                    fontSize: 'var(--text-2xl)',
-                                                    fontWeight: '500',
-                                                    textWrap: 'wrap',
-                                                }}
-                                                variant="underlined"
-                                            />
+                                            <>
+                                                <span className="text-small font-semibold tracking-wider">
+                                                    #{job.no}
+                                                </span>
+                                                <HeroCopyButton
+                                                    textValue={job.no}
+                                                />
+                                            </>
                                         )}
-                                    </Skeleton>
-                                </div>
-                            </div>
-                            <div className="w-full flex items-center justify-end gap-2">
-                                {isAdmin && (
-                                    <Button
-                                        size="sm"
-                                        variant="solid"
-                                        startContent={<Settings size={12} />}
-                                        color="warning"
-                                    >
-                                        <p className="text-sm font-medium">
-                                            {t('edit')}
-                                        </p>
-                                    </Button>
-                                )}
-                                <Tooltip content="Copy link">
-                                    <Button
-                                        variant="light"
-                                        color="primary"
-                                        onPress={() => {
-                                            navigator.clipboard
-                                                .writeText(
-                                                    String(
-                                                        process.env
-                                                            .NEXT_PUBLIC_URL
-                                                    ) +
-                                                        '/' +
-                                                        'project-center' +
-                                                        '/' +
-                                                        job?.no
-                                                )
-                                                .then(() => {
-                                                    addToast({
-                                                        title: 'Copy job no successful',
-                                                        color: 'success',
-                                                    })
-                                                })
-                                                .catch((err) => {
-                                                    console.log(err)
-                                                    addToast({
-                                                        title: 'Copy job no fail',
-                                                        color: 'danger',
-                                                    })
-                                                })
-                                        }}
-                                        className="flex items-center justify-center"
-                                        size="sm"
-                                        isIconOnly
-                                    >
-                                        <Copy
-                                            size={18}
-                                            className="text-text-subdued"
-                                        />
-                                    </Button>
-                                </Tooltip>
-                                <Tooltip content="Actions">
-                                    <ActionsDropdown
-                                        data={job as TJob}
-                                        jobNo={jobNo as string}
-                                    />
-                                </Tooltip>
-                            </div>
-                        </div>
-                        <div className="mt-4 w-full flex items-center justify-between gap-3">
-                            <div className="flex items-center justify-start gap-4">
-                                <Skeleton
-                                    className="w-fit h-[24px] rounded-md"
-                                    isLoaded={!isLoading}
-                                >
-                                    <div className="w-full h-full">
-                                        {job?.status && (
+                                        {isLoading ? (
+                                            <Skeleton className="w-32 h-7 rounded-full" />
+                                        ) : (
                                             <JobStatusChip data={job.status} />
                                         )}
+                                        {isLoading ? (
+                                            <Skeleton className="w-24 h-7 rounded-full" />
+                                        ) : (
+                                            <PaidChip
+                                                status={
+                                                    Boolean(job.isPaid)
+                                                        ? 'paid'
+                                                        : 'unpaid'
+                                                }
+                                            />
+                                        )}
                                     </div>
-                                </Skeleton>
-                                <Skeleton
-                                    className="w-fit h-[24px] rounded-md"
-                                    isLoaded={!isLoading}
-                                >
-                                    <div className="w-full h-full">
-                                        <PaidChip
-                                            status={
-                                                job?.isPaid ? 'paid' : 'unpaid'
-                                            }
-                                        />
+                                    <div className="py-2 pr-2 w-full flex items-center group gap-2">
+                                        {isLoading ? (
+                                            <Skeleton className="w-md h-11 rounded-md" />
+                                        ) : (
+                                            <>
+                                                <h1 className="text-2xl font-bold text-text-default">
+                                                    {job.displayName}
+                                                </h1>
+                                                <HeroCopyButton
+                                                    textValue={job.displayName}
+                                                    className="hidden group-hover:block"
+                                                />
+                                            </>
+                                        )}
                                     </div>
-                                </Skeleton>
-                            </div>
-                            <div className="flex items-center justify-end gap-2">
-                                <div className="text-sm font-medium">
-                                    <DueToView
-                                        data={job?.dueAt ?? new Date()}
-                                    />
                                 </div>
-                                <Clock9 size={16} />
+
+                                <div className="flex gap-4 text-small text-default-500">
+                                    <div className="flex items-center gap-1">
+                                        {isLoading ? (
+                                            <Skeleton className="w-24 h-6 rounded-md" />
+                                        ) : (
+                                            <>
+                                                <UserRound size={16} />
+                                                <span>{job.clientName}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <Divider
+                                        orientation="vertical"
+                                        className="h-4 self-center"
+                                    />
+                                    <div className="flex items-center gap-1">
+                                        {isLoading ? (
+                                            <Skeleton className="w-24 h-6 rounded-md" />
+                                        ) : (
+                                            <>
+                                                <LibraryBig size={16} />
+                                                <span>{job.type?.code} - </span>
+                                                <span>
+                                                    {job.type?.displayName}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <Divider
+                                        orientation="vertical"
+                                        className="h-4 self-center"
+                                    />
+                                    <div className="flex items-center gap-1">
+                                        {isLoading ? (
+                                            <Skeleton className="w-56 h-6 rounded-md" />
+                                        ) : (
+                                            <>
+                                                <CalendarDays size={16} />
+                                                <div className="flex items-center justify-start gap-2">
+                                                    <p>Due on:</p>
+                                                    <CountdownTimer
+                                                        targetDate={dayjs(
+                                                            job.dueAt
+                                                        )}
+                                                        mode="text"
+                                                        hiddenUnits={['second']}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <hr className="text-text-muted my-8" />
-                    <JobDetailSection data={job} />
-                    <div className="h-32" />
-                </>
+                        </HeroCardHeader>
+                        <Divider />
+                        <HeroCardBody>
+                            {isLoading ? (
+                                <div className="min-h-96 w-full flex items-center justify-center">
+                                    <Spinner size="lg" />
+                                </div>
+                            ) : (
+                                <JobDetailView
+                                    data={job}
+                                    isLoading={loadingJob}
+                                />
+                            )}
+                        </HeroCardBody>
+                        <Spacer className="h-3" />
+                    </HeroCard>
+                </div>
             </div>
         </>
     )

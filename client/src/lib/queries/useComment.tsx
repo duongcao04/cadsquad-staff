@@ -63,7 +63,7 @@ export const useCommentById = (commentId?: string) => {
         const commentData = data
 
         if (lodash.isEmpty(commentData)) {
-            return {} as TComment
+            return undefined
         }
 
         return mapItem(commentData)

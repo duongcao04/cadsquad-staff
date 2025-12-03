@@ -2,7 +2,6 @@
 
 import { Link, redirect } from '@/i18n/navigation'
 import { useLogin } from '@/lib/queries'
-import { URLS } from '@/lib/utils'
 import { LoginInput, LoginInputSchema } from '@/lib/validationSchemas'
 import { useDevice, useSearchParam } from '@/shared/hooks'
 import { addToast, Button, Input } from '@heroui/react'
@@ -10,6 +9,7 @@ import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
+import { INTERNAL_URLS } from '../../../../../../lib/utils'
 
 export function LoginForm() {
     const t = useTranslations()
@@ -68,7 +68,7 @@ export function LoginForm() {
             <p className="text-center lg:text-left text-xs lg:text-base">
                 {t('toContinueTo')}
                 <Link
-                    href={URLS.home}
+                    href={INTERNAL_URLS.home}
                     className="text-blue-700 hover:underline underline-offset-2"
                 >
                     {' '}

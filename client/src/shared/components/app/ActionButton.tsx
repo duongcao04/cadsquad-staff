@@ -1,6 +1,7 @@
 'use client'
 
 import { MotionDiv } from '@/lib/motion'
+import { useProfile } from '@/lib/queries'
 import {
     CreateJobModal,
     CreateNotificationModal,
@@ -9,7 +10,6 @@ import {
     IconPeopleColorful,
     IconWorkColorful,
 } from '@/shared/components'
-import { useProfile } from '@/lib/queries'
 import {
     Button,
     Dropdown,
@@ -125,7 +125,7 @@ export function AdminCreateButton() {
                         }
                         size="sm"
                         isIconOnly={sidebarStatus === ESidebarStatus.COLLAPSE}
-                        className="text-sm text-white rounded-full bg-gradient-to-br from-primary-500 via-primary-700 to-primary-800 font-semibold"
+                        className="text-sm text-white rounded-full bg-linear-to-br from-primary-500 via-primary-700 to-primary-800 font-semibold"
                         style={{
                             paddingLeft:
                                 sidebarStatus === ESidebarStatus.EXPAND

@@ -8,6 +8,9 @@ CREATE TYPE "AccountProvider" AS ENUM ('GOOGLE', 'GITHUB', 'MICROSOFT', 'FACEBOO
 CREATE TYPE "JobPriority" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 
 -- CreateEnum
+CREATE TYPE "JobStatusSystemType" AS ENUM ('STANDARD', 'COMPLETED', 'TERMINATED');
+
+-- CreateEnum
 CREATE TYPE "ActivityType" AS ENUM ('CreateJob', 'ChangeStatus', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'UpdateInformation', 'DeleteJob');
 
 -- CreateEnum
@@ -251,6 +254,7 @@ CREATE TABLE "JobStatus" (
     "prevStatusOrder" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "systemType" "JobStatusSystemType" NOT NULL DEFAULT 'STANDARD',
 
     CONSTRAINT "JobStatus_pkey" PRIMARY KEY ("id")
 );
@@ -373,7 +377,7 @@ CREATE UNIQUE INDEX "JobStatus_code_key" ON "JobStatus"("code");
 CREATE UNIQUE INDEX "JobStatus_order_key" ON "JobStatus"("order");
 
 -- CreateIndex
-CREATE INDEX "JobStatus_order_idx" ON "JobStatus"("order");
+CREATE INDEX "JobStatus_order_systemType_idx" ON "JobStatus"("order", "systemType");
 
 -- CreateIndex
 CREATE INDEX "JobStatusHistory_jobId_idx" ON "JobStatusHistory"("jobId");

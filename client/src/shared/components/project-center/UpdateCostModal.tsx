@@ -54,7 +54,7 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
             await updateJobMutation(
                 {
                     jobId: data.id,
-                    updateJobInput: {
+                    data: {
                         staffCost: staffCostValue,
                         incomeCost: incomeCostValue,
                     },

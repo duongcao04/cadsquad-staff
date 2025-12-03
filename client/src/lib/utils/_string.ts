@@ -38,3 +38,8 @@ export function padDigits(value: number | string, options: PadDigitsOptions): st
 
 	}
 }
+
+export const removeTrailingSlash = (url: string | undefined): string | undefined => {
+	if (!url) return undefined;
+	return url.replace(/\/$/, '');
+};

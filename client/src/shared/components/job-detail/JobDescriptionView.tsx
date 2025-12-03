@@ -27,6 +27,7 @@ import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import HtmlReactParser from '../ui/htnl-react-parser'
 import { MarkToolbarButton } from '../ui/mark-toolbar-button'
 import { ToolbarButton } from '../ui/toolbar'
+import { HeroTooltip } from '../ui/hero-tooltip'
 
 type Props = {
     job: TJob
@@ -113,31 +114,38 @@ export default function JobDescriptionView({ job }: Props) {
                                 </HeroButton>
                             </div>
                         ) : (
-                            <HeroButton
-                                isIconOnly
-                                className="size-8.5! aspect-square!"
-                                variant="light"
-                                onPress={() => {
-                                    setIsEditable(true)
-                                    if (Boolean(inputValue)) {
-                                        if (job.description) {
-                                            const slateValue =
-                                                editor.api.html.deserialize({
-                                                    element: job.description,
-                                                })
-                                            setInputValue(slateValue as Value)
-                                            editor.tf.setValue(
-                                                slateValue as Value
-                                            )
+                            <HeroTooltip content="Edit">
+                                <HeroButton
+                                    isIconOnly
+                                    className="size-8.5! aspect-square!"
+                                    variant="light"
+                                    onPress={() => {
+                                        setIsEditable(true)
+                                        if (Boolean(inputValue)) {
+                                            if (job.description) {
+                                                const slateValue =
+                                                    editor.api.html.deserialize(
+                                                        {
+                                                            element:
+                                                                job.description,
+                                                        }
+                                                    )
+                                                setInputValue(
+                                                    slateValue as Value
+                                                )
+                                                editor.tf.setValue(
+                                                    slateValue as Value
+                                                )
+                                            }
                                         }
-                                    }
-                                }}
-                            >
-                                <Pencil
-                                    size={14}
-                                    className="text-text-subdued"
-                                />
-                            </HeroButton>
+                                    }}
+                                >
+                                    <Pencil
+                                        size={14}
+                                        className="text-text-subdued"
+                                    />
+                                </HeroButton>
+                            </HeroTooltip>
                         )}
                     </>
                 ) : (

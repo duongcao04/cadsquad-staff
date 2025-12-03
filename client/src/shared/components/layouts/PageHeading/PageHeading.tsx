@@ -34,7 +34,7 @@ export function PageHeading({
                     </div>
                     {breadcrumbs && (
                         <div className="h-full flex items-end justify-start text-text-muted">
-                            <div className="w-[1px] h-5 ml-8 mr-6 bg-text-disabled"></div>
+                            <div className="w-px h-5 ml-8 mr-6 bg-text-disabled"></div>
                             {breadcrumbs}
                         </div>
                     )}

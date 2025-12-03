@@ -1,3 +1,4 @@
+import { JobStatusSystemTypeEnum } from "../enums/_job-status-system-type.enum"
 import { TJob } from "../types"
 
 /**
@@ -40,6 +41,15 @@ export interface IJobStatusResponse {
 	 * @type {number}
 	 */
 	code: string
+
+	/**
+	 * Định nghĩa các nhóm logic hệ thống quan tâm
+	 * @type {JobStatusSystemTypeEnum} DEFAULT(STANDARD)
+	 * STANDARD // Trạng thái bình thường (To do, In Progress...)
+	 * COMPLETED // Đã làm xong việc (nhưng chưa đóng hồ sơ)
+	 * TERMINATED // Kết thúc vòng đời (Finished, Cancelled, Closed...)
+	 */
+	systemType: JobStatusSystemTypeEnum
 
 	/**
 	 * An optional icon identifier to be displayed with the status.

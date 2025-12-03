@@ -1,18 +1,17 @@
 'use client'
 
-import { Button, Kbd, useDisclosure } from '@heroui/react'
-import { Layout } from 'antd'
-import { CircleHelpIcon, Search } from 'lucide-react'
-
 import { MotionButton } from '@/lib/motion'
 import { CadsquadLogo } from '@/shared/components'
+import { Button, Kbd, useDisclosure } from '@heroui/react'
+import { Layout } from 'antd'
+import hotkeys from 'hotkeys-js'
+import { CircleHelpIcon, Search } from 'lucide-react'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
+import { useEffect } from 'react'
 import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
-import { useEffect } from 'react'
-import hotkeys from 'hotkeys-js'
 
 const { Header: AntHeader } = Layout
 
@@ -71,7 +70,7 @@ export const Header = () => {
                             initial="init"
                             animate="animate"
                             whileHover="hover"
-                            className="max-w-[500px] border-[1px] border-border rounded-full bg-text-fore1 cursor-pointer"
+                            className="max-w-[500px] border-px border-border rounded-full bg-text-fore1 cursor-pointer"
                             onClick={onOpen}
                         >
                             <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">

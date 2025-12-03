@@ -1,16 +1,13 @@
 'use client'
 
+import { TJobFiltersInput, TJobQueryInput } from '@/lib/validationSchemas'
 import ProjectCenterTableView from '@/shared/components/project-center/ProjectCenterTableView'
 import TableContextMenu from '@/shared/components/project-center/TableContextMenu'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { useSearchParam } from '@/shared/hooks'
 import { projectCenterStore } from '@/shared/stores'
+import { TJob } from '@/shared/types'
 import React, { use, useEffect } from 'react'
-import {
-    TJobFiltersInput,
-    TJobQueryInput,
-} from '../../../../../../lib/validationSchemas'
-import { TJob } from '../../../../../../shared/types'
 
 export type JobQueryParams = Omit<TJobQueryInput, 'hideFinishItems'>
 export type JobFilterParams = TJobFiltersInput

@@ -1,22 +1,56 @@
-import { notificationApi } from '@/lib/api'
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
-import { ApiResponse, axiosClient } from '@/lib/axios'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { notificationApi } from '@/lib/api'
+import { axiosClient } from '@/lib/axios'
 import {
     TCreateNotificationInput,
     TUpdateNotificationInput,
-} from '../validationSchemas'
+} from '@/lib/validationSchemas'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import {
+    NotificationStatusEnum,
+    NotificationTypeEnum,
+} from '../../shared/enums'
+import { IUserNotificationResponse } from '../../shared/interfaces'
+import { TUserNotification } from '../../shared/types'
+
+export const mapUserNotification = (
+    item: IUserNotificationResponse
+): TUserNotification => {
+    return {
+        id: item.id,
+        title: item.title ?? '',
+        content: item.content ?? '',
+        status: item.status ?? NotificationStatusEnum.UNSEEN,
+        type: item.type ?? NotificationTypeEnum.INFO,
+        user: item.user,
+        imageUrl: item.imageUrl ?? null,
+        redirectUrl: item.redirectUrl ?? null,
+        sender: item.sender ?? null,
+        updatedAt: new Date(item.updatedAt),
+        createdAt: new Date(item.createdAt),
+    }
+}
 
 export const useNotifications = () => {
     const { data, isFetching, isLoading, refetch } = useQuery({
         queryKey: ['notifications'],
-        queryFn: () =>
-            axiosClient.get<ApiResponse<Notification[]>>('notifications'),
+        queryFn: () => notificationApi.findAll(),
         select: (res) => res.data.result,
     })
 
+    const notifications = useMemo(() => {
+        const notificationsData = data
+
+        if (!Array.isArray(notificationsData)) {
+            return []
+        }
+
+        return notificationsData.map((item) => mapUserNotification(item))
+    }, [data])
+
     return {
-        data,
+        data: notifications ?? [],
         isLoading: isLoading || isFetching,
         refetch,
     }

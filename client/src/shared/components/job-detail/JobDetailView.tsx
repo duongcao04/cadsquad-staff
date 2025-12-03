@@ -1,12 +1,11 @@
 import {
     Avatar,
-    AvatarGroup,
     Chip,
     Divider,
     Spacer,
     Tab,
     Tabs,
-    Tooltip,
+    useDisclosure,
 } from '@heroui/react'
 import {
     CircleDollarSign,
@@ -14,6 +13,7 @@ import {
     FileText,
     Link as IconLink,
     MessageSquare,
+    Pencil,
 } from 'lucide-react'
 import React from 'react'
 import { optimizeCloudinary } from '../../../lib/cloudinary'
@@ -27,171 +27,199 @@ import JobAttachmentsView from './JobAttachmentsView'
 import JobCommentsView from './JobCommentsView'
 import JobDescriptionView from './JobDescriptionView'
 import JobAssigneesView from './JobAssigneesView'
+import UpdateCostModal from '../project-center/UpdateCostModal'
+import { useProfile } from '../../../lib/queries'
+import { HeroTooltip } from '../ui/hero-tooltip'
+import { HeroButton } from '../ui/hero-button'
 
 interface JobDetailProps {
     data: TJob
     isLoading?: boolean
 }
-export const JobDetailView: React.FC<JobDetailProps> = ({
-    data: job,
-    isLoading = false,
-}) => {
+export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
+    const { isAdmin } = useProfile()
+    const { isOpen, onClose, onOpen } = useDisclosure({ id: 'UpdateCostModal' })
     return (
-        <div className="w-full h-full flex flex-col gap-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* LEFT COLUMN (Details & Tabs) */}
-                <div className="lg:col-span-2 flex flex-col gap-4">
-                    <Tabs
-                        aria-label="Job Details"
-                        variant="underlined"
-                        color="primary"
-                    >
-                        {/* TAB: OVERVIEW */}
-                        <Tab
-                            key="overview"
-                            title={
-                                <div className="flex items-center gap-2">
-                                    <FileText size={16} />
-                                    <span>Overview</span>
-                                </div>
-                            }
+        <>
+            <UpdateCostModal data={job} isOpen={isOpen} onClose={onClose} />
+            <div className="w-full h-full flex flex-col gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* LEFT COLUMN (Details & Tabs) */}
+                    <div className="lg:col-span-2 flex flex-col gap-4">
+                        <Tabs
+                            aria-label="Job Details"
+                            variant="underlined"
+                            color="primary"
                         >
-                            <ScrollArea className="size-full h-full!">
-                                <ScrollBar orientation="vertical" />
-                                <JobDescriptionView job={job} />
-                                <Spacer className="h-4" />
-                                <JobAssigneesView jobId={job.id} />
+                            {/* TAB: OVERVIEW */}
+                            <Tab
+                                key="overview"
+                                title={
+                                    <div className="flex items-center gap-2">
+                                        <FileText size={16} />
+                                        <span>Overview</span>
+                                    </div>
+                                }
+                            >
+                                <ScrollArea className="size-full h-full!">
+                                    <ScrollBar orientation="vertical" />
+                                    <JobDescriptionView job={job} />
+                                    <Spacer className="h-4" />
+                                    <JobAssigneesView
+                                        jobId={job.id}
+                                        jobNo={job.no}
+                                    />
 
-                                <Divider className="mt-5" />
+                                    <Divider className="mt-5" />
 
-                                <HeroCard className="shadow-none border-none px-0! py-0!">
-                                    <HeroCardHeader>
-                                        <h3 className="text-sm uppercase">
-                                            Activity logs
-                                        </h3>
-                                    </HeroCardHeader>
-                                    <HeroCardBody>
-                                        <JobActivityHistory
-                                            logs={job.activityLog}
-                                        />
-                                    </HeroCardBody>
-                                </HeroCard>
-                            </ScrollArea>
-                        </Tab>
+                                    <HeroCard className="shadow-none border-none px-0! py-0!">
+                                        <HeroCardHeader>
+                                            <h3 className="text-sm uppercase">
+                                                Activity logs
+                                            </h3>
+                                        </HeroCardHeader>
+                                        <HeroCardBody>
+                                            <JobActivityHistory
+                                                logs={job.activityLog}
+                                            />
+                                        </HeroCardBody>
+                                    </HeroCard>
+                                </ScrollArea>
+                            </Tab>
 
-                        {/* TAB: ATTACHMENTS */}
-                        <Tab
-                            key="attachments"
-                            title={
-                                <div className="flex items-center gap-2">
-                                    <IconLink size={16} />
-                                    <span>Attachments</span>
-                                    <Chip size="sm" variant="flat">
-                                        {job.attachmentUrls.length}
-                                    </Chip>
+                            {/* TAB: ATTACHMENTS */}
+                            <Tab
+                                key="attachments"
+                                title={
+                                    <div className="flex items-center gap-2">
+                                        <IconLink size={16} />
+                                        <span>Attachments</span>
+                                        <Chip size="sm" variant="flat">
+                                            {job.attachmentUrls?.length}
+                                        </Chip>
+                                    </div>
+                                }
+                            >
+                                <JobAttachmentsView data={job.attachmentUrls} />
+                            </Tab>
+
+                            {/* TAB: COMMENTS */}
+                            <Tab
+                                key="comments"
+                                title={
+                                    <div className="flex items-center gap-2">
+                                        <MessageSquare size={16} />
+                                        <span>Comments</span>
+                                        <Chip size="sm" variant="flat">
+                                            {job.comments?.length}
+                                        </Chip>
+                                    </div>
+                                }
+                            >
+                                <ScrollArea className="size-full h-full!">
+                                    <ScrollBar orientation="vertical" />
+                                    <ScrollBar orientation="horizontal" />
+                                    <JobCommentsView job={job} />
+                                </ScrollArea>
+                            </Tab>
+                        </Tabs>
+                    </div>
+
+                    {/* RIGHT COLUMN (Sidebar Info) */}
+                    <div className="flex flex-col gap-4">
+                        {/* Financial Card */}
+                        <HeroCard className="border border-default-200">
+                            <HeroCardHeader className="justify-between py-1">
+                                <div className="flex items-center justify-start gap-1.5">
+                                    <CircleDollarSign size={16} />
+                                    <h3 className="text-sm uppercase">Cost</h3>
                                 </div>
-                            }
-                        >
-                            <JobAttachmentsView data={job.attachmentUrls} />
-                        </Tab>
-
-                        {/* TAB: COMMENTS */}
-                        <Tab
-                            key="comments"
-                            title={
-                                <div className="flex items-center gap-2">
-                                    <MessageSquare size={16} />
-                                    <span>Comments</span>
-                                    <Chip size="sm" variant="flat">
-                                        {job.comments.length}
-                                    </Chip>
-                                </div>
-                            }
-                        >
-                            <ScrollArea className="size-full h-full!">
-                                <ScrollBar orientation="vertical" />
-                                <ScrollBar orientation="horizontal" />
-                                <JobCommentsView job={job} />
-                            </ScrollArea>
-                        </Tab>
-                    </Tabs>
-                </div>
-
-                {/* RIGHT COLUMN (Sidebar Info) */}
-                <div className="flex flex-col gap-4">
-                    {/* Financial Card */}
-                    <HeroCard className="border border-default-200">
-                        <HeroCardHeader>
-                            <CircleDollarSign size={16} />
-                            <h3 className="text-sm uppercase">Cost</h3>
-                        </HeroCardHeader>
-                        <HeroCardBody className="gap-4">
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-text-subdued">
-                                        Income
-                                    </span>
-                                    <span className="font-semibold text-currency">
-                                        {currencyFormatter(job.incomeCost)}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-text-subdued">
-                                        Staff Cost
-                                    </span>
-                                    <span className="font-semibold text-currency">
-                                        {currencyFormatter(
-                                            job.staffCost,
-                                            'Vietnamese'
-                                        )}
-                                    </span>
-                                </div>
-                                <Divider className="my-1" />
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-text-subdued">
-                                        Payment channel
-                                    </span>
-                                    <div className="text-right">
+                                {isAdmin && (
+                                    <HeroTooltip content="Edit">
+                                        <HeroButton
+                                            isIconOnly
+                                            className="size-8.5! aspect-square!"
+                                            variant="light"
+                                            onPress={onOpen}
+                                        >
+                                            <Pencil
+                                                size={14}
+                                                className="text-text-subdued"
+                                            />
+                                        </HeroButton>
+                                    </HeroTooltip>
+                                )}
+                            </HeroCardHeader>
+                            <HeroCardBody className="gap-4">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-text-subdued">
+                                            Income
+                                        </span>
                                         <span className="font-semibold text-currency">
-                                            {job.paymentChannel.displayName}
+                                            {currencyFormatter(job.incomeCost)}
                                         </span>
                                     </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-text-subdued">
+                                            Staff Cost
+                                        </span>
+                                        <span className="font-semibold text-currency">
+                                            {currencyFormatter(
+                                                job.staffCost,
+                                                'Vietnamese'
+                                            )}
+                                        </span>
+                                    </div>
+                                    <Divider className="my-1" />
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-text-subdued">
+                                            Payment channel
+                                        </span>
+                                        <div className="text-right">
+                                            <span className="font-semibold text-currency">
+                                                {job.paymentChannel.displayName}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </HeroCardBody>
-                    </HeroCard>
+                            </HeroCardBody>
+                        </HeroCard>
 
-                    {/* Meta Info Card */}
-                    <HeroCard className="border border-border">
-                        <HeroCardHeader>
-                            <CirclePlus size={16} />
-                            <h3 className="text-sm uppercase">Created by</h3>
-                        </HeroCardHeader>
-                        <HeroCardBody className="gap-4">
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-start gap-3">
-                                    <Avatar
-                                        src={optimizeCloudinary(
-                                            job.createdBy.avatar
-                                        )}
-                                    />
-                                    <p>{job.createdBy.displayName}</p>
+                        {/* Meta Info Card */}
+                        <HeroCard className="border border-border">
+                            <HeroCardHeader>
+                                <CirclePlus size={16} />
+                                <h3 className="text-sm uppercase">
+                                    Created by
+                                </h3>
+                            </HeroCardHeader>
+                            <HeroCardBody className="gap-4">
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-start gap-3">
+                                        <Avatar
+                                            src={optimizeCloudinary(
+                                                job.createdBy.avatar
+                                            )}
+                                        />
+                                        <p>{job.createdBy.displayName}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-text-subdued">
+                                            Create at:
+                                        </p>
+                                        <p className="text-sm text-text-default font-semibold">
+                                            {dateFormatter(job.createdAt, {
+                                                format: 'fullShort',
+                                            })}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-text-subdued">
-                                        Create at:
-                                    </p>
-                                    <p className="text-sm text-text-default font-semibold">
-                                        {dateFormatter(job.createdAt, {
-                                            format: 'fullShort',
-                                        })}
-                                    </p>
-                                </div>
-                            </div>
-                        </HeroCardBody>
-                    </HeroCard>
+                            </HeroCardBody>
+                        </HeroCard>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }

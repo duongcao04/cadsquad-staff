@@ -60,7 +60,7 @@ export const useJobStatusDetail = (statusId?: string) => {
         const jobData = data
 
         if (lodash.isEmpty(jobData)) {
-            return {} as TJobStatus
+            return  undefined
         }
 
         return mapItem(jobData)
@@ -91,7 +91,7 @@ export const useJobStatusByOrder = (orderNumber?: number | null) => {
         const jobData = data
 
         if (lodash.isEmpty(jobData)) {
-            return {} as TJobStatus
+            return undefined
         }
 
         return mapItem(jobData)

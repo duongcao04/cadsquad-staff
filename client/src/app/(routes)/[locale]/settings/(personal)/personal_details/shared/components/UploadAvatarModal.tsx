@@ -1,8 +1,9 @@
 'use client'
 
 import { useResetPasswordMutation } from '@/lib/queries'
-import { handleCopy, HeroButton, PasswordInput } from '@/shared/components'
-import { User } from '@/shared/interfaces'
+import { handleCopy, PasswordInput } from '@/shared/components'
+import { HeroButton } from '@/shared/components/ui/hero-button'
+import { TUser } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -21,7 +22,7 @@ type Props = {
     isOpen: boolean
     onClose: () => void
     isLoading?: boolean
-    data?: User
+    data?: TUser
 }
 export default function UploadAvatarModal({ isOpen, onClose, data }: Props) {
     const [resetOption, setResetOption] = React.useState('automatic')

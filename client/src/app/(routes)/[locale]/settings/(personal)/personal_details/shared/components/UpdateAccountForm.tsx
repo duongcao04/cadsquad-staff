@@ -4,27 +4,16 @@ import { Link } from '@/i18n/navigation'
 import { userApi } from '@/lib/api'
 import { useProfile, useUpdateUserMutation } from '@/lib/queries'
 import { IMAGES } from '@/lib/utils'
-import { UpdateUserInput } from '@/lib/validationSchemas'
-import {
-    addToast,
-    Button,
-    Input,
-    InputProps,
-    Skeleton,
-    useDisclosure,
-} from '@heroui/react'
+import { TUpdateUserInput } from '@/lib/validationSchemas'
+import { addToast, Button, Input, InputProps, Skeleton } from '@heroui/react'
 import { Image } from 'antd'
 import { useFormik } from 'formik'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
-import UploadAvatarModal from './UploadAvatarModal'
 
 export function UpdateAccountForm() {
     const t = useTranslations('settings')
 
-    const { isOpen, onOpen, onClose } = useDisclosure({
-        id: 'UploadAvatarModal',
-    })
     const { isAdmin } = useProfile()
     const { mutateAsync: updateUserMutate, isPending: isUpdatingUser } =
         useUpdateUserMutation()
@@ -40,7 +29,7 @@ export function UpdateAccountForm() {
         }
         return phoneNum
     }
-    const initialValues = useMemo<UpdateUserInput>(
+    const initialValues = useMemo<TUpdateUserInput>(
         () => ({
             avatar: profile?.avatar ?? IMAGES.emptyAvatar,
             departmentId: profile?.department?.id ?? '',
@@ -53,7 +42,7 @@ export function UpdateAccountForm() {
         [profile]
     )
 
-    const formik = useFormik<UpdateUserInput>({
+    const formik = useFormik<TUpdateUserInput>({
         initialValues,
         enableReinitialize: true,
         onSubmit(values) {
@@ -89,9 +78,8 @@ export function UpdateAccountForm() {
 
     return (
         <>
-            <UploadAvatarModal />
             <form onSubmit={formik.handleSubmit} className="space-y-8">
-                <div className="size-full border-[1px] border-text-muted rounded-xl px-6 pt-4 pb-7">
+                <div className="size-full border-px border-text-muted rounded-xl px-6 pt-4 pb-7">
                     <h2 className="text-base font-semibold">
                         {t('generalInformation')}
                     </h2>

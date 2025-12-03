@@ -134,6 +134,15 @@ export class JobController {
     return this.jobService.rescheduleJob(id, userPayload.sub, data)
   }
 
+  @Patch(':id/mark-paid')
+  @HttpCode(200)
+  @ResponseMessage('Mark as paid job successfully')
+  @UseGuards(AdminGuard, JwtGuard)
+  async markPaid(@Req() request: Request, @Param('id') id: string, @Body() data: RescheduleJobDto) {
+    const userPayload: TokenPayload = await request['user']
+    return this.jobService.markPaid(id, userPayload.sub)
+  }
+
   @Post('bulk/change-status')
   @HttpCode(200)
   @ResponseMessage('Bulk change status successfully')

@@ -1,14 +1,15 @@
 'use client'
 
-import { cn, handleCopy } from '@/lib/utils'
+import { baseUrl, cn, handleCopy } from '@/lib/utils'
 import { Button, ButtonProps } from '@heroui/react'
 import { CheckCheck, Copy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 
 type Props = ButtonProps & {
     textValue: string
+    replaceLocale?: boolean
     iconSize?: number
     iconClassName?: string
     onCopySuccess?: () => void
@@ -16,18 +17,30 @@ type Props = ButtonProps & {
 
 export default function HeroCopyButton({
     textValue,
+    replaceLocale = false,
     iconSize = 12,
     iconClassName,
     onCopySuccess,
     ...props
 }: Props) {
+    const locale = useLocale()
     const t = useTranslations()
     const [copied, setCopied] = useState(false)
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const onCopy = async () => {
         try {
-            handleCopy(textValue, onCopySuccess)
+            let copyValue = textValue
+            if (replaceLocale) {
+                if (textValue.includes(baseUrl)) {
+                    // Thêm $locale ngay sau baseUrl
+                    copyValue = copyValue.replace(
+                        baseUrl,
+                        `${baseUrl}/${locale}`
+                    )
+                }
+            }
+            handleCopy(copyValue, onCopySuccess)
             setCopied(true)
 
             // clear trước khi set lại, tránh chồng timer khi spam click

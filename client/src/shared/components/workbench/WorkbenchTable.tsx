@@ -1,12 +1,8 @@
 'use client'
 
+import { optimizeCloudinary } from '@/lib/cloudinary'
 import { envConfig } from '@/lib/config'
-import {
-    currencyFormatter,
-    IMAGES,
-    JOB_COLUMNS,
-    JOB_STATUS_CODES,
-} from '@/lib/utils'
+import { currencyFormatter, IMAGES, JOB_COLUMNS } from '@/lib/utils'
 import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { useSearchParam } from '@/shared/hooks'
@@ -35,17 +31,18 @@ import lodash from 'lodash'
 import { EyeIcon, SearchIcon, UserRoundPlus } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import React, { useState } from 'react'
+import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import {
     pCenterTableStore,
     projectCenterStore,
     workbenchStore,
 } from '../../stores'
+import JobDetailDrawer from '../job-detail/JobDetailDrawer'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
-import { optimizeCloudinary } from '../../../lib/cloudinary'
 
 const ROW_PER_PAGE_OPTIONS = [
     { displayName: '5 items', value: 5 },
@@ -142,6 +139,10 @@ export default function WorkbenchTable({
         setSearchParams({ p: page.toString() })
     }
 
+    const onViewDetail = (jobNo: string) => {
+        setViewDetailNo(jobNo)
+        onOpenJobDetailDrawer()
+    }
     const headerColumns = React.useMemo(() => {
         const visibleColumns = [
             'thumbnailUrl',
@@ -355,15 +356,17 @@ export default function WorkbenchTable({
                 case 'isPaid':
                     return <PaymentStatusDropdown jobData={data} />
                 case 'dueAt': {
+                    const isPaused =
+                        data.status.systemType ===
+                            JobStatusSystemTypeEnum.TERMINATED ||
+                        data.status.systemType ===
+                            JobStatusSystemTypeEnum.COMPLETED
                     const targetDate = dayjs(data.dueAt)
                     return (
                         <CountdownTimer
                             targetDate={targetDate}
                             hiddenUnits={['second', 'year']}
-                            paused={
-                                data.status.code === JOB_STATUS_CODES.finish ||
-                                data.status.code === JOB_STATUS_CODES.completed
-                            }
+                            paused={isPaused}
                             className="text-right!"
                         />
                     )
@@ -386,9 +389,7 @@ export default function WorkbenchTable({
                                     variant="light"
                                     size="sm"
                                     className="size-8! flex items-center justify-center"
-                                    onPress={() => {
-                                        setViewDetailNo(data.no)
-                                    }}
+                                    onPress={() => onViewDetail(data.no)}
                                 >
                                     <p className="inline-flex items-center leading-none">
                                         <EyeIcon
@@ -416,14 +417,14 @@ export default function WorkbenchTable({
 
     return (
         <>
-            {/* <JobDetailDrawer
-                jobNo={viewDetailNo ?? ''}
+            <JobDetailDrawer
+                jobNo={viewDetailNo ?? undefined}
                 isOpen={Boolean(viewDetailNo) && isOpenJobDetailDrawer}
                 onClose={() => {
                     onCloseJobDetailDrawer()
                     setAssignMemberTo(null)
                 }}
-            /> */}
+            />
             <AssignMemberModal
                 jobNo={assignMemberTo ?? ''}
                 isOpen={

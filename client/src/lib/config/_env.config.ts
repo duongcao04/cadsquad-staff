@@ -1,4 +1,5 @@
 import * as yup from 'yup'
+import { removeTrailingSlash } from '../utils'
 
 const configSchema = yup.object({
     NEXT_PUBLIC_APP_TITLE: yup.string(),
@@ -13,9 +14,11 @@ function configProject() {
         const config = configSchema.validateSync({
             NEXT_PUBLIC_APP_TITLE: process.env.NEXT_PUBLIC_APP_TITLE,
             NEXT_PUBLIC_APP_VERSION: process.env.NEXT_PUBLIC_APP_VERSION,
-            NEXT_PUBLIC_API_ENDPOINT: process.env.NEXT_PUBLIC_API_ENDPOINT,
-            NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
-            NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
+
+            // Clean usage
+            NEXT_PUBLIC_API_ENDPOINT: removeTrailingSlash(process.env.NEXT_PUBLIC_API_ENDPOINT),
+            NEXT_PUBLIC_URL: removeTrailingSlash(process.env.NEXT_PUBLIC_URL),
+            NEXT_PUBLIC_WS_URL: removeTrailingSlash(process.env.NEXT_PUBLIC_WS_URL),
         })
         return config
     } catch (error) {

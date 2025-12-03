@@ -4,11 +4,17 @@ import { JobColumn, JobColumnKey } from "@/shared/types";
 
 export const LS_OIDC_REDIRECT_URI_KEY = "oidc:redirect_uri" as const;
 
-export const URLS = {
-	home: String(envConfig.NEXT_PUBLIC_URL),
-	projectCenterDetail: (jobNo: string) => [String(envConfig.NEXT_PUBLIC_URL), 'project-center', jobNo].join('/'),
+export const INTERNAL_URLS = {
+	home: envConfig.NEXT_PUBLIC_URL + '/',
+	projectCenter: envConfig.NEXT_PUBLIC_URL + '/' + 'project-center',
+	workbench: envConfig.NEXT_PUBLIC_URL + '/',
+	auth: envConfig.NEXT_PUBLIC_URL + '/' + 'auth',
+	profile: envConfig.NEXT_PUBLIC_URL + '/' + 'profile',
+	settings: envConfig.NEXT_PUBLIC_URL + '/' + 'settings',
+	getJobDetailUrl: (jobNo: string) => envConfig.NEXT_PUBLIC_URL + '/' + 'jobs' + '/' + jobNo,
 }
 
+export const baseUrl = envConfig.NEXT_PUBLIC_URL ?? "http://localhost"
 export const apiBaseUrl = envConfig.NEXT_PUBLIC_API_ENDPOINT
 	? `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/api`
 	: "https://testapi.appnavotar.com/api";

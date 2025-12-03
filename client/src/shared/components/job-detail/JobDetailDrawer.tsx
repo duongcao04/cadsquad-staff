@@ -1,12 +1,29 @@
-import { Button, Divider, Spacer } from '@heroui/react'
-import dayjs from 'dayjs'
-import { CalendarDays, LibraryBig, UserRound } from 'lucide-react'
+import { VietnamDateFormat } from '@/lib/dayjs'
 import {
     useChangeStatusMutation,
     useJobByNo,
     useJobStatusByOrder,
-} from '../../../lib/queries'
-import { PaidChip } from '../chips'
+} from '@/lib/queries'
+import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
+import {
+    addToast,
+    Button,
+    Divider,
+    Skeleton,
+    Spacer,
+    Spinner,
+} from '@heroui/react'
+import dayjs from 'dayjs'
+import lodash from 'lodash'
+import {
+    CalendarDays,
+    LibraryBig,
+    SquareArrowOutUpRight,
+    UserRound,
+} from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { TJobStatus } from '../../types'
+import { JobStatusChip, PaidChip } from '../chips'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import {
@@ -17,10 +34,8 @@ import {
     HeroDrawerHeader,
 } from '../ui/hero-drawer'
 import { JobDetailView } from './JobDetailView'
-import { lightenHexColor } from '../../../lib/utils'
-import { TJobStatus } from '../../types'
-import { VietnamDateFormat } from '../../../lib/dayjs'
-import { useTranslations } from 'next-intl'
+import { HeroTooltip } from '../ui/hero-tooltip'
+import { HeroButton } from '../ui/hero-button'
 
 type JobDetailDrawerProps = {
     isOpen: boolean
@@ -36,79 +51,165 @@ export default function JobDetailDrawer({
     const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
     const changeStatusMutation = useChangeStatusMutation()
 
+    const isLoading = lodash.isEmpty(job) || loadingJob
+
     const onChangeStatus = async (nextStatus: TJobStatus) => {
-        await changeStatusMutation.mutateAsync({
-            jobId: String(job.id),
-            data: {
-                fromStatusId: String(job?.status.id),
-                toStatusId: String(nextStatus.id),
-            },
-        })
+        if (!isLoading) {
+            await changeStatusMutation.mutateAsync({
+                jobId: String(job.id),
+                data: {
+                    fromStatusId: String(job?.status.id),
+                    toStatusId: String(nextStatus.id),
+                },
+            })
+        } else {
+            addToast({
+                title: 'Vui lòng đợi tải dữ liệu',
+            })
+        }
     }
 
     return (
         <HeroDrawer isOpen={Boolean(jobNo) && isOpen} onClose={onClose}>
             <HeroDrawerContent className="max-w-full lg:max-w-[50%] xl:max-w-[45%]">
-                <HeroDrawerHeader>
+                <HeroDrawerHeader className="flex items-start justify-between">
                     <div className="flex flex-col gap-2">
                         <div>
                             <div className="flex items-center gap-2">
-                                <span className="text-small font-semibold tracking-wider">
-                                    #{job.no}
-                                </span>
-                                <HeroCopyButton textValue={job.no} />
-                                <PaidChip
-                                    status={
-                                        Boolean(job.isPaid) ? 'paid' : 'unpaid'
-                                    }
-                                />
+                                {isLoading ? (
+                                    <Skeleton className="w-20 h-6 rounded-md" />
+                                ) : (
+                                    <>
+                                        <span className="text-small font-semibold tracking-wider">
+                                            #{job.no}
+                                        </span>
+                                        <HeroCopyButton textValue={job.no} />
+                                    </>
+                                )}
+                                {isLoading ? (
+                                    <Skeleton className="w-32 h-7 rounded-full" />
+                                ) : (
+                                    <JobStatusChip data={job.status} />
+                                )}
+                                {isLoading ? (
+                                    <Skeleton className="w-24 h-7 rounded-full" />
+                                ) : (
+                                    <PaidChip
+                                        status={
+                                            Boolean(job.isPaid)
+                                                ? 'paid'
+                                                : 'unpaid'
+                                        }
+                                    />
+                                )}
                             </div>
                             <div className="py-2 pr-2 w-full flex items-center group gap-2">
-                                <h1 className="text-2xl font-bold text-text-default">
-                                    {job.displayName}
-                                </h1>
-                                <HeroCopyButton
-                                    textValue={job.displayName}
-                                    className="hidden group-hover:block"
-                                />
+                                {isLoading ? (
+                                    <Skeleton className="w-md h-11 rounded-md" />
+                                ) : (
+                                    <>
+                                        <h1 className="text-2xl font-bold text-text-default">
+                                            {job.displayName}
+                                        </h1>
+                                        <HeroCopyButton
+                                            textValue={job.displayName}
+                                            className="hidden group-hover:block"
+                                        />
+                                    </>
+                                )}
                             </div>
                         </div>
 
                         <div className="flex gap-4 text-small text-default-500">
                             <div className="flex items-center gap-1">
-                                <UserRound size={16} />
-                                <span>{job.clientName}</span>
+                                {isLoading ? (
+                                    <Skeleton className="w-24 h-6 rounded-md" />
+                                ) : (
+                                    <>
+                                        <UserRound size={16} />
+                                        <span>{job.clientName}</span>
+                                    </>
+                                )}
                             </div>
                             <Divider
                                 orientation="vertical"
                                 className="h-4 self-center"
                             />
                             <div className="flex items-center gap-1">
-                                <LibraryBig size={16} />
-                                <span>{job.type?.code} - </span>
-                                <span>{job.type?.displayName}</span>
+                                {isLoading ? (
+                                    <Skeleton className="w-24 h-6 rounded-md" />
+                                ) : (
+                                    <>
+                                        <LibraryBig size={16} />
+                                        <span>{job.type?.code} - </span>
+                                        <span>{job.type?.displayName}</span>
+                                    </>
+                                )}
                             </div>
                             <Divider
                                 orientation="vertical"
                                 className="h-4 self-center"
                             />
                             <div className="flex items-center gap-1">
-                                <CalendarDays size={16} />
-                                <div className="flex items-center justify-start gap-2">
-                                    <p>Due on:</p>
-                                    <CountdownTimer
-                                        targetDate={dayjs(job.dueAt)}
-                                        mode="text"
-                                        hiddenUnits={['second']}
-                                    />
-                                </div>
+                                {isLoading ? (
+                                    <Skeleton className="w-56 h-6 rounded-md" />
+                                ) : (
+                                    <>
+                                        <CalendarDays size={16} />
+                                        <div className="flex items-center justify-start gap-2">
+                                            <p>Due on:</p>
+                                            <CountdownTimer
+                                                targetDate={dayjs(job.dueAt)}
+                                                mode="text"
+                                                hiddenUnits={['second']}
+                                            />
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
+                    </div>
+                    <div className="mr-8 flex items-center justify-end gap-2">
+                        {isLoading ? (
+                            <Skeleton className="size-11 rounded-md" />
+                        ) : (
+                            <HeroTooltip content="Open in new tab">
+                                <HeroButton
+                                    startContent={
+                                        <SquareArrowOutUpRight size={14} />
+                                    }
+                                    variant="ghost"
+                                    size="sm"
+                                >
+                                    Open in new tab
+                                </HeroButton>
+                            </HeroTooltip>
+                        )}
+                        {isLoading ? (
+                            <Skeleton className="size-11 rounded-md" />
+                        ) : (
+                            <HeroTooltip content={t('copyLink')}>
+                                <HeroCopyButton
+                                    textValue={INTERNAL_URLS.getJobDetailUrl(
+                                        job.no
+                                    )}
+                                    replaceLocale
+                                    className="size-8!"
+                                />
+                            </HeroTooltip>
+                        )}
+                        
                     </div>
                 </HeroDrawerHeader>
                 <Divider />
                 <HeroDrawerBody>
-                    <JobDetailView data={job} isLoading={loadingJob} />
+                    {isLoading ? (
+                        <div className="min-h-96 w-full flex items-center justify-center">
+                            <Spinner size="lg" />
+                        </div>
+                    ) : (
+                        <JobDetailView data={job} isLoading={loadingJob} />
+                    )}
                 </HeroDrawerBody>
                 <Spacer className="h-3" />
                 <Divider />
@@ -168,6 +269,11 @@ function ChangeStatusButton({
      * Fetch data
      */
     const { jobStatus } = useJobStatusByOrder(toStatusOrder)
+
+    if (!jobStatus) {
+        return <Spinner></Spinner>
+    }
+
     return (
         <Button
             color="danger"

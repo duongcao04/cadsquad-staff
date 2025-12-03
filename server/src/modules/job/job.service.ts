@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException
 } from '@nestjs/common'
-import { ActivityType, Job, Prisma, RoleEnum } from '@prisma/client'
+import { ActivityType, Job, JobStatusSystemType, Prisma, RoleEnum } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
@@ -558,50 +558,116 @@ export class JobService {
     }
   }
 
+  async markPaid(
+    jobId: string,
+    modifierId: string,
+  ): Promise<{ id: string; no: string }> {
+    if (!jobId) {
+      throw new BadRequestException('Job ID invalid');
+    }
+
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Tìm Job để check trạng thái hiện tại
+      const job = await tx.job.findUnique({
+        where: { id: jobId },
+        select: { id: true, no: true, isPaid: true },
+      });
+
+      if (!job) throw new NotFoundException('Job not found');
+
+      // 2. Check Logic: Nếu đã trả rồi -> Throw lỗi
+      if (job.isPaid) {
+        throw new BadRequestException('Job has already been paid');
+      }
+
+      // 3. Update: Mark to Paid
+      const updateJob = await tx.job.update({
+        where: { id: jobId },
+        data: {
+          isPaid: true,
+          paidAt: new Date(), // Nên lưu lại thời điểm thanh toán thực tế nếu DB có field này
+        },
+      });
+
+      // 4. Ghi log
+      await tx.jobActivityLog.create({
+        data: {
+          jobId: jobId,
+          previousValue: 'false',
+          currentValue: 'true',
+          modifiedById: modifierId,
+          fieldName: 'isPaid',
+          activityType: ActivityType.UpdateInformation,
+        },
+      });
+
+      return { id: updateJob.id, no: updateJob.no };
+    });
+  }
+
   async changeStatus(
     jobId: string,
     modifierId: string,
     data: ChangeStatusDto,
   ): Promise<{ id: string, no: string }> {
-    if (!jobId) {
-      throw new BadRequestException('Job ID invalid')
-    }
-    try {
-      const updated = await this.prisma.$transaction(async (tx) => {
-        // 1. Find job
-        const job = await tx.job.findUnique({
-          where: { id: jobId },
-          select: { statusId: true },
-        })
-        if (!job) throw new NotFoundException('Job not found')
+    if (!jobId) throw new BadRequestException('Job ID invalid');
 
-        const toStatus = await tx.jobStatus.findUnique({
-          where: { id: data.toStatusId }
-        })
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Find job (Cần lấy field completedAt hiện tại để check)
+      const job = await tx.job.findUnique({
+        where: { id: jobId },
+        // Không cần select cụ thể, lấy hết để có completedAt và statusId
+      });
 
-        // 2. Update job
-        const updateJob = await tx.job.update({
-          where: { id: jobId },
-          data: { statusId: data.toStatusId, completedAt: toStatus?.code === 'completed' ? new Date() : null, finishedAt: toStatus?.code === 'finish' ? new Date() : null, isPaid: toStatus?.code === 'finish' ? true : false },
-        })
+      if (!job) throw new NotFoundException('Job not found');
 
-        // 3. Create activity log
-        await tx.jobActivityLog.create({
-          data: {
-            jobId: jobId,
-            previousValue: data.fromStatusId,
-            currentValue: data.toStatusId,
-            modifiedById: modifierId,
-            fieldName: 'status',
-            activityType: ActivityType.ChangeStatus,
-          },
-        })
-        return updateJob.no
-      })
-      return { id: jobId, no: updated }
-    } catch (error) {
-      throw new InternalServerErrorException('Change status failed')
-    }
+      // 2. Get Target Status
+      const toStatus = await tx.jobStatus.findUnique({
+        where: { id: data.toStatusId },
+      });
+      if (!toStatus) throw new NotFoundException('Target status not found');
+
+      // 3. Xử lý Logic CompletedAt
+      let newCompletedAt: Date | null = null;
+
+      if (toStatus.systemType === JobStatusSystemType.COMPLETED) {
+        // Case 1: Chuyển sang Completed -> Luôn set thời gian hiện tại
+        newCompletedAt = new Date();
+      } else if (toStatus.systemType === JobStatusSystemType.TERMINATED) {
+        // Case 2: Chuyển sang Finish
+        // Logic: Nếu đã có completedAt cũ thì giữ nguyên. Nếu chưa (null) thì set Now (nhảy cóc).
+        newCompletedAt = job.completedAt ? job.completedAt : new Date();
+      }
+      // Case 3: Các trạng thái khác (Revision, In Progress) -> newCompletedAt vẫn là null (reset)
+
+      // 4. Xử lý Logic FinishedAt & IsPaid
+      const isTerminated = toStatus.systemType === JobStatusSystemType.TERMINATED;
+
+      // 5. Update Job
+      const updateJob = await tx.job.update({
+        where: { id: jobId },
+        data: {
+          statusId: data.toStatusId,
+          completedAt: newCompletedAt,             // Logic mới
+          finishedAt: isTerminated ? new Date() : null, // Logic cũ: Finish mới có finishedAt
+          isPaid: isTerminated ? true : false,          // Logic cũ
+        },
+      });
+
+      // 6. Create activity log
+      await tx.jobActivityLog.create({
+        data: {
+          jobId: jobId,
+          previousValue: data.fromStatusId,
+          currentValue: data.toStatusId,
+          modifiedById: modifierId,
+          fieldName: 'status',
+          activityType: ActivityType.ChangeStatus,
+        },
+      });
+
+      return { id: jobId, no: updateJob.no };
+    });
   }
 
   async bulkChangeStatus(

@@ -6,6 +6,8 @@ export const notificationApi = {
 	create: (data: TCreateNotificationInput) => {
 		return axiosClient.post<ApiResponse<IUserNotificationResponse>>('/v1/notifications', data)
 	},
+	// Get all user notification
+	// userId get from Authentication Header 
 	findAll: () => {
 		return axiosClient.get<ApiResponse<IUserNotificationResponse[]>>('/v1/notifications')
 	},

@@ -22,7 +22,7 @@ import { IJobActivityLogResponse, IJobResponse } from '../../shared/interfaces'
 import { TJob } from '../../shared/types'
 import { mapUser } from './useUser'
 
-const mapItem: (item: IJobResponse) => TJob = (item) => ({
+export const mapJob: (item: IJobResponse) => TJob = (item) => ({
     no: item.no,
     displayName: item.displayName,
     assignee: item.assignee ?? [],
@@ -59,6 +59,7 @@ const mapItem: (item: IJobResponse) => TJob = (item) => ({
     deletedAt: item.deletedAt ? new Date(item.deletedAt) : null,
     startedAt: new Date(item.startedAt),
 })
+
 export const useJobs = (
     params: TJobQueryWithFiltersInput = {
         hideFinishItems: 0,
@@ -101,7 +102,7 @@ export const useJobs = (
             return []
         }
 
-        return jobsData.map((item) => mapItem(item))
+        return jobsData.map((item) => mapJob(item))
     }, [data?.result?.data])
 
     return {
@@ -234,10 +235,10 @@ export const useJobByNo = (jobNo?: string) => {
         const jobData = data?.result
 
         if (lodash.isEmpty(jobData)) {
-            return {} as TJob
+            return undefined
         }
 
-        return mapItem(jobData)
+        return mapJob(jobData)
     }, [data?.result])
 
     return {

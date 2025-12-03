@@ -1,11 +1,11 @@
 'use client'
 
 import { useJobs } from '@/lib/queries'
-import WorkbenchTable from './WorkbenchTable'
+import { useStore } from '@tanstack/react-store'
 import { useEffect } from 'react'
 import { useSearchParam } from '../../hooks'
 import { workbenchStore } from '../../stores'
-import { useStore } from '@tanstack/react-store'
+import WorkbenchTable from './WorkbenchTable'
 
 export default function WorkbenchTableView() {
     const searchKeywords = useStore(

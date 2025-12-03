@@ -7,7 +7,6 @@ import {
     currencyFormatter,
     IMAGES,
     JOB_COLUMNS,
-    JOB_STATUS_CODES,
     USER_CONFIG_KEYS,
 } from '@/lib/utils'
 import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
@@ -39,6 +38,7 @@ import {
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
+import dayjs from 'dayjs'
 import lodash from 'lodash'
 import {
     Check,
@@ -59,12 +59,12 @@ import {
 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import React, { useState } from 'react'
+import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
+import { pCenterTableStore, projectCenterStore } from '../../stores'
+import CountdownTimer from '../ui/countdown-timer'
+import HeroCopyButton from '../ui/hero-copy-button'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
-import { pCenterTableStore, projectCenterStore } from '../../stores'
-import HeroCopyButton from '../ui/hero-copy-button'
-import dayjs from 'dayjs'
-import CountdownTimer from '../ui/countdown-timer'
 
 const ROW_PER_PAGE_OPTIONS = [
     { displayName: '5 items', value: 5 },
@@ -527,15 +527,17 @@ export default function ProjectCenterTable({
                         </div>
                     )
                 case 'dueAt': {
+                    const isPaused =
+                        data.status.systemType ===
+                            JobStatusSystemTypeEnum.TERMINATED ||
+                        data.status.systemType ===
+                            JobStatusSystemTypeEnum.COMPLETED
                     const targetDate = dayjs(data.dueAt)
                     return (
                         <CountdownTimer
                             targetDate={targetDate}
                             hiddenUnits={['second', 'year']}
-                            paused={
-                                data.status.code === JOB_STATUS_CODES.finish ||
-                                data.status.code === JOB_STATUS_CODES.completed
-                            }
+                            paused={isPaused}
                             className="text-right!"
                         />
                     )

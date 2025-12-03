@@ -1,5 +1,10 @@
 'use client'
 
+import { useRouter } from '@/i18n/navigation'
+import { cookie } from '@/lib/cookie'
+import { useNotifications } from '@/lib/queries/useNotification'
+import { authSocket } from '@/lib/socket'
+import { NotificationStatusEnum } from '@/shared/enums'
 import {
     addToast,
     Button,
@@ -11,14 +16,8 @@ import {
     Spinner,
 } from '@heroui/react'
 import { Bell } from 'lucide-react'
-
-import { useRouter } from '@/i18n/navigation'
-import { cookie } from '@/lib/cookie'
-import { authSocket } from '@/lib/socket'
-import { NotificationStatusEnum } from '@/shared/enums'
-import { Notification } from '@/shared/interfaces'
-import { useNotifications } from '@/lib/queries/useNotification'
 import { useEffect, useState } from 'react'
+import { TUserNotification } from '../../../types'
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { NotificationCard } from './NotificationCard'
 
@@ -26,9 +25,8 @@ export function NotificationDropdown() {
     const router = useRouter()
     const token = cookie.get('authentication')
     const { data: notifications, isLoading, refetch } = useNotifications()
-    const [newNotification, setNewNotification] = useState<Notification | null>(
-        null
-    )
+    const [newNotification, setNewNotification] =
+        useState<TUserNotification | null>(null)
 
     const countUnseen =
         notifications?.filter(
@@ -52,7 +50,7 @@ export function NotificationDropdown() {
                 shouldShowTimeoutProgress: true,
             })
         }
-    }, [newNotification])
+    }, [newNotification, refetch])
 
     return (
         <Dropdown placement="bottom-end">
