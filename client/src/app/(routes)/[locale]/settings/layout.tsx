@@ -1,5 +1,5 @@
 import { Header } from '@/shared/components'
-import { PersonalSettingSidebar } from './shared'
+import { PersonalSettingSidebar } from '@/shared/components/layouts/settings-sidebar/PersonalSettingsSidebar'
 
 export default async function SettingsLayout({
     children,
@@ -8,7 +8,7 @@ export default async function SettingsLayout({
 }) {
     return (
         <div id="settings-page" className="h-screen w-screen">
-            <div className="sticky top-0 w-full z-[99] h-[56px]">
+            <div className="sticky top-0 w-full z-99 h-14">
                 <Header />
             </div>
             <main className="size-full h-[calc(100vh-56px)] max-h-[calc(100vh-56px)]">

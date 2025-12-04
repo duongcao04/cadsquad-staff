@@ -187,7 +187,7 @@ export default function WorkbenchTable({
                 onValueChange={onSearchChange}
             />
         )
-    }, [data.length, hasSearchFilter, selectedKeys, searchValue])
+    }, [data.length, hasSearchFilter, selectedKeys, searchValue, isLoading])
 
     const bottomContent = React.useMemo(() => {
         return (
@@ -418,7 +418,7 @@ export default function WorkbenchTable({
     return (
         <>
             <JobDetailDrawer
-                jobNo={viewDetailNo ?? undefined}
+                jobNo={viewDetailNo ?? null}
                 isOpen={Boolean(viewDetailNo) && isOpenJobDetailDrawer}
                 onClose={() => {
                     onCloseJobDetailDrawer()

@@ -1,16 +1,21 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { RoleEnum } from "@prisma/client"
+import { ApiProperty } from '@nestjs/swagger'
+import { RoleEnum } from '@prisma/client'
+import { Expose } from 'class-transformer'
 
 export class TokenPayload {
-	@ApiProperty({ description: 'User ID (subject)' })
-	sub: string
+    @ApiProperty({ description: 'User ID (subject)' })
+    @Expose()
+    sub: string
 
-	@ApiProperty({ description: 'User email' })
-	email: string
+    @ApiProperty({ description: 'User email' })
+    @Expose()
+    email: string
 
-	@ApiProperty({ description: 'User role', enum: RoleEnum })
-	role: RoleEnum
+    @ApiProperty({ description: 'User role', enum: RoleEnum })
+    @Expose()
+    role: RoleEnum
 
-	@ApiProperty({ description: 'Issued at timestamp' })
-	iat: string
+    @ApiProperty({ description: 'Issued at timestamp' })
+    @Expose()
+    iat: string
 }

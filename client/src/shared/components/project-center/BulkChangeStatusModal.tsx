@@ -2,7 +2,6 @@
 
 import { ApiError } from '@/lib/axios'
 import { useBulkChangeStatusMutation, useJobStatuses } from '@/lib/queries'
-import { HeroSelect, HeroSelectItem } from '@/shared/components'
 import {
     addToast,
     Button,
@@ -16,6 +15,7 @@ import { useStore } from '@tanstack/react-store'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { pCenterTableStore } from '../../stores'
+import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 
 type Props = {
     isOpen: boolean

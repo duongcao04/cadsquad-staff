@@ -40,7 +40,7 @@ import { HeroButton } from '../ui/hero-button'
 type JobDetailDrawerProps = {
     isOpen: boolean
     onClose: () => void
-    jobNo?: string
+    jobNo: string | null
 }
 export default function JobDetailDrawer({
     jobNo,
@@ -48,7 +48,7 @@ export default function JobDetailDrawer({
     onClose,
 }: JobDetailDrawerProps) {
     const t = useTranslations()
-    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
+    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo ?? undefined)
     const changeStatusMutation = useChangeStatusMutation()
 
     const isLoading = lodash.isEmpty(job) || loadingJob
@@ -198,7 +198,6 @@ export default function JobDetailDrawer({
                                 />
                             </HeroTooltip>
                         )}
-                        
                     </div>
                 </HeroDrawerHeader>
                 <Divider />

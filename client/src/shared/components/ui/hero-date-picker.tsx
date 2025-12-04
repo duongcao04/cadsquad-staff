@@ -11,6 +11,7 @@ import {
 } from '@heroui/react'
 import { CalendarDate } from '@internationalized/date'
 import dayjs, { Dayjs } from 'dayjs'
+import { cn } from '../../../lib/utils'
 
 // --- Utility Functions: Dayjs <-> Internationalized/date ---
 interface BaseProps {
@@ -154,6 +155,13 @@ export const HeroDateRangePicker = ({
             value={parsedValue}
             defaultValue={parsedDefaultValue}
             onChange={handleChange}
+            classNames={{
+                label: cn(
+                    'font-medium! text-sm! text-text-7!',
+                    props.classNames?.label
+                ),
+                ...props.classNames,
+            }}
         />
     )
 }

@@ -15,7 +15,7 @@ export function ProfileCard() {
                     src={String(profile?.avatar)}
                     alt={profile?.displayName}
                     rootClassName="!size-32 !rounded-full"
-                    className="!size-full !rounded-full"
+                    className="size-full! rounded-full!"
                 />
                 <h2 className="mt-4 font-medium text-2xl">
                     {profile?.displayName ? profile?.displayName : '-'}

@@ -1,8 +1,12 @@
 'use client'
 
 import CadsquadLogo from '@/shared/components/CadsquadLogo'
+import {
+    FeatureCard,
+    FeatureCardProps,
+} from '@/shared/components/settings/FeatureCard'
+import { FeatureBoard } from '@/shared/components/settings/FutureBoard'
 import { Button } from '@heroui/react'
-import { FeatureBoard, FeatureCard, FeatureCardProps } from './shared'
 import { useTranslations } from 'next-intl'
 
 const FEATURE_BOARD_ACTIONS: FeatureCardProps[] = [
@@ -99,7 +103,9 @@ export default function AdminSettings() {
                     <h1 className="text-2xl font-medium uppercase tracking-wide">
                         Cadsquad Vietnam
                     </h1>
-                    <p className="mt-0.5 text-defaultp5">{t('adminWelcome')}</p>
+                    <p className="mt-0.5 text-text-default">
+                        {t('adminWelcome')}
+                    </p>
                 </div>
             </div>
             <FeatureBoard

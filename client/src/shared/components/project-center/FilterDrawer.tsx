@@ -10,7 +10,7 @@ import {
     useUpdateConfigByCodeMutation,
     useUsers,
 } from '@/lib/queries'
-import { HeroSelect, HeroSelectItem } from '@/shared/components'
+import { HeroSelect, HeroSelectItem } from '@/shared/components/ui/hero-select'
 import { JobColumn } from '@/shared/types'
 import { Button, Slider, Spinner } from '@heroui/react'
 import {

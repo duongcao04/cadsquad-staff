@@ -1,4 +1,5 @@
-import { AdminHeader, AdminSettingSidebar } from './shared'
+import AdminSettingsHeader from '@/shared/components/layouts/settings-header/AdminSettingsHeader'
+import { AdminSettingSidebar } from '@/shared/components/layouts/settings-sidebar/AdminSettingsSidebar'
 
 export default async function SettingsLayout({
     children,
@@ -7,8 +8,8 @@ export default async function SettingsLayout({
 }) {
     return (
         <div id="settings-page" className="h-screen w-screen">
-            <div className="sticky top-0 w-full z-[99] h-[56px]">
-                <AdminHeader />
+            <div className="sticky top-0 w-full z-99 h-14">
+                <AdminSettingsHeader />
             </div>
             <main className="size-full h-[calc(100vh-56px)] max-h-[calc(100vh-56px)]">
                 <div className="size-full grid grid-cols-[300px_1fr] gap-5 overflow-x-hidden">

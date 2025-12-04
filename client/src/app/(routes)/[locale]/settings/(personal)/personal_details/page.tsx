@@ -1,7 +1,7 @@
 'use client'
 
+import { UpdateAccountForm } from '@/shared/components/personal-settings/UpdateAccountForm'
 import { useTranslations } from 'next-intl'
-import { UpdateAccountForm } from './shared'
 
 export default function SettingAccountPage() {
     const tSettings = useTranslations('settings')

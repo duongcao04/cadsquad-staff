@@ -34,5 +34,6 @@ export default function WorkbenchTableView() {
     useEffect(() => {
         setSearchParams({ q: searchKeywords })
     }, [searchKeywords])
+
     return <WorkbenchTable data={jobs} />
 }

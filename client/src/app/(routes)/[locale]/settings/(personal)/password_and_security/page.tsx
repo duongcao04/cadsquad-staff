@@ -1,8 +1,8 @@
 'use client'
 
 import { useProfile } from '@/lib/queries'
+import { ChangePasswordForm } from '@/shared/components/personal-settings/ChangePasswordForm'
 import { Skeleton } from 'antd'
-import { ChangePasswordForm } from './shared'
 
 export default function SecurityPage() {
     const { isLoading } = useProfile()

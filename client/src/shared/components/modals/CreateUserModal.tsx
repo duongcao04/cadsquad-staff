@@ -8,8 +8,9 @@ import { ApiError } from '@/lib/axios'
 import { capitalize } from '@/lib/utils'
 import { RoleEnum } from '@/shared/enums'
 import { useCreateUser, useDepartments, useJobTitles } from '@/lib/queries'
-import { CreateUserInput, CreateUserSchema } from '@/lib/validationSchemas'
-import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
+import { TCreateUserInput, CreateUserSchema } from '@/lib/validationSchemas'
+import { HeroInput } from '../ui/hero-input'
+import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 
 const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -35,7 +36,7 @@ export function CreateUserModal({ isOpen, onClose }: Props) {
         }
     })
 
-    const formik = useFormik<CreateUserInput>({
+    const formik = useFormik<TCreateUserInput>({
         initialValues: {
             displayName: '',
             avatar: '',

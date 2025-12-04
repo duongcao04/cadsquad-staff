@@ -8,11 +8,12 @@
 	"cSpell.language": "en,vi",
 	"cSpell.words": [
 		"autoincrement",
+		"Cadsquad",
 		"heroui",
 		"usehooks"
 	],
 	"i18n-ally.localesPaths": [
 		"client/public/messages",
 		"client/src/i18n"
-	]
+	],
 }

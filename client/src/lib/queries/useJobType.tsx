@@ -2,6 +2,18 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { jobTypeApi } from '@/lib/api'
+import { IJobTypeResponse } from '../../shared/interfaces'
+import { TJobType } from '../../shared/types'
+import { useMemo } from 'react'
+
+export const mapJobType: (item: IJobTypeResponse) => TJobType = (item) => ({
+    code: item.code,
+    id: item.id,
+    displayName: item.displayName ?? '',
+    jobs: item.jobs ?? [],
+    hexColor: item.hexColor ?? '',
+    _count: item._count ?? undefined,
+})
 
 export const useJobTypes = () => {
     const { data, isLoading, isFetching } = useQuery({
@@ -9,8 +21,19 @@ export const useJobTypes = () => {
         queryFn: () => jobTypeApi.findAll(),
         select: (res) => res.data.result,
     })
+
+    const jobTypes = useMemo(() => {
+        const jobTypesData = data
+
+        if (!Array.isArray(jobTypesData)) {
+            return []
+        }
+
+        return jobTypesData.map((item) => mapJobType(item))
+    }, [data])
+
     return {
-        data,
+        data: jobTypes ?? [],
         isLoading: isLoading || isFetching,
     }
 }

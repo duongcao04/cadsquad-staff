@@ -233,3 +233,52 @@ export const TABLE_ROW_PER_PAGE_OPTIONS = [
 	{ displayName: '15 items', value: 15 },
 	{ displayName: '20 items', value: 20 },
 ]
+
+export const APP_THEMES = [
+    {
+        id: 1,
+        title: 'Light',
+        code: 'light',
+        thumbnail:
+            'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--light.f6e5e7a6.png',
+    },
+    {
+        id: 2,
+        title: 'Dark',
+        code: 'dark',
+        thumbnail:
+            'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--dark.d20b635b.png',
+    },
+    {
+        id: 3,
+        title: 'System',
+        code: 'system',
+        thumbnail:
+            'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--auto.86589aea.png',
+    },
+]
+
+// TODO: fix thumbnail
+export const APP_TABLE_SIZES = [
+    {
+        id: 1,
+        title: 'Small',
+        code: 'small',
+        thumbnail:
+            'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--light.f6e5e7a6.png',
+    },
+    {
+        id: 2,
+        title: 'Medium',
+        code: 'medium',
+        thumbnail:
+            'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--dark.d20b635b.png',
+    },
+    {
+        id: 3,
+        title: 'Large',
+        code: 'large',
+        thumbnail:
+            'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--auto.86589aea.png',
+    },
+]

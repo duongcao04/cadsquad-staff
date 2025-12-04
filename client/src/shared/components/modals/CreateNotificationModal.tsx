@@ -8,7 +8,7 @@ import {
 } from '@/lib/queries'
 import { authSocket } from '@/lib/socket'
 import {
-    CreateNotificationInput,
+    TCreateNotificationInput,
     CreateNotificationInputSchema,
 } from '@/lib/validationSchemas'
 import { NotificationTypeEnum } from '@/shared/enums'
@@ -17,7 +17,8 @@ import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 import { capitalize } from 'lodash'
 import { useMemo } from 'react'
-import { HeroInput, HeroSelect, HeroSelectItem } from '../customize'
+import { HeroInput } from '../ui/hero-input'
+import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 
 const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -50,7 +51,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
         }
     )
 
-    const initialValues = useMemo<CreateNotificationInput>(
+    const initialValues = useMemo<TCreateNotificationInput>(
         () => ({
             content: '',
             type: NotificationTypeEnum.INFO,
@@ -62,7 +63,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
         [profile?.id]
     )
 
-    const formik = useFormik<CreateNotificationInput>({
+    const formik = useFormik<TCreateNotificationInput>({
         initialValues,
         validationSchema: CreateNotificationInputSchema,
         onSubmit: async (values) => {
