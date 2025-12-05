@@ -141,8 +141,8 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
                             name="incomeCost"
                             label={t('jobColumns.incomeCost')}
                             startContent={
-                                <p className="text-sm font-bold text-defaultp5">
-                                    đ
+                                <p className="text-sm font-bold text-text-subdued">
+                                    $
                                 </p>
                             }
                             placeholder="Enter new income cost value"
@@ -156,8 +156,8 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
                             name="staffCost"
                             label={t('jobColumns.staffCost')}
                             startContent={
-                                <p className="text-sm font-bold text-defaultp5">
-                                    $
+                                <p className="text-sm font-bold text-text-subdued">
+                                    đ
                                 </p>
                             }
                             placeholder="Enter new staff cost value"

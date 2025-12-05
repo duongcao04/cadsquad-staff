@@ -3,7 +3,12 @@
 import { Link } from '@/i18n/navigation'
 import { useJobByNo } from '@/lib/queries/useJob'
 import { INTERNAL_URLS } from '@/lib/utils'
-import { JobStatusChip, PageHeading, PaidChip } from '@/shared/components'
+import {
+    JobStatusChip,
+    JobStatusDropdown,
+    PageHeading,
+    PaidChip,
+} from '@/shared/components'
 import { JobDetailView } from '@/shared/components/job-detail/JobDetailView'
 import CountdownTimer from '@/shared/components/ui/countdown-timer'
 import {
@@ -21,6 +26,7 @@ import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { CalendarDays, House, LibraryBig, UserRound } from 'lucide-react'
 import { use } from 'react'
+import { dateFormatter } from '../../../../../../lib/dayjs'
 import { HeroButton } from '../../../../../../shared/components/ui/hero-button'
 
 export default function JobDetailPage({
@@ -33,6 +39,8 @@ export default function JobDetailPage({
     const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
 
     const isLoading = lodash.isEmpty(job) || loadingJob
+
+    const isJobCompleted = job?.completedAt !== null
 
     return (
         <>
@@ -78,6 +86,14 @@ export default function JobDetailPage({
                 <div className="pl-5 pr-3.5">
                     <HeroCard>
                         <HeroCardBody className="flex flex-row gap-3">
+                            {isLoading ? (
+                                <Skeleton className="w-20 h-6 rounded-md" />
+                            ) : (
+                                <JobStatusDropdown
+                                    statusData={job?.status}
+                                    jobData={job}
+                                />
+                            )}
                             <HeroButton size="sm" variant="bordered">
                                 Finance
                             </HeroButton>
@@ -185,14 +201,33 @@ export default function JobDetailPage({
                                             <>
                                                 <CalendarDays size={16} />
                                                 <div className="flex items-center justify-start gap-2">
-                                                    <p>Due on:</p>
-                                                    <CountdownTimer
-                                                        targetDate={dayjs(
-                                                            job.dueAt
+                                                    <p>
+                                                        {isJobCompleted
+                                                            ? 'Completed at: '
+                                                            : 'Due on: '}
+                                                    </p>
+                                                    <div className="text-text-default">
+                                                        {isJobCompleted ? (
+                                                            dateFormatter(
+                                                                job?.completedAt as
+                                                                    | string
+                                                                    | Date,
+                                                                {
+                                                                    format: 'full',
+                                                                }
+                                                            )
+                                                        ) : (
+                                                            <CountdownTimer
+                                                                targetDate={dayjs(
+                                                                    job.dueAt
+                                                                )}
+                                                                mode="text"
+                                                                hiddenUnits={[
+                                                                    'second',
+                                                                ]}
+                                                            />
                                                         )}
-                                                        mode="text"
-                                                        hiddenUnits={['second']}
-                                                    />
+                                                    </div>
                                                 </div>
                                             </>
                                         )}

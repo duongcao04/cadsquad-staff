@@ -1,4 +1,7 @@
+'use client'
+
 import {
+    addToast,
     Avatar,
     Chip,
     Divider,
@@ -18,19 +21,19 @@ import {
 import React from 'react'
 import { optimizeCloudinary } from '../../../lib/cloudinary'
 import { dateFormatter } from '../../../lib/dayjs'
+import { useProfile, useUpdateJobMutation } from '../../../lib/queries'
 import { currencyFormatter } from '../../../lib/utils'
 import { TJob } from '../../types'
+import UpdateCostModal from '../project-center/UpdateCostModal'
+import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
+import { HeroTooltip } from '../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 import { JobActivityHistory } from './JobActivityLog'
+import JobAssigneesView from './JobAssigneesView'
 import JobAttachmentsView from './JobAttachmentsView'
 import JobCommentsView from './JobCommentsView'
 import JobDescriptionView from './JobDescriptionView'
-import JobAssigneesView from './JobAssigneesView'
-import UpdateCostModal from '../project-center/UpdateCostModal'
-import { useProfile } from '../../../lib/queries'
-import { HeroTooltip } from '../ui/hero-tooltip'
-import { HeroButton } from '../ui/hero-button'
 
 interface JobDetailProps {
     data: TJob
@@ -38,7 +41,28 @@ interface JobDetailProps {
 }
 export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
     const { isAdmin } = useProfile()
+
+    const updateJobMutation = useUpdateJobMutation()
+
     const { isOpen, onClose, onOpen } = useDisclosure({ id: 'UpdateCostModal' })
+
+    const handleAddAttachment = (attachments: string[]) =>
+        updateJobMutation.mutate(
+            {
+                jobId: job.id,
+                data: {
+                    attachmentUrls: attachments,
+                },
+            },
+            {
+                onSuccess: () => {
+                    addToast({
+                        title: 'Thêm tài liệu thành công',
+                        color: 'success',
+                    })
+                },
+            }
+        )
     return (
         <>
             <UpdateCostModal data={job} isOpen={isOpen} onClose={onClose} />
@@ -100,7 +124,10 @@ export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
                                     </div>
                                 }
                             >
-                                <JobAttachmentsView data={job.attachmentUrls} />
+                                <JobAttachmentsView
+                                    defaultAttachments={job.attachmentUrls}
+                                    onChange={handleAddAttachment}
+                                />
                             </Tab>
 
                             {/* TAB: COMMENTS */}

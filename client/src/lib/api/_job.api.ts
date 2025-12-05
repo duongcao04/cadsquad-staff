@@ -98,7 +98,11 @@ export const jobApi = {
     update: (id: string, data: TUpdateJobInput) => {
         return axiosClient.patch<ApiResponse<{ id: string; no: string }>>(
             `/v1/jobs/${id}`,
-            data
+            {
+                ...data,
+                incomeCost: data.incomeCost?.toString(),
+                staffCost: data.staffCost?.toString(),
+            }
         )
     },
     remove: (jobId: string) => {
