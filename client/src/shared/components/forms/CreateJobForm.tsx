@@ -1,18 +1,17 @@
 'use client'
 
-import { ApiError } from '@/lib/axios'
 import {
     useCreateJobMutation,
     useJobTypes,
     usePaymentChannels,
-    useProfile,
     useUsers,
 } from '@/lib/queries'
 import { CreateJobSchema, TCreateJobInput } from '@/lib/validationSchemas'
-import { addToast } from '@heroui/react'
 import dayjs from 'dayjs'
 import { useFormik } from 'formik'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
+import AssignMemberField from '../form-fields/AssignMemberField'
+import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { JobNoField } from '../form-fields/JobNoField'
 import { PaymentChannelSelect } from '../form-fields/PaymentChannelSelect'
 import { HeroButton } from '../ui/hero-button'
@@ -30,20 +29,17 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
     /**
      * Get initial data
      */
-    const { profile } = useProfile()
-    const { users, isLoading: loadingUsers } = useUsers()
-    const { data: jobTypes, isLoading: isLoadingJobTypes } = useJobTypes()
-    const { data: paymentChannels, isLoading: loadingPaymentChannels } =
-        usePaymentChannels()
+    const { users } = useUsers()
+    const { data: jobTypes } = useJobTypes()
+    const { data: paymentChannels } = usePaymentChannels()
 
-    const { mutateAsync: createJobMutation, isPending: isCreatingJob } =
-        useCreateJobMutation()
+    const createJobMutation = useCreateJobMutation()
 
     const [currentStep, setCurrentStep] = useState(0)
 
     const steps: { title: string; description: string }[] = [
         { title: 'Job Details', description: 'Basic info' },
-        { title: 'Attachments', description: 'Attachments & Files' },
+        { title: 'Documents', description: 'Attachments & Files' },
         { title: 'Assignees', description: 'Member Assign' },
     ]
 
@@ -63,8 +59,8 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
         ['assigneeIds'], // Step 2
     ]
 
-    const initialValues = useMemo<TCreateJobInput>(
-        () => ({
+    const formik = useFormik<TCreateJobInput>({
+        initialValues: {
             clientName: '',
             typeId: '',
             no: '',
@@ -72,33 +68,18 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
             attachmentUrls: [],
             startedAt: null as unknown as Date,
             dueAt: null as unknown as Date,
-            assigneeIds: ['c4d35f1b-9b37-4a3f-804b-373f7b0e1a24'], // Consider fetching this default dynamically
+            assigneeIds: [], // Consider fetching this default dynamically
             incomeCost: null as unknown as number,
             staffCost: null as unknown as number,
-            paymentChannelId: null as unknown as string,
-            createdById: profile?.id ?? '',
-        }),
-        [profile?.id]
-    )
-
-    const formik = useFormik<TCreateJobInput>({
-        initialValues,
+            paymentChannelId: null,
+        },
         validationSchema: CreateJobSchema,
         onSubmit: async (values) => {
-            await createJobMutation(values, {
-                onSuccess(res) {
-                    addToast({ title: res.data.message, color: 'success' })
+            await createJobMutation.mutateAsync(values, {
+                onSuccess() {
                     // setNewJobNo(values.no)
                     formik.resetForm()
                     onSubmit?.()
-                },
-                onError(error) {
-                    const errorRes = error as unknown as ApiError
-                    addToast({
-                        title: errorRes.error,
-                        description: `Error: ${errorRes.message}`,
-                        color: 'danger',
-                    })
                 },
             })
         },
@@ -151,14 +132,18 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                 className="w-full min-h-[200px] flex flex-col justify-between"
             >
                 {/* 2. Form Content Area */}
-                <div className="py-4 space-y-6">
+                <div className="space-y-6">
                     {/* STEP 0: JOB DETAILS */}
                     {currentStep === 0 && (
                         <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
                             {/* Job Type Skeleton (From your original code) */}
                             <JobNoField
                                 jobTypes={jobTypes}
-                                onSelectionChange={() => {}}
+                                defaultSelectedKey={jobTypes[0]?.id}
+                                onSelectionChange={(key, jobNoResult) => {
+                                    formik.setFieldValue('typeId', key)
+                                    formik.setFieldValue('no', jobNoResult)
+                                }}
                             />
                             {/* Job Name */}
                             <HeroInput
@@ -226,15 +211,15 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                                 }}
                                 // Combine errors from both fields
                                 isInvalid={
-                                    (formik.touched.startedAt &&
-                                        !!formik.errors.startedAt) ||
-                                    (formik.touched.dueAt &&
-                                        !!formik.errors.dueAt)
+                                    (Boolean(formik.touched.startedAt) &&
+                                        Boolean(formik.errors.startedAt)) ||
+                                    (Boolean(formik.touched.dueAt) &&
+                                        Boolean(formik.errors.dueAt))
                                 }
                                 errorMessage={
-                                    (formik.touched.startedAt &&
+                                    (Boolean(formik.touched.startedAt) &&
                                         (formik.errors.startedAt as string)) ||
-                                    (formik.touched.dueAt &&
+                                    (Boolean(formik.touched.dueAt) &&
                                         (formik.errors.dueAt as string))
                                 }
                             />
@@ -347,183 +332,32 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                         </div>
                     )}
 
-                    {/* STEP 1: FINANCIALS */}
+                    {/* STEP 1: DOCUMENTS */}
                     {currentStep === 1 && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
-                            <div>
-                                <p className="text-base font-medium mb-4">
-                                    Financial Details
-                                </p>
-                                <div className="space-y-6">
-                                    <HeroNumberInput
-                                        isRequired
-                                        id="incomeCost"
-                                        name="incomeCost"
-                                        label="Income"
-                                        placeholder="0"
-                                        type="number"
-                                        labelPlacement="outside"
-                                        maxValue={999999999999999}
-                                        value={formik.values.incomeCost}
-                                        onChange={(value) =>
-                                            formik.setFieldValue(
-                                                'incomeCost',
-                                                Number(value)
-                                            )
-                                        }
-                                        startContent={
-                                            <div className="pointer-events-none flex items-center">
-                                                <span className="text-default-400 text-small px-0.5">
-                                                    $
-                                                </span>
-                                            </div>
-                                        }
-                                        isInvalid={
-                                            Boolean(
-                                                formik.touched.incomeCost
-                                            ) &&
-                                            Boolean(formik.errors.incomeCost)
-                                        }
-                                        errorMessage={
-                                            Boolean(
-                                                formik.touched.incomeCost
-                                            ) &&
-                                            (formik.errors.incomeCost as string)
-                                        }
-                                    />
-
-                                    <HeroNumberInput
-                                        isRequired
-                                        id="staffCost"
-                                        name="staffCost"
-                                        label="Staff cost"
-                                        placeholder="0"
-                                        type="number"
-                                        labelPlacement="outside"
-                                        maxValue={999999999999999}
-                                        value={formik.values.staffCost}
-                                        onChange={(value) =>
-                                            formik.setFieldValue(
-                                                'staffCost',
-                                                Number(value)
-                                            )
-                                        }
-                                        startContent={
-                                            <div className="pointer-events-none flex items-center">
-                                                <span className="text-default-400 text-small px-0.5">
-                                                    $
-                                                </span>
-                                            </div>
-                                        }
-                                        isInvalid={
-                                            Boolean(formik.touched.staffCost) &&
-                                            Boolean(formik.errors.staffCost)
-                                        }
-                                        errorMessage={
-                                            Boolean(formik.touched.staffCost) &&
-                                            (formik.errors.staffCost as string)
-                                        }
-                                    />
-
-                                    <div className="grid grid-cols-[140px_1fr] gap-3 items-center">
-                                        <p
-                                            className={`text-right font-semibold text-base pr-2 ${
-                                                Boolean(
-                                                    formik.touched
-                                                        .paymentChannelId
-                                                ) &&
-                                                formik.errors.paymentChannelId
-                                                    ? 'text-danger'
-                                                    : 'text-primary'
-                                            }`}
-                                        >
-                                            Payment channel
-                                        </p>
-
-                                        {/* Uncommented and adapted your Select Logic */}
-                                        {/* <HeroSelect
-                                            isLoading={loadingPaymentChannels}
-                                            id="paymentChannelId"
-                                            name="paymentChannelId"
-                                            placeholder="Select one payment channel"
-                                            size="md"
-                                            selectedKeys={formik.values.paymentChannelId ? [formik.values.paymentChannelId] : []}
-                                            onChange={(e) => {
-                                                formik.setFieldValue('paymentChannelId', e.target.value);
-                                                formik.setFieldTouched('paymentChannelId', true, false);
-                                            }}
-                                            isInvalid={Boolean(formik.touched.paymentChannelId) && Boolean(formik.errors.paymentChannelId)}
-                                            errorMessage={Boolean(formik.touched.paymentChannelId) && formik.errors.paymentChannelId as string}
-                                        >
-                                            {paymentChannels?.map((paymentChannel) => (
-                                                <HeroSelectItem key={paymentChannel.id} textValue={paymentChannel.displayName}>
-                                                    <div className="flex items-center justify-start gap-2">
-                                                        <div
-                                                            className="size-2 rounded-full"
-                                                            style={{ backgroundColor: paymentChannel.hexColor || 'transparent' }}
-                                                        />
-                                                        <p>{paymentChannel.displayName}</p>
-                                                    </div>
-                                                </HeroSelectItem>
-                                            ))}
-                                        </HeroSelect> */}
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+                            <JobAttachmentsField
+                                onChange={(attachments) => {
+                                    formik.setFieldValue(
+                                        'attachmentUrls',
+                                        attachments
+                                    )
+                                }}
+                            />
                         </div>
                     )}
 
-                    {/* STEP 2: SCHEDULING */}
+                    {/* STEP 2: ASSIGN MEMBER */}
                     {currentStep === 2 && (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                            <div>
-                                <p className="text-base font-medium mb-1.5">
-                                    Start & End Dates
-                                </p>
-                                <p
-                                    className={`w-fit relative text-left font-medium text-sm pl-1 pr-2.5 ${
-                                        (Boolean(formik.touched.startedAt) ||
-                                            Boolean(formik.touched.dueAt)) &&
-                                        (formik.errors.startedAt ||
-                                            formik.errors.dueAt)
-                                            ? 'text-danger'
-                                            : 'text-text-7!'
-                                    }`}
-                                >
-                                    Delivery date
-                                    <span className="absolute top-0 right-0 text-danger!">
-                                        *
-                                    </span>
-                                </p>
-                                <div className="mt-1 flex flex-col w-full">
-                                    {/* <HeroDateRangePicker
-                                        isRequired
-                                        value={{
-                                            start: formik.values.startedAt ? parseDate(dayjs(formik.values.startedAt).format('YYYY-MM-DD')) : null,
-                                            end: formik.values.dueAt ? parseDate(dayjs(formik.values.dueAt).format('YYYY-MM-DD')) : null
-                                        }}
-                                        onChange={(value) => {
-                                            if (value?.start) formik.setFieldValue('startedAt', dayjs(value.start.toString()).toISOString());
-                                            if (value?.end) formik.setFieldValue('dueAt', dayjs(value.end.toString()).toISOString());
-                                        }}
-                                    /> */}
-                                    {formik.touched.dueAt &&
-                                        formik.errors.dueAt && (
-                                            <p className="mt-1 text-xs text-danger">
-                                                {formik.errors.dueAt as string}
-                                            </p>
-                                        )}
-                                    {formik.touched.startedAt &&
-                                        formik.errors.startedAt && (
-                                            <p className="mt-1 text-xs text-danger">
-                                                {
-                                                    formik.errors
-                                                        .startedAt as string
-                                                }
-                                            </p>
-                                        )}
-                                </div>
-                            </div>
+                            <AssignMemberField
+                                users={users}
+                                assignees={users.filter(
+                                    (item) => item.username == 'nb.vy'
+                                )}
+                                onSelectMember={(userIds) => {
+                                    formik.setFieldValue('assigneeIds', userIds)
+                                }}
+                            />
                         </div>
                     )}
                 </div>
@@ -547,7 +381,7 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                         <HeroButton
                             color="primary"
                             type="submit"
-                            isLoading={isCreatingJob}
+                            isLoading={createJobMutation.isPending}
                         >
                             Create Job
                         </HeroButton>

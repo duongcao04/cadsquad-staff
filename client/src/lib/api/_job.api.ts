@@ -14,7 +14,13 @@ import queryString from 'query-string'
 
 export const jobApi = {
     create: (data: TCreateJobInput) => {
-        return axiosClient.post('/v1/jobs', data)
+        return axiosClient.post('/v1/jobs', {
+            ...data,
+            startedAt: data.startedAt.toISOString(),
+            dueAt: data.dueAt.toISOString(),
+            incomeCost: data.incomeCost.toString(),
+            staffCost: data.staffCost.toString(),
+        })
     },
     findAll: (query: TJobQueryWithFiltersInput) => {
         const queryStringFormatter = queryString.stringify(query, {
@@ -32,6 +38,11 @@ export const jobApi = {
     searchJobs: (keywords: string) => {
         return axiosClient.get<ApiResponse<IJobResponse[]>>('/v1/jobs/search', {
             params: { keywords },
+        })
+    },
+    getNextNo: (typeId: string) => {
+        return axiosClient.get<ApiResponse<string>>('/v1/jobs/next-no', {
+            params: { typeId },
         })
     },
     getJobsDueOnDate: (inputDate: string) => {

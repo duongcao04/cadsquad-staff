@@ -340,15 +340,24 @@ export const useJobActivityLogs = (jobId?: string) => {
 export const useCreateJobMutation = () => {
     return useMutation({
         mutationKey: ['createJob'],
-        mutationFn: (createJobInput: TCreateJobInput) => {
-            return axiosClient.post('jobs', createJobInput)
+        mutationFn: (data: TCreateJobInput) => {
+            return jobApi.create(data)
         },
-        onSuccess: () => {
+        onSuccess: (res) => {
+            addToast({ title: res.data.message, color: 'success' })
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],
             })
             queryClient.invalidateQueries({
                 queryKey: ['jobTypes'],
+            })
+        },
+        onError(error) {
+            const errorRes = error as unknown as ApiError
+            addToast({
+                title: errorRes.error,
+                description: `Error: ${errorRes.message}`,
+                color: 'danger',
             })
         },
     })

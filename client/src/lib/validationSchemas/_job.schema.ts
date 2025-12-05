@@ -1,65 +1,34 @@
 import * as yup from 'yup'
 
 export const CreateJobSchema = yup.object({
-    no: yup
-        .string()
-        .required("Job number is required"),
+    no: yup.string().required('Job number is required'),
     typeId: yup
         .string()
-        .uuid("Invalid typeId format")
-        .required("Job type is required"),
-    displayName: yup
-        .string()
-        .required("Display name is required"),
-    description: yup
-        .string()
-        .optional(),
+        .uuid('Invalid typeId format')
+        .required('Job type is required'),
+    displayName: yup.string().required('Display name is required'),
+    description: yup.string().optional(),
     attachmentUrls: yup.array(yup.string().required()).optional(),
-    clientName: yup
-        .string()
-        .required("Client name is required"),
-    incomeCost: yup
-        .number()
-        .integer("Income cost must be an integer")
-        .required("Income cost is required"),
-    staffCost: yup
-        .number()
-        .integer("Staff cost must be an integer")
-        .required("Staff cost is required"),
-    assigneeIds: yup
-        .array()
-        .of(yup.string().required())
-        .optional(),
-    createdById: yup
-        .string()
-        .uuid("Invalid createdById format")
-        .required("CreatedById is required"),
-    paymentChannelId: yup
-        .string().nullable(),
-    startedAt: yup
-        .date().required(),
+    clientName: yup.string().required('Client name is required'),
+    incomeCost: yup.number().required('Income cost is required'),
+    staffCost: yup.number().required('Staff cost is required'),
+    assigneeIds: yup.array().of(yup.string().required()).optional(),
+    paymentChannelId: yup.string().nullable(),
+    startedAt: yup.date().required(),
     priority: yup
         .string()
-        .oneOf(["LOW", "MEDIUM", "HIGH", "URGENT"], "Priority must be one of: LOW, MEDIUM, HIGH, URGENT")
+        .oneOf(
+            ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
+            'Priority must be one of: LOW, MEDIUM, HIGH, URGENT'
+        )
         .optional(),
-    isPinned: yup
-        .boolean()
-        .optional(),
-    isPublished: yup
-        .boolean()
-        .optional(),
-    isPaid: yup
-        .boolean()
-        .optional(),
+    isPinned: yup.boolean().optional(),
+    isPublished: yup.boolean().optional(),
+    isPaid: yup.boolean().optional(),
     dueAt: yup
         .date()
-        .min(new Date(), "Due date cannot be in the past").required(),
-    completedAt: yup
-        .date()
-        .optional(),
-    deletedAt: yup
-        .date()
-        .optional(),
+        .min(new Date(), 'Due date cannot be in the past')
+        .required(),
 })
 export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>
 
@@ -86,8 +55,8 @@ export const JobFiltersSchema = yup.object({
     updatedAtTo: yup.string().optional(),
     finishedAtFrom: yup.string().optional(),
     finishedAtTo: yup.string().optional(),
-});
-export type TJobFiltersInput = yup.InferType<typeof JobFiltersSchema>;
+})
+export type TJobFiltersInput = yup.InferType<typeof JobFiltersSchema>
 
 export const JobQuerySchema = yup.object({
     tab: yup.string().optional(),
@@ -96,38 +65,39 @@ export const JobQuerySchema = yup.object({
     limit: yup.number().optional(),
     page: yup.number().optional(),
     sort: yup.string().optional(),
-});
-export type TJobQueryInput = yup.InferType<typeof JobQuerySchema>;
+})
+export type TJobQueryInput = yup.InferType<typeof JobQuerySchema>
 
 export const JobQueryWithFiltersSchema = JobQuerySchema.concat(JobFiltersSchema)
-export type TJobQueryWithFiltersInput = yup.InferType<typeof JobQueryWithFiltersSchema>;
+export type TJobQueryWithFiltersInput = yup.InferType<
+    typeof JobQueryWithFiltersSchema
+>
 
 export const ChangeStatusSchema = yup.object({
     fromStatusId: yup.string().required(),
     toStatusId: yup.string().required(),
-});
-export type TChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>;
+})
+export type TChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>
 
-import { z } from "zod"
+import { z } from 'zod'
 
 export const BulkChangeStatusInputSchema = z.object({
-    jobIds: z.array(z.string()).min(1, "jobIds must contain at least one id"),
-    toStatusId: z.string().min(1, "toStatusId is required"),
-});
+    jobIds: z.array(z.string()).min(1, 'jobIds must contain at least one id'),
+    toStatusId: z.string().min(1, 'toStatusId is required'),
+})
 
-export type TBulkChangeStatusInput = z.infer<typeof BulkChangeStatusInputSchema>;
-
+export type TBulkChangeStatusInput = z.infer<typeof BulkChangeStatusInputSchema>
 
 export const UpdateJobMembersSchema = yup.object({
     prevMemberIds: yup.string().required(),
     updateMemberIds: yup.string().required(),
-});
-export type TUpdateJobMembersInput = yup.InferType<typeof UpdateJobMembersSchema>;
-
+})
+export type TUpdateJobMembersInput = yup.InferType<
+    typeof UpdateJobMembersSchema
+>
 
 export const RescheduleJobSchema = yup.object({
     fromDate: yup.string().required(),
     toDate: yup.string().required(),
-});
-export type TRescheduleJob = yup.InferType<typeof RescheduleJobSchema>;
-
+})
+export type TRescheduleJob = yup.InferType<typeof RescheduleJobSchema>

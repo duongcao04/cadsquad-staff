@@ -106,14 +106,14 @@ export function SettingSidebar({
         active: {
             opacity: 1,
             fontWeight: '600',
-            background: 'var(--color-text-muted)',
+            background: 'var(--color-text-subdued)',
             transition: {
                 duration: 0.05,
             },
         },
         hover: {
             opacity: 1,
-            background: 'var(--color-text-muted)',
+            background: 'var(--color-text-subdued)',
             transition: {
                 duration: 0.05,
             },
@@ -137,7 +137,7 @@ export function SettingSidebar({
         },
         hover: {
             opacity: 1,
-            background: 'var(--color-text-muted)',
+            background: 'var(--color-text-subdued)',
             transition: {
                 duration: 0.05,
             },

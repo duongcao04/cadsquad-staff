@@ -36,6 +36,7 @@ import { UpdateJobDto } from './dto/update-job.dto'
 import { JobService } from './job.service'
 import { RolesGuard } from '../auth/roles.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
+import { JobTypeService } from '../job-type/job-type.service'
 
 @ApiTags('Jobs')
 @Controller('jobs')
@@ -43,6 +44,7 @@ import { Roles } from '../auth/decorators/roles.decorator'
 export class JobController {
     constructor(
         private readonly jobService: JobService,
+        private readonly jobTypeService: JobTypeService,
         private readonly activityLogService: ActivityLogService
     ) {}
 
@@ -60,8 +62,26 @@ export class JobController {
     @ResponseMessage('The job has been successfully created.')
     @UseGuards(RolesGuard)
     @Roles('ADMIN')
-    async create(@Body() createJobDto: CreateJobDto) {
-        return this.jobService.create(createJobDto)
+    async create(@Req() request: Request, @Body() createJobDto: CreateJobDto) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.create(userPayload.sub, createJobDto)
+    }
+
+    @Get('next-no')
+    @HttpCode(200)
+    @ResponseMessage('Get next job no successfully')
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get next job no successfully',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Return a next job no (ex: F.0001 )',
+    })
+    @UseGuards(RolesGuard)
+    @Roles('ADMIN')
+    async getNextNo(@Query('typeId') typeId: string) {
+        return this.jobTypeService.getNextJobNo(typeId)
     }
 
     @Get()

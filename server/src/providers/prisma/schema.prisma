@@ -230,8 +230,8 @@ model Job {
   description      String?
   attachmentUrls   String[]           @default([])
   clientName       String
-  incomeCost       Int
-  staffCost        Int
+  incomeCost       Float
+  staffCost        Float
   assignee         User[]             @relation("UserJobs") // Member assigned
   createdBy        User               @relation("JobCreator", fields: [createdById], references: [id])
   createdById      String

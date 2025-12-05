@@ -7,7 +7,7 @@ import {
     useJobByNo,
     useRemoveMemberMutation,
 } from '@/lib/queries/useJob'
-import { Button, Input, Skeleton, Spinner } from '@heroui/react'
+import { Button, Input, Skeleton } from '@heroui/react'
 import { useTranslations } from 'next-intl'
 import { Key, useState } from 'react'
 import HeroCopyButton from '../ui/hero-copy-button'
@@ -36,6 +36,8 @@ export default function AssignMemberModal({
 
     const { job, isLoading: loadingJob } = useJobByNo(jobNo)
     const { users, isLoading: loadingUsers } = useUsers()
+
+    const isLoading = !job || loadingJob
 
     const { isAdmin } = useProfile()
 
@@ -68,9 +70,6 @@ export default function AssignMemberModal({
         setMemberSelected(userId)
     }
 
-    if (!job || loadingJob) {
-        return <Spinner></Spinner>
-    }
     return (
         <HeroModal
             isOpen={isOpen}
@@ -95,12 +94,16 @@ export default function AssignMemberModal({
                                     Select member
                                 </p>
                                 <div className="grid grid-cols-[1fr_100px] gap-4">
-                                    <AssignMemberSelect
-                                        job={job}
-                                        users={users}
-                                        loading={loadingUsers}
-                                        onSelectMember={onSelectMember}
-                                    />
+                                    {isLoading ? (
+                                        <Skeleton className="w-full h-12 rounded-md" />
+                                    ) : (
+                                        <AssignMemberSelect
+                                            job={job}
+                                            users={users}
+                                            loading={loadingUsers}
+                                            onSelectMember={onSelectMember}
+                                        />
+                                    )}
                                     <Button
                                         onPress={async () => {
                                             if (memberSelected) {

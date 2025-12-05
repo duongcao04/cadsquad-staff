@@ -1,18 +1,17 @@
 'use client'
 
+import { jobApi } from '@/lib/api'
 import { Avatar } from '@heroui/react'
 import { Slash } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { jobTypeApi } from '../../../lib/api'
-import { mapJobType } from '../../../lib/queries'
-import { IJobTypeResponse } from '../../interfaces'
-import { TJobType } from '../../types' // Adjust path as needed
+import { useEffect, useState } from 'react'
+import { TJobType } from '../../types'
 import { HeroAutocomplete, HeroAutocompleteItem } from '../ui/hero-autocomplete'
 
 type JobNoFieldProps = {
     jobTypes: TJobType[]
-    selectedKey?: string | null
-    onSelectionChange: (key: string | null) => void
+    defaultSelectedKey?: string | null
+    // Callback trả về cả Key và Result cho Parent
+    onSelectionChange: (key: string | null, jobNoResult: string | null) => void
     label?: string
     placeholder?: string
     isLoading?: boolean
@@ -22,7 +21,7 @@ type JobNoFieldProps = {
 
 export function JobNoField({
     jobTypes,
-    selectedKey,
+    defaultSelectedKey,
     onSelectionChange,
     label = 'No.',
     placeholder = 'Select type',
@@ -30,40 +29,66 @@ export function JobNoField({
     isInvalid,
     isLoading,
 }: JobNoFieldProps) {
-    const [selectedType, setSelectedType] = useState<TJobType | null>(null)
+    const [selectedKey, setSelectedKey] = useState<string | null>(
+        defaultSelectedKey ? defaultSelectedKey : null
+    )
+    const [jobNoResult, setJobNoResult] = useState<string | null>(null)
 
-    useEffect(() => {
-        if (!selectedKey) {
-            setSelectedType(null)
-            return
-        }
-
-        console.log(selectedKey)
-        jobTypeApi.findOne(selectedKey).then((res) => {
-            setSelectedType(mapJobType(res.data.result as IJobTypeResponse))
-        })
-    }, [selectedKey])
-
-    // 2. Calculate the Result String: code + "." + count
-    const jobNoResult = useMemo(() => {
-        if (!selectedType) return '...' // Default state
-
-        // Safely access count. Assuming the relation name is 'jobs' inside _count
-        // The type definition says Record<string, string>, but usually counts are numbers/strings
-        const count = selectedType._count?.jobs ?? '0'
-
-        return `${selectedType.code}.${count}`
-    }, [selectedType])
-
+    // 1. Handle Selection: Chỉ cập nhật State nội bộ, KHÔNG gọi prop onSelectionChange ở đây
     const handleSelectionChange = (key: React.Key | null) => {
-        onSelectionChange(key as string | null)
+        const newKey = key as string | null
+        setSelectedKey(newKey)
+
+        // Reset kết quả cũ ngay lập tức để UI không hiển thị số của loại cũ
+        setJobNoResult(null)
+
+        // (Optional) Nếu bạn muốn Parent biết ngay là Key đã đổi (nhưng chưa có số):
+        // onSelectionChange(newKey, null)
     }
 
-    // 3. Define error rendering
-    const errorRender =
-        isInvalid && errorMessage ? (
-            <div className="text-tiny text-danger">{errorMessage}</div>
-        ) : null
+    // 2. UseEffect: Chịu trách nhiệm gọi API và báo kết quả về cho Parent
+    useEffect(() => {
+        let isCancelled = false
+
+        const fetchNextNo = async () => {
+            // Trường hợp user bỏ chọn (Clear input)
+            if (!selectedKey) {
+                setJobNoResult(null)
+                onSelectionChange(null, null) // Báo về parent để clear form
+                return
+            }
+
+            try {
+                setJobNoResult('...') // Hiển thị loading nhẹ
+
+                const res = await jobApi.getNextNo(selectedKey)
+
+                if (!isCancelled && res?.data?.result) {
+                    const newNo = res.data.result
+
+                    // Cập nhật UI nội bộ
+                    setJobNoResult(newNo)
+
+                    // QUAN TRỌNG: Báo về Parent khi đã CÓ dữ liệu thực tế
+                    onSelectionChange(selectedKey, newNo)
+                }
+            } catch (error) {
+                console.error('Failed to fetch next job no:', error)
+                if (!isCancelled) {
+                    setJobNoResult('Error')
+                    // Có thể báo lỗi về parent hoặc giữ nguyên null tùy logic form
+                    onSelectionChange(selectedKey, null)
+                }
+            }
+        }
+
+        fetchNextNo()
+
+        return () => {
+            isCancelled = true
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedKey]) // Chỉ chạy lại khi selectedKey thay đổi
 
     return (
         <div className="grid grid-cols-3 items-end gap-4">
@@ -75,23 +100,19 @@ export function JobNoField({
                 selectedKey={selectedKey}
                 onSelectionChange={handleSelectionChange}
                 isInvalid={isInvalid}
-                errorMessage={errorMessage} // Pass to component if it handles it internally
+                errorMessage={errorMessage}
                 isLoading={isLoading}
                 labelPlacement="outside"
-                // Hide internal error message if we are rendering it manually below,
-                // otherwise remove the manual errorRender block below
                 className="max-w-full"
             >
                 {(item) => {
                     const jobItem = item as TJobType
-
                     return (
                         <HeroAutocompleteItem
                             key={jobItem.id}
                             textValue={jobItem.displayName}
                         >
                             <div className="flex gap-3 items-center">
-                                {/* Logo / Avatar Section */}
                                 <Avatar
                                     alt={jobItem.displayName}
                                     className="shrink-0"
@@ -105,8 +126,6 @@ export function JobNoField({
                                             : undefined,
                                     }}
                                 />
-
-                                {/* Text Details Section */}
                                 <div className="flex flex-col">
                                     <span className="text-small text-foreground font-medium">
                                         {jobItem.displayName}
@@ -129,15 +148,10 @@ export function JobNoField({
             {/* Display the calculated result */}
             <div className="h-12 flex items-center justify-start gap-3">
                 <Slash className="rotate-[-20deg] text-default-300" />
-
-                <p className="text-lg font-semibold text-foreground">
-                    {jobNoResult}
+                <p className="text-xl font-semibold text-foreground">
+                    {jobNoResult || '...'}
                 </p>
             </div>
-
-            {/* Render error if not handled by HeroAutocomplete internally */}
-            {/* If HeroAutocomplete handles errorMessage via props, you might not need this line */}
-            {/* {errorRender} */}
         </div>
     )
 }

@@ -22,7 +22,6 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
-    useDisclosure,
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
@@ -30,15 +29,13 @@ import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { EyeIcon, SearchIcon, UserRoundPlus } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import React, { useState } from 'react'
+import React from 'react'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import {
     pCenterTableStore,
     projectCenterStore,
     workbenchStore,
 } from '../../stores'
-import JobDetailDrawer from '../job-detail/JobDetailDrawer'
-import AssignMemberModal from '../project-center/AssignMemberModal'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import { HeroTooltip } from '../ui/hero-tooltip'
@@ -58,10 +55,14 @@ type Props = {
     data: TJob[]
     isLoading?: boolean
     options?: ProjectCenterOptions
+    onViewDetail: (jobNo: string) => void
+    onAssignMember: (jobNo: string) => void
 }
 export default function WorkbenchTable({
-    data,
     isLoading = false,
+    data,
+    onViewDetail,
+    onAssignMember,
     options = { fillContainerHeight: false },
 }: Props) {
     const t = useTranslations()
@@ -69,24 +70,6 @@ export default function WorkbenchTable({
     const locale = useLocale()
 
     const { setSearchParams } = useSearchParam()
-
-    const {
-        isOpen: isOpenJobDetailDrawer,
-        onOpen: onOpenJobDetailDrawer,
-        onClose: onCloseJobDetailDrawer,
-    } = useDisclosure({
-        id: 'JobDetailDrawer',
-    })
-    const {
-        isOpen: isOpenAssignMemberModal,
-        onOpen: onOpenAssignMemberModal,
-        onClose: onCloseAssignMemberModal,
-    } = useDisclosure({
-        id: 'AssignMemberModal',
-    })
-
-    const [viewDetailNo, setViewDetailNo] = useState<string | null>(null)
-    const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
 
     const searchValue = useStore(
         workbenchStore,
@@ -139,10 +122,6 @@ export default function WorkbenchTable({
         setSearchParams({ p: page.toString() })
     }
 
-    const onViewDetail = (jobNo: string) => {
-        setViewDetailNo(jobNo)
-        onOpenJobDetailDrawer()
-    }
     const headerColumns = React.useMemo(() => {
         const visibleColumns = [
             'thumbnailUrl',
@@ -308,10 +287,7 @@ export default function WorkbenchTable({
                                     variant="light"
                                     size="sm"
                                     className="size-8! flex items-center justify-center"
-                                    onPress={() => {
-                                        setAssignMemberTo(data.no)
-                                        onOpenAssignMemberModal()
-                                    }}
+                                    onPress={() => onAssignMember(data.no)}
                                 >
                                     <p className="inline-flex items-center leading-none">
                                         <UserRoundPlus
@@ -417,21 +393,6 @@ export default function WorkbenchTable({
 
     return (
         <>
-            <JobDetailDrawer
-                jobNo={viewDetailNo ?? null}
-                isOpen={Boolean(viewDetailNo) && isOpenJobDetailDrawer}
-                onClose={() => {
-                    onCloseJobDetailDrawer()
-                    setAssignMemberTo(null)
-                }}
-            />
-            <AssignMemberModal
-                jobNo={assignMemberTo ?? ''}
-                isOpen={
-                    !lodash.isNull(assignMemberTo) && isOpenAssignMemberModal
-                }
-                onClose={onCloseAssignMemberModal}
-            />
             <Table
                 key="no"
                 isHeaderSticky
