@@ -19,28 +19,30 @@ import { PrismaModule } from './providers/prisma/prisma.module'
 import { BrowserSubscribesModule } from './modules/browser-subscribes/browser-subscribes.module'
 import { UploadModule } from './modules/upload/upload.module'
 import { HealthModule } from './modules/health/health.module'
+import { ExcelModule } from './modules/excel/excel.module'
 
 @Module({
-  imports: [
-    PrismaModule,
-    CloudinaryModule,
-    UserModule,
-    AuthModule,
-    JobModule,
-    JobTypeModule,
-    JobStatusModule,
-    PaymentChannelModule,
-    NotificationModule,
-    CommentModule,
-    DepartmentModule,
-    JobTitleModule,
-    GalleryModule,
-    UserDevicesModule,
-    BrowserSubscribesModule,
-    UploadModule,
-    HealthModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [
+        PrismaModule,
+        CloudinaryModule,
+        UserModule,
+        AuthModule,
+        JobModule,
+        JobTypeModule,
+        JobStatusModule,
+        PaymentChannelModule,
+        NotificationModule,
+        CommentModule,
+        DepartmentModule,
+        JobTitleModule,
+        GalleryModule,
+        UserDevicesModule,
+        BrowserSubscribesModule,
+        UploadModule,
+        HealthModule,
+        ExcelModule,
+    ],
+    controllers: [AppController],
+    providers: [AppService],
 })
 export class AppModule {}

@@ -2,13 +2,7 @@
 
 import { envConfig } from '@/lib/config'
 import { dateFormatter } from '@/lib/dayjs'
-import { useConfigByCode, useUpdateConfigByCodeMutation } from '@/lib/queries'
-import {
-    currencyFormatter,
-    IMAGES,
-    JOB_COLUMNS,
-    USER_CONFIG_KEYS,
-} from '@/lib/utils'
+import { currencyFormatter, IMAGES, JOB_COLUMNS } from '@/lib/utils'
 import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { useSearchParam } from '@/shared/hooks'
@@ -26,6 +20,7 @@ import {
     Selection,
     SelectItem,
     SharedSelection,
+    Skeleton,
     Spinner,
     Switch,
     Table,
@@ -76,12 +71,15 @@ const ROW_PER_PAGE_OPTIONS = [
 type ProjectCenterOptions = {
     fillContainerHeight?: boolean
 }
-type Props = {
+type ProjectCenterTableProps = {
     data: TJob[]
     isLoading?: boolean
     onRefresh?: () => void
     visibleColumns: 'all' | JobColumnKey[]
     options?: ProjectCenterOptions
+    showFinishItems: boolean
+    onDownloadCsv: () => void
+    onShowFinishItemsChange?: (state: boolean) => void
     openFilterDrawer: () => void
     openViewColDrawer: () => void
     openJobDetailDrawer: () => void
@@ -92,10 +90,13 @@ export default function ProjectCenterTable({
     onRefresh,
     isLoading = false,
     options = { fillContainerHeight: false },
+    showFinishItems,
+    onDownloadCsv,
+    onShowFinishItemsChange,
     openFilterDrawer,
     openViewColDrawer,
     openJobDetailDrawer,
-}: Props) {
+}: ProjectCenterTableProps) {
     const t = useTranslations()
 
     const locale = useLocale()
@@ -104,6 +105,7 @@ export default function ProjectCenterTable({
 
     const searchKeywords = useStore(projectCenterStore, (state) => state.search)
     const hasSearchFilter = Boolean(searchKeywords)
+
     const [searchValue, setSearchValue] = useState('')
 
     const setContextItem = (value: TJob | null) => {
@@ -112,12 +114,6 @@ export default function ProjectCenterTable({
             contextItem: value,
         }))
     }
-
-    const { value: isHideFinishItems } = useConfigByCode(
-        USER_CONFIG_KEYS.hideFinishItems
-    )
-    const { mutateAsync: updateConfigByCodeMutate } =
-        useUpdateConfigByCodeMutation()
 
     const pagination = useStore(projectCenterStore, (state) => ({
         rowPerPage: state.limit,
@@ -328,33 +324,23 @@ export default function ProjectCenterTable({
                                         >
                                             <div className="w-full flex items-center justify-between gap-3">
                                                 <p>{t('hideFinishItems')}</p>
-                                                <Switch
-                                                    isSelected={Boolean(
-                                                        1
-                                                        // parseInt(
-                                                        //     isHideFinishItems
-                                                        // )
-                                                    )}
-                                                    size="sm"
-                                                    aria-label="Hide finish items"
-                                                    endContent={<X />}
-                                                    startContent={<Check />}
-                                                    color="success"
-                                                    onValueChange={(
-                                                        isSelected
-                                                    ) => {
-                                                        updateConfigByCodeMutate(
-                                                            {
-                                                                code: USER_CONFIG_KEYS.hideFinishItems,
-                                                                data: {
-                                                                    value: isSelected
-                                                                        ? '1'
-                                                                        : '0',
-                                                                },
-                                                            }
-                                                        )
-                                                    }}
-                                                />
+                                                {isLoading ? (
+                                                    <Spinner size="sm" />
+                                                ) : (
+                                                    <Switch
+                                                        isSelected={
+                                                            showFinishItems
+                                                        }
+                                                        size="sm"
+                                                        aria-label="Hide finish items"
+                                                        endContent={<X />}
+                                                        startContent={<Check />}
+                                                        color="success"
+                                                        onValueChange={
+                                                            onShowFinishItemsChange
+                                                        }
+                                                    />
+                                                )}
                                             </div>
                                         </DropdownItem>
                                         <DropdownItem
@@ -396,6 +382,7 @@ export default function ProjectCenterTable({
                             variant="flat"
                             size="sm"
                             className="shadow-SM"
+                            onPress={onDownloadCsv}
                         >
                             <span className="font-medium">
                                 Download as .csv
@@ -405,7 +392,14 @@ export default function ProjectCenterTable({
                 </div>
             </div>
         )
-    }, [visibleColumns, data?.length, hasSearchFilter, selectedKeys])
+    }, [
+        visibleColumns,
+        data?.length,
+        hasSearchFilter,
+        selectedKeys,
+        showFinishItems,
+        isLoading,
+    ])
 
     const bottomContent = React.useMemo(() => {
         return (
@@ -709,7 +703,7 @@ export default function ProjectCenterTable({
             // onSortChange={setSortDescriptor}'
             classNames={{
                 base: `${options.fillContainerHeight ? 'h-full' : ''}`,
-                table: 'relative',
+                table: !isLoading ? 'relative' : 'relative min-h-[480px]!',
             }}
         >
             <TableHeader columns={headerColumns}>
@@ -728,8 +722,19 @@ export default function ProjectCenterTable({
             </TableHeader>
             <TableBody
                 emptyContent={'No items found'}
-                items={data}
-                loadingContent={<Spinner />}
+                items={isLoading ? [] : data}
+                loadingContent={
+                    <div className="flex flex-col gap-3 w-full mt-16">
+                        {Array.from({
+                            length: pagination.rowPerPage || 10,
+                        }).map((_, index) => (
+                            <Skeleton
+                                key={index}
+                                className="rounded-md w-full h-8!"
+                            />
+                        ))}
+                    </div>
+                }
                 isLoading={isLoading}
             >
                 {(item) => (

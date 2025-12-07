@@ -38,6 +38,7 @@ export const STORAGE_KEYS = {
     tableRowCount: 'app-runtime:table-row-count',
     currency: 'app-runtime:currency',
     currencyDigits: 'app-runtime:currency-digits',
+    projectCenterFinishItems: 'project-center-finish-items',
 } as const
 
 export const IMAGES = {

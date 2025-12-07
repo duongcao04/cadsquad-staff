@@ -15,7 +15,7 @@ import {
     Selection,
     SelectItem,
     SharedSelection,
-    Spinner,
+    Skeleton,
     Table,
     TableBody,
     TableCell,
@@ -433,8 +433,19 @@ export default function WorkbenchTable({
                 </TableHeader>
                 <TableBody
                     emptyContent={'No items found'}
-                    items={data}
-                    loadingContent={<Spinner />}
+                    items={isLoading ? [] : data}
+                    loadingContent={
+                        <div className="flex flex-col gap-3 w-full mt-16">
+                            {Array.from({
+                                length: pagination.rowPerPage || 10,
+                            }).map((_, index) => (
+                                <Skeleton
+                                    key={index}
+                                    className="rounded-md w-full h-8!"
+                                />
+                            ))}
+                        </div>
+                    }
                     isLoading={isLoading}
                 >
                     {(item) => (
