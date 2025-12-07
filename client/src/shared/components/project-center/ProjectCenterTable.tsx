@@ -2,7 +2,12 @@
 
 import { envConfig } from '@/lib/config'
 import { dateFormatter } from '@/lib/dayjs'
-import { currencyFormatter, IMAGES, JOB_COLUMNS } from '@/lib/utils'
+import {
+    currencyFormatter,
+    IMAGES,
+    JOB_COLUMNS,
+    JOB_DUE_IN_SELECTS,
+} from '@/lib/utils'
 import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { useSearchParam } from '@/shared/hooks'
@@ -29,7 +34,6 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
-    Tooltip,
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
@@ -54,10 +58,13 @@ import {
 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import React, { useState } from 'react'
+import { useJobStatuses } from '../../../lib/queries'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore, projectCenterStore } from '../../stores'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
+import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
+import { HeroTooltip } from '../ui/hero-tooltip'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
 
@@ -98,6 +105,8 @@ export default function ProjectCenterTable({
     openJobDetailDrawer,
 }: ProjectCenterTableProps) {
     const t = useTranslations()
+
+    const { data: jobStatuses } = useJobStatuses()
 
     const locale = useLocale()
 
@@ -220,7 +229,7 @@ export default function ProjectCenterTable({
                                 <span className="font-medium">Filter</span>
                             </Button>
 
-                            <Dropdown>
+                            <Dropdown placement="bottom-start">
                                 <DropdownTrigger className="hidden sm:flex">
                                     <Button
                                         endContent={
@@ -361,6 +370,79 @@ export default function ProjectCenterTable({
                         </div>
 
                         <div className="w-px mx-3 h-5 bg-text-muted"></div>
+
+                        <div className="flex gap-3">
+                            <HeroSelect
+                                selectionMode="multiple"
+                                className="min-w-[130px]"
+                                classNames={{
+                                    trigger:
+                                        'hover:shadow-SM border-border-default border-1 cursor-pointer',
+                                    popoverContent: 'w-[200px]!',
+                                }}
+                                placeholder="Status"
+                                isClearable
+                                renderValue={(selectedItems) => {
+                                    return (
+                                        <p className="text-text-7">
+                                            {selectedItems.length} status
+                                            {selectedItems.length > 1
+                                                ? 'es'
+                                                : ''}
+                                        </p>
+                                    )
+                                }}
+                            >
+                                {jobStatuses.map((jobStatus) => {
+                                    return (
+                                        <HeroSelectItem key={jobStatus.id}>
+                                            <div className="flex items-center justify-start gap-2">
+                                                <div
+                                                    className="size-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor:
+                                                            jobStatus.hexColor
+                                                                ? jobStatus.hexColor
+                                                                : '#000000',
+                                                    }}
+                                                />
+                                                <p>{jobStatus.displayName}</p>
+                                            </div>
+                                        </HeroSelectItem>
+                                    )
+                                })}
+                            </HeroSelect>
+
+                            <HeroSelect
+                                className="min-w-[130px]"
+                                classNames={{
+                                    trigger:
+                                        'hover:shadow-SM border-border-default border-1 cursor-pointer',
+                                    popoverContent: 'w-[200px]!',
+                                }}
+                                placeholder="Due in"
+                                isClearable
+                                renderValue={(selectedItems) => {
+                                    console.log(selectedItems)
+
+                                    return (
+                                        <p className="text-text-7">
+                                            {selectedItems[0]?.textValue}
+                                        </p>
+                                    )
+                                }}
+                            >
+                                {JOB_DUE_IN_SELECTS.map((dueIn) => {
+                                    return (
+                                        <HeroSelectItem key={dueIn.value}>
+                                            {dueIn.label}
+                                        </HeroSelectItem>
+                                    )
+                                })}
+                            </HeroSelect>
+                        </div>
+
+                        <div className="w-px mx-3 h-5 bg-text-muted"></div>
                         {(selectedKeys === 'all' || selectedKeys.size > 0) && (
                             <div className="flex items-center justify-start gap-3">
                                 <p className="text-sm">
@@ -485,12 +567,12 @@ export default function ProjectCenterTable({
                     return (
                         <div className="flex items-center justify-between gap-2 group size-full">
                             <span className="uppercase">{data.no}</span>
-                            <Tooltip content="Copy">
+                            <HeroTooltip content="Copy">
                                 <HeroCopyButton
                                     textValue={data.no}
                                     className="opacity-70!"
                                 />
-                            </Tooltip>
+                            </HeroTooltip>
                         </div>
                     )
                 case 'displayName':
@@ -539,7 +621,7 @@ export default function ProjectCenterTable({
                 case 'attachmentUrls':
                     return !data.attachmentUrls?.length ? (
                         <div className="size-full flex items-center justify-center">
-                            <Tooltip content={'Add attachment'}>
+                            <HeroTooltip content={'Add attachment'}>
                                 <Button
                                     isIconOnly
                                     variant="light"
@@ -553,15 +635,17 @@ export default function ProjectCenterTable({
                                         />
                                     </p>
                                 </Button>
-                            </Tooltip>
+                            </HeroTooltip>
                         </div>
                     ) : (
-                        <p>{data.attachmentUrls.length} attachments</p>
+                        <p className="w-full text-center font-semibold tracking-wide">
+                            x{data.attachmentUrls.length}
+                        </p>
                     )
                 case 'assignee':
                     return !data.assignee.length ? (
                         <div className="size-full flex items-center justify-center">
-                            <Tooltip content={t('assignMembers')}>
+                            <HeroTooltip content={t('assignMembers')}>
                                 <Button
                                     isIconOnly
                                     variant="light"
@@ -575,7 +659,7 @@ export default function ProjectCenterTable({
                                         />
                                     </p>
                                 </Button>
-                            </Tooltip>
+                            </HeroTooltip>
                         </div>
                     ) : (
                         <div
@@ -640,7 +724,7 @@ export default function ProjectCenterTable({
                 case 'action':
                     return (
                         <div className="flex items-center justify-end gap-2">
-                            <Tooltip content={t('viewDetail')}>
+                            <HeroTooltip content={t('viewDetail')}>
                                 <Button
                                     isIconOnly
                                     variant="light"
@@ -661,15 +745,15 @@ export default function ProjectCenterTable({
                                         />
                                     </p>
                                 </Button>
-                            </Tooltip>
-                            <Tooltip content={t('copyLink')}>
+                            </HeroTooltip>
+                            <HeroTooltip content={t('copyLink')}>
                                 <HeroCopyButton
                                     className="size-8! flex items-center justify-center"
                                     iconSize={16}
                                     iconClassName="opacity-60"
                                     textValue={`${envConfig.NEXT_PUBLIC_URL}/${locale}/jobs/${data.no}`}
                                 />
-                            </Tooltip>
+                            </HeroTooltip>
                             <ProjectCenterTableQuickActions data={data} />
                         </div>
                     )

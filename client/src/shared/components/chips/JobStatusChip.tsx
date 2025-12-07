@@ -1,16 +1,16 @@
 'use client'
 
 import { cn, darkenHexColor, lightenHexColor } from '@/lib/utils'
-import { JobStatus } from '@/shared/interfaces'
+import { TJobStatus } from '@/shared/types'
 import { Chip, ChipProps } from '@heroui/react'
 import { useTheme } from 'next-themes'
 import React from 'react'
 
 type Props = {
-    data: JobStatus
+    data: TJobStatus
     classNames?: ChipProps['classNames']
     props?: ChipProps
-    childrenRender?: (status: JobStatus) => React.ReactNode
+    childrenRender?: (status: TJobStatus) => React.ReactNode
 }
 export function JobStatusChip({
     data,

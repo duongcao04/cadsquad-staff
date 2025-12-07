@@ -170,7 +170,7 @@ export const JOB_COLUMNS: {
     {
         displayName: 'Client',
         uid: 'clientName',
-        sortable: true,
+        sortable: false,
         description: 'Name of the client associated with the project.',
     },
     {
@@ -206,7 +206,7 @@ export const JOB_COLUMNS: {
     {
         displayName: 'Status',
         uid: 'status',
-        sortable: true,
+        sortable: false,
         description: 'Current status of the project (e.g., Active, Completed).',
     },
     {
@@ -320,4 +320,12 @@ export const APP_TABLE_SIZES = [
         thumbnail:
             'https://jira-frontend-bifrost.prod-east.frontend.public.atl-paas.net/assets/very-specific-illu.theme-choice--auto.86589aea.png',
     },
+]
+
+export const JOB_DUE_IN_SELECTS = [
+    { label: '< 1 week', value: 'lt_1_week' },
+    { label: '< 2 week', value: 'lt_2_week' },
+    { label: '< 3 week', value: 'lt_3_week' },
+    { label: '< 1 month', value: 'lt_1_month' },
+    { label: '> 1 month', value: 'gt_1_month' },
 ]

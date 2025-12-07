@@ -3,9 +3,9 @@
 import { baseUrl, cn, handleCopy } from '@/lib/utils'
 import { Button, ButtonProps } from '@heroui/react'
 import { CheckCheck, Copy } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useLocale, useTranslations } from 'next-intl'
+import { useEffect, useRef, useState } from 'react'
 
 type Props = ButtonProps & {
     textValue: string

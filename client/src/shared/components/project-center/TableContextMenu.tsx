@@ -16,15 +16,12 @@ import {
 } from 'lucide-react'
 import React, { useEffect } from 'react'
 import { useLocale } from 'next-intl'
-import { useAddMemberModal } from '../../actions'
 import { pCenterTableStore } from '../../stores'
 
 type Props = { children: React.ReactNode }
 
 export default function TableContextMenu({ children }: Props) {
     const locale = useLocale()
-
-    const { openModal } = useAddMemberModal()
 
     useEffect(() => {
         // Define the event handler
@@ -73,10 +70,7 @@ export default function TableContextMenu({ children }: Props) {
                     />
                     Pin Job
                 </ContextMenuItem>
-                <ContextMenuItem
-                    disabled={!Boolean(contextItem)}
-                    onClick={() => openModal(contextItem?.no as string)}
-                >
+                <ContextMenuItem disabled={!Boolean(contextItem)}>
                     <UserPlus size={14} className="text-text-subdued" />
                     Assign / Reassign
                 </ContextMenuItem>

@@ -1,10 +1,21 @@
 'use client'
 
-import { extendVariants, Select, SelectItem } from '@heroui/react'
+import { Select, SelectItem, SelectProps } from '@heroui/react'
+import React from 'react'
 
-export const HeroSelect = extendVariants(Select, {
-    defaultVariants: {
-        size: 'sm',
-    },
-})
-export const HeroSelectItem = extendVariants(SelectItem, {})
+type HeroSelectProps = {
+    children: React.ReactNode
+} & SelectProps
+export const HeroSelect = ({ children, ...props }: HeroSelectProps) => {
+    return (
+        <Select
+            variant={props.variant ?? 'bordered'}
+            size={props.size ?? 'sm'}
+            {...props}
+        >
+            {children}
+        </Select>
+    )
+}
+
+export { SelectItem as HeroSelectItem }

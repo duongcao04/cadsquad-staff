@@ -4,10 +4,12 @@ import lodash from 'lodash'
 import { useMemo } from 'react'
 import { IJobStatusResponse } from '../../shared/interfaces'
 import { TJobStatus } from '../../shared/types'
+import { JobStatusSystemTypeEnum } from '../../shared/enums'
 
 const mapItem: (item: IJobStatusResponse) => TJobStatus = (item) => ({
     code: item.code ?? '',
     hexColor: item.hexColor ?? '#ffffff',
+    systemType: item.systemType ?? JobStatusSystemTypeEnum.STANDARD,
     jobs: item.jobs ?? [],
     order: item.order ?? 0,
     icon: item.icon ?? '',
@@ -60,7 +62,7 @@ export const useJobStatusDetail = (statusId?: string) => {
         const jobData = data
 
         if (lodash.isEmpty(jobData)) {
-            return  undefined
+            return undefined
         }
 
         return mapItem(jobData)
