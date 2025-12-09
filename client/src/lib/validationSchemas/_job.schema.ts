@@ -1,4 +1,7 @@
 import * as yup from 'yup'
+import { z } from 'zod'
+import { arrayToString, optionalIsoDate } from '../zod'
+import { ProjectCenterTabEnum } from '../../shared/enums'
 
 export const CreateJobSchema = yup.object({
     no: yup.string().required('Job number is required'),
@@ -35,51 +38,90 @@ export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>
 export const UpdateJobSchema = CreateJobSchema.partial()
 export type TUpdateJobInput = yup.InferType<typeof UpdateJobSchema>
 
-export const JobFiltersSchema = yup.object({
-    clientName: yup.array().of(yup.string().required()).optional(), // Client names split as ","
-    type: yup.array().of(yup.string().required()).optional(), // Job type codes split as ","
-    status: yup.array().of(yup.string().required()).optional(), // Status codes split as ","
-    assignee: yup.array().of(yup.string().required()).optional(), // Assignee username split as ","
-    paymentChannel: yup.array().of(yup.string().required()).optional(), // Payment channel codes split as ","
-    incomeCostMin: yup.string().optional(),
-    incomeCostMax: yup.string().optional(),
-    staffCostMin: yup.string().optional(),
-    staffCostMax: yup.string().optional(),
-    dueAtFrom: yup.string().optional(),
-    dueAtTo: yup.string().optional(),
-    completedAtFrom: yup.string().optional(),
-    completedAtTo: yup.string().optional(),
-    createdAtFrom: yup.string().optional(),
-    createdAtTo: yup.string().optional(),
-    updatedAtFrom: yup.string().optional(),
-    updatedAtTo: yup.string().optional(),
-    finishedAtFrom: yup.string().optional(),
-    finishedAtTo: yup.string().optional(),
+// ---------------------------------------------------------------
+// QUERY SCHEMAS
+// ---------------------------------------------------------------
+// 1. JobFiltersSchema
+export const JobFiltersSchema = z.object({
+    clientName: z.string().trim().optional(),
+
+    // Array Filters (handling CSV string or Array input)
+    type: arrayToString,
+    status: arrayToString,
+    assignee: arrayToString,
+    paymentChannel: arrayToString,
+
+    // Date Range Filters
+    createdAtFrom: optionalIsoDate,
+    createdAtTo: optionalIsoDate,
+    dueAtFrom: optionalIsoDate,
+    dueAtTo: optionalIsoDate,
+    completedAtFrom: optionalIsoDate,
+    completedAtTo: optionalIsoDate,
+    finishedAtFrom: optionalIsoDate,
+    finishedAtTo: optionalIsoDate,
+
+    // Cost Filters (DTO expects String, but usually represents a Number)
+    incomeCostMin: z
+        .string()
+        .regex(/^\d+$/, 'Must be a numeric string')
+        .optional(),
+    incomeCostMax: z
+        .string()
+        .regex(/^\d+$/, 'Must be a numeric string')
+        .optional(),
+    staffCostMin: z
+        .string()
+        .regex(/^\d+$/, 'Must be a numeric string')
+        .optional(),
+    staffCostMax: z
+        .string()
+        .regex(/^\d+$/, 'Must be a numeric string')
+        .optional(),
 })
-export type TJobFiltersInput = yup.InferType<typeof JobFiltersSchema>
 
-export const JobQuerySchema = yup.object({
-    tab: yup.string().optional(),
-    search: yup.string().optional(),
-    hideFinishItems: yup.number().optional(),
-    limit: yup.number().optional(),
-    page: yup.number().optional(),
-    sort: yup.string().optional(),
+// 2. JobSortSchema
+export const JobSortSchema = z.object({
+    sort: z
+        .union([z.string(), z.array(z.string())])
+        .optional()
+        .default(['displayName:asc'])
+        .transform((val) => {
+            if (Array.isArray(val)) return val
+            return val ? val.split(',') : ['displayName:asc']
+        }),
 })
-export type TJobQueryInput = yup.InferType<typeof JobQuerySchema>
 
-export const JobQueryWithFiltersSchema = JobQuerySchema.concat(JobFiltersSchema)
-export type TJobQueryWithFiltersInput = yup.InferType<
-    typeof JobQueryWithFiltersSchema
->
+// 3. JobQuerySchema (Combines Filters, Sorts, and Base Query)
+export const JobQuerySchema = JobFiltersSchema.merge(JobSortSchema).extend({
+    tab: z
+        .nativeEnum(ProjectCenterTabEnum)
+        .optional()
+        .default(ProjectCenterTabEnum.ACTIVE),
 
+    search: z.string().trim().optional(),
+
+    hideFinishItems: z.enum(['0', '1']).optional().default('0'),
+
+    // Pagination (Using coerce to handle URL query string numbers)
+    limit: z.coerce.number().int().min(1).max(100).optional().default(10),
+
+    page: z.coerce.number().int().min(1).optional().default(1),
+})
+
+// Types inferred from Schemas (Optional, but useful for frontend type safety)
+export type TJobFiltersInput = z.input<typeof JobFiltersSchema>
+export type TJobQueryInput = z.input<typeof JobQuerySchema> // Raw input (e.g. from URLSearchParams)
+export type TJobQueryOutput = z.output<typeof JobQuerySchema> // Transformed output (e.g. ready for API call)
+
+// ---------------------------------------------------------------
+// MUTATION SCHEMAS
+// ---------------------------------------------------------------
 export const ChangeStatusSchema = yup.object({
     fromStatusId: yup.string().required(),
     toStatusId: yup.string().required(),
 })
 export type TChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>
-
-import { z } from 'zod'
 
 export const BulkChangeStatusInputSchema = z.object({
     jobIds: z.array(z.string()).min(1, 'jobIds must contain at least one id'),

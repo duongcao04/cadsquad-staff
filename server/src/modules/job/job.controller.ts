@@ -102,28 +102,28 @@ export class JobController {
         return this.jobService.findAll(userPayload.sub, userPayload.role, query)
     }
 
-    @Get('search')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Search for jobs by keywords without pagination' })
-    @ApiQuery({ name: 'keywords', type: 'string', required: false })
-    @ApiResponse({
-        status: 200,
-        description: 'Return a list of jobs.',
-        type: [JobResponseDto],
-    })
-    @HttpCode(200)
-    @ResponseMessage('Get jobs by search successfully')
-    async searchJob(
-        @Req() request: Request,
-        @Query() query: { keywords?: string }
-    ) {
-        const userPayload: TokenPayload = await request['user']
-        return this.jobService.findAllNoPaginate(
-            userPayload.sub,
-            userPayload.role,
-            query
-        )
-    }
+    // @Get('search')
+    // @ApiBearerAuth()
+    // @ApiOperation({ summary: 'Search for jobs by keywords without pagination' })
+    // @ApiQuery({ name: 'keywords', type: 'string', required: false })
+    // @ApiResponse({
+    //     status: 200,
+    //     description: 'Return a list of jobs.',
+    //     type: [JobResponseDto],
+    // })
+    // @HttpCode(200)
+    // @ResponseMessage('Get jobs by search successfully')
+    // async searchJob(
+    //     @Req() request: Request,
+    //     @Query() query: { keywords?: string }
+    // ) {
+    //     const userPayload: TokenPayload = await request['user']
+    //     return this.jobService.findAllNoPaginate(
+    //         userPayload.sub,
+    //         userPayload.role,
+    //         query
+    //     )
+    // }
 
     @Get('deadline/:isoDate')
     @HttpCode(200)

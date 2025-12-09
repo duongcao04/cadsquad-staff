@@ -2,6 +2,7 @@ import {
     BadRequestException,
     Injectable,
     InternalServerErrorException,
+    Logger,
     NotFoundException,
 } from '@nestjs/common'
 import {
@@ -13,7 +14,6 @@ import {
 } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import dayjs from 'dayjs'
-import lodash from 'lodash'
 import { userConfigCode } from '../../common/constants/user-config-code.constant'
 import { PaginationMeta } from '../../common/interfaces/pagination-meta.interface'
 import { PrismaService } from '../../providers/prisma/prisma.service'
@@ -24,9 +24,10 @@ import { UserService } from '../user/user.service'
 import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 import { ChangeStatusDto } from './dto/change-status.dto'
 import { CreateJobDto } from './dto/create-job.dto'
-import { JobFiltersDto } from './dto/job-filters.dto'
-import { JobQueryDto } from './dto/job-query.dto'
+import { JobFiltersBuilder } from './dto/job-filters.dto'
+import { JobQueryBuilder, JobQueryDto } from './dto/job-query.dto'
 import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
+import { JobSortBuilder } from './dto/job-sort.dto'
 import { RescheduleJobDto } from './dto/reschedule-job.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
@@ -39,7 +40,8 @@ export class JobService {
         private readonly userService: UserService,
         private readonly configService: ConfigService,
         private readonly notificationService: NotificationService
-    ) {}
+    ) { }
+    private readonly logger = new Logger(JobService.name);
 
     /**
      * Create a new job.
@@ -63,8 +65,8 @@ export class JobService {
                         statusId: statusId,
                         assignee: assigneeIds?.length
                             ? {
-                                  connect: assigneeIds.map((id) => ({ id })),
-                              }
+                                connect: assigneeIds.map((id) => ({ id })),
+                            }
                             : undefined,
                         attachmentUrls: jobData.attachmentUrls
                             ? Array.isArray(jobData.attachmentUrls)
@@ -147,79 +149,6 @@ export class JobService {
         }
     }
 
-    async findAllNoPaginate(
-        userId: string,
-        userRole: RoleEnum,
-        query: { keywords?: string }
-    ) {
-        const { keywords } = query
-        if (!keywords) {
-            return []
-        }
-
-        const queryPermission =
-            userRole === RoleEnum.ADMIN
-                ? {}
-                : {
-                      assignee: { some: { id: userId } },
-                  }
-
-        const where: Prisma.JobWhereInput = {
-            ...queryPermission,
-            ...(keywords && {
-                OR: [
-                    {
-                        displayName: {
-                            contains: keywords,
-                            mode: 'insensitive' as const,
-                        },
-                    },
-                    {
-                        no: {
-                            contains: keywords,
-                            mode: 'insensitive' as const,
-                        },
-                    },
-                    {
-                        type: {
-                            displayName: {
-                                contains: keywords,
-                                mode: 'insensitive' as const,
-                            },
-                            code: {
-                                contains: keywords,
-                                mode: 'insensitive' as const,
-                            },
-                        },
-                    },
-                ],
-            }),
-        }
-        try {
-            const jobs = await this.prisma.job.findMany({
-                where,
-                include: {
-                    status: {
-                        select: {
-                            thumbnailUrl: true,
-                        },
-                    },
-                },
-                orderBy: { no: 'asc' },
-            })
-
-            const result = jobs.map((j) =>
-                plainToInstance(this.responseSchema(userRole), j, {
-                    excludeExtraneousValues: true,
-                })
-            ) as unknown as Job[]
-
-            return result
-        } catch (error) {
-            throw new InternalServerErrorException('Get jobs failed')
-        }
-    }
-
     /**
      * Find all jobs with relations.
      */
@@ -228,125 +157,78 @@ export class JobService {
         userRole: RoleEnum,
         query: JobQueryDto
     ): Promise<{ data: Job[]; paginate: PaginationMeta }> {
-        const {
-            page = '1',
-            hideFinishItems = '0',
-            limit = '10',
-            search,
-            tab = JobTabEnum.ACTIVE,
-            sort = 'displayName',
-            assignee,
-            clientName,
-            type,
-            completedAtFrom,
-            completedAtTo,
-            createdAtFrom,
-            createdAtTo,
-            dueAtFrom,
-            dueAtTo,
-            finishedAtFrom,
-            finishedAtTo,
-            incomeCostMax,
-            incomeCostMin,
-            paymentChannel,
-            staffCostMax,
-            staffCostMin,
-            status,
-            updatedAtFrom,
-            updatedAtTo,
-        } = query
-
-        const _filters = {
-            assignee,
-            clientName,
-            type,
-            completedAtFrom,
-            completedAtTo,
-            createdAtFrom,
-            createdAtTo,
-            dueAtFrom,
-            dueAtTo,
-            finishedAtFrom,
-            finishedAtTo,
-            incomeCostMax,
-            incomeCostMin,
-            paymentChannel,
-            staffCostMax,
-            staffCostMin,
-            status,
-            updatedAtFrom,
-            updatedAtTo,
-        }
-
-        // Pass filter field is undefined
-        const filters = lodash.omitBy(_filters, lodash.isUndefined)
-
-        const take = parseInt(limit || '10')
-        const skip = (parseInt(page || '1') - 1) * take
-        const orderBy = this.buildOrderBy(sort)
-
-        const where: Prisma.JobWhereInput = {
-            AND: [
-                // Hide finished items filter
-                ...(Boolean(parseInt(hideFinishItems))
-                    ? [
-                          {
-                              status: { isNot: { order: 5 } },
-                          },
-                      ]
-                    : []),
-                // Tab filter
-                this.buildQueryTab(tab),
-                // Permission filter
-                this.buildPermission(userRole, userId),
-                // Search filter
-                this.buildSearchBy(search),
-                // All other filters
-                // ...this.buildFilters(filters),
-            ],
-            // .filter((condition) => Object.keys(condition).length > 0)
-        }
         try {
-            const [jobs, countTotal] = await Promise.all([
+            // 1. Extract query params
+            const { tab, hideFinishItems, page, limit: take, search, sort, skip, ...filters } = query;
+
+            // 2. Build Advanced Filters (using your new Builder)
+            const filtersQuery = JobFiltersBuilder.build(filters)
+
+            // 3. Build Sorting (using your new Builder)
+            const orderBy = JobSortBuilder.build(sort)
+
+            // 4. Build Tab
+            const tabQuery = JobQueryBuilder.buildQueryTab(tab)
+
+            // 5. Build search
+            const searchQuery = JobQueryBuilder.buildSearch(search)
+
+            // 6. Construct the Main WHERE Clause
+            const queryBuilder: Prisma.JobWhereInput = {
+                AND: [
+                    // Always check Soft Delete
+                    { deletedAt: null },
+
+                    // Apply Permissions (Your existing logic)
+                    this.buildPermission(userRole, userId),
+
+                    // Custom Toggle: Hide Finished Items
+                    // (Standardize string '0'/'1' to boolean check)
+                    hideFinishItems === '1' ? { status: { isNot: { order: 5 } } } : {},
+
+                    // Apply Built Filters (Client, Status, Date Ranges, etc.)
+                    tabQuery,
+                    filtersQuery,
+                    searchQuery,
+                ],
+            }
+            // 5. Execute Query
+            const [data, total] = await Promise.all([
                 this.prisma.job.findMany({
-                    where,
+                    where: queryBuilder,
+                    orderBy,
+                    take, // Uses fallback from DTO (10)
+                    skip,  // Uses getter from DTO
                     include: {
                         type: true,
                         assignee: true,
-                        createdBy: true,
-                        paymentChannel: true,
                         status: true,
+                        paymentChannel: true,
                     },
-                    orderBy,
-                    skip,
-                    take,
                 }),
-                this.prisma.job.count({ where }),
+                this.prisma.job.count({ where: queryBuilder }),
             ])
-            const data = jobs
-                .map((job) => ({
-                    ...job,
-                    thumbnailUrl: job.status.thumbnailUrl,
-                }))
-                .map((job) =>
-                    plainToInstance(this.responseSchema(userRole), job, {
-                        excludeExtraneousValues: true,
-                    })
-                ) as unknown as Job[]
+
+            if (data.length == 0) {
+                this.logger.warn(`No jobs found for user ${userId}`);
+            }
 
             return {
                 data,
                 paginate: {
-                    limit: parseInt(limit),
-                    page: parseInt(page),
-                    total: countTotal,
-                    totalPages: Math.ceil(countTotal / parseInt(limit)),
+                    limit: take ?? 10,
+                    page: page ?? 1,
+                    total: total ?? 0,
+                    totalPages: Math.ceil(total / Number(take ?? 10)),
                 },
             }
         } catch (error) {
+            // Log the actual error to your terminal for debugging
+            this.logger.error(`Error finding jobs for user ${userId}`, error.stack);
             throw new InternalServerErrorException('Get jobs failed')
         }
     }
+
 
     /**
      * Find job by ID.
@@ -398,6 +280,7 @@ export class JobService {
                 excludeExtraneousValues: true,
             }) as unknown as Job
         } catch (error) {
+            this.logger.error(`Error finding jobs for user ${userId}`, error.stack);
             throw new InternalServerErrorException('Get job by no failed')
         }
     }
@@ -790,14 +673,14 @@ export class JobService {
                     data: {
                         ...(data.updateMemberIds &&
                             JSON.parse(data.updateMemberIds).length > 0 && {
-                                assignee: {
-                                    connect: JSON.parse(
-                                        data.updateMemberIds
-                                    ).map((id: string) => ({
-                                        id,
-                                    })),
-                                },
-                            }),
+                            assignee: {
+                                connect: JSON.parse(
+                                    data.updateMemberIds
+                                ).map((id: string) => ({
+                                    id,
+                                })),
+                            },
+                        }),
                     },
                 })
 
@@ -973,263 +856,6 @@ export class JobService {
             : JobStaffResponseDto
     }
 
-    /**
-     * Build Prisma filters from JobFiltersDto
-     * Converts filter DTO into array of Prisma where conditions
-     *
-     * @param filters - JobFiltersDto object containing filter criteria
-     * @returns Array of Prisma JobWhereInput conditions
-     *
-     * @example
-     * // In your service:
-     * const conditions = buildFilters(filters)
-     * const where: Prisma.JobWhereInput = {
-     *   AND: [...otherConditions, ...conditions]
-     * }
-     * await prisma.job.findMany({ where })
-     */
-    private buildFilters(filters?: JobFiltersDto): Prisma.JobWhereInput[] {
-        if (!filters) return []
-
-        const conditions: Prisma.JobWhereInput[] = []
-
-        // Client Name filter
-        if (filters.clientName?.length) {
-            conditions.push({
-                clientName: {
-                    in: filters.clientName,
-                },
-            })
-        }
-
-        // Job Type filter (by code)
-        if (filters.type?.length) {
-            conditions.push({
-                type: {
-                    code: {
-                        in: filters.type,
-                    },
-                },
-            })
-        }
-
-        // Job Status filter (by code)
-        if (filters.status?.length) {
-            conditions.push({
-                status: {
-                    code: {
-                        in: filters.status,
-                    },
-                },
-            })
-        }
-
-        // Assignee filter (by username) - many-to-many relation
-        if (filters.assignee?.length) {
-            conditions.push({
-                assignee: {
-                    some: {
-                        username: {
-                            in: filters.assignee,
-                        },
-                    },
-                },
-            })
-        }
-
-        // Payment Channel filter (by code)
-        if (filters.paymentChannel?.length) {
-            conditions.push({
-                paymentChannel: {
-                    displayName: {
-                        in: filters.paymentChannel,
-                    },
-                },
-            })
-        }
-
-        // Income Cost range filter
-        if (filters.incomeCostMin || filters.incomeCostMax) {
-            conditions.push({
-                incomeCost: {
-                    ...(filters.incomeCostMin && {
-                        gte: parseFloat(filters.incomeCostMin),
-                    }),
-                    ...(filters.incomeCostMax && {
-                        lte: parseFloat(filters.incomeCostMax),
-                    }),
-                },
-            })
-        }
-
-        // Staff Cost range filter
-        if (filters.staffCostMin || filters.staffCostMax) {
-            conditions.push({
-                staffCost: {
-                    ...(filters.staffCostMin && {
-                        gte: parseFloat(filters.staffCostMin),
-                    }),
-                    ...(filters.staffCostMax && {
-                        lte: parseFloat(filters.staffCostMax),
-                    }),
-                },
-            })
-        }
-
-        // Date range filters
-        const dateRangeFilters: Array<{
-            field: keyof Prisma.JobWhereInput
-            from?: string
-            to?: string
-        }> = [
-            {
-                field: 'dueAt',
-                from: filters.dueAtFrom,
-                to: filters.dueAtTo,
-            },
-            {
-                field: 'completedAt',
-                from: filters.completedAtFrom,
-                to: filters.completedAtTo,
-            },
-            {
-                field: 'createdAt',
-                from: filters.createdAtFrom,
-                to: filters.createdAtTo,
-            },
-            {
-                field: 'updatedAt',
-                from: filters.updatedAtFrom,
-                to: filters.updatedAtTo,
-            },
-            {
-                field: 'finishedAt',
-                from: filters.finishedAtFrom,
-                to: filters.finishedAtTo,
-            },
-        ]
-
-        // Apply date range filters
-        dateRangeFilters.forEach(({ field, from, to }) => {
-            if (from || to) {
-                conditions.push({
-                    [field]: {
-                        ...(from && { gte: new Date(from) }),
-                        ...(to && { lte: new Date(to) }),
-                    },
-                })
-            }
-        })
-
-        return conditions
-    }
-
-    private buildQueryTab(tab?: JobTabEnum): Prisma.JobWhereInput {
-        const today = dayjs().startOf('day').toDate()
-        const dayAfterTomorrow = dayjs().add(2, 'day').startOf('day').toDate()
-
-        const baseWhere: Prisma.JobWhereInput = {
-            deletedAt: null,
-        }
-
-        const priorityFilter: Prisma.JobWhereInput = {
-            ...baseWhere,
-            AND: [
-                {
-                    dueAt: {
-                        gt: today,
-                        lt: dayAfterTomorrow,
-                    },
-                },
-                {
-                    status: {
-                        NOT: {
-                            code: 'completed',
-                        },
-                    },
-                },
-                {
-                    status: {
-                        NOT: {
-                            code: 'finish',
-                        },
-                    },
-                },
-            ],
-        }
-
-        const activeFilter: Prisma.JobWhereInput = {
-            ...baseWhere,
-            dueAt: {
-                gt: today,
-            },
-        }
-
-        const completedFilter: Prisma.JobWhereInput = {
-            ...baseWhere,
-            status: {
-                is: {
-                    code: 'completed',
-                },
-            },
-        }
-
-        const deliveredFilter: Prisma.JobWhereInput = {
-            ...baseWhere,
-            status: {
-                is: {
-                    code: 'delivered',
-                },
-            },
-        }
-
-        const lateFilter: Prisma.JobWhereInput = {
-            ...baseWhere,
-            AND: [
-                {
-                    dueAt: {
-                        lte: today,
-                    },
-                },
-                {
-                    status: {
-                        NOT: {
-                            code: 'completed',
-                        },
-                    },
-                },
-                {
-                    status: {
-                        NOT: {
-                            code: 'finish',
-                        },
-                    },
-                },
-            ],
-        }
-
-        const cancelledFilter: Prisma.JobWhereInput = {
-            deletedAt: { not: null },
-        }
-
-        switch (tab) {
-            case JobTabEnum.PRIORITY:
-                return priorityFilter
-            case JobTabEnum.ACTIVE:
-                return activeFilter
-            case JobTabEnum.COMPLETED:
-                return completedFilter
-            case JobTabEnum.DELIVERED:
-                return deliveredFilter
-            case JobTabEnum.LATE:
-                return lateFilter
-            case JobTabEnum.CANCELLED:
-                return cancelledFilter
-            default:
-                return activeFilter
-        }
-    }
-
     private buildPermission(
         userRole: RoleEnum,
         userId: string
@@ -1250,31 +876,5 @@ export class JobService {
                 { clientName: { contains: search, mode: 'insensitive' } },
             ],
         }
-    }
-
-    private buildOrderBy(sort?: string): Prisma.JobOrderByWithRelationInput[] {
-        if (!sort) return [{ createdAt: 'desc' }]
-
-        const sortFields = sort.split(',')
-        return sortFields.map((field) => {
-            const isDescending = field.startsWith('-')
-            const isAscending = field.startsWith('+')
-            const fieldName = isDescending
-                ? field.slice(1)
-                : isAscending
-                  ? field.slice(1)
-                  : field
-            const direction = isDescending ? 'desc' : 'asc'
-
-            // Handle nested sorting if needed
-            if (fieldName === 'status') {
-                return { status: { displayName: direction } }
-            }
-            if (fieldName === 'type') {
-                return { type: { displayName: direction } }
-            }
-
-            return { [fieldName]: direction }
-        })
     }
 }
