@@ -3,7 +3,6 @@ import {
     TBulkChangeStatusInput,
     TChangeStatusInput,
     TCreateJobInput,
-    TJobQueryWithFiltersInput,
     TRescheduleJob,
     TUpdateJobInput,
     TUpdateJobMembersInput,
@@ -85,7 +84,7 @@ export const jobApi = {
         return axiosClient.post(`/v1/jobs/bulk/change-status`, data)
     },
     removeMember: (id: string, memberId: string) => {
-        return axiosClient.patch<ApiResponse<{ id: string }>>(
+        return axiosClient.patch<ApiResponse<{ id: string; no: string }>>(
             `/v1/jobs/${id}/member/${memberId}/remove`
         )
     },

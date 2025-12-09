@@ -2,12 +2,14 @@
 
 import { envConfig } from '@/lib/config'
 import { dateFormatter } from '@/lib/dayjs'
+import { useJobStatuses } from '@/lib/queries'
 import {
     currencyFormatter,
+    DUE_DATE_PRESETS,
     IMAGES,
     JOB_COLUMNS,
-    JOB_DUE_IN_SELECTS,
 } from '@/lib/utils'
+import { TJobFiltersInput } from '@/lib/validationSchemas'
 import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { useSearchParam } from '@/shared/hooks'
@@ -28,12 +30,6 @@ import {
     Skeleton,
     Spinner,
     Switch,
-    Table,
-    TableBody,
-    TableCell,
-    TableColumn,
-    TableHeader,
-    TableRow,
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
@@ -57,13 +53,20 @@ import {
     X,
 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
-import React, { useState } from 'react'
-import { useJobStatuses } from '../../../lib/queries'
+import React from 'react'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore, projectCenterStore } from '../../stores'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
+import {
+    HeroTable,
+    HeroTableBody,
+    HeroTableCell,
+    HeroTableColumn,
+    HeroTableHeader,
+    HeroTableRow,
+} from '../ui/hero-table'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
@@ -75,6 +78,42 @@ const ROW_PER_PAGE_OPTIONS = [
     { displayName: '20 items', value: 20 },
 ]
 
+export const getDueDateRange = (key: string | undefined | null) => {
+    if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
+
+    const now = dayjs()
+
+    switch (key) {
+        case 'lt_1_week':
+            return {
+                dueAtFrom: now.toISOString(),
+                dueAtTo: now.add(1, 'week').toISOString(),
+            }
+        case 'lt_2_weeks':
+            return {
+                dueAtFrom: now.toISOString(),
+                dueAtTo: now.add(2, 'weeks').toISOString(),
+            }
+        case 'lt_3_weeks':
+            return {
+                dueAtFrom: now.toISOString(),
+                dueAtTo: now.add(3, 'weeks').toISOString(),
+            }
+        case 'lt_1_month':
+            return {
+                dueAtFrom: now.toISOString(),
+                dueAtTo: now.add(1, 'month').toISOString(),
+            }
+        case 'gt_1_month':
+            return {
+                dueAtFrom: now.add(1, 'month').toISOString(),
+                dueAtTo: undefined, // "Greater than" implies no upper limit
+            }
+        default:
+            return { dueAtFrom: undefined, dueAtTo: undefined }
+    }
+}
+
 type ProjectCenterOptions = {
     fillContainerHeight?: boolean
 }
@@ -85,17 +124,30 @@ type ProjectCenterTableProps = {
     visibleColumns: 'all' | JobColumnKey[]
     options?: ProjectCenterOptions
     showFinishItems: boolean
+    searchKeywords?: string
+    filters: TJobFiltersInput
+    onFiltersChange?: (filters: TJobFiltersInput) => void
+    onSearchKeywordsChange?: (searchKeywords: string | undefined) => void
+    sortString?: string
+    onSortStringChange: (sortString: string) => void
     onDownloadCsv: () => void
     onShowFinishItemsChange?: (state: boolean) => void
     openFilterDrawer: () => void
     openViewColDrawer: () => void
     openJobDetailDrawer: () => void
+    onAssignMember: (jobNo: string) => void
 }
 export default function ProjectCenterTable({
     data,
+    isLoading = false,
     visibleColumns,
     onRefresh,
-    isLoading = false,
+    sortString,
+    onSortStringChange,
+    searchKeywords,
+    onSearchKeywordsChange,
+    filters,
+    onFiltersChange,
     options = { fillContainerHeight: false },
     showFinishItems,
     onDownloadCsv,
@@ -103,6 +155,7 @@ export default function ProjectCenterTable({
     openFilterDrawer,
     openViewColDrawer,
     openJobDetailDrawer,
+    onAssignMember,
 }: ProjectCenterTableProps) {
     const t = useTranslations()
 
@@ -112,10 +165,7 @@ export default function ProjectCenterTable({
 
     const { setSearchParams } = useSearchParam()
 
-    const searchKeywords = useStore(projectCenterStore, (state) => state.search)
     const hasSearchFilter = Boolean(searchKeywords)
-
-    const [searchValue, setSearchValue] = useState('')
 
     const setContextItem = (value: TJob | null) => {
         return pCenterTableStore.setState((state) => ({
@@ -140,13 +190,6 @@ export default function ProjectCenterTable({
             selectedKeys:
                 keys === 'all' ? 'all' : new Set(keys as unknown as string[]),
         }))
-    }
-
-    const onSearchClear = () => {
-        setSearchValue('')
-    }
-    const onSearchChange = (value: string) => {
-        setSearchValue(value)
     }
 
     const onRowPerPageChange = (keys: SharedSelection) => {
@@ -195,9 +238,11 @@ export default function ProjectCenterTable({
                                     />
                                 </div>
                             }
-                            value={searchValue}
-                            onClear={onSearchClear}
-                            onValueChange={onSearchChange}
+                            value={searchKeywords}
+                            onClear={() => onSearchKeywordsChange?.(undefined)}
+                            onValueChange={(value) =>
+                                onSearchKeywordsChange?.(value)
+                            }
                         />
 
                         <div className="w-px mx-3 h-5 bg-text-muted"></div>
@@ -382,6 +427,14 @@ export default function ProjectCenterTable({
                                 }}
                                 placeholder="Status"
                                 isClearable
+                                onSelectionChange={(value) => {
+                                    const arrayToString =
+                                        Array.from(value).join(',')
+                                    onFiltersChange?.({
+                                        ...filters,
+                                        status: arrayToString,
+                                    })
+                                }}
                                 renderValue={(selectedItems) => {
                                     return (
                                         <p className="text-text-7">
@@ -395,7 +448,7 @@ export default function ProjectCenterTable({
                             >
                                 {jobStatuses.map((jobStatus) => {
                                     return (
-                                        <HeroSelectItem key={jobStatus.id}>
+                                        <HeroSelectItem key={jobStatus.code}>
                                             <div className="flex items-center justify-start gap-2">
                                                 <div
                                                     className="size-2 rounded-full"
@@ -422,9 +475,17 @@ export default function ProjectCenterTable({
                                 }}
                                 placeholder="Due in"
                                 isClearable
+                                onSelectionChange={(value) => {
+                                    console.log(value.currentKey)
+                                    const { dueAtFrom, dueAtTo } =
+                                        getDueDateRange(value.currentKey)
+                                    onFiltersChange?.({
+                                        ...filters,
+                                        dueAtFrom,
+                                        dueAtTo,
+                                    })
+                                }}
                                 renderValue={(selectedItems) => {
-                                    console.log(selectedItems)
-
                                     return (
                                         <p className="text-text-7">
                                             {selectedItems[0]?.textValue}
@@ -432,9 +493,9 @@ export default function ProjectCenterTable({
                                     )
                                 }}
                             >
-                                {JOB_DUE_IN_SELECTS.map((dueIn) => {
+                                {DUE_DATE_PRESETS.map((dueIn) => {
                                     return (
-                                        <HeroSelectItem key={dueIn.value}>
+                                        <HeroSelectItem key={dueIn.key}>
                                             {dueIn.label}
                                         </HeroSelectItem>
                                     )
@@ -481,6 +542,7 @@ export default function ProjectCenterTable({
         selectedKeys,
         showFinishItems,
         isLoading,
+        searchKeywords,
     ])
 
     const bottomContent = React.useMemo(() => {
@@ -590,7 +652,7 @@ export default function ProjectCenterTable({
                 case 'staffCost':
                     return (
                         <p className="font-bold text-right text-currency">
-                            {currencyFormatter(data.staffCost)}
+                            {currencyFormatter(data.staffCost, 'Vietnamese')}
                         </p>
                     )
                 case 'status':
@@ -651,21 +713,17 @@ export default function ProjectCenterTable({
                                     variant="light"
                                     size="sm"
                                     className="size-8! flex items-center justify-center"
+                                    onPress={() => onAssignMember(data.no)}
                                 >
-                                    <p className="inline-flex items-center leading-none">
-                                        <UserRoundPlus
-                                            size={16}
-                                            className="opacity-60"
-                                        />
-                                    </p>
+                                    <UserRoundPlus
+                                        size={16}
+                                        className="opacity-60"
+                                    />
                                 </Button>
                             </HeroTooltip>
                         </div>
                     ) : (
-                        <div
-                            onClick={() => {}}
-                            className="cursor-pointer w-fit"
-                        >
+                        <div onClick={() => {}} className="w-fit">
                             <Avatar.Group
                                 max={{
                                     count: 4,
@@ -763,7 +821,7 @@ export default function ProjectCenterTable({
         }, [])
 
     return (
-        <Table
+        <HeroTable
             key="no"
             isHeaderSticky
             aria-label="Project center table"
@@ -772,6 +830,8 @@ export default function ProjectCenterTable({
             selectedKeys={selectedKeys}
             selectionMode="multiple"
             topContent={topContent}
+            sortString={sortString ?? undefined}
+            onSortStringChange={onSortStringChange}
             BaseComponent={(found) => {
                 return (
                     <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
@@ -790,9 +850,9 @@ export default function ProjectCenterTable({
                 table: !isLoading ? 'relative' : 'relative min-h-[480px]!',
             }}
         >
-            <TableHeader columns={headerColumns}>
+            <HeroTableHeader columns={headerColumns}>
                 {(column) => (
-                    <TableColumn
+                    <HeroTableColumn
                         key={column.uid}
                         align={column.uid === 'action' ? 'center' : 'start'}
                         allowsSorting={column.sortable}
@@ -801,10 +861,10 @@ export default function ProjectCenterTable({
                         }}
                     >
                         {column.displayName}
-                    </TableColumn>
+                    </HeroTableColumn>
                 )}
-            </TableHeader>
-            <TableBody
+            </HeroTableHeader>
+            <HeroTableBody
                 emptyContent={'No items found'}
                 items={isLoading ? [] : data}
                 loadingContent={
@@ -822,20 +882,20 @@ export default function ProjectCenterTable({
                 isLoading={isLoading}
             >
                 {(item) => (
-                    <TableRow
+                    <HeroTableRow
                         key={item.id}
                         onContextMenu={() => {
                             setContextItem(item)
                         }}
                     >
                         {(columnKey) => (
-                            <TableCell>
+                            <HeroTableCell>
                                 {renderCell(item, columnKey as JobColumnKey)}
-                            </TableCell>
+                            </HeroTableCell>
                         )}
-                    </TableRow>
+                    </HeroTableRow>
                 )}
-            </TableBody>
-        </Table>
+            </HeroTableBody>
+        </HeroTable>
     )
 }

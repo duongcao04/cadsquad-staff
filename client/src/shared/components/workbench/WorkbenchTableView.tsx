@@ -12,18 +12,27 @@ import AssignMemberModal from '../project-center/AssignMemberModal'
 import WorkbenchTable from './WorkbenchTable'
 
 export default function WorkbenchTableView() {
+    const { getSearchParam, setSearchParams } = useSearchParam()
+
+    const [viewDetailNo, setViewDetailNo] = useState<string | null>(null)
+    const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
+
+    const [sortString, setSortString] = useState<string | null>(() => {
+        return getSearchParam('sort') || null
+    })
+
+    useEffect(() => {
+        setSearchParams({ sort: sortString })
+    }, [sortString])
+
     const searchKeywords = useStore(
         workbenchStore,
         (state) => state.searchKeywords
     )
     const { jobs } = useJobs({
         search: searchKeywords,
+        sort: sortString ?? undefined,
     })
-
-    const { getSearchParam, setSearchParams } = useSearchParam()
-
-    const [viewDetailNo, setViewDetailNo] = useState<string | null>(null)
-    const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
 
     const {
         isOpen: isOpenJobDetailDrawer,
@@ -87,6 +96,8 @@ export default function WorkbenchTableView() {
                 data={jobs}
                 onViewDetail={onViewDetail}
                 onAssignMember={onAssignMember}
+                sortString={sortString}
+                setSortString={setSortString}
             />
         </>
     )

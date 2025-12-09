@@ -12,6 +12,8 @@ import {
 import { CalendarDate } from '@internationalized/date'
 import dayjs, { Dayjs } from 'dayjs'
 import { cn } from '../../../lib/utils'
+import { HeroButton } from './hero-button'
+import { X } from 'lucide-react'
 
 // --- Utility Functions: Dayjs <-> Internationalized/date ---
 interface BaseProps {
@@ -78,6 +80,7 @@ type HeroDateRangePickerProps = Omit<
     value?: { start: Dayjs | string; end: Dayjs | string } | null
     defaultValue?: { start: Dayjs | string; end: Dayjs | string } | null
     onChange?: (range: { start: Dayjs; end: Dayjs } | null) => void
+    isClearable?: boolean
 }
 
 // --- Components ---
@@ -118,6 +121,7 @@ export const HeroDateRangePicker = ({
     value,
     defaultValue,
     onChange,
+    isClearable = false,
     ...props
 }: HeroDateRangePickerProps) => {
     // Helper to parse range objects
@@ -155,6 +159,21 @@ export const HeroDateRangePicker = ({
             value={parsedValue}
             defaultValue={parsedDefaultValue}
             onChange={handleChange}
+            selectorButtonPlacement={isClearable ? 'start' : 'end'}
+            endContent={
+                isClearable && parsedValue ? (
+                    <HeroButton
+                        size="xs"
+                        isIconOnly
+                        className="w-6! px-0!"
+                        variant="light"
+                        color="default"
+                        onPress={() => handleChange(null)}
+                    >
+                        <X size={14} />
+                    </HeroButton>
+                ) : undefined
+            }
             classNames={{
                 label: cn(
                     'font-medium! text-sm! text-text-7!',

@@ -24,7 +24,7 @@ export const smoothMotion = {
             },
         },
         exit: {
-            x: 20,
+            x: 5,
             opacity: 0,
             transition: {
                 duration: 0.08,
@@ -36,7 +36,7 @@ export const smoothMotion = {
 const StyledDrawer = extendVariants(Drawer, {
     variants: {
         // We define a new custom variant prop called "heroStyle"
-        heroStyle: {
+        variant: {
             cinematic: {
                 base: 'm-2! rounded-md!',
                 body: 'px-3! py-2!',
@@ -45,7 +45,7 @@ const StyledDrawer = extendVariants(Drawer, {
         },
     },
     defaultVariants: {
-        heroStyle: 'cinematic', // Default behavior
+        variant: 'cinematic', // Default behavior
         radius: 'sm',
     },
 })

@@ -155,6 +155,13 @@ export const PAID_STATUS_COLOR: Record<
     },
 }
 
+export const PAID_STATUS_ARRAY = Object.entries(PAID_STATUS_COLOR).map(
+    ([key, value]) => ({
+        key, // 'paid', 'unpaid'
+        ...value,
+    })
+)
+
 export const JOB_COLUMNS: {
     displayName: string
     uid: JobColumnKey
@@ -322,10 +329,12 @@ export const APP_TABLE_SIZES = [
     },
 ]
 
-export const JOB_DUE_IN_SELECTS = [
-    { label: '< 1 week', value: 'lt_1_week' },
-    { label: '< 2 week', value: 'lt_2_week' },
-    { label: '< 3 week', value: 'lt_3_week' },
-    { label: '< 1 month', value: 'lt_1_month' },
-    { label: '> 1 month', value: 'gt_1_month' },
-]
+export const DUE_DATE_PRESETS = [
+    { key: 'lt_1_week', label: '< 1 week' },
+    { key: 'lt_2_weeks', label: '< 2 weeks' }, // Corrected "week" to "weeks"
+    { key: 'lt_3_weeks', label: '< 3 weeks' }, // Corrected "week" to "weeks"
+    { key: 'lt_1_month', label: '< 1 month' },
+    { key: 'gt_1_month', label: '> 1 month' },
+] as const
+
+export type DueDatePresetKey = (typeof DUE_DATE_PRESETS)[number]['key']

@@ -6,7 +6,7 @@ import {
     ChangeStatusInput,
     TBulkChangeStatusInput,
     TCreateJobInput,
-    TJobQueryWithFiltersInput,
+    TJobQueryInput,
     TRescheduleJob,
     TUpdateJobInput,
     TUpdateJobMembersInput,
@@ -61,8 +61,8 @@ export const mapJob: (item: IJobResponse) => TJob = (item) => ({
 })
 
 export const useJobs = (
-    params: TJobQueryWithFiltersInput = {
-        hideFinishItems: 0,
+    params: TJobQueryInput = {
+        hideFinishItems: '0',
         page: 1,
         limit: 10,
         tab: ProjectCenterTabEnum.ACTIVE,
@@ -496,7 +496,7 @@ export const useAssignMemberMutation = (jobNo?: string) => {
     })
 }
 
-export const useRemoveMemberMutation = (jobNo?: string) => {
+export const useRemoveMemberMutation = () => {
     return useMutation({
         mutationKey: ['removeMember', 'job'],
         mutationFn: ({
@@ -511,12 +511,12 @@ export const useRemoveMemberMutation = (jobNo?: string) => {
             }
             return jobApi.removeMember(jobId, memberId)
         },
-        onSuccess: (data) => {
+        onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobs', 'no', jobNo],
+                queryKey: ['jobs', 'no', res.data.result?.no],
             })
             queryClient.invalidateQueries({
-                queryKey: ['jobActivityLog', String(data.data.result?.id)],
+                queryKey: ['jobActivityLog', String(res.data.result?.id)],
             })
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],

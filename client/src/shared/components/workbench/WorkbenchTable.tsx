@@ -16,12 +16,6 @@ import {
     SelectItem,
     SharedSelection,
     Skeleton,
-    Table,
-    TableBody,
-    TableCell,
-    TableColumn,
-    TableHeader,
-    TableRow,
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
@@ -38,6 +32,14 @@ import {
 } from '../../stores'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
+import {
+    HeroTable,
+    HeroTableBody,
+    HeroTableCell,
+    HeroTableColumn,
+    HeroTableHeader,
+    HeroTableRow,
+} from '../ui/hero-table'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
 
@@ -55,6 +57,8 @@ type Props = {
     data: TJob[]
     isLoading?: boolean
     options?: ProjectCenterOptions
+    sortString: string | null
+    setSortString: React.Dispatch<React.SetStateAction<string | null>>
     onViewDetail: (jobNo: string) => void
     onAssignMember: (jobNo: string) => void
 }
@@ -62,6 +66,8 @@ export default function WorkbenchTable({
     isLoading = false,
     data,
     onViewDetail,
+    sortString,
+    setSortString,
     onAssignMember,
     options = { fillContainerHeight: false },
 }: Props) {
@@ -392,76 +398,73 @@ export default function WorkbenchTable({
         }, [])
 
     return (
-        <>
-            <Table
-                key="no"
-                isHeaderSticky
-                aria-label="Project center table"
-                bottomContent={bottomContent}
-                bottomContentPlacement="outside"
-                selectedKeys={selectedKeys}
-                selectionMode="multiple"
-                topContent={topContent}
-                BaseComponent={(found) => {
-                    return (
-                        <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
-                            <ScrollBar orientation="horizontal" />
-                            <ScrollBar orientation="vertical" />
-                            {found.children}
-                        </ScrollArea>
-                    )
-                }}
-                // sortDescriptor={sortDescriptor}
-                topContentPlacement="outside"
-                onSelectionChange={setSelectedKeys}
-                // onSortChange={setSortDescriptor}'
-                classNames={{
-                    base: `${options.fillContainerHeight ? 'h-full' : ''}`,
-                    table: 'relative',
-                }}
+        <HeroTable
+            key="no"
+            isHeaderSticky
+            aria-label="Project center table"
+            bottomContent={bottomContent}
+            sortString={sortString ?? undefined}
+            onSortStringChange={setSortString}
+            bottomContentPlacement="outside"
+            selectedKeys={selectedKeys}
+            selectionMode="multiple"
+            topContent={topContent}
+            BaseComponent={(found) => {
+                return (
+                    <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
+                        <ScrollBar orientation="horizontal" />
+                        <ScrollBar orientation="vertical" />
+                        {found.children}
+                    </ScrollArea>
+                )
+            }}
+            // sortDescriptor={sortDescriptor}
+            topContentPlacement="outside"
+            onSelectionChange={setSelectedKeys}
+            // onSortChange={setSortDescriptor}'
+            classNames={{
+                base: `${options.fillContainerHeight ? 'h-full' : ''}`,
+                table: 'relative',
+            }}
+        >
+            <HeroTableHeader columns={headerColumns} suppressHydrationWarning>
+                {(column) => (
+                    <HeroTableColumn
+                        key={column.uid}
+                        align={column.uid === 'action' ? 'center' : 'start'}
+                        allowsSorting={column.sortable}
+                    >
+                        {column.displayName}
+                    </HeroTableColumn>
+                )}
+            </HeroTableHeader>
+            <HeroTableBody
+                emptyContent={'No items found'}
+                items={isLoading ? [] : data}
+                loadingContent={
+                    <div className="flex flex-col gap-3 w-full mt-16">
+                        {Array.from({
+                            length: pagination.rowPerPage || 10,
+                        }).map((_, index) => (
+                            <Skeleton
+                                key={index}
+                                className="rounded-md w-full h-8!"
+                            />
+                        ))}
+                    </div>
+                }
+                isLoading={isLoading}
             >
-                <TableHeader columns={headerColumns}>
-                    {(column) => (
-                        <TableColumn
-                            key={column.uid}
-                            align={column.uid === 'action' ? 'center' : 'start'}
-                            allowsSorting={column.sortable}
-                        >
-                            {column.displayName}
-                        </TableColumn>
-                    )}
-                </TableHeader>
-                <TableBody
-                    emptyContent={'No items found'}
-                    items={isLoading ? [] : data}
-                    loadingContent={
-                        <div className="flex flex-col gap-3 w-full mt-16">
-                            {Array.from({
-                                length: pagination.rowPerPage || 10,
-                            }).map((_, index) => (
-                                <Skeleton
-                                    key={index}
-                                    className="rounded-md w-full h-8!"
-                                />
-                            ))}
-                        </div>
-                    }
-                    isLoading={isLoading}
-                >
-                    {(item) => (
-                        <TableRow key={item.id}>
-                            {(columnKey) => (
-                                <TableCell>
-                                    {renderCell(
-                                        item,
-                                        columnKey as JobColumnKey
-                                    )}
-                                </TableCell>
-                            )}
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-        </>
+                {(item) => (
+                    <HeroTableRow key={item.id}>
+                        {(columnKey) => (
+                            <HeroTableCell>
+                                {renderCell(item, columnKey as JobColumnKey)}
+                            </HeroTableCell>
+                        )}
+                    </HeroTableRow>
+                )}
+            </HeroTableBody>
+        </HeroTable>
     )
 }

@@ -21,7 +21,7 @@ export const HeroButton = extendVariants(Button, {
                 'bg-green-500 text-white hover:shadow-xs shadow-green-500/40 data-[hover=true]:bg-green-600',
         },
         size: {
-            xs: 'px-2 min-w-12 h-6 text-tiny gap-1 rounded-small',
+            xs: 'px-2 min-w-6 h-6 text-tiny gap-1 rounded-small',
         },
     },
     defaultVariants: {

@@ -15,6 +15,7 @@ export default function AuthPage() {
                         ? 'linear-gradient(60deg, #f3f3c3, #D4D3DD)'
                         : 'linear-gradient(60deg, #0f0c29, #302b63 50%, #24243e)',
             }}
+            suppressHydrationWarning
         >
             <CadsquadLogo
                 classNames={{

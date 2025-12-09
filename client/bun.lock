@@ -53,6 +53,7 @@
         "formik": "^2.4.6",
         "get-browser-fingerprint": "^4.1.1",
         "heroicons": "^2.2.0",
+        "hooks-ts": "^0.12.0",
         "hotkeys-js": "^3.13.15",
         "html-react-parser": "^5.2.10",
         "i": "^0.3.7",
@@ -2173,6 +2174,8 @@
     "highlight.js": ["highlight.js@10.7.3", "", {}, "sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A=="],
 
     "hoist-non-react-statics": ["hoist-non-react-statics@3.3.2", "", { "dependencies": { "react-is": "^16.7.0" } }, "sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw=="],
+
+    "hooks-ts": ["hooks-ts@0.12.0", "", { "peerDependencies": { "react": "^16.8.0  || ^17 || ^18 || ^19 || ^19.0.0-rc" } }, "sha512-XAmc4Jwx0uQ/xJ3+PmihhzQZnO1o8qPDmgWodcZZzfxHZynRQhI/qeEKSoqHD62tRqhHsX6QU47xErtPCKE31A=="],
 
     "hosted-git-info": ["hosted-git-info@4.1.0", "", { "dependencies": { "lru-cache": "^6.0.0" } }, "sha512-kyCuEOWjJqZuDbRHzL8V93NzQhwIB71oFWSyzVo+KPZI+pnQPPxucdkrOZvkLRnrf5URsQM+IJ09Dw29cRALIA=="],
 
