@@ -64,6 +64,22 @@ export default function FilterView({
         })
     }
 
+    const handleIncomeMinChange = (val: string) => {
+        setFilters((prev) => ({ ...prev, incomeCostMin: val }))
+    }
+
+    const handleIncomeMaxChange = (val: string) => {
+        setFilters((prev) => ({ ...prev, incomeCostMax: val }))
+    }
+
+    const handleStaffCostMinChange = (val: string) => {
+        setFilters((prev) => ({ ...prev, staffCostMin: val }))
+    }
+
+    const handleStaffCostMaxChange = (val: string) => {
+        setFilters((prev) => ({ ...prev, staffCostMax: val }))
+    }
+
     return (
         <div className="relative size-full">
             <div className="pb-10">
@@ -164,38 +180,30 @@ export default function FilterView({
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <div className="grid grid-cols-[60px_1fr_40px_1fr] items-center gap-5">
-                                    <p className="text-sm font-medium text-text-subdued">
-                                        From:
-                                    </p>
-                                    <HeroNumberInput
-                                        value={filters.incomeCostMin}
-                                        placeholder="0"
-                                        size="sm"
-                                        variant="underlined"
-                                        hideStepper
-                                    />
-                                    <p className="text-sm font-medium text-text-subdued">
-                                        to
-                                    </p>
-                                    <HeroNumberInput
-                                        value={filters.incomeCostMax}
-                                        placeholder="9999999"
-                                        size="sm"
-                                        variant="underlined"
-                                        hideStepper
-                                    />
-                                </div>
                                 <Slider
-                                    value={
-                                        filters.incomeCostMin &&
-                                        filters.incomeCostMax
-                                            ? [
-                                                  Number(filters.incomeCostMin),
-                                                  Number(filters.incomeCostMax),
-                                              ]
-                                            : [0, 9999999]
-                                    }
+                                    // 1. FIX: Use Nullish Coalescing (??) to allow '0' as a valid value
+                                    value={[
+                                        Number(filters.incomeCostMin ?? 0),
+                                        Number(
+                                            filters.incomeCostMax ?? 9999999
+                                        ),
+                                    ]}
+                                    // 2. FIX: Handle the array value from the slider
+                                    onChange={(val) => {
+                                        // Ensure val is an array (Range Slider always returns number[])
+                                        if (Array.isArray(val)) {
+                                            const [newMin, newMax] = val
+
+                                            // Convert to string if your state stores strings (implied by Number() usage)
+                                            handleIncomeMinChange(
+                                                newMin.toString()
+                                            )
+                                            handleIncomeMaxChange(
+                                                newMax.toString()
+                                            )
+                                        }
+                                    }}
+                                    // Keep your formatting and visual props
                                     formatOptions={{
                                         style: 'currency',
                                         currency: 'USD',
@@ -204,6 +212,29 @@ export default function FilterView({
                                     minValue={0}
                                     step={50}
                                     showTooltip
+                                    // Inputs inside the slider tracks
+                                    startContent={
+                                        <HeroNumberInput
+                                            value={filters.incomeCostMin}
+                                            onValueChange={
+                                                handleIncomeMinChange
+                                            }
+                                            placeholder="0"
+                                            size="sm"
+                                            hideStepper
+                                        />
+                                    }
+                                    endContent={
+                                        <HeroNumberInput
+                                            value={filters.incomeCostMax}
+                                            onValueChange={
+                                                handleIncomeMaxChange
+                                            }
+                                            placeholder="9999999"
+                                            size="sm"
+                                            hideStepper
+                                        />
+                                    }
                                 />
                             </div>
                         </div>
@@ -222,150 +253,60 @@ export default function FilterView({
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <div className="grid grid-cols-[60px_1fr_40px_1fr] items-center gap-5">
-                                    <p className="text-sm font-medium text-text-subdued">
-                                        From:
-                                    </p>
-                                    <HeroNumberInput
-                                        value={filters.staffCostMin ?? 0}
-                                        size="sm"
-                                        variant="underlined"
-                                        hideStepper
-                                    />
-                                    <p className="text-sm font-medium text-text-subdued">
-                                        to
-                                    </p>
-                                    <HeroNumberInput
-                                        value={filters.staffCostMax}
-                                        placeholder="∞"
-                                        size="sm"
-                                        variant="underlined"
-                                        hideStepper
-                                    />
-                                </div>{' '}
                                 <Slider
-                                    defaultValue={[100, 500]}
+                                    // 1. FIX: Use Nullish Coalescing (??) to allow '0' as a valid value
+                                    value={[
+                                        Number(filters.staffCostMin ?? 0),
+                                        Number(filters.staffCostMax ?? 9999999),
+                                    ]}
+                                    // 2. FIX: Handle the array value from the slider
+                                    onChange={(val) => {
+                                        // Ensure val is an array (Range Slider always returns number[])
+                                        if (Array.isArray(val)) {
+                                            const [newMin, newMax] = val
+
+                                            // Convert to string if your state stores strings (implied by Number() usage)
+                                            handleStaffCostMinChange(
+                                                newMin.toString()
+                                            )
+                                            handleStaffCostMaxChange(
+                                                newMax.toString()
+                                            )
+                                        }
+                                    }}
+                                    // Keep your formatting and visual props
                                     formatOptions={{
                                         style: 'currency',
                                         currency: 'USD',
                                     }}
-                                    maxValue={1000}
+                                    maxValue={9999999}
                                     minValue={0}
                                     step={50}
                                     showTooltip
+                                    // Inputs inside the slider tracks
+                                    startContent={
+                                        <HeroNumberInput
+                                            value={filters.staffCostMin}
+                                            onValueChange={
+                                                handleStaffCostMinChange
+                                            }
+                                            placeholder="0"
+                                            size="sm"
+                                            hideStepper
+                                        />
+                                    }
+                                    endContent={
+                                        <HeroNumberInput
+                                            value={filters.staffCostMax}
+                                            onValueChange={
+                                                handleStaffCostMaxChange
+                                            }
+                                            placeholder="9999999"
+                                            size="sm"
+                                            hideStepper
+                                        />
+                                    }
                                 />
-                            </div>
-                        </div>
-                    </HeroCardBody>
-                </HeroCard>
-
-                <Divider className="my-2" />
-
-                <HeroCard className="p-0 border-none shadow-none">
-                    <HeroCardBody className="pt-0 px-2 space-y-4">
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center justify-start gap-1.5">
-                                    <Loader
-                                        size={14}
-                                        className="text-text-default"
-                                    />
-                                    <p className="font-medium text-base">
-                                        {t('jobColumns.status')}
-                                    </p>
-                                </div>
-                                <div>
-                                    <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
-                                        <p className="font-medium text-text-subdued">
-                                            Reset
-                                        </p>
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <HeroSelect
-                                    isLoading={loadingJobStatuses}
-                                    id="status"
-                                    name="status"
-                                    placeholder="Select one or more status"
-                                    selectionMode="multiple"
-                                    size="lg"
-                                    onChange={() => {
-                                        // const value = e.target.value
-                                        // formik.setFieldValue('departmentId', value)
-                                        // formik.setFieldTouched(
-                                        //     'departmentId',
-                                        //     true,
-                                        //     false
-                                        // )
-                                    }}
-                                    variant="bordered"
-                                    renderValue={(selectedItems) => {
-                                        return (
-                                            <ul className="flex line-clamp-1 truncate">
-                                                {selectedItems.map(
-                                                    (jobStatus) => {
-                                                        const item =
-                                                            jobStatuses?.find(
-                                                                (d) =>
-                                                                    d.id ===
-                                                                    jobStatus.key
-                                                            )
-                                                        if (!item)
-                                                            return (
-                                                                <span
-                                                                    className="text-gray-400"
-                                                                    key={
-                                                                        jobStatus.key
-                                                                    }
-                                                                >
-                                                                    Select one
-                                                                    job status
-                                                                </span>
-                                                            )
-                                                        return (
-                                                            <p
-                                                                key={
-                                                                    jobStatus.key
-                                                                }
-                                                            >
-                                                                {
-                                                                    item.displayName
-                                                                }
-                                                                {item.id !==
-                                                                    selectedItems[
-                                                                        selectedItems.length -
-                                                                            1
-                                                                    ].key && (
-                                                                    <span className="pr-1">
-                                                                        ,
-                                                                    </span>
-                                                                )}
-                                                            </p>
-                                                        )
-                                                    }
-                                                )}
-                                            </ul>
-                                        )
-                                    }}
-                                >
-                                    {jobStatuses?.map((jobStatus) => (
-                                        <HeroSelectItem key={jobStatus.id}>
-                                            <div className="flex items-center justify-start gap-2">
-                                                <div
-                                                    className="size-2 rounded-full"
-                                                    style={{
-                                                        backgroundColor:
-                                                            jobStatus.hexColor
-                                                                ? jobStatus.hexColor
-                                                                : 'transparent',
-                                                    }}
-                                                />
-                                                <p>{jobStatus.displayName}</p>
-                                            </div>
-                                        </HeroSelectItem>
-                                    ))}
-                                </HeroSelect>
                             </div>
                         </div>
                     </HeroCardBody>
@@ -551,7 +492,112 @@ export default function FilterView({
                 <Divider className="my-2" />
 
                 <HeroCard className="p-0 border-none shadow-none">
-                    <HeroCardBody className="pt-0 px-2 space-y-4">
+                    <HeroCardBody className="px-2 space-y-4">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-start gap-1.5">
+                                    <Loader
+                                        size={14}
+                                        className="text-text-default"
+                                    />
+                                    <p className="font-medium text-base">
+                                        {t('jobColumns.status')}
+                                    </p>
+                                </div>
+                                <div>
+                                    <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
+                                        <p className="font-medium text-text-subdued">
+                                            Reset
+                                        </p>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <HeroSelect
+                                    isLoading={loadingJobStatuses}
+                                    id="status"
+                                    name="status"
+                                    placeholder="Select one or more status"
+                                    selectionMode="multiple"
+                                    size="lg"
+                                    onChange={() => {
+                                        // const value = e.target.value
+                                        // formik.setFieldValue('departmentId', value)
+                                        // formik.setFieldTouched(
+                                        //     'departmentId',
+                                        //     true,
+                                        //     false
+                                        // )
+                                    }}
+                                    variant="bordered"
+                                    renderValue={(selectedItems) => {
+                                        return (
+                                            <ul className="flex line-clamp-1 truncate">
+                                                {selectedItems.map(
+                                                    (jobStatus) => {
+                                                        const item =
+                                                            jobStatuses?.find(
+                                                                (d) =>
+                                                                    d.id ===
+                                                                    jobStatus.key
+                                                            )
+                                                        if (!item)
+                                                            return (
+                                                                <span
+                                                                    className="text-gray-400"
+                                                                    key={
+                                                                        jobStatus.key
+                                                                    }
+                                                                >
+                                                                    Select one
+                                                                    job status
+                                                                </span>
+                                                            )
+                                                        return (
+                                                            <p
+                                                                key={
+                                                                    jobStatus.key
+                                                                }
+                                                            >
+                                                                {
+                                                                    item.displayName
+                                                                }
+                                                                {item.id !==
+                                                                    selectedItems[
+                                                                        selectedItems.length -
+                                                                            1
+                                                                    ].key && (
+                                                                    <span className="pr-1">
+                                                                        ,
+                                                                    </span>
+                                                                )}
+                                                            </p>
+                                                        )
+                                                    }
+                                                )}
+                                            </ul>
+                                        )
+                                    }}
+                                >
+                                    {jobStatuses?.map((jobStatus) => (
+                                        <HeroSelectItem key={jobStatus.id}>
+                                            <div className="flex items-center justify-start gap-2">
+                                                <div
+                                                    className="size-2 rounded-full"
+                                                    style={{
+                                                        backgroundColor:
+                                                            jobStatus.hexColor
+                                                                ? jobStatus.hexColor
+                                                                : 'transparent',
+                                                    }}
+                                                />
+                                                <p>{jobStatus.displayName}</p>
+                                            </div>
+                                        </HeroSelectItem>
+                                    ))}
+                                </HeroSelect>
+                            </div>
+                        </div>
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center justify-start gap-1.5">

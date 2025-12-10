@@ -1,94 +1,112 @@
 import { Link } from '@/i18n/navigation'
-import { User } from '@/shared/interfaces'
 import {
-    ApartmentOutlined,
-    MailOutlined,
-    MessageOutlined,
-    MobileOutlined,
-    UserOutlined,
-} from '@ant-design/icons'
+    Building2,
+    CircleUserRound,
+    Mail,
+    MessageCircleMore,
+    Phone,
+} from 'lucide-react'
+import { TUser } from '../../types'
+import HeroCopyButton from '../ui/hero-copy-button'
 
 type Props = {
-    data?: User
+    data: TUser
 }
 
 export function ProfileOverview({ data }: Props) {
     return (
-        <div className="mt-2">
+        <div className="mt-4">
             <div className="space-y-4">
-                <div className="flex items-center justify-start gap-3">
-                    <MailOutlined size={16} className="!text-text-muted" />
-                    <div>
-                        <p className="text-xs text-text-muted">Email</p>
-                        <Link
-                            href={`mailto:${data?.email}`}
-                            className="text-sm link !text-blue-500"
-                            target="_blank"
-                        >
-                            {data?.email}
-                        </Link>
-                    </div>
-                </div>
-
-                <div className="flex items-center justify-start gap-3">
-                    <MessageOutlined size={16} className="!text-text-muted" />
-                    <div>
-                        <p className="text-xs text-text-muted">Chat</p>
-                        <Link
-                            href={`mailto:${data?.email}`}
-                            className="text-sm link !text-blue-500"
-                            target="_blank"
-                        >
-                            {data?.email}
-                        </Link>
-                    </div>
-                </div>
-
-                <div className="flex items-center justify-start gap-3">
-                    <ApartmentOutlined size={16} className="!text-text-muted" />
-                    <div>
-                        <p className="text-xs text-text-muted">Department</p>
-
-                        <p className="text-sm mt-0.5">
-                            {data?.department ? (
-                                <span>{data?.department?.displayName}</span>
-                            ) : (
-                                <span>-</span>
-                            )}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center justify-start gap-3">
-                    <UserOutlined size={16} className="!text-text-muted" />
-                    <div>
-                        <p className="text-xs text-text-muted">Job title</p>
-
-                        <p className="text-sm mt-0.5">
-                            {data?.jobTitle ? (
-                                <span>{data?.jobTitle?.displayName}</span>
-                            ) : (
-                                <span>-</span>
-                            )}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center justify-start gap-3">
-                    <MobileOutlined size={16} className="!text-text-muted" />
-                    <div>
-                        <p className="text-xs text-text-muted">Mobile</p>
-                        {data?.phoneNumber ? (
+                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                    <Mail
+                        size={28}
+                        strokeWidth={2}
+                        className="text-text-subdued"
+                    />
+                    <div className="w-full flex items-center justify-between gap-2">
+                        <div>
+                            <p className="text-xs text-text-subdued">Email</p>
                             <Link
-                                href={`tel:${data?.phoneNumber}`}
-                                className="text-sm link !text-blue-500"
+                                href={`mailto:${data?.email}`}
+                                className="text-sm font-semibold text-text-7! hover:underline"
                                 target="_blank"
                             >
-                                {data?.phoneNumber}
+                                {data.email}
                             </Link>
-                        ) : (
-                            <p className="text-sm mt-0.5">-</p>
-                        )}
+                        </div>
+                        <HeroCopyButton textValue={data.email} />
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                    <MessageCircleMore
+                        size={28}
+                        strokeWidth={2}
+                        className="text-text-subdued"
+                    />
+                    <div className="w-full flex items-center justify-between gap-2">
+                        <div>
+                            <p className="text-xs text-text-subdued">Chat</p>
+                            <Link
+                                href={`mailto:${data?.email}`}
+                                className="text-sm font-semibold text-text-7! hover:underline"
+                                target="_blank"
+                            >
+                                {data.email}
+                            </Link>
+                        </div>
+                        <HeroCopyButton textValue={data.email} />
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                    <Building2
+                        size={28}
+                        strokeWidth={2}
+                        className="text-text-subdued"
+                    />
+                    <div>
+                        <p className="text-xs text-text-subdued">Department</p>
+                        <p className="mt-1 text-sm font-semibold text-text-7! hover:underline">
+                            {data.department?.displayName}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                    <CircleUserRound
+                        size={28}
+                        strokeWidth={2}
+                        className="text-text-subdued"
+                    />
+                    <div>
+                        <p className="text-xs text-text-subdued">Job title</p>
+                        <p className="mt-1 text-sm font-semibold text-text-7! hover:underline">
+                            {data.jobTitle?.displayName ?? '-'}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                    <Phone
+                        size={28}
+                        strokeWidth={2}
+                        className="text-text-subdued"
+                    />
+                    <div className="w-full flex items-center justify-between gap-2">
+                        <div>
+                            <p className="text-xs text-text-subdued">
+                                Telephone
+                            </p>
+                            <Link
+                                href={`tel:${data?.phoneNumber}`}
+                                className="text-sm font-semibold text-text-7! hover:underline"
+                                target="_blank"
+                            >
+                                {data.phoneNumber}
+                            </Link>
+                        </div>
+                        <HeroCopyButton textValue={data.phoneNumber ?? ''} />
                     </div>
                 </div>
             </div>
