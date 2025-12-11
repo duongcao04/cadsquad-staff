@@ -1,3 +1,5 @@
+'use client'
+
 import { Divider } from '@heroui/react'
 import {
     FileText,

@@ -1,3 +1,5 @@
+'use client'
+
 import { Avatar, Chip, ScrollShadow } from '@heroui/react'
 import {
     ArrowRightLeft,

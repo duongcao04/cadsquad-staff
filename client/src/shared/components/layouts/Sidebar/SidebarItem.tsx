@@ -1,19 +1,19 @@
-import { type SidebarItem } from '@/app/(routes)/[locale]/(workspace)/shared/actions/sidebarActions'
 import { Link } from '@/i18n/navigation'
 import { MotionButton, MotionDiv, MotionP } from '@/lib/motion'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import React, { Dispatch, SetStateAction } from 'react'
 import { ESidebarStatus, useUiStore } from '../../../stores/uiStore'
+import { TSidebarItem } from './Sidebar'
 
 const SidebarItem = ({
     data,
     isActivated,
     setActivated,
 }: {
-    data: SidebarItem
+    data: TSidebarItem
     isActivated: boolean
-    setActivated: Dispatch<SetStateAction<SidebarItem | null>>
+    setActivated: Dispatch<SetStateAction<TSidebarItem | null>>
 }) => {
     const { sidebarStatus } = useUiStore()
     const t = useTranslations()

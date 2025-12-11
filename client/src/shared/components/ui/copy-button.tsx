@@ -122,4 +122,4 @@ function CopyButton({
         </motion.button>
     )
 }
-export { CopyButton, buttonVariants, type CopyButtonProps }
+export { CopyButton, type CopyButtonProps }

@@ -1,5 +1,5 @@
-import type { NextConfig } from 'next';
-import createNextIntlPlugin from 'next-intl/plugin';
+import type { NextConfig } from 'next'
+import createNextIntlPlugin from 'next-intl/plugin'
 
 const nextConfig: NextConfig = {
     async redirects() {
@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
                 destination: '/project-center/priority',
                 permanent: true,
             },
-        ];
+        ]
     },
 
     images: {
@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
     experimental: {
         // Keep only packages that benefit:
         optimizePackageImports: ['lucide-react', 'date-fns', 'lodash'],
+        experimental: { serverMinification: false },
     },
 
     logging: {
@@ -37,13 +38,13 @@ const nextConfig: NextConfig = {
             test: /\.svg$/i,
             issuer: /\.[jt]sx?$/,
             use: ['@svgr/webpack'],
-        });
-        return config;
+        })
+        return config
     },
 
     eslint: { ignoreDuringBuilds: true },
     typescript: { ignoreBuildErrors: true },
-};
+}
 
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-export default withNextIntl(nextConfig);
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
+export default withNextIntl(nextConfig)

@@ -1,8 +1,8 @@
 'use client'
 
-import { CadsquadLogo } from '@/shared/components'
 import { LoginForm } from '@/shared/components/forms/LoginForm'
 import { useTheme } from 'next-themes'
+import CadsquadLogo from '../../../../shared/components/CadsquadLogo'
 
 export default function AuthPage() {
     const { resolvedTheme } = useTheme()

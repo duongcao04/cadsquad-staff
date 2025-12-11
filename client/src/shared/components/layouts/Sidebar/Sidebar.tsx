@@ -1,13 +1,11 @@
 'use client'
 
-import { type SidebarItem as SidebarItemType } from '@/app/(routes)/[locale]/(workspace)/shared'
 import { usePathname } from '@/i18n/navigation'
 import { MotionAside } from '@/lib/motion'
 import {
     IconCalendarOutline,
     IconCollapse,
     IconCollapseOutline,
-    TaskCalendar,
 } from '@/shared/components'
 import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
 import { Variants } from 'motion/react'
@@ -24,14 +22,15 @@ import {
     IconOnboardOutline,
 } from '@/shared/components/icons/sidebar-icons/IconOnboard'
 import { SVGProps } from 'react'
+import TaskCalendar from './TaskCalendar'
 
-export type SidebarItem = {
+export type TSidebarItem = {
     icon: (props: SVGProps<SVGSVGElement>) => React.ReactElement
     iconFill: (props: SVGProps<SVGSVGElement>) => React.ReactElement
     titleKey: string
     path: string
 }
-export const sidebarActions: SidebarItem[] = [
+export const sidebarActions: TSidebarItem[] = [
     {
         icon: IconWorkbenchOutline,
         iconFill: IconWorkbench,
@@ -70,7 +69,7 @@ export function Sidebar() {
     const pathname = usePathname()
     const initActivated =
         sidebarActions.find((i) => i.path === pathname) || null
-    const [activated, setActivated] = useState<SidebarItemType | null>(
+    const [activated, setActivated] = useState<TSidebarItem | null>(
         initActivated
     )
     const [isHover, setHover] = useState(false)

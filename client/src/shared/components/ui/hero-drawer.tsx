@@ -1,5 +1,6 @@
 'use client'
 
+import { smoothMotion } from '@/lib/motion'
 import {
     Drawer,
     DrawerBody,
@@ -13,26 +14,6 @@ import {
     extendVariants,
 } from '@heroui/react'
 
-export const smoothMotion = {
-    variants: {
-        enter: {
-            x: 0,
-            opacity: 1,
-            transition: {
-                duration: 0.08,
-                ease: 'easeIn',
-            },
-        },
-        exit: {
-            x: 5,
-            opacity: 0,
-            transition: {
-                duration: 0.08,
-                ease: 'easeOut',
-            },
-        },
-    },
-}
 const StyledDrawer = extendVariants(Drawer, {
     variants: {
         // We define a new custom variant prop called "heroStyle"

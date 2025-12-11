@@ -3,8 +3,8 @@
 import { Calendar } from '@/shared/components/ui/calendar'
 import { useDisclosure } from '@heroui/react'
 import * as React from 'react'
-import { JobDueModal } from '../../modals'
 import DayButton from './DayButton'
+import JobDueModal from '../../modals/JobDueModal'
 
 export default function TaskCalendar() {
     const { isOpen, onClose, onOpen } = useDisclosure({ id: 'JobDueModal' })

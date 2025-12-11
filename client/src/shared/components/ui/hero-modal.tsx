@@ -1,5 +1,6 @@
 'use client'
 
+import { smoothMotion } from '@/lib/motion'
 import {
     extendVariants,
     Modal,
@@ -13,31 +14,6 @@ import {
     ModalProps,
 } from '@heroui/react'
 
-export const smoothMotion = {
-    variants: {
-        enter: {
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            transition: {
-                duration: 0.2,
-                type: 'spring',
-                bounce: 0,
-                damping: 25,
-                stiffness: 300,
-            },
-        },
-        exit: {
-            y: 20,
-            opacity: 0,
-            scale: 0.95,
-            transition: {
-                duration: 0.1,
-                ease: 'easeIn',
-            },
-        },
-    },
-}
 const StyledModal = extendVariants(Modal, {})
 
 // Wrapper Component để inject Motion Props

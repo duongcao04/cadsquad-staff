@@ -3,7 +3,6 @@
 import { Link } from '@/i18n/navigation'
 import { MotionButton } from '@/lib/motion'
 import {
-    CadsquadLogo,
     NotificationDropdown,
     SettingsDropdown,
     UserDropdown,
@@ -12,6 +11,7 @@ import { Button, Kbd } from '@heroui/react'
 import { CircleHelpIcon, Search } from 'lucide-react'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
+import CadsquadLogo from '../../CadsquadLogo'
 
 const buttonVariants: Variants = {
     init: {

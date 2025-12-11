@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react'
 
 import { Button, Input } from '@heroui/react'
@@ -17,7 +19,9 @@ export default function RenameModal({ isOpen, onClose, renameFile }: Props) {
 
     return (
         <Modal
-            title={`Rename ${activeFile?.type === 'folder' ? 'Folder' : 'File'}`}
+            title={`Rename ${
+                activeFile?.type === 'folder' ? 'Folder' : 'File'
+            }`}
             open={isOpen}
             onCancel={onClose}
             footer={[

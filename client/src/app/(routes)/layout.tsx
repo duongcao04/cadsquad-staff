@@ -2,7 +2,6 @@ import '@ant-design/v5-patch-for-react-19'
 
 import '@/styles/globals.css'
 import { geistMono, geistSans, quicksand, saira } from '@/fonts'
-import PushSubscriber from '@/shared/components/PushSubscriber'
 
 export default function RootLayout({
     children,
@@ -15,7 +14,6 @@ export default function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} ${saira.variable} ${quicksand.variable} antialiased bg-background-muted`}
                 suppressHydrationWarning
             >
-                <PushSubscriber />
                 {children}
             </body>
         </html>

@@ -1,3 +1,5 @@
+'use client'
+
 import { Drawer } from 'antd'
 import React from 'react'
 
@@ -9,7 +11,7 @@ import {
     useUpdateConfigByCodeMutation,
 } from '@/lib/queries'
 import { USER_CONFIG_KEYS, USER_CONFIG_VALUES } from '@/lib/utils'
-import { JobColumn } from '@/shared/types'
+import { JobColumn, JobColumnKey } from '@/shared/types'
 import { Spinner } from '@heroui/react'
 import {
     ArrowLeft,
@@ -31,7 +33,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { ViewColumnSwitch } from './ViewColumnSwitch'
 
-export type THeaderColumns = {
+type THeaderColumns = {
     title: string
     key: JobColumn
     icon?: React.ReactNode
@@ -51,75 +53,75 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
     > = {
         no: {
             title: t('jobColumns.no'),
-            icon: <p className="font-bold text-lg text-defaultp5">#</p>,
+            icon: <p className="font-bold text-lg text-text-subdued">#</p>,
         },
         type: {
             title: t('jobColumns.type'),
-            icon: <Layers2 size={20} className="text-defaultp5" />,
+            icon: <Layers2 size={20} className="text-text-subdued" />,
         },
         thumbnail: {
             title: t('jobColumns.thumbnail'),
-            icon: <GalleryThumbnails size={20} className="text-defaultp5" />,
+            icon: <GalleryThumbnails size={20} className="text-text-subdued" />,
         },
         displayName: {
             title: t('jobColumns.displayName'),
-            icon: <AtSign size={20} className="text-defaultp5" />,
+            icon: <AtSign size={20} className="text-text-subdued" />,
         },
         description: {
             title: t('jobColumns.description'),
-            icon: <Text size={20} className="text-defaultp5" />,
+            icon: <Text size={20} className="text-text-subdued" />,
         },
         attachmentUrls: {
             title: t('jobColumns.attachmentUrls'),
-            icon: <Paperclip size={20} className="text-defaultp5" />,
+            icon: <Paperclip size={20} className="text-text-subdued" />,
         },
         clientName: {
             title: t('jobColumns.clientName'),
-            icon: <Handshake size={20} className="text-defaultp5" />,
+            icon: <Handshake size={20} className="text-text-subdued" />,
         },
         incomeCost: {
             title: t('jobColumns.incomeCost'),
-            icon: <DollarSign size={20} className="text-defaultp5" />,
+            icon: <DollarSign size={20} className="text-text-subdued" />,
         },
         staffCost: {
             title: t('jobColumns.staffCost'),
-            icon: <p className="font-semibold text-lg text-defaultp5">đ</p>,
+            icon: <p className="font-semibold text-lg text-text-subdued">đ</p>,
         },
         assignee: {
             title: t('jobColumns.assignee'),
-            icon: <UsersRound size={20} className="text-defaultp5" />,
+            icon: <UsersRound size={20} className="text-text-subdued" />,
         },
         paymentChannel: {
             title: t('jobColumns.paymentChannel'),
-            icon: <Landmark size={20} className="text-defaultp5" />,
+            icon: <Landmark size={20} className="text-text-subdued" />,
         },
         status: {
             title: t('jobColumns.status'),
-            icon: <Loader size={20} className="text-defaultp5" />,
+            icon: <Loader size={20} className="text-text-subdued" />,
         },
         isPaid: {
             title: t('jobColumns.isPaid'),
-            icon: <BanknoteArrowUp size={20} className="text-defaultp5" />,
+            icon: <BanknoteArrowUp size={20} className="text-text-subdued" />,
         },
         dueAt: {
             title: t('jobColumns.dueAt'),
-            icon: <CalendarClock size={20} className="text-defaultp5" />,
+            icon: <CalendarClock size={20} className="text-text-subdued" />,
         },
         completedAt: {
             title: t('jobColumns.completedAt'),
-            icon: <Calendar size={20} className="text-defaultp5" />,
+            icon: <Calendar size={20} className="text-text-subdued" />,
         },
         createdAt: {
             title: t('jobColumns.createdAt'),
-            icon: <Calendar size={20} className="text-defaultp5" />,
+            icon: <Calendar size={20} className="text-text-subdued" />,
         },
         updatedAt: {
             title: t('jobColumns.updatedAt'),
-            icon: <Calendar size={20} className="text-defaultp5" />,
+            icon: <Calendar size={20} className="text-text-subdued" />,
         },
         action: {
             title: t('jobColumns.action'),
-            icon: <Hand size={20} className="text-defaultp5" />,
+            icon: <Hand size={20} className="text-text-subdued" />,
         },
     }
 
@@ -180,7 +182,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                     </div>
                 )}
                 <div className="flex items-center justify-between">
-                    <p className="font-medium text-defaultp5">
+                    <p className="font-medium text-text-subdued">
                         {t('shownStatus')}
                     </p>
                     <button
@@ -209,7 +211,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                             }
                         }}
                     >
-                        <p className="font-medium text-defaultp5">
+                        <p className="font-medium text-text-subdued">
                             {showColumns?.length === 0
                                 ? t('showAll')
                                 : t('hideAll')}
@@ -219,7 +221,8 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                 <div className="mt-2">
                     {finalColumns.map((col, idx) => {
                         const isSelected =
-                            showColumns?.includes(col.key) ?? false
+                            showColumns?.includes(col.key as JobColumnKey) ??
+                            false
 
                         return (
                             <div

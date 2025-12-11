@@ -28,7 +28,7 @@ import {
     HeroCardFooter,
     HeroCardHeader,
 } from '../ui/hero-card'
-import HtmlReactParser from '../ui/htnl-react-parser'
+import HtmlReactParser from '../ui/html-react-parser'
 import { MarkToolbarButton } from '../ui/mark-toolbar-button'
 import { ToolbarButton } from '../ui/toolbar'
 

@@ -1,4 +1,4 @@
-import { PageHeading } from '../../../../../shared/components'
+import { PageHeading } from '@/shared/components'
 
 export default function ProfileLayout({
     children,

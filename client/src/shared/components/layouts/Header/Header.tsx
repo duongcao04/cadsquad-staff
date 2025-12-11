@@ -1,7 +1,6 @@
 'use client'
 
 import { MotionButton } from '@/lib/motion'
-import { CadsquadLogo } from '@/shared/components'
 import { Button, Kbd, useDisclosure } from '@heroui/react'
 import { Layout } from 'antd'
 import hotkeys from 'hotkeys-js'
@@ -12,6 +11,7 @@ import { useEffect } from 'react'
 import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
+import CadsquadLogo from '../../CadsquadLogo'
 
 const { Header: AntHeader } = Layout
 

@@ -1,3 +1,5 @@
+'use client'
+
 import {
     FileText,
     Link as IconLink,
