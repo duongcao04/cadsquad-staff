@@ -113,7 +113,7 @@ export function WorkbenchTableQuickActions({
             await updateJobMutation(
                 {
                     jobId: data?.id,
-                    updateJobInput: {
+                    data: {
                         isPaid: true,
                     },
                 },
@@ -122,7 +122,7 @@ export function WorkbenchTableQuickActions({
                         addToast({
                             title: t('successfully'),
                             description: t('markJobAsPaidSuccess', {
-                                jobNo: `#${res.data.result?.jobNo ?? data?.no}`,
+                                jobNo: `#${res.data.result?.no ?? data?.no}`,
                             }),
                             color: 'success',
                         })

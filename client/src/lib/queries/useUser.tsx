@@ -2,7 +2,7 @@
 
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { userApi } from '@/lib/api'
-import { ApiError, axiosClient } from '@/lib/axios'
+import { ApiError } from '@/lib/axios'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
     TCreateUserInput,
@@ -46,7 +46,7 @@ export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     updatedAt: new Date(item.updatedAt),
 })
 export const useUsers = () => {
-    const { data, isLoading, isFetching } = useQuery({
+    const { data, isLoading, isFetching, refetch } = useQuery({
         queryKey: ['users'],
         queryFn: () => userApi.findAll(),
         select: (res) => {
@@ -62,6 +62,7 @@ export const useUsers = () => {
     return {
         data: data ?? [],
         users: data ?? [],
+        refetch,
         isLoading: isLoading || isFetching,
     }
 }
@@ -73,10 +74,10 @@ export const useUpdateUserMutation = () => {
             userId,
             updateUserInput,
         }: {
-            userId?: string
+            userId: string
             updateUserInput: TUpdateUserInput
         }) => {
-            return axiosClient.patch(`users/${userId}`, updateUserInput)
+            return userApi.update(userId, updateUserInput)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({

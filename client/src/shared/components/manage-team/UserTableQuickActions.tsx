@@ -4,7 +4,16 @@ import { useRouter } from '@/i18n/navigation'
 import { ApiError } from '@/lib/axios'
 import { useDeleteUser } from '@/lib/queries'
 import { ConfirmDeleteModal } from '@/shared/components'
-import { addToast, Button, useDisclosure } from '@heroui/react'
+import {
+    addToast,
+    Button,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownSection,
+    DropdownTrigger,
+    useDisclosure,
+} from '@heroui/react'
 import {
     EllipsisVerticalIcon,
     Mail,
@@ -17,13 +26,6 @@ import { useTranslations } from 'next-intl'
 import { TUser } from '../../types'
 import ResetPasswordModal from '../modals/ResetPasswordModal'
 import UpdateUsernameModal from '../modals/UpdateUsernameModal'
-import {
-    HeroDropdown,
-    HeroDropdownItem,
-    HeroDropdownMenu,
-    HeroDropdownSection,
-    HeroDropdownTrigger,
-} from '../ui/hero-dropdown'
 
 type Props = {
     data: TUser
@@ -106,74 +108,72 @@ export function UserTableQuickActions({ data }: Props) {
                 onClose={onCloseUpdateUsernameModal}
                 data={data}
             />
-            <HeroDropdown>
-                <HeroDropdownTrigger>
+
+            <Dropdown>
+                <DropdownTrigger>
                     <Button isIconOnly variant="light" size="sm">
                         <EllipsisVerticalIcon size={16} />
                     </Button>
-                </HeroDropdownTrigger>
-                <HeroDropdownMenu
+                </DropdownTrigger>
+                <DropdownMenu
                     aria-label="Team menu actions"
                     disabledKeys={['sendNotification']}
                 >
-                    <HeroDropdownSection showDivider title={t('contact')}>
-                        <HeroDropdownItem
+                    <DropdownSection showDivider title={t('contact')}>
+                        <DropdownItem
                             key="emailUser"
                             onPress={handleEmailUser}
                             startContent={
-                                <Mail size={14} className="text-defaultp5" />
+                                <Mail size={14} className="text-text-8" />
                             }
                         >
                             {t('emailUser')}
-                        </HeroDropdownItem>
-                    </HeroDropdownSection>
-                    <HeroDropdownSection showDivider title={t('alert')}>
-                        <HeroDropdownItem
+                        </DropdownItem>
+                    </DropdownSection>
+                    <DropdownSection showDivider title={t('alert')}>
+                        <DropdownItem
                             key="sendNotification"
                             startContent={
-                                <Send size={14} className="text-defaultp5" />
+                                <Send size={14} className="text-text-8" />
                             }
                         >
                             {t('sendNotification')}
-                        </HeroDropdownItem>
-                    </HeroDropdownSection>
-                    <HeroDropdownSection title={t('updateUser')} showDivider>
-                        <HeroDropdownItem
+                        </DropdownItem>
+                    </DropdownSection>
+                    <DropdownSection title={t('updateUser')} showDivider>
+                        <DropdownItem
                             key="resetPassword"
                             startContent={
-                                <RotateCcw
-                                    size={14}
-                                    className="text-defaultp5"
-                                />
+                                <RotateCcw size={14} className="text-text-8" />
                             }
                             onPress={onOpenResetPWModal}
                         >
                             {t('resetPassword')}
-                        </HeroDropdownItem>
-                        <HeroDropdownItem
+                        </DropdownItem>
+                        <DropdownItem
                             key="renameUser"
                             startContent={
-                                <UserPen size={14} className="text-defaultp5" />
+                                <UserPen size={14} className="text-text-8" />
                             }
                             onPress={onOpenUpdateUsernameModal}
                         >
                             {t('renameUser')}
-                        </HeroDropdownItem>
-                    </HeroDropdownSection>
-                    <HeroDropdownSection>
-                        <HeroDropdownItem
+                        </DropdownItem>
+                    </DropdownSection>
+                    <DropdownSection>
+                        <DropdownItem
                             key="delete"
                             color="danger"
                             startContent={
-                                <Trash2 size={14} className="text-defaultp5" />
+                                <Trash2 size={14} className="text-text-8" />
                             }
                             onPress={onOpenModal}
                         >
                             {t('deleteUser')}
-                        </HeroDropdownItem>
-                    </HeroDropdownSection>
-                </HeroDropdownMenu>
-            </HeroDropdown>
+                        </DropdownItem>
+                    </DropdownSection>
+                </DropdownMenu>
+            </Dropdown>
         </>
     )
 }

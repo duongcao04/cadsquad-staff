@@ -14,10 +14,11 @@ export default async function SettingsLayout({
                     <AdminSettingsHeader />
                 </div>
                 <main className="size-full h-[calc(100vh-56px)] max-h-[calc(100vh-56px)]">
-                    <div className="size-full grid grid-cols-[300px_1fr] gap-5 overflow-x-hidden">
-                        <div className="sticky top-20 left-0 size-full overflow-hidden pt-4">
+                    <div className="size-full grid grid-cols-[300px_1px_1fr]">
+                        <div className="sticky top-20 left-0 size-full overflow-hidden pt-4 bg-[#fafafa]! dark:bg-[#171717]!">
                             <AdminSettingSidebar />
                         </div>
+                        <div className="w-px h-full bg-text-disabled" />
                         <div className="size-full overflow-y-auto pr-3">
                             {children}
                         </div>

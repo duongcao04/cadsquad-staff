@@ -1,45 +1,36 @@
 'use client'
 
-import { VietnamDateFormat } from '@/lib/dayjs' // Assumed path based on context
-import { CopyButton, handleCopy, UserActiveChip } from '@/shared/components' // Assumed path
-import { DepartmentChip } from '@/shared/components/chips' // Assumed path
+import { dateFormatter } from '@/lib/dayjs'
+import { TABLE_ROW_PER_PAGE_OPTIONS, USER_COLUMNS } from '@/lib/utils'
+import { UserActiveChip } from '@/shared/components'
+import { DepartmentChip } from '@/shared/components/chips'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import {
-    addToast,
     Button,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownSection,
-    DropdownTrigger,
     Input,
     Pagination,
     Select,
     Selection,
     SelectItem,
     SharedSelection,
-    Spinner,
-    Table,
+    Skeleton,
     TableBody,
     TableCell,
     TableColumn,
     TableHeader,
     TableRow,
-    Tooltip,
 } from '@heroui/react'
 import { Image } from 'antd'
 import lodash from 'lodash'
-import {
-    Columns3Cog,
-    EllipsisVertical,
-    Filter,
-    RotateCcw,
-    SearchIcon,
-    Sheet,
-} from 'lucide-react'
+import { RotateCcw, SearchIcon, UserRoundPlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import { phoneNumberFormatter } from '../../../lib/phone-number'
 import { TUser, UserColumnKey } from '../../types'
+import { HeroButton } from '../ui/hero-button'
+import HeroCopyButton from '../ui/hero-copy-button'
+import { HeroTable } from '../ui/hero-table'
+import { HeroTooltip } from '../ui/hero-tooltip'
 import { UserTableQuickActions } from './UserTableQuickActions'
 
 interface UserTableOptions {
@@ -60,27 +51,8 @@ interface Props {
     onPageChange: (page: number) => void
     rowPerPage: number
     onRowPerPageChange: (val: number) => void
+    onOpenCreateUserModal: () => void
 }
-
-const ROW_PER_PAGE_OPTIONS = [
-    { displayName: '10 items', value: 10 },
-    { displayName: '20 items', value: 20 },
-    { displayName: '50 items', value: 50 },
-]
-
-// Define columns for HeroUI
-const USER_COLUMNS = [
-    { uid: 'displayName', displayName: 'Display Name', sortable: true },
-    { uid: 'email', displayName: 'Email', sortable: true },
-    { uid: 'phoneNumber', displayName: 'Phone Number', sortable: true },
-    { uid: 'department', displayName: 'Department', sortable: true },
-    { uid: 'jobTitle', displayName: 'Job Title', sortable: true },
-    { uid: 'isActive', displayName: 'Status', sortable: true },
-    { uid: 'lastLoginAt', displayName: 'Last Login', sortable: true },
-    { uid: 'createdAt', displayName: 'Created At', sortable: true },
-    { uid: 'updatedAt', displayName: 'Updated At', sortable: true },
-    { uid: 'action', displayName: 'Action', sortable: false },
-]
 
 export default function UserTable({
     data,
@@ -95,6 +67,7 @@ export default function UserTable({
     onPageChange,
     rowPerPage,
     onRowPerPageChange,
+    onOpenCreateUserModal,
 }: Props) {
     const t = useTranslations()
 
@@ -127,118 +100,89 @@ export default function UserTable({
             switch (columnKey) {
                 case 'displayName':
                     return (
-                        <div className="flex items-center justify-start gap-2.5 min-w-[280px]">
-                            <div className="overflow-hidden rounded-full size-10 flex-shrink-0">
-                                <Image
-                                    src={String(user.avatar)}
-                                    alt={user.displayName}
-                                    className="object-cover rounded-full size-full"
-                                    preview={false}
-                                    fallback="/images/placeholder-avatar.png" // Add a fallback if needed
-                                />
-                            </div>
-                            <div className="flex flex-col">
-                                <p className="line-clamp-1 font-semibold text-sm">
-                                    {user.displayName}
-                                </p>
-                                <button
-                                    className="flex items-center justify-start link w-fit hover:opacity-80 transition-opacity"
-                                    title={t('copy')}
-                                    onClick={() =>
-                                        handleCopy(user.username, () => {
-                                            addToast({
-                                                title: t('copiedToClipboard'),
-                                                color: 'success',
-                                            })
-                                        })
-                                    }
-                                >
-                                    <p className="line-clamp-1 text-text-muted text-xs">
+                        <div className="group flex items-center justify-start size-full! gap-2  min-w-60">
+                            <div className="flex items-center justify-start gap-2.5">
+                                <div className="overflow-hidden rounded-full size-10 shrink-0">
+                                    <Image
+                                        src={String(user.avatar)}
+                                        alt={user.displayName}
+                                        className="object-cover rounded-full size-full"
+                                        preview={false}
+                                        fallback="/images/placeholder-avatar.png" // Add a fallback if needed
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <p className="line-clamp-1 font-semibold text-sm">
+                                        {user.displayName}
+                                    </p>
+                                    <p className="line-clamp-1 text-text-subdued text-xs">
                                         @{user.username}
                                     </p>
-                                </button>
+                                </div>
                             </div>
+                            <HeroTooltip content="Copy username">
+                                <HeroCopyButton
+                                    textValue={user.email}
+                                    className="opacity-0 group-hover:opacity-80"
+                                />
+                            </HeroTooltip>
                         </div>
                     )
 
                 case 'email':
                     return (
-                        <button
-                            className="flex items-center justify-start link w-fit max-w-full hover:text-primary transition-colors"
-                            title={t('copyEmail')}
-                            onClick={() =>
-                                handleCopy(user.email, () => {
-                                    addToast({
-                                        title: t('copiedToClipboard'),
-                                        color: 'success',
-                                    })
-                                })
-                            }
-                        >
+                        <div className="group flex items-center justify-start size-full! gap-2">
                             <p className="line-clamp-1 text-sm">{user.email}</p>
-                        </button>
+                            <HeroTooltip content="Copy email">
+                                <HeroCopyButton
+                                    textValue={user.email}
+                                    className="opacity-0 group-hover:opacity-80"
+                                />
+                            </HeroTooltip>
+                        </div>
                     )
 
                 case 'phoneNumber':
                     return (
-                        <>
-                            {user.phoneNumber ? (
-                                <button
-                                    className="flex items-center justify-start link w-fit hover:text-primary transition-colors"
-                                    title="Copy phone number"
-                                    onClick={() => {
-                                        navigator.clipboard
-                                            .writeText(user.phoneNumber!)
-                                            .then(() =>
-                                                addToast({
-                                                    title: 'Copied phone number',
-                                                    color: 'success',
-                                                })
-                                            )
-                                            .catch(() =>
-                                                addToast({
-                                                    title: 'Failed to copy',
-                                                    color: 'danger',
-                                                })
-                                            )
-                                    }}
-                                >
+                        <div className="group flex items-center justify-start size-full! gap-2">
+                            {user.phoneNumber && (
+                                <>
                                     <p className="line-clamp-1 text-sm">
-                                        {user.phoneNumber}
+                                        {
+                                            phoneNumberFormatter(
+                                                user.phoneNumber
+                                            ).formatted
+                                        }
                                     </p>
-                                </button>
-                            ) : (
-                                <p className="text-text-muted">-</p>
+                                    <HeroTooltip content="Copy phone">
+                                        <HeroCopyButton
+                                            textValue={
+                                                phoneNumberFormatter(
+                                                    user.phoneNumber
+                                                ).formatted
+                                            }
+                                            className="opacity-0 group-hover:opacity-80"
+                                        />
+                                    </HeroTooltip>
+                                </>
                             )}
-                        </>
+                        </div>
                     )
 
                 case 'department':
                     return (
                         <div className="w-full">
-                            {user.department ? (
+                            {user.department && (
                                 <DepartmentChip data={user.department} />
-                            ) : (
-                                <p className="link !text-text-muted text-sm cursor-pointer hover:underline">
-                                    Add department
-                                </p>
                             )}
                         </div>
                     )
 
                 case 'jobTitle':
                     return (
-                        <div>
-                            {user.jobTitle ? (
-                                <p className="line-clamp-1 text-sm">
-                                    {user.jobTitle?.displayName}
-                                </p>
-                            ) : (
-                                <p className="link !text-text-muted text-sm cursor-pointer hover:underline">
-                                    Add job title
-                                </p>
-                            )}
-                        </div>
+                        <p className="line-clamp-1 text-sm">
+                            {user.jobTitle?.displayName ?? ''}
+                        </p>
                     )
 
                 case 'isActive':
@@ -250,58 +194,30 @@ export default function UserTable({
 
                 case 'lastLoginAt':
                     return (
-                        <p className="line-clamp-1 text-sm text-text-muted">
-                            {user.lastLoginAt
-                                ? VietnamDateFormat(user.lastLoginAt, {
-                                      format: 'LT - L',
-                                  })
-                                : '-'}
+                        <p className="text-sm font-medium text-text-7">
+                            {user.lastLoginAt &&
+                                dateFormatter(user.lastLoginAt, {
+                                    format: 'semiDateTime',
+                                })}
                         </p>
                     )
 
                 case 'createdAt':
                     return (
-                        <div className="text-sm text-text-muted">
+                        <div className="text-sm font-medium text-text-7">
                             {user.createdAt &&
-                                VietnamDateFormat(user.createdAt)}
-                        </div>
-                    )
-
-                case 'updatedAt':
-                    return (
-                        <div className="text-sm text-text-muted">
-                            {user.updatedAt &&
-                                VietnamDateFormat(user.updatedAt)}
+                                dateFormatter(user.createdAt, {
+                                    format: 'semiLongDate',
+                                })}
                         </div>
                     )
 
                 case 'action':
                     return (
                         <div className="flex items-center justify-end gap-2">
-                            <Tooltip content={t('copyEmail')}>
-                                <Button
-                                    variant="light"
-                                    color="primary"
-                                    className="flex items-center justify-center"
-                                    size="sm"
-                                    isIconOnly
-                                    disableRipple
-                                    onPress={() =>
-                                        handleCopy(user.email, () =>
-                                            addToast({
-                                                title: t('copiedToClipboard'),
-                                                color: 'success',
-                                            })
-                                        )
-                                    }
-                                >
-                                    <CopyButton
-                                        slot="p"
-                                        content={user.email}
-                                        variant="ghost"
-                                    />
-                                </Button>
-                            </Tooltip>
+                            <HeroTooltip content={t('copyEmail')}>
+                                <HeroCopyButton textValue={user.email} />
+                            </HeroTooltip>
                             <UserTableQuickActions data={user} />
                         </div>
                     )
@@ -360,51 +276,6 @@ export default function UserTable({
                             >
                                 <span className="font-medium">Refresh</span>
                             </Button>
-
-                            <Button
-                                startContent={
-                                    <Filter className="text-small" size={14} />
-                                }
-                                variant="bordered"
-                                size="sm"
-                                className="hover:shadow-SM border-border-default border-1"
-                                onPress={openFilterDrawer}
-                            >
-                                <span className="font-medium">Filter</span>
-                            </Button>
-
-                            {/* View Settings Dropdown */}
-                            <Dropdown placement="bottom-end" showArrow>
-                                <DropdownTrigger>
-                                    <Button
-                                        variant="bordered"
-                                        size="sm"
-                                        className="hover:shadow-SM border-border-default border-1"
-                                        isIconOnly
-                                    >
-                                        <EllipsisVertical
-                                            className="text-small"
-                                            size={14}
-                                        />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu aria-label="View settings">
-                                    <DropdownSection title={t('viewSettings')}>
-                                        <DropdownItem
-                                            key="columns"
-                                            startContent={
-                                                <Columns3Cog
-                                                    size={16}
-                                                    className="text-text-8"
-                                                />
-                                            }
-                                            onPress={openViewColDrawer}
-                                        >
-                                            {t('viewColumns')}
-                                        </DropdownItem>
-                                    </DropdownSection>
-                                </DropdownMenu>
-                            </Dropdown>
                         </div>
 
                         {/* Bulk Selection Indicator */}
@@ -424,18 +295,21 @@ export default function UserTable({
 
                     {/* Right Side: Export */}
                     <div>
-                        <Button
+                        <HeroButton
                             startContent={
-                                <Sheet className="text-small" size={14} />
+                                <UserRoundPlus
+                                    className="text-small"
+                                    size={14}
+                                />
                             }
                             variant="flat"
                             size="sm"
                             className="shadow-SM"
+                            color="blue"
+                            onPress={onOpenCreateUserModal}
                         >
-                            <span className="font-medium">
-                                Download as .csv
-                            </span>
-                        </Button>
+                            Create user
+                        </HeroButton>
                     </div>
                 </div>
             </div>
@@ -462,7 +336,7 @@ export default function UserTable({
                     selectedKeys={[rowPerPage.toString()]}
                     onSelectionChange={handleRowPerPageChange}
                 >
-                    {ROW_PER_PAGE_OPTIONS.map((opt) => (
+                    {TABLE_ROW_PER_PAGE_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value}>
                             {opt.displayName}
                         </SelectItem>
@@ -503,7 +377,7 @@ export default function UserTable({
 
     // --- Main Render ---
     return (
-        <Table
+        <HeroTable
             aria-label="User table"
             isHeaderSticky
             bottomContent={bottomContent}
@@ -539,8 +413,19 @@ export default function UserTable({
             </TableHeader>
             <TableBody
                 emptyContent={'No users found'}
-                items={data}
-                loadingContent={<Spinner />}
+                items={isLoading ? [] : data}
+                loadingContent={
+                    <div className="flex flex-col gap-3 w-full mt-16">
+                        {Array.from({
+                            length: 5,
+                        }).map((_, index) => (
+                            <Skeleton
+                                key={index}
+                                className="rounded-md w-full h-8!"
+                            />
+                        ))}
+                    </div>
+                }
                 isLoading={isLoading}
             >
                 {(item) => (
@@ -551,6 +436,6 @@ export default function UserTable({
                     </TableRow>
                 )}
             </TableBody>
-        </Table>
+        </HeroTable>
     )
 }

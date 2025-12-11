@@ -28,7 +28,7 @@ export class UserResponseDto {
 
 	@ApiProperty({ description: 'Job titles of the user', required: false })
 	@Expose()
-	jobTitles?: unknown
+	jobTitle?: unknown
 
 	@ApiProperty({ description: 'Department of the user', required: false })
 	@Expose()

@@ -4,7 +4,11 @@ import { CreateUserModal } from '../modals'
 import UserTable from './UserTable'
 
 export default function UserTableView() {
-    const { data: users } = useUsers()
+    const {
+        data: users,
+        refetch: onRefresh,
+        isLoading: loadingUsers,
+    } = useUsers()
     const {
         isOpen: isOpenUserModal,
         onOpen: onOpenUserModal,
@@ -19,15 +23,18 @@ export default function UserTableView() {
                 isOpen={isOpenUserModal}
                 onClose={onCloseUserModal}
             />
+
             <UserTable
                 data={users}
                 visibleColumns={'all'}
                 onPageChange={() => {}}
-                onRefresh={() => {}}
+                isLoading={loadingUsers}
+                onRefresh={onRefresh}
                 openFilterDrawer={() => {}}
                 openViewColDrawer={() => {}}
                 onRowPerPageChange={() => {}}
                 page={1}
+                onOpenCreateUserModal={onOpenUserModal}
                 totalPages={1}
                 rowPerPage={10}
             />

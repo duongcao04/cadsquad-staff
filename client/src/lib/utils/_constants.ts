@@ -280,6 +280,35 @@ export const JOB_COLUMNS: {
     },
 ]
 
+export const USER_COLUMNS = [
+    {
+        uid: 'displayName',
+        displayName: 'Display Name',
+        sortable: true,
+        width: '100px',
+    },
+    { uid: 'email', displayName: 'Email', sortable: true, width: '100px' },
+    {
+        uid: 'phoneNumber',
+        displayName: 'Phone Number',
+        sortable: true,
+    },
+    {
+        uid: 'department',
+        displayName: 'Department',
+        sortable: true,
+    },
+    {
+        uid: 'jobTitle',
+        displayName: 'Job Title',
+        sortable: true,
+    },
+    { uid: 'isActive', displayName: 'Status', sortable: true },
+    { uid: 'lastLoginAt', displayName: 'Last Login', sortable: true },
+    { uid: 'createdAt', displayName: 'Created At', sortable: true },
+    { uid: 'action', displayName: 'Action', sortable: false },
+]
+
 export const TABLE_ROW_PER_PAGE_OPTIONS = [
     { displayName: '5 items', value: 5 },
     { displayName: '10 items', value: 10 },

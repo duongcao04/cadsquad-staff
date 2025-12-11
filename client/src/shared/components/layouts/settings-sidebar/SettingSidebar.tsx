@@ -1,22 +1,22 @@
 'use client'
 
-import React from 'react'
-import { Variants } from 'motion/react'
-import { MotionDiv } from '@/lib/motion'
 import { Link, usePathname } from '@/i18n/navigation'
-import { ChevronLeft } from 'lucide-react'
+import { MotionDiv } from '@/lib/motion'
 import { Button } from '@heroui/react'
-import { useTranslations } from 'next-intl'
 import {
     BellIcon,
+    ChevronLeft,
     CircleUserRound,
+    Earth,
     LucideProps,
     Palette,
-    Earth,
     ShieldPlus,
     SquareUserRound,
 } from 'lucide-react'
+import { Variants } from 'motion/react'
+import { useTranslations } from 'next-intl'
 import { ForwardRefExoticComponent, RefAttributes } from 'react'
+import { INTERNAL_URLS } from '../../../../lib/utils'
 
 type ChildrenItem = {
     id: number | string
@@ -106,14 +106,14 @@ export function SettingSidebar({
         active: {
             opacity: 1,
             fontWeight: '600',
-            background: 'var(--color-text-subdued)',
+            background: 'var(--color-text-disabled)',
             transition: {
                 duration: 0.05,
             },
         },
         hover: {
             opacity: 1,
-            background: 'var(--color-text-subdued)',
+            background: 'var(--color-text-disabled)',
             transition: {
                 duration: 0.05,
             },
@@ -145,9 +145,9 @@ export function SettingSidebar({
     }
 
     return (
-        <div className="w-full rounded-2xl space-y-3.5">
+        <div className="w-full space-y-3.5">
             <div className="flex items-center justify-start gap-2 pl-4">
-                <Link href={'/'} passHref>
+                <Link href={INTERNAL_URLS.home} className="block">
                     <Button isIconOnly size="sm" variant="light">
                         <ChevronLeft size={18} />
                     </Button>
@@ -159,7 +159,7 @@ export function SettingSidebar({
             {sidebarData.map((group) => {
                 return (
                     <div key={group.id}>
-                        <p className="pl-4 text-sm font-medium text-text-muted">
+                        <p className="pl-4 text-sm font-medium text-text-8 py-2">
                             {tSettings(group.groupTitleKey)}
                         </p>
                         {group.children.map((item) => {
