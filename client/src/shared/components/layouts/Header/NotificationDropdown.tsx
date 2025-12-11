@@ -20,10 +20,11 @@ import { useEffect, useState } from 'react'
 import { TUserNotification } from '../../../types'
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { NotificationCard } from './NotificationCard'
+import { COOKIES } from '../../../../lib/utils'
 
 export function NotificationDropdown() {
     const router = useRouter()
-    const token = cookie.get('authentication')
+    const token = cookie.get(COOKIES.authentication)
     const { data: notifications, isLoading, refetch } = useNotifications()
     const [newNotification, setNewNotification] =
         useState<TUserNotification | null>(null)

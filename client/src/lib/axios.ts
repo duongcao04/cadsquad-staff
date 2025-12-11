@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 import { cookie } from '@/lib/cookie'
-import { apiBaseUrl } from './utils'
+import { apiBaseUrl, COOKIES } from './utils'
 
 export type ApiResponse<T = unknown, D = Record<string, unknown>> = {
     success: boolean
@@ -28,7 +28,7 @@ export const axiosClient = axios.create({
 axiosClient.interceptors.request.use(
     (config) => {
         // 1. Get token from cookie
-        const token = cookie.get('authentication')
+        const token = cookie.get(COOKIES.authentication)
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
@@ -42,7 +42,6 @@ axiosClient.interceptors.request.use(
     }
 )
 
-
 axiosClient.interceptors.response.use(
     (response) => {
         return response
@@ -51,7 +50,11 @@ axiosClient.interceptors.response.use(
         // Any status code outside 2xx triggers this
         if (error.response) {
             // Server responded with a status code outside 2xx
-            console.error('Response error:', error.response.status, error.response.data)
+            console.error(
+                'Response error:',
+                error.response.status,
+                error.response.data
+            )
             return Promise.reject(error.response.data) // or full error.response
         } else if (error.request) {
             // Request was made but no response received

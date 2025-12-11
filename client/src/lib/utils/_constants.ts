@@ -5,6 +5,10 @@ import { capitalize } from 'lodash'
 
 export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const
 
+export const COOKIES = {
+    authentication: 'csd-authTk',
+}
+
 export const INTERNAL_URLS = {
     home: envConfig.NEXT_PUBLIC_URL + '/',
     projectCenter: envConfig.NEXT_PUBLIC_URL + '/' + 'project-center',
@@ -12,7 +16,7 @@ export const INTERNAL_URLS = {
     auth: envConfig.NEXT_PUBLIC_URL + '/' + 'auth',
     profile: envConfig.NEXT_PUBLIC_URL + '/' + 'profile',
     settings: envConfig.NEXT_PUBLIC_URL + '/' + 'settings',
-    manageUser: envConfig.NEXT_PUBLIC_URL + '/' + 'settings/mgmt/team',
+    manageUser: envConfig.NEXT_PUBLIC_URL + '/' + 'admin/mgmt/team',
     getJobDetailUrl: (jobNo: string, locale?: string) => {
         if (!locale)
             return envConfig.NEXT_PUBLIC_URL + '/' + 'jobs' + '/' + jobNo

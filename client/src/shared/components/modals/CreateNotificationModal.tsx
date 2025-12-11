@@ -19,6 +19,7 @@ import { capitalize } from 'lodash'
 import { useMemo } from 'react'
 import { HeroInput } from '../ui/hero-input'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
+import { COOKIES } from '../../../lib/utils'
 
 const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -32,7 +33,7 @@ type Props = {
     onClose: () => void
 }
 export function CreateNotificationModal({ isOpen, onClose }: Props) {
-    const token = cookie.get('authentication')
+    const token = cookie.get(COOKIES.authentication)
     const { users, isLoading: loadingUsers } = useUsers()
     const { profile } = useProfile()
 

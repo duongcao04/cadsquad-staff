@@ -4,7 +4,7 @@ import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { authApi } from '@/lib/api'
 import { ApiError } from '@/lib/axios'
 import { cookie } from '@/lib/cookie'
-import { IMAGES } from '@/lib/utils'
+import { COOKIES, IMAGES } from '@/lib/utils'
 import { LoginInput } from '@/lib/validationSchemas'
 import { RoleEnum } from '@/shared/enums'
 import { TUser } from '@/shared/types'
@@ -29,7 +29,7 @@ export const useLogin = () => {
                 accessToken: { token, expiresAt },
             } = res.data.result
             // Set cookie for authentication
-            cookie.set('authentication', token, {
+            cookie.set(COOKIES.authentication, token, {
                 path: '/',
                 expires: parseExpires(expiresAt),
             })
@@ -46,7 +46,7 @@ export const useLogin = () => {
 export const useLogout = () => {
     return useMutation({
         mutationFn: async () => {
-            cookie.remove('authentication')
+            cookie.remove(COOKIES.authentication)
 
             queryClient.clear?.()
             queryClient.invalidateQueries?.()
@@ -62,7 +62,7 @@ export function useProfile() {
         select: (res) => res.data.result,
     })
 
-    const accessToken = cookie.get('authentication')
+    const accessToken = cookie.get(COOKIES.authentication)
 
     const profile = useMemo(() => {
         const profileData = data
