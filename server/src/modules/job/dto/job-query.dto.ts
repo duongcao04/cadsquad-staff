@@ -5,10 +5,10 @@ import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
 import dayjs from 'dayjs'
 import { JobTabEnum } from '../enums/job-tab.enum'
 import { JobFiltersDto } from './job-filters.dto'
-import { JobSortDto } from './job-sort.dto'; // Assuming you renamed JobOrderByDto to JobSortDto
+import { JobSortDto } from './job-sort.dto' // Assuming you renamed JobOrderByDto to JobSortDto
 
 // 1. Combine Filters and Sorts first
-class FiltersAndSorts extends IntersectionType(JobFiltersDto, JobSortDto) { }
+class FiltersAndSorts extends IntersectionType(JobFiltersDto, JobSortDto) {}
 
 // 2. Combine with Base Pagination & Search
 export class JobQueryDto extends FiltersAndSorts {
@@ -36,7 +36,10 @@ export class JobQueryDto extends FiltersAndSorts {
 
     // --- Pagination ---
 
-    @ApiPropertyOptional({ description: 'Number of items per page', default: 10 })
+    @ApiPropertyOptional({
+        description: 'Number of items per page',
+        default: 10,
+    })
     @IsOptional()
     @Type(() => Number) // Standard way to convert Query param string to Number
     @IsInt()
@@ -50,32 +53,46 @@ export class JobQueryDto extends FiltersAndSorts {
     @IsInt()
     @Min(1)
     page?: number = 1
-
-    /**
-     * Fixes TS2532: explicitly handle 'undefined' with fallbacks.
-     */
-    get skip(): number {
-        const p = this.page || 1;
-        const l = this.limit || 10;
-        return (p - 1) * l;
-    }
 }
 
 export class JobQueryBuilder {
-    static buildQueryTab(tab: JobTabEnum = JobTabEnum.ACTIVE): Prisma.JobWhereInput {
+    static buildQueryTab(
+        tab: JobTabEnum = JobTabEnum.ACTIVE
+    ): Prisma.JobWhereInput {
         const today = dayjs().startOf('day').toDate()
-        const dayAfterTomorrow = dayjs().add(2, 'day').startOf('day').toDate()
+        const dayAfterTomorrow = dayjs().add(1, 'week').startOf('day').toDate()
 
         // 1. Reusable Logic: Exclude finished statuses
         const isNotFinished: Prisma.JobWhereInput = {
             status: {
-                systemType: { notIn: [JobStatusSystemType.COMPLETED, JobStatusSystemType.TERMINATED] },
+                systemType: {
+                    notIn: [
+                        JobStatusSystemType.COMPLETED,
+                        JobStatusSystemType.TERMINATED,
+                    ],
+                },
             },
+        }
+
+        const isCompleted: Prisma.JobWhereInput = {
+            status: {
+                systemType: {
+                    in: [
+                        JobStatusSystemType.COMPLETED,
+                        JobStatusSystemType.TERMINATED,
+                    ],
+                },
+            },
+        }
+
+        const isNotDeleted: Prisma.JobWhereInput = {
+            deletedAt: null,
         }
 
         switch (tab) {
             case JobTabEnum.PRIORITY:
                 return {
+                    ...isNotDeleted,
                     dueAt: {
                         gt: today,
                         lt: dayAfterTomorrow,
@@ -85,6 +102,7 @@ export class JobQueryBuilder {
 
             case JobTabEnum.LATE:
                 return {
+                    ...isNotDeleted,
                     dueAt: {
                         lte: today,
                     },
@@ -93,21 +111,17 @@ export class JobQueryBuilder {
 
             case JobTabEnum.ACTIVE:
                 return {
+                    ...isNotDeleted,
                     dueAt: {
                         gt: today,
                     },
-                    ...isNotFinished, // Added this to ensure Completed jobs don't show in Active
                 }
 
             case JobTabEnum.COMPLETED:
-                return {
-                    status: { systemType: JobStatusSystemType.COMPLETED },
-                }
+                return { ...isNotDeleted, ...isCompleted }
 
             case JobTabEnum.DELIVERED:
-                return {
-                    status: { code: 'delivered' },
-                }
+                return { ...isNotDeleted, status: { code: 'delivered' } }
 
             case JobTabEnum.CANCELLED:
                 return {
@@ -116,6 +130,7 @@ export class JobQueryBuilder {
 
             default:
                 return {
+                    ...isNotDeleted,
                     dueAt: { gt: today },
                     ...isNotFinished,
                 }

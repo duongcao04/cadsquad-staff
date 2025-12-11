@@ -104,7 +104,7 @@ export function ProjectCenterTableQuickActions({
             await updateJobMutation(
                 {
                     jobId: data?.id,
-                    updateJobInput: {
+                    data: {
                         isPaid: true,
                     },
                 },
@@ -113,8 +113,41 @@ export function ProjectCenterTableQuickActions({
                         addToast({
                             title: t('successfully'),
                             description: t('markJobAsPaidSuccess', {
-                                jobNo: `#${res.data.result?.jobNo ?? data?.no}`,
+                                jobNo: `#${res.data.result?.no ?? data?.no}`,
                             }),
+                            color: 'success',
+                        })
+                        queryClient.invalidateQueries({
+                            queryKey: ['jobs'],
+                        })
+                        onCloseModal()
+                    },
+                    onError(error) {
+                        const err = error as unknown as ApiError
+                        addToast({
+                            title: t('failed'),
+                            description: err.message,
+                            color: 'danger',
+                        })
+                    },
+                }
+            )
+        }
+    }
+
+    const handlePinJob = async () => {
+        if (data?.id) {
+            await updateJobMutation(
+                {
+                    jobId: data?.id,
+                    data: {
+                        isPinned: true,
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        addToast({
+                            title: 'Pin job thành công',
                             color: 'success',
                         })
                         queryClient.invalidateQueries({
@@ -214,9 +247,7 @@ export function ProjectCenterTableQuickActions({
                                     className="text-text-subdued rotate-45"
                                 />
                             }
-                            onPress={() =>
-                                alert('Tính năng đang được phát triển')
-                            }
+                            onPress={handlePinJob}
                         >
                             Pin Job
                         </DropdownItem>

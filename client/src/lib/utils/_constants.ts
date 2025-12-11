@@ -1,5 +1,7 @@
 import { envConfig } from '@/lib/config'
 import { JobColumn, JobColumnKey } from '@/shared/types'
+import { RoleEnum } from '../../shared/enums'
+import { capitalize } from 'lodash'
 
 export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const
 
@@ -10,6 +12,7 @@ export const INTERNAL_URLS = {
     auth: envConfig.NEXT_PUBLIC_URL + '/' + 'auth',
     profile: envConfig.NEXT_PUBLIC_URL + '/' + 'profile',
     settings: envConfig.NEXT_PUBLIC_URL + '/' + 'settings',
+    manageUser: envConfig.NEXT_PUBLIC_URL + '/' + 'settings/mgmt/team',
     getJobDetailUrl: (jobNo: string, locale?: string) => {
         if (!locale)
             return envConfig.NEXT_PUBLIC_URL + '/' + 'jobs' + '/' + jobNo
@@ -338,3 +341,11 @@ export const DUE_DATE_PRESETS = [
 ] as const
 
 export type DueDatePresetKey = (typeof DUE_DATE_PRESETS)[number]['key']
+
+export const ROLES_LIST = Object.entries(RoleEnum).map((i) => {
+    return {
+        ...i,
+        label: capitalize(i[1].toLowerCase().replaceAll('_', ' ')),
+        value: i[0],
+    }
+})

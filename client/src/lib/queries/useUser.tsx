@@ -2,7 +2,7 @@
 
 import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import { userApi } from '@/lib/api'
-import { axiosClient } from '@/lib/axios'
+import { ApiError, axiosClient } from '@/lib/axios'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import {
     TCreateUserInput,
@@ -13,6 +13,7 @@ import {
 import { IUserResponse } from '../../shared/interfaces'
 import { TUser } from '../../shared/types'
 import { IMAGES } from '../utils'
+import { addToast } from '@heroui/react'
 
 export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     id: item.id,
@@ -123,12 +124,24 @@ export const useResetPasswordMutation = () => {
     })
 }
 
-export const useCreateUser = () => {
+export const useCreateUserMutation = () => {
     return useMutation({
         mutationFn: async (data: TCreateUserInput) =>
             await userApi.create(data),
         onSuccess: () => {
+            addToast({
+                title: 'Tạo mới thành công',
+                color: 'success',
+            })
             queryClient.invalidateQueries({ queryKey: ['users'] })
+        },
+        onError: (error) => {
+            const errorRes = error as unknown as ApiError
+            addToast({
+                title: errorRes.error,
+                description: `Error: ${errorRes.message}`,
+                color: 'danger',
+            })
         },
     })
 }

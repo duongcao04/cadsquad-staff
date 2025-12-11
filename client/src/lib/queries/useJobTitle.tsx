@@ -4,6 +4,19 @@ import {
     TCreateJobTitleInput,
     TUpdateJobTitleInput,
 } from '../validationSchemas'
+import { IJobTitleResponse } from '../../shared/interfaces'
+import { TJobTitle } from '../../shared/types'
+import { useMemo } from 'react'
+
+export const mapJobTitle: (item: IJobTitleResponse) => TJobTitle = (item) => ({
+    id: item.id ?? '',
+    code: item.code ?? '',
+    users: item.users ?? [],
+    notes: item.notes ?? '',
+    displayName: item.displayName ?? '',
+    createdAt: new Date(item.createdAt),
+    updatedAt: new Date(item.updatedAt),
+})
 
 export const useJobTitles = () => {
     const { data, isLoading, isFetching } = useQuery({
@@ -11,8 +24,20 @@ export const useJobTitles = () => {
         queryFn: () => jobTitleApi.findAll(),
         select: (res) => res.data.result,
     })
+
+    const jobTitles = useMemo(() => {
+        const jobTitlesData = data
+
+        if (!Array.isArray(jobTitlesData)) {
+            return []
+        }
+
+        return jobTitlesData.map((item) => mapJobTitle(item))
+    }, [data])
+
     return {
-        jobTitles: data,
+        jobTitles: jobTitles ?? [],
+        data: jobTitles ?? [],
         isLoading: isLoading || isFetching,
     }
 }

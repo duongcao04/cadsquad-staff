@@ -12,15 +12,21 @@ import lodash from 'lodash'
 import { useEffect, useState } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { useSearchParam } from '../../hooks'
-import { pCenterTableStore } from '../../stores'
+import { pCenterTableStore, projectCenterStore } from '../../stores'
 import { JobColumnKey } from '../../types'
 import JobDetailDrawer from '../job-detail/JobDetailDrawer'
 import AssignMemberModal from './AssignMemberModal'
 import { FilterDrawer } from './FilterDrawer'
 import ProjectCenterTable from './ProjectCenterTable'
 import { ViewColumnsDrawer } from './ViewColumnsDrawer'
+import { ProjectCenterTabEnum } from '../../enums'
 
-export default function ProjectCenterTableView() {
+type ProjectCenterTableViewProps = {
+    tab: ProjectCenterTabEnum
+}
+export default function ProjectCenterTableView({
+    tab = ProjectCenterTabEnum.PRIORITY,
+}: ProjectCenterTableViewProps) {
     const { getSearchParam, setSearchParams } = useSearchParam()
 
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
@@ -46,8 +52,6 @@ export default function ProjectCenterTableView() {
         staffCostMin: safeString(getSearchParam('staffCostMin')),
         staffCostMax: safeString(getSearchParam('staffCostMax')),
     })
-
-    console.log(filters)
 
     // --- 1. SORTING (URL is Single Source of Truth) ---
     // We read directly from the URL. No local state needed for sort.
@@ -82,11 +86,23 @@ export default function ProjectCenterTableView() {
         false
     )
 
+    const pagination = useStore(projectCenterStore, (state) => ({
+        rowPerPage: state.limit,
+        page: state.page,
+        totalPages: 10,
+    }))
+
     const {
         data: jobs,
         isLoading: isJobLoadings,
+        paginate,
         refetch: onRefresh,
     } = useJobs({
+        // Paginate
+        tab: tab,
+        limit: pagination.rowPerPage,
+        page: pagination.page,
+        // Filters
         status: filters.status,
         dueAtFrom: filters.dueAtFrom,
         dueAtTo: filters.dueAtTo,
@@ -232,6 +248,8 @@ export default function ProjectCenterTableView() {
                 onSearchKeywordsChange={setSearchKeywords}
                 onDownloadCsv={handleExport}
                 filters={filters}
+                currentPage={paginate?.page}
+                totalPages={paginate?.totalPages}
                 onFiltersChange={setFilters}
                 onShowFinishItemsChange={setLocalShowFinishItems}
                 openFilterDrawer={onOpenFilterDrawer}

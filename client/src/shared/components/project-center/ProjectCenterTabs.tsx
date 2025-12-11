@@ -162,7 +162,7 @@ function ProjectCenterTabs({ defaultTab }: Props) {
         []
     )
 
-    const finalTabs = isAdmin
+    const finalTabs = !isAdmin
         ? tabItems.filter((item) => item.key !== 'cancelled')
         : tabItems
 

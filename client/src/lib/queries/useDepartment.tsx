@@ -6,6 +6,22 @@ import {
     TUpdateDepartmentInput,
 } from '@/lib/validationSchemas'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { IDepartmentResponse } from '../../shared/interfaces'
+import { TDepartment } from '../../shared/types'
+import { useMemo } from 'react'
+
+export const mapDepartment: (item: IDepartmentResponse) => TDepartment = (
+    item
+) => ({
+    id: item.id ?? '',
+    code: item.code ?? '',
+    users: item.users ?? [],
+    hexColor: item.hexColor ?? '#ffffff',
+    notes: item.notes ?? '',
+    displayName: item.displayName ?? '',
+    createdAt: new Date(item.createdAt),
+    updatedAt: new Date(item.updatedAt),
+})
 
 export const useDepartments = () => {
     const { data, isFetching, isLoading } = useQuery({
@@ -13,8 +29,20 @@ export const useDepartments = () => {
         queryFn: () => departmentApi.findAll(),
         select: (res) => res.data.result,
     })
+
+    const departments = useMemo(() => {
+        const departmentsData = data
+
+        if (!Array.isArray(departmentsData)) {
+            return []
+        }
+
+        return departmentsData.map((item) => mapDepartment(item))
+    }, [data])
+
     return {
-        departments: data,
+        departments: departments ?? [],
+        data: departments ?? [],
         isLoading: isFetching || isLoading,
     }
 }

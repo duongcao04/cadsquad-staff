@@ -73,7 +73,7 @@ type HeroDatePickerProps = Omit<
         onChange?: (date: Dayjs | null) => void
     }
 
-type HeroDateRangePickerProps = Omit<
+export type HeroDateRangePickerProps = Omit<
     DateRangePickerProps,
     'value' | 'defaultValue' | 'onChange'
 > & {

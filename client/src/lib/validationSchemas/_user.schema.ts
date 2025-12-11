@@ -1,14 +1,14 @@
 import * as yup from 'yup'
 
 export const CreateUserSchema = yup.object().shape({
-    email: yup.string().email().required(),
+    email: yup.string().required('Email is required'),
     avatar: yup.string(),
     username: yup.string().optional(),
     password: yup.string().optional(),
-    displayName: yup.string().required(),
+    displayName: yup.string().required('Display name is required'),
     jobTitleId: yup.string().optional(),
     departmentId: yup.string().optional(),
-    phoneNumber: yup.string(),
+    phoneNumber: yup.string().optional(),
 
     // Optional enum validation
     role: yup

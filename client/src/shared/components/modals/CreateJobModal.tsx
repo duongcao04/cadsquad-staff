@@ -1,6 +1,5 @@
 'use client'
 
-import { ScrollArea } from '@radix-ui/react-scroll-area'
 import CreateJobForm from '../forms/CreateJobForm'
 import {
     HeroModal,
@@ -8,7 +7,6 @@ import {
     HeroModalContent,
     HeroModalHeader,
 } from '../ui/hero-modal'
-import { ScrollBar } from '../ui/scroll-area'
 
 type Props = {
     isOpen: boolean
@@ -29,12 +27,8 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                         <p className="text-lg font-semibold">Create new job</p>
                     </div>
                 </HeroModalHeader>
-                <HeroModalBody>
-                    <ScrollArea className="size-full">
-                        <ScrollBar orientation="horizontal" />
-                        <ScrollBar orientation="vertical" />
-                        <CreateJobForm onSubmit={onClose} />
-                    </ScrollArea>
+                <HeroModalBody className="px-0 pt-0">
+                    <CreateJobForm onSubmit={onClose} />
                 </HeroModalBody>
             </HeroModalContent>
         </HeroModal>

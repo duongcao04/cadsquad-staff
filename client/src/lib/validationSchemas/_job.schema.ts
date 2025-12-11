@@ -2,6 +2,7 @@ import * as yup from 'yup'
 import { z } from 'zod'
 import { arrayToString, optionalIsoDate } from '../zod'
 import { ProjectCenterTabEnum } from '../../shared/enums'
+import { isValid, parseISO } from 'date-fns'
 
 export const CreateJobSchema = yup.object({
     no: yup.string().required('Job number is required'),
@@ -17,7 +18,6 @@ export const CreateJobSchema = yup.object({
     staffCost: yup.number().required('Staff cost is required'),
     assigneeIds: yup.array().of(yup.string().required()).optional(),
     paymentChannelId: yup.string().nullable(),
-    startedAt: yup.date().required(),
     priority: yup
         .string()
         .oneOf(
@@ -28,10 +28,36 @@ export const CreateJobSchema = yup.object({
     isPinned: yup.boolean().optional(),
     isPublished: yup.boolean().optional(),
     isPaid: yup.boolean().optional(),
+    startedAt: yup
+        .string()
+        .required('Started at is required')
+        .test('is-iso-string', 'Date must be a valid ISO string', (value) => {
+            // If the field is empty or null, other validations (like .required()) handle it
+            if (!value) return true
+
+            const parsedDate = parseISO(value)
+            // Check if it's a valid date object after parsing
+            return isValid(parsedDate)
+        }),
     dueAt: yup
-        .date()
-        .min(new Date(), 'Due date cannot be in the past')
-        .required(),
+        .string()
+        .required('Due date is required')
+        .test('is-iso-string', 'Date must be a valid ISO string', (value) => {
+            if (!value) return true
+            const parsedDate = parseISO(value)
+            return isValid(parsedDate)
+        })
+        .test('is-future', 'Due date cannot be in the past', (value) => {
+            if (!value) return true
+            const parsedDate = parseISO(value)
+
+            // If the date is invalid, we return true here so the 'is-iso-string'
+            // error shows instead of this one.
+            if (!isValid(parsedDate)) return true
+
+            // Check if date is in the future
+            return parsedDate > new Date()
+        }),
 })
 export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>
 

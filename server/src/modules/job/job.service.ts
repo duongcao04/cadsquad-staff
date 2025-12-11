@@ -40,8 +40,8 @@ export class JobService {
         private readonly userService: UserService,
         private readonly configService: ConfigService,
         private readonly notificationService: NotificationService
-    ) { }
-    private readonly logger = new Logger(JobService.name);
+    ) {}
+    private readonly logger = new Logger(JobService.name)
 
     /**
      * Create a new job.
@@ -65,8 +65,8 @@ export class JobService {
                         statusId: statusId,
                         assignee: assigneeIds?.length
                             ? {
-                                connect: assigneeIds.map((id) => ({ id })),
-                            }
+                                  connect: assigneeIds.map((id) => ({ id })),
+                              }
                             : undefined,
                         attachmentUrls: jobData.attachmentUrls
                             ? Array.isArray(jobData.attachmentUrls)
@@ -105,6 +105,12 @@ export class JobService {
                 excludeExtraneousValues: true,
             }) as unknown as Job
         } catch (error) {
+            this.logger.error(
+                'User ',
+                createdById,
+                ' - Create job failed',
+                error.stack
+            )
             throw new InternalServerErrorException('Create job failed')
         }
     }
@@ -159,7 +165,15 @@ export class JobService {
     ): Promise<{ data: Job[]; paginate: PaginationMeta }> {
         try {
             // 1. Extract query params
-            const { tab, hideFinishItems, page, limit: take, search, sort, skip, ...filters } = query;
+            const {
+                tab,
+                hideFinishItems,
+                page = 1,
+                limit: take = 10,
+                search,
+                sort = 'isPinned:asc',
+                ...filters
+            } = query
 
             // 2. Build Advanced Filters (using your new Builder)
             const filtersQuery = JobFiltersBuilder.build(filters)
@@ -176,15 +190,14 @@ export class JobService {
             // 6. Construct the Main WHERE Clause
             const queryBuilder: Prisma.JobWhereInput = {
                 AND: [
-                    // Always check Soft Delete
-                    { deletedAt: null },
-
                     // Apply Permissions (Your existing logic)
                     this.buildPermission(userRole, userId),
 
                     // Custom Toggle: Hide Finished Items
                     // (Standardize string '0'/'1' to boolean check)
-                    hideFinishItems === '1' ? { status: { isNot: { order: 5 } } } : {},
+                    hideFinishItems === '1'
+                        ? { status: { is: { systemType: 'TERMINATED' } } }
+                        : {},
 
                     // Apply Built Filters (Client, Status, Date Ranges, etc.)
                     tabQuery,
@@ -192,13 +205,14 @@ export class JobService {
                     searchQuery,
                 ],
             }
+
             // 5. Execute Query
             const [data, total] = await Promise.all([
                 this.prisma.job.findMany({
                     where: queryBuilder,
                     orderBy,
                     take, // Uses fallback from DTO (10)
-                    skip,  // Uses getter from DTO
+                    skip: (page - 1) * take, // Uses getter from DTO
                     include: {
                         type: true,
                         assignee: true,
@@ -210,7 +224,7 @@ export class JobService {
             ])
 
             if (data.length == 0) {
-                this.logger.warn(`No jobs found for user ${userId}`);
+                this.logger.warn(`No jobs found for user ${userId}`)
             }
 
             return {
@@ -224,11 +238,13 @@ export class JobService {
             }
         } catch (error) {
             // Log the actual error to your terminal for debugging
-            this.logger.error(`Error finding jobs for user ${userId}`, error.stack);
+            this.logger.error(
+                `Error finding jobs for user ${userId}`,
+                error.stack
+            )
             throw new InternalServerErrorException('Get jobs failed')
         }
     }
-
 
     /**
      * Find job by ID.
@@ -280,7 +296,10 @@ export class JobService {
                 excludeExtraneousValues: true,
             }) as unknown as Job
         } catch (error) {
-            this.logger.error(`Error finding jobs for user ${userId}`, error.stack);
+            this.logger.error(
+                `Error finding jobs for user ${userId}`,
+                error.stack
+            )
             throw new InternalServerErrorException('Get job by no failed')
         }
     }
@@ -673,14 +692,14 @@ export class JobService {
                     data: {
                         ...(data.updateMemberIds &&
                             JSON.parse(data.updateMemberIds).length > 0 && {
-                            assignee: {
-                                connect: JSON.parse(
-                                    data.updateMemberIds
-                                ).map((id: string) => ({
-                                    id,
-                                })),
-                            },
-                        }),
+                                assignee: {
+                                    connect: JSON.parse(
+                                        data.updateMemberIds
+                                    ).map((id: string) => ({
+                                        id,
+                                    })),
+                                },
+                            }),
                     },
                 })
 

@@ -121,6 +121,8 @@ type ProjectCenterTableProps = {
     data: TJob[]
     isLoading?: boolean
     onRefresh?: () => void
+    currentPage?: number
+    totalPages?: number
     visibleColumns: 'all' | JobColumnKey[]
     options?: ProjectCenterOptions
     showFinishItems: boolean
@@ -142,6 +144,8 @@ export default function ProjectCenterTable({
     isLoading = false,
     visibleColumns,
     onRefresh,
+    currentPage = 1,
+    totalPages = 1,
     sortString,
     onSortStringChange,
     searchKeywords,
@@ -570,8 +574,8 @@ export default function ProjectCenterTable({
                     showControls
                     showShadow
                     color="primary"
-                    page={pagination.page}
-                    total={pagination.totalPages}
+                    page={currentPage}
+                    total={totalPages}
                     onChange={onPageChange}
                 />
                 <div className="hidden sm:flex w-[30%] justify-end gap-2">

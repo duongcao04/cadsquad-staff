@@ -8,7 +8,7 @@ services:
       - '${REDIS_PORT:-6379}:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes:
-      - "D:/.database/redis:/data"
+      - "D:/07_Backups/.database/redis:/data"
     networks:
       - app-network
 
@@ -25,7 +25,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - "D:/.database/postgres:/var/lib/postgresql/data"
+      - "D:/07_Backups/.database/postgres:/var/lib/postgresql/data"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cadsquaddb}"]
       interval: 5s

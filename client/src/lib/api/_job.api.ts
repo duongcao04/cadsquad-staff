@@ -3,6 +3,7 @@ import {
     TBulkChangeStatusInput,
     TChangeStatusInput,
     TCreateJobInput,
+    TJobQueryInput,
     TRescheduleJob,
     TUpdateJobInput,
     TUpdateJobMembersInput,
@@ -15,13 +16,13 @@ export const jobApi = {
     create: (data: TCreateJobInput) => {
         return axiosClient.post('/v1/jobs', {
             ...data,
-            startedAt: data.startedAt.toISOString(),
-            dueAt: data.dueAt.toISOString(),
+            startedAt: new Date(data.startedAt).toISOString(),
+            dueAt: new Date(data.dueAt).toISOString(),
             incomeCost: data.incomeCost.toString(),
             staffCost: data.staffCost.toString(),
         })
     },
-    findAll: (query: TJobQueryWithFiltersInput) => {
+    findAll: (query: TJobQueryInput) => {
         const queryStringFormatter = queryString.stringify(query, {
             arrayFormat: 'comma',
         })
