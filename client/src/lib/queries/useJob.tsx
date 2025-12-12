@@ -218,16 +218,11 @@ export const useCountJobByTab = (tab: ProjectCenterTabEnum) => {
     }
 }
 
-export const useJobByNo = (jobNo?: string) => {
+export const useJobByNo = (jobNo: string) => {
     const { data, refetch, error, isLoading } = useQuery({
         queryKey: ['jobs', 'no', jobNo],
-        queryFn: () => {
-            if (!jobNo) {
-                return
-            }
-            return jobApi.findByJobNo(jobNo)
-        },
-        enabled: jobNo !== null && jobNo !== undefined,
+        queryFn: () => jobApi.findByJobNo(jobNo),
+        enabled: !!jobNo,
         select: (res) => res?.data,
     })
 

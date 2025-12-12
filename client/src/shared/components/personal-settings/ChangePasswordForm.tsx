@@ -59,90 +59,88 @@ export function ChangePasswordForm() {
 
     return (
         <form onSubmit={formik.handleSubmit} className="space-y-8">
-            <div className="size-full border-px border-text-muted rounded-xl px-6 pt-4 pb-7">
-                <h2 className="text-base font-semibold">Đổi mật khẩu</h2>
-                <div className="mt-4 space-y-3">
-                    <Input
-                        isRequired
-                        id="oldPassword"
-                        name="oldPassword"
-                        label="Old Password"
-                        labelPlacement="outside-top"
-                        placeholder="••••••••"
-                        // type="password"
-                        classNames={inputClassNames}
+            <h2 className="text-base font-semibold">Change password</h2>
+            <div className="mt-4 space-y-3">
+                <Input
+                    isRequired
+                    id="oldPassword"
+                    name="oldPassword"
+                    label="Old Password"
+                    labelPlacement="outside-top"
+                    placeholder="••••••••"
+                    // type="password"
+                    classNames={inputClassNames}
+                    variant="bordered"
+                    value={formik.values.oldPassword}
+                    onChange={formik.handleChange}
+                    isInvalid={
+                        Boolean(formik.touched.oldPassword) &&
+                        Boolean(formik.errors.oldPassword)
+                    }
+                    errorMessage={
+                        Boolean(formik.touched.oldPassword) &&
+                        formik.errors.oldPassword
+                    }
+                />
+                <Input
+                    isRequired
+                    id="newPassword"
+                    name="newPassword"
+                    label="New Password"
+                    labelPlacement="outside-top"
+                    placeholder="••••••••"
+                    // type="password"
+                    classNames={inputClassNames}
+                    variant="bordered"
+                    value={formik.values.newPassword}
+                    onChange={formik.handleChange}
+                    isInvalid={
+                        Boolean(formik.touched.newPassword) &&
+                        Boolean(formik.errors.newPassword)
+                    }
+                    errorMessage={
+                        Boolean(formik.touched.newPassword) &&
+                        formik.errors.newPassword
+                    }
+                />
+                <Input
+                    isRequired
+                    id="newConfirmPassword"
+                    name="newConfirmPassword"
+                    label="Confirm New Password"
+                    labelPlacement="outside-top"
+                    placeholder="••••••••"
+                    // type="password"
+                    classNames={inputClassNames}
+                    variant="bordered"
+                    value={formik.values.newConfirmPassword}
+                    onChange={formik.handleChange}
+                    isInvalid={
+                        Boolean(formik.touched.newConfirmPassword) &&
+                        Boolean(formik.errors.newConfirmPassword)
+                    }
+                    errorMessage={
+                        Boolean(formik.touched.newConfirmPassword) &&
+                        formik.errors.newConfirmPassword
+                    }
+                />
+                <div className="mt-5 flex items-center justify-start gap-4">
+                    <Button
+                        type="submit"
+                        className="w-30"
+                        color="primary"
+                        isLoading={isUpdatingPassword}
+                    >
+                        Lưu thay đổi
+                    </Button>
+                    <Button
+                        type="submit"
+                        className="w-30 border-[1.5px]"
                         variant="bordered"
-                        value={formik.values.oldPassword}
-                        onChange={formik.handleChange}
-                        isInvalid={
-                            Boolean(formik.touched.oldPassword) &&
-                            Boolean(formik.errors.oldPassword)
-                        }
-                        errorMessage={
-                            Boolean(formik.touched.oldPassword) &&
-                            formik.errors.oldPassword
-                        }
-                    />
-                    <Input
-                        isRequired
-                        id="newPassword"
-                        name="newPassword"
-                        label="New Password"
-                        labelPlacement="outside-top"
-                        placeholder="••••••••"
-                        // type="password"
-                        classNames={inputClassNames}
-                        variant="bordered"
-                        value={formik.values.newPassword}
-                        onChange={formik.handleChange}
-                        isInvalid={
-                            Boolean(formik.touched.newPassword) &&
-                            Boolean(formik.errors.newPassword)
-                        }
-                        errorMessage={
-                            Boolean(formik.touched.newPassword) &&
-                            formik.errors.newPassword
-                        }
-                    />
-                    <Input
-                        isRequired
-                        id="newConfirmPassword"
-                        name="newConfirmPassword"
-                        label="Confirm New Password"
-                        labelPlacement="outside-top"
-                        placeholder="••••••••"
-                        // type="password"
-                        classNames={inputClassNames}
-                        variant="bordered"
-                        value={formik.values.newConfirmPassword}
-                        onChange={formik.handleChange}
-                        isInvalid={
-                            Boolean(formik.touched.newConfirmPassword) &&
-                            Boolean(formik.errors.newConfirmPassword)
-                        }
-                        errorMessage={
-                            Boolean(formik.touched.newConfirmPassword) &&
-                            formik.errors.newConfirmPassword
-                        }
-                    />
-                    <div className="mt-5 flex items-center justify-start gap-4">
-                        <Button
-                            type="submit"
-                            className="w-[120px]"
-                            color="primary"
-                            isLoading={isUpdatingPassword}
-                        >
-                            Lưu thay đổi
-                        </Button>
-                        <Button
-                            type="submit"
-                            className="w-[120px] border-[1.5px]"
-                            variant="bordered"
-                            color="danger"
-                        >
-                            Hủy
-                        </Button>
-                    </div>
+                        color="danger"
+                    >
+                        Hủy
+                    </Button>
                 </div>
             </div>
         </form>

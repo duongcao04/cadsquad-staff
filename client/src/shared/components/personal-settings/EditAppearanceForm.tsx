@@ -6,18 +6,7 @@ import { Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 // import {  APP_TABLE_SIZES } from '@/lib/utils'
-import { APP_THEMES } from '@/lib/utils'
-
-export const THEME_COLORS = [
-    'var(--color-primary)',
-    '#e11d48',
-    '#ea580c',
-    '#f59e0b',
-    '#16a34a',
-    '#0284c7',
-    '#4f46e5',
-    '#3f3f46',
-]
+import { APP_THEME_COLORS, APP_THEMES } from '@/lib/utils'
 
 export function EditAppearanceForm() {
     const t = useTranslations()
@@ -32,13 +21,13 @@ export function EditAppearanceForm() {
                         <h2 className="text-base font-semibold">
                             {t('themeColor')}
                         </h2>
-                        <p className="text-xs text-text-muted">
+                        <p className="text-xs text-text-subdued">
                             {t('themeColorDesc')}
                         </p>
                     </div>
                     <div className="flex items-center justify-start gap-3 flex-wrap">
-                        {THEME_COLORS.map((item, idx) => {
-                            const isActivated = THEME_COLORS[0] === item
+                        {APP_THEME_COLORS.map((item, idx) => {
+                            const isActivated = APP_THEME_COLORS[0] === item
 
                             return (
                                 <div
@@ -68,7 +57,7 @@ export function EditAppearanceForm() {
                         <h2 className="text-base font-semibold">
                             {t('theme')}
                         </h2>
-                        <p className="text-xs text-text-muted">
+                        <p className="text-xs text-text-subdued">
                             {t('themeDesc')}
                         </p>
                     </div>
@@ -82,7 +71,7 @@ export function EditAppearanceForm() {
                                     onClick={() => setTheme(themeI.code)}
                                 >
                                     {isActivated && (
-                                        <div className="absolute -top-[5px] -right-[5px] z-1">
+                                        <div className="absolute -top-1.25 -right-1.25 z-1">
                                             <Check
                                                 size={16}
                                                 className="p-0.5 rounded-full bg-primary text-white"
@@ -116,7 +105,7 @@ export function EditAppearanceForm() {
                         <h2 className="text-base font-semibold">
                             {t('tables')}
                         </h2>
-                        <p className="text-xs text-text-muted">
+                        <p className="text-xs text-text-subdued">
                             {t('tablesDesc')}
                         </p>
                         <Link

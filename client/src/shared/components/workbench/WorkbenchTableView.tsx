@@ -77,21 +77,26 @@ export default function WorkbenchTableView() {
 
     return (
         <>
-            <JobDetailDrawer
-                jobNo={viewDetailNo ?? null}
-                isOpen={Boolean(viewDetailNo) && isOpenJobDetailDrawer}
-                onClose={() => {
-                    onCloseJobDetailDrawer()
-                    setAssignMemberTo(null)
-                }}
-            />
-            <AssignMemberModal
-                jobNo={assignMemberTo ?? ''}
-                isOpen={
-                    !lodash.isNull(assignMemberTo) && isOpenAssignMemberModal
-                }
-                onClose={onCloseAssignMemberModal}
-            />
+            {viewDetailNo && (
+                <JobDetailDrawer
+                    jobNo={viewDetailNo}
+                    isOpen={Boolean(viewDetailNo) && isOpenJobDetailDrawer}
+                    onClose={() => {
+                        onCloseJobDetailDrawer()
+                        setAssignMemberTo(null)
+                    }}
+                />
+            )}
+            {assignMemberTo && (
+                <AssignMemberModal
+                    jobNo={assignMemberTo}
+                    isOpen={
+                        !lodash.isNull(assignMemberTo) &&
+                        isOpenAssignMemberModal
+                    }
+                    onClose={onCloseAssignMemberModal}
+                />
+            )}
             <WorkbenchTable
                 data={jobs}
                 onViewDetail={onViewDetail}

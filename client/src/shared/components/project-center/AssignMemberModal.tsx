@@ -46,7 +46,7 @@ export default function AssignMemberModal({
 
     const [memberSelected, setMemberSelected] = useState<Key | null>(null)
     const { mutateAsync: assignMemberMutate } = useAssignMemberMutation(jobNo)
-    const { mutateAsync: removeMemberMutate } = useRemoveMemberMutation(jobNo)
+    const { mutateAsync: removeMemberMutate } = useRemoveMemberMutation()
 
     const onAssignMember = async (updateMemberIds: string[]) => {
         await assignMemberMutate({

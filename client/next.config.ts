@@ -21,24 +21,10 @@ const nextConfig: NextConfig = {
         ],
     },
 
-    experimental: {
-        // Keep only packages that benefit:
-        optimizePackageImports: ['lucide-react', 'date-fns', 'lodash'],
-    },
-
     logging: {
         fetches: {
             fullUrl: true,
         },
-    },
-
-    webpack(config) {
-        config.module.rules.push({
-            test: /\.svg$/i,
-            issuer: /\.[jt]sx?$/,
-            use: ['@svgr/webpack'],
-        })
-        return config
     },
 
     eslint: { ignoreDuringBuilds: true },

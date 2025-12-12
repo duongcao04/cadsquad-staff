@@ -7,22 +7,22 @@ import {
     IconCollapse,
     IconCollapseOutline,
 } from '@/shared/components'
-import { ESidebarStatus, useUiStore } from '@/shared/stores/uiStore'
-import { Variants } from 'motion/react'
-import { useTranslations } from 'next-intl'
-import { useState } from 'react'
-import SidebarItem from './SidebarItem'
-import TaskCalendarPopover from './TaskCalendarPopover'
-import {
-    IconWorkbench,
-    IconWorkbenchOutline,
-} from '@/shared/components/icons/sidebar-icons/IconWorkbench'
 import {
     IconOnboard,
     IconOnboardOutline,
 } from '@/shared/components/icons/sidebar-icons/IconOnboard'
-import { SVGProps } from 'react'
+import {
+    IconWorkbench,
+    IconWorkbenchOutline,
+} from '@/shared/components/icons/sidebar-icons/IconWorkbench'
+import { appStore, toggleSidebar, ESidebarStatus } from '@/shared/stores'
+import { useStore } from '@tanstack/react-store'
+import { Variants } from 'motion/react'
+import { useTranslations } from 'next-intl'
+import { SVGProps, useState } from 'react'
+import SidebarItem from './SidebarItem'
 import TaskCalendar from './TaskCalendar'
+import TaskCalendarPopover from './TaskCalendarPopover'
 
 export type TSidebarItem = {
     icon: (props: SVGProps<SVGSVGElement>) => React.ReactElement
@@ -73,7 +73,8 @@ export function Sidebar() {
         initActivated
     )
     const [isHover, setHover] = useState(false)
-    const { sidebarStatus, toggleSidebar } = useUiStore()
+
+    const sidebarStatus = useStore(appStore, (state) => state.sidebarStatus)
 
     const asideVariants: Variants = {
         init: { opacity: 0 },

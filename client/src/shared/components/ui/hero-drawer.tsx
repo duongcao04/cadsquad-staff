@@ -1,6 +1,5 @@
 'use client'
 
-import { smoothMotion } from '@/lib/motion'
 import {
     Drawer,
     DrawerBody,
@@ -39,7 +38,7 @@ export const HeroDrawer = (props: DrawerProps) => {
                 zIndex: '9999999 !important',
             }}
             {...props}
-            motionProps={props.motionProps || smoothMotion}
+            motionProps={props.motionProps}
         />
     )
 }

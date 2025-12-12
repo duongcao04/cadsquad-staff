@@ -29,8 +29,6 @@ type CreateJobFormProps = {
     onSubmit?: () => void
 }
 export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
-    // const { setNewJobNo } = useJobStore()
-
     /**
      * Get initial data
      */

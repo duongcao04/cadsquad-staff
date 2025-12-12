@@ -3,8 +3,9 @@ import { MotionButton, MotionDiv, MotionP } from '@/lib/motion'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import React, { Dispatch, SetStateAction } from 'react'
-import { ESidebarStatus, useUiStore } from '../../../stores/uiStore'
 import { TSidebarItem } from './Sidebar'
+import { useStore } from '@tanstack/react-store'
+import { appStore, ESidebarStatus } from '@/shared/stores'
 
 const SidebarItem = ({
     data,
@@ -15,8 +16,9 @@ const SidebarItem = ({
     isActivated: boolean
     setActivated: Dispatch<SetStateAction<TSidebarItem | null>>
 }) => {
-    const { sidebarStatus } = useUiStore()
     const t = useTranslations()
+
+    const sidebarStatus = useStore(appStore, (state) => state.sidebarStatus)
 
     const buttonVariants: Variants = {
         init: {
@@ -113,7 +115,7 @@ const SidebarItem = ({
                         <MotionP
                             variants={textVariants}
                             className={`text-sm ${
-                                isActivated ? 'font-semibold !text-primary' : ''
+                                isActivated ? 'font-semibold text-primary!' : ''
                             } text-nowrap overflow-hidden py-2 pr-2 pl-0.5`}
                         >
                             {t(data.titleKey)}

@@ -2,12 +2,32 @@ import { envConfig } from '@/lib/config'
 import { JobColumn, JobColumnKey } from '@/shared/types'
 import { RoleEnum } from '../../shared/enums'
 import { capitalize } from 'lodash'
+import {
+    CircleUserRound,
+    House,
+    LifeBuoy,
+    Settings,
+    SquareUser,
+    SwatchBook,
+    UsersRound,
+} from 'lucide-react'
 
 export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const
 
 export const COOKIES = {
     authentication: 'csd-authTk',
 }
+
+export const APP_THEME_COLORS = [
+    'var(--color-primary)',
+    '#e11d48',
+    '#ea580c',
+    '#f59e0b',
+    '#16a34a',
+    '#0284c7',
+    '#4f46e5',
+    '#3f3f46',
+]
 
 export const INTERNAL_URLS = {
     home: envConfig.NEXT_PUBLIC_URL + '/',
@@ -17,6 +37,8 @@ export const INTERNAL_URLS = {
     profile: envConfig.NEXT_PUBLIC_URL + '/' + 'profile',
     settings: envConfig.NEXT_PUBLIC_URL + '/' + 'settings',
     manageUser: envConfig.NEXT_PUBLIC_URL + '/' + 'admin/mgmt/team',
+    accountSettings:
+        envConfig.NEXT_PUBLIC_URL + '/' + 'settings/personal_details',
     getJobDetailUrl: (jobNo: string, locale?: string) => {
         if (!locale)
             return envConfig.NEXT_PUBLIC_URL + '/' + 'jobs' + '/' + jobNo
@@ -31,6 +53,44 @@ export const INTERNAL_URLS = {
         )
     },
 }
+
+export const WEB_PAGES = [
+    {
+        icon: House, // Placeholder for Home icon
+        displayName: 'Workbench',
+        url: '/',
+    },
+    {
+        icon: LifeBuoy, // Placeholder for Project Center icon
+        displayName: 'Project Center',
+        url: '/project-center',
+    },
+    {
+        icon: CircleUserRound, // Placeholder for Profile icon
+        displayName: 'Profile',
+        url: '/profile',
+    },
+    {
+        icon: Settings, // Placeholder for Settings icon
+        displayName: 'Settings',
+        url: '/settings',
+    },
+    {
+        icon: UsersRound, // Placeholder for Manage Team icon
+        displayName: 'Manage Team',
+        url: '/admin/mgmt/team',
+    },
+    {
+        icon: SquareUser, // Placeholder for Manage Team icon
+        displayName: 'Account settings',
+        url: '/settings/personal_details',
+    },
+    {
+        icon: SwatchBook, // Placeholder for Manage Team icon
+        displayName: 'Appearance',
+        url: '/settings/appearance',
+    },
+]
 
 export const baseUrl = envConfig.NEXT_PUBLIC_URL ?? 'http://localhost'
 export const apiBaseUrl = envConfig.NEXT_PUBLIC_API_ENDPOINT

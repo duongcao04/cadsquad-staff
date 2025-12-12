@@ -310,6 +310,9 @@ model JobStatus {
   // Field mới để phân loại
   systemType JobStatusSystemType @default(STANDARD)
 
+  // Who is allowed to switch a job INTO this status?
+  allowedRolesToSet RoleEnum[] @default([ADMIN])
+
   @@index([order, systemType])
 }
 

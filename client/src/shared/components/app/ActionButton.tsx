@@ -10,6 +10,7 @@ import {
     IconPeopleColorful,
     IconWorkColorful,
 } from '@/shared/components'
+import { appStore, ESidebarStatus } from '@/shared/stores'
 import {
     Button,
     Dropdown,
@@ -19,12 +20,12 @@ import {
     DropdownTrigger,
     useDisclosure,
 } from '@heroui/react'
+import { useStore } from '@tanstack/react-store'
 import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
 import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
-import { ESidebarStatus, useUiStore } from '../../stores/uiStore'
 
 export function ActionButton() {
     const { isAdmin, isAccounting, isStaff } = useProfile()
@@ -50,7 +51,9 @@ export function AccountingButton() {
 
 export function AdminCreateButton() {
     const t = useTranslations()
-    const { sidebarStatus } = useUiStore()
+
+    const sidebarStatus = useStore(appStore, (state) => state.sidebarStatus)
+
     const {
         isOpen: isOpenJM,
         onOpen: onOpenJM,

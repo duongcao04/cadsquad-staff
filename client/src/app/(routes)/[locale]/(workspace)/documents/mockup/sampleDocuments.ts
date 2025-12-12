@@ -1,6 +1,4 @@
-import { FileItem } from "@/shared/components/FileManager";
-
-export const sampleFiles: FileItem[] = [
+export const sampleFiles = [
     {
         id: '1',
         name: 'Documents',

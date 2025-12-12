@@ -3,7 +3,6 @@
 import { Link } from '@/i18n/navigation'
 import { useProfile } from '@/lib/queries'
 import { SettingsGearIcon } from '@/shared/components'
-import { RoleEnum } from '@/shared/enums'
 import {
     Button,
     Dropdown,
@@ -123,13 +122,12 @@ export const USER_SETTINGS_DROPDOWN: GroupItem[] = [
 ]
 
 export function SettingsDropdown() {
-    const { userRole } = useProfile()
+    const { isAdmin } = useProfile()
     const t = useTranslations('settings')
 
-    const dropdownActions =
-        userRole === RoleEnum.ADMIN
-            ? ADMIN_SETTINGS_DROPDOWN
-            : USER_SETTINGS_DROPDOWN
+    const dropdownActions = isAdmin
+        ? ADMIN_SETTINGS_DROPDOWN
+        : USER_SETTINGS_DROPDOWN
 
     return (
         <Dropdown
@@ -172,9 +170,12 @@ export function SettingsDropdown() {
                                     <DropdownItem
                                         key={item.titleKey}
                                         startContent={
-                                            <div className="size-[32px] grid place-items-center">
+                                            <div className="size-8 grid place-items-center">
                                                 {item.icon && (
-                                                    <item.icon size={18} />
+                                                    <item.icon
+                                                        size={24}
+                                                        className="text-text-7"
+                                                    />
                                                 )}
                                             </div>
                                         }
@@ -182,10 +183,11 @@ export function SettingsDropdown() {
                                         <Link
                                             href={item.href}
                                             className="block size-full"
-                                            passHref
                                         >
-                                            <p>{t(item.titleKey)}</p>
-                                            <p className="text-xs text-text-muted">
+                                            <p className="font-medium text-text-7">
+                                                {t(item.titleKey)}
+                                            </p>
+                                            <p className="text-xs text-text-subdued">
                                                 {t(item.descriptionKey)}
                                             </p>
                                         </Link>

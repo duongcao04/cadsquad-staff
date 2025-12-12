@@ -222,11 +222,13 @@ export default function ProjectCenterTableView({
                 isOpen={isOpenViewColDrawer}
                 onClose={onCloseViewColDrawer}
             />
-            <JobDetailDrawer
-                isOpen={isOpenJobDetailDrawer}
-                onClose={onCloseJobDetailDrawer}
-                jobNo={viewDetail}
-            />
+            {viewDetail && (
+                <JobDetailDrawer
+                    isOpen={isOpenJobDetailDrawer}
+                    onClose={onCloseJobDetailDrawer}
+                    jobNo={viewDetail}
+                />
+            )}
             <AssignMemberModal
                 jobNo={assignMemberTo ?? ''}
                 isOpen={

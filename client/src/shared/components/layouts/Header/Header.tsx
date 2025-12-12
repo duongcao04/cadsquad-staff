@@ -1,34 +1,18 @@
 'use client'
 
-import { MotionButton } from '@/lib/motion'
 import { Button, Kbd, useDisclosure } from '@heroui/react'
 import { Layout } from 'antd'
 import hotkeys from 'hotkeys-js'
 import { CircleHelpIcon, Search } from 'lucide-react'
-import { Variants } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
 import CadsquadLogo from '../../CadsquadLogo'
+import { HeroButton } from '../../ui'
 
 const { Header: AntHeader } = Layout
-
-const buttonVariants: Variants = {
-    init: {
-        opacity: 0,
-    },
-    animate: {
-        opacity: 1,
-        boxShadow: 'none',
-        background: 'var(--color-text-fore1)',
-    },
-    hover: {
-        opacity: 1,
-        background: 'var(--color-text-muted)',
-    },
-}
 
 export const Header = () => {
     const t = useTranslations('common')
@@ -65,24 +49,18 @@ export const Header = () => {
                 />
                 <div className="w-full">
                     <div className="w-full flex items-center justify-center">
-                        <MotionButton
-                            variants={buttonVariants}
-                            initial="init"
-                            animate="animate"
-                            whileHover="hover"
-                            className="max-w-[500px] border-px border-border rounded-full bg-text-fore1 cursor-pointer"
-                            onClick={onOpen}
-                        >
-                            <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">
-                                <div className="flex items-center justify-start gap-3">
-                                    <Search
-                                        size={16}
-                                        className="text-text-muted"
-                                    />
-                                    <p className="block text-sm text-text-muted">
-                                        {t('search')} ...
-                                    </p>
-                                </div>
+                        <HeroButton
+                            variant="bordered"
+                            className="rounded-full! border-text-4 border-1"
+                            color="default"
+                            onPress={onOpen}
+                            startContent={
+                                <Search
+                                    size={16}
+                                    className="text-text-subdued"
+                                />
+                            }
+                            endContent={
                                 <Kbd
                                     onKeyDown={() => {
                                         onOpen()
@@ -93,10 +71,16 @@ export const Header = () => {
                                 >
                                     Ctrl + K
                                 </Kbd>
+                            }
+                        >
+                            <div className="w-96 text-text-7 tracking-wide">
+                                {t('search')} ...
                             </div>
-                        </MotionButton>
+                        </HeroButton>
                     </div>
-                    <SearchModal isOpen={isOpen} onClose={onClose} />
+                    {isOpen && (
+                        <SearchModal isOpen={isOpen} onClose={onClose} />
+                    )}
                 </div>
 
                 <div className="h-full flex justify-end items-center gap-3">

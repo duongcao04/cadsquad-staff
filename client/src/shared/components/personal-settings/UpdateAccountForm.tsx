@@ -1,15 +1,24 @@
 'use client'
 
 import { Link } from '@/i18n/navigation'
+import { optimizeCloudinary } from '@/lib'
 import { userApi } from '@/lib/api'
 import { useProfile, useUpdateUserMutation } from '@/lib/queries'
 import { IMAGES } from '@/lib/utils'
 import { TUpdateUserInput } from '@/lib/validationSchemas'
-import { addToast, Button, Input, InputProps, Skeleton } from '@heroui/react'
+import {
+    addToast,
+    Button,
+    Input,
+    InputProps,
+    Skeleton,
+    useDisclosure,
+} from '@heroui/react'
 import { Image } from 'antd'
 import { useFormik } from 'formik'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
+import UploadAvatarModal from './UploadAvatarModal'
 
 const getPhoneNumber = (phoneNum: string) => {
     if (phoneNum.startsWith('0')) {
@@ -25,6 +34,14 @@ export function UpdateAccountForm() {
     const t = useTranslations('settings')
 
     const { isAdmin, profile, isLoading: loadingProfile } = useProfile()
+
+    const {
+        isOpen: isOpenUploadAvatarModal,
+        onOpen: onOpenUploadAvatarModal,
+        onClose: onCloseUploadAvatarModal,
+    } = useDisclosure({
+        id: 'UploadAvatarModal',
+    })
 
     const { mutateAsync: updateUserMutate, isPending: isUpdatingUser } =
         useUpdateUserMutation()
@@ -80,6 +97,11 @@ export function UpdateAccountForm() {
 
     return (
         <>
+            <UploadAvatarModal
+                userId={profile.id}
+                isOpen={isOpenUploadAvatarModal}
+                onClose={onCloseUploadAvatarModal}
+            />
             <form onSubmit={formik.handleSubmit} className="space-y-8">
                 <div className="size-full border-px border-text-muted rounded-xl px-6 pt-4 pb-7">
                     <h2 className="text-base font-semibold">
@@ -274,11 +296,20 @@ export function UpdateAccountForm() {
                                     isLoaded={!loadingProfile}
                                 >
                                     <Image
-                                        src={formik.values.avatar}
+                                        src={optimizeCloudinary(
+                                            formik.values.avatar ??
+                                                IMAGES.loadingPlaceholder,
+                                            {
+                                                width: 256,
+                                                height: 256,
+                                            }
+                                        )}
                                         alt="User avatar"
+                                        className="w-full aspect-square rounded-full object-cover"
                                         rootClassName="ring-2 p-1 w-full aspect-square rounded-full overflow-hidden"
-                                        className="w-full aspect-square rounded-full"
-                                        preview={true}
+                                        preview={{
+                                            src: formik.values.avatar,
+                                        }}
                                     />
                                 </Skeleton>
                                 <Button
@@ -286,9 +317,7 @@ export function UpdateAccountForm() {
                                     size="sm"
                                     className="px-8"
                                     color="primary"
-                                    onPress={() => {
-                                        alert('Tính năng đang được phát triển')
-                                    }}
+                                    onPress={onOpenUploadAvatarModal}
                                 >
                                     Chọn ảnh
                                 </Button>

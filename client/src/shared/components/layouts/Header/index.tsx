@@ -1,6 +1,0 @@
-export * from './SearchModal'
-export * from './Header'
-export * from './NotificationDropdown'
-export * from './NotificationCard'
-export * from './SettingsDropdown'
-export * from './UserDropdown'

@@ -42,7 +42,7 @@ import { JobDetailView } from './JobDetailView'
 type JobDetailDrawerProps = {
     isOpen: boolean
     onClose: () => void
-    jobNo: string | null
+    jobNo: string
 }
 export default function JobDetailDrawer({
     jobNo,
@@ -50,9 +50,10 @@ export default function JobDetailDrawer({
     onClose,
 }: JobDetailDrawerProps) {
     const t = useTranslations()
+
     const locale = useLocale()
 
-    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo ?? undefined)
+    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
 
     const changeStatusMutation = useChangeStatusMutation()
 

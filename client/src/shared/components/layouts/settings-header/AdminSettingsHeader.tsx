@@ -64,9 +64,9 @@ const AdminSettingsHeader = () => {
                             initial="init"
                             animate="animate"
                             whileHover="hover"
-                            className="max-w-[500px] border-[1px] border-border rounded-full bg-text-fore1 cursor-pointer"
+                            className="max-w-125 border-px border-border rounded-full bg-text-fore1 cursor-pointer"
                         >
-                            <div className="px-3 py-1.5 w-[420px] flex items-center justify-between">
+                            <div className="px-3 py-1.5 w-105 flex items-center justify-between">
                                 <div className="flex items-center justify-start gap-3">
                                     <Search
                                         size={16}

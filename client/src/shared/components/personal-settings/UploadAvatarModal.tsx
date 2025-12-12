@@ -1,12 +1,10 @@
 'use client'
 
-import { useResetPasswordMutation } from '@/lib/queries'
-import { handleCopy } from '@/shared/components'
-import { HeroButton } from '@/shared/components/ui/hero-button'
-import { TUser } from '@/shared/types'
-import { addToast, Button, Radio, RadioGroup } from '@heroui/react'
-import { useTranslations } from 'next-intl'
+import { useUpdateUserMutation, useUploadImageMutation } from '@/lib/queries'
+import { addToast, Divider } from '@heroui/react'
 import React, { useState } from 'react'
+import AvatarUpload from '../file-upload/avatar-upload'
+import { HeroButton } from '../ui'
 import {
     HeroModal,
     HeroModalBody,
@@ -14,210 +12,95 @@ import {
     HeroModalFooter,
     HeroModalHeader,
 } from '../ui/hero-modal'
-import { HeroPasswordInput } from '../ui/hero-password-input'
 
-type UploadAvatarModalProps = {
+type Props = {
+    userId: string
     isOpen: boolean
     onClose: () => void
-    isLoading?: boolean
-    data?: TUser
 }
-export default function UploadAvatarModal({
-    isOpen,
-    onClose,
-    data,
-}: UploadAvatarModalProps) {
-    const [resetOption, setResetOption] = React.useState('automatic')
-    const [passwordInput, setPasswordInput] = useState('')
-    const [isSuccess, setSuccess] = useState(false)
 
-    const t = useTranslations()
+function UploadAvatarModal({ userId, isOpen, onClose }: Props) {
+    const uploadImageMutation = useUploadImageMutation()
+    const updateUserMutation = useUpdateUserMutation()
+
+    const [file, setFile] = useState<File | null>(null)
 
     const handleClose = () => {
         onClose()
-        setResetOption('automatic')
-        setPasswordInput('')
-        setSuccess(false)
+        setFile(null)
     }
 
-    const { isPending: isResetting } = useResetPasswordMutation()
-
-    const handleDone = async () => {
-        // if (data?.id) {
-        // 	if (resetOption === 'automatic') {
-        // 		setPasswordInput(generatePassword())
-        // 	}
-        // 	await resetPasswordMutation(
-        // 		{
-        // 			userId: data.id,
-        // 			resetPasswordInput: {
-        // 				newPassword: passwordInput,
-        // 			},
-        // 		},
-        // 		{
-        // 			onSuccess: (res) => {
-        // 				addToast({
-        // 					title: t('success'),
-        // 					description: res.data.message,
-        // 					color: 'success',
-        // 				})
-        // 				setSuccess(true)
-        // 			},
-        // 			onError: (error) => {
-        // 				const err = error as unknown as ApiError
-        // 				addToast({
-        // 					title: t('failed'),
-        // 					description: err.message,
-        // 					color: 'danger',
-        // 				})
-        // 			},
-        // 		}
-        // 	)
-        // } else {
-        // 	addToast({
-        // 		title: t('error'),
-        // 		color: 'danger',
-        // 	})
-        // }
+    const handleChangeAvatar = async () => {
+        if (file) {
+            const avatarUrl = await uploadImageMutation.mutateAsync(file)
+            if (avatarUrl) {
+                await updateUserMutation.mutateAsync(
+                    {
+                        userId,
+                        updateUserInput: {
+                            avatar: avatarUrl,
+                        },
+                    },
+                    {
+                        onSuccess: () => {
+                            addToast({
+                                title: 'Update avatar successfully',
+                                color: 'success',
+                            })
+                            handleClose()
+                        },
+                    }
+                )
+            }
+        } else {
+            addToast({
+                title: 'Please choose image',
+                color: 'danger',
+            })
+        }
     }
 
     return (
         <HeroModal
             isOpen={isOpen}
             onClose={handleClose}
-            placement="center"
-            hideCloseButton
             classNames={{
-                base: '!p-0',
+                base: 'max-w-[90%] sm:max-w-[80%] md:max-w-[80%] xl:max-w-[740px]',
             }}
-            size="lg"
+            style={{
+                bottom: '200px',
+            }}
         >
-            <HeroModalContent className="p-2">
-                <HeroModalHeader
-                    className="font-semibold text-lg text-white"
-                    style={{
-                        backgroundColor: isSuccess
-                            ? '#138748'
-                            : 'var(--color-primary)',
-                    }}
-                >
-                    {isSuccess ? (
-                        <div>
-                            <p>{t('resetPasswordSuccess')}</p>
-                            <p>@{data?.username}</p>
-                        </div>
-                    ) : (
-                        <p>
-                            {t('resetPasswordFor', {
-                                username: `@${data?.username}`,
-                            })}
-                        </p>
-                    )}
+            <HeroModalContent>
+                <HeroModalHeader>
+                    <p className="text-lg font-semibold">Upload avatar</p>
                 </HeroModalHeader>
+                <Divider />
                 <HeroModalBody>
-                    <div className="pt-2.5 px-0">
-                        {!isSuccess && (
-                            <>
-                                <RadioGroup
-                                    value={resetOption}
-                                    onValueChange={setResetOption}
-                                >
-                                    <Radio
-                                        value="automatic"
-                                        description={t(
-                                            'automaticallyGeneratePasswordDesc'
-                                        )}
-                                        classNames={{
-                                            base: 'gap-2 items-start',
-                                            wrapper: 'mt-1.5',
-                                        }}
-                                    >
-                                        {t('automaticallyGeneratePassword')}
-                                    </Radio>
-                                    <Radio
-                                        value="manual"
-                                        classNames={{
-                                            base: 'gap-2',
-                                        }}
-                                    >
-                                        {t('createPassword')}
-                                    </Radio>
-                                </RadioGroup>
-                                {resetOption === 'manual' && (
-                                    <div className="mt-4 w-full">
-                                        <HeroPasswordInput
-                                            isRequired
-                                            value={passwordInput}
-                                            onChange={(e) =>
-                                                setPasswordInput(e.target.value)
-                                            }
-                                            validate={(value) => {
-                                                const passwordRegex = /^.{8,}$/
-                                                if (
-                                                    !passwordRegex.test(value)
-                                                ) {
-                                                    return 'Password least 8 characters'
-                                                } else {
-                                                    return ''
-                                                }
-                                            }}
-                                            variant="underlined"
-                                            description="Password must have at least 8 characters"
-                                            autoFocus
-                                        />
-                                    </div>
-                                )}
-                            </>
-                        )}
-                        {isSuccess && (
-                            <>
-                                <HeroPasswordInput
-                                    isRequired
-                                    value={passwordInput}
-                                    autoFocus={false}
-                                    variant="underlined"
-                                />
-                                <HeroButton
-                                    className="mt-2 text-white"
-                                    color="blue"
-                                    size="sm"
-                                    variant="solid"
-                                    onPress={() => {
-                                        handleCopy(passwordInput, () => {
-                                            addToast({
-                                                title: t('copiedToClipboard'),
-                                                color: 'success',
-                                            })
-                                        })
-                                    }}
-                                >
-                                    {t('copyPassword')}
-                                </HeroButton>
-                            </>
-                        )}
-                    </div>
+                    <AvatarUpload
+                        onFileChange={(file) => {
+                            // FIX: Wrap in setTimeout to avoid "Cannot update during render" error
+                            setTimeout(() => {
+                                if (file) {
+                                    setFile(file.file as File)
+                                }
+                            }, 0)
+                        }}
+                        onRemoveFile={() => setFile(null)}
+                        maxSize={10 * 1024 * 1024} // 10MB
+                        imgClassName="size-48!"
+                        iconClassName="size-24! text-text-7"
+                    />
                 </HeroModalBody>
+                <Divider />
                 <HeroModalFooter>
-                    {isSuccess ? (
-                        <Button variant="light" onPress={handleClose}>
-                            {t('done')}
-                        </Button>
-                    ) : (
-                        <>
-                            <Button variant="light" onPress={handleClose}>
-                                {t('cancel')}
-                            </Button>
-                            <Button
-                                color="primary"
-                                isLoading={isResetting}
-                                onPress={handleDone}
-                            >
-                                {t('reset')}
-                            </Button>
-                        </>
-                    )}
+                    <HeroButton variant="light" onPress={onClose}>
+                        Cancel
+                    </HeroButton>
+                    <HeroButton onPress={handleChangeAvatar}>Save</HeroButton>
                 </HeroModalFooter>
             </HeroModalContent>
         </HeroModal>
     )
 }
+export default React.memo(UploadAvatarModal)
