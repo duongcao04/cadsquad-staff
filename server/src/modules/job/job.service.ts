@@ -185,7 +185,10 @@ export class JobService {
             const tabQuery = JobQueryBuilder.buildQueryTab(tab)
 
             // 5. Build search
-            const searchQuery = JobQueryBuilder.buildSearch(search)
+            const searchQuery = JobQueryBuilder.buildSearch(search, [
+                'no',
+                'displayName',
+            ])
 
             // 6. Construct the Main WHERE Clause
             const queryBuilder: Prisma.JobWhereInput = {
@@ -228,7 +231,9 @@ export class JobService {
             }
 
             return {
-                data,
+                data: plainToInstance(this.responseSchema(userRole), data, {
+                    excludeExtraneousValues: true,
+                }) as unknown as Job[],
                 paginate: {
                     limit: take ?? 10,
                     page: page ?? 1,
@@ -236,6 +241,54 @@ export class JobService {
                     totalPages: Math.ceil(total / Number(take ?? 10)),
                 },
             }
+        } catch (error) {
+            // Log the actual error to your terminal for debugging
+            this.logger.error(
+                `Error finding jobs for user ${userId}`,
+                error.stack
+            )
+            throw new InternalServerErrorException('Get jobs failed')
+        }
+    }
+
+    /**
+     * Search job
+     */
+    async search(
+        userId: string,
+        userRole: RoleEnum,
+        keywords?: string
+    ): Promise<Job[]> {
+        try {
+            // 1. Build search
+            const searchQuery = JobQueryBuilder.buildSearch(keywords, [
+                'no',
+                'displayName',
+            ])
+
+            // 6. Construct the Main WHERE Clause
+            const queryBuilder: Prisma.JobWhereInput = {
+                AND: [
+                    // Apply Permissions (Your existing logic)
+                    this.buildPermission(userRole, userId),
+                    searchQuery,
+                ],
+            }
+
+            // 5. Execute Query
+            const jobs = this.prisma.job.findMany({
+                where: queryBuilder,
+                orderBy: {
+                    displayName: 'asc',
+                },
+                include: {
+                    status: true,
+                },
+            })
+
+            return plainToInstance(this.responseSchema(userRole), jobs, {
+                excludeExtraneousValues: true,
+            }) as unknown as Job[]
         } catch (error) {
             // Log the actual error to your terminal for debugging
             this.logger.error(
@@ -882,18 +935,6 @@ export class JobService {
         if (userRole === RoleEnum.ADMIN) return {}
         return {
             assignee: { some: { id: userId } },
-        }
-    }
-
-    private buildSearchBy(search?: string): Prisma.JobWhereInput {
-        if (!search) return {}
-
-        return {
-            OR: [
-                { no: { contains: search, mode: 'insensitive' } },
-                { displayName: { contains: search, mode: 'insensitive' } },
-                { clientName: { contains: search, mode: 'insensitive' } },
-            ],
         }
     }
 }

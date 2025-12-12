@@ -24,7 +24,6 @@ const nextConfig: NextConfig = {
     experimental: {
         // Keep only packages that benefit:
         optimizePackageImports: ['lucide-react', 'date-fns', 'lodash'],
-        experimental: { serverMinification: false },
     },
 
     logging: {
