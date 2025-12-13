@@ -871,7 +871,7 @@ export class JobService {
                 }
 
                 // 2. Update job - remove the member
-                await tx.job.update({
+                const updated = await tx.job.update({
                     where: { id: jobId },
                     data: {
                         assignee: {
@@ -896,7 +896,7 @@ export class JobService {
                     },
                 })
 
-                return { id: jobId }
+                return { id: jobId, no: updated.no }
             })
         } catch (error) {
             throw new InternalServerErrorException('Remove member failed')

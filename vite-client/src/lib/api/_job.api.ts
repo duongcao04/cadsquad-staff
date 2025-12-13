@@ -127,7 +127,7 @@ export const jobApi = {
     assignMember: async (id: string, data: TUpdateJobMembersInput) => {
         return axiosClient
             .patch<
-                ApiResponse<{ id: string }>
+                ApiResponse<JobUpdateResponse>
             >(`/v1/jobs/${id}/assign-member`, data)
             .then((res) => res.data)
     },

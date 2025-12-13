@@ -44,3 +44,5 @@ export type TJob = Omit<
     IJobResponse,
     'typeId' | 'createdById' | 'paymentChannelId' | 'statusId'
 >
+
+export type JobUpdateResponse = { id: string; no: string }

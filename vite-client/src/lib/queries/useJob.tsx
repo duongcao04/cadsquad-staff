@@ -12,6 +12,7 @@ import { ProjectCenterTabEnum } from '@/shared/enums'
 import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { queryClient } from '../../main'
+import { JobUpdateResponse } from '../../shared/types'
 import type { ApiResponse } from '../axios'
 import { onErrorToast } from './helper'
 import {
@@ -250,7 +251,9 @@ export const useBulkChangeStatusMutation = () => {
     })
 }
 
-export const useAssignMemberMutation = (jobNo?: string) => {
+export const useAssignMemberMutation = (
+    onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
+) => {
     return useMutation({
         mutationKey: ['assignMember', 'job'],
         mutationFn: ({
@@ -263,22 +266,35 @@ export const useAssignMemberMutation = (jobNo?: string) => {
             if (!jobId) throw new Error('jobId is required')
             return jobApi.assignMember(jobId, assignMemberInput)
         },
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['jobs'] })
-            queryClient.invalidateQueries({ queryKey: ['jobs', 'no', jobNo] })
+        onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobActivityLog', String(data.result?.id)],
+                queryKey: jobsListOptions().queryKey,
             })
-            addToast({
-                title: 'Phân công thành viên thành công',
-                color: 'success',
+            if (res.result?.no) {
+                queryClient.invalidateQueries({
+                    queryKey: jobByNoOptions(res.result?.no).queryKey,
+                })
+            }
+            queryClient.invalidateQueries({
+                queryKey: ['jobActivityLog', String(res.result?.id)],
             })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Member assigned',
+                    description: `A member has been assigned to job ${res.result?.no}.`,
+                    color: 'success',
+                })
+            }
         },
-        onError: (err) => onErrorToast(err, 'Phân công thành viên thất bại'),
+        onError: (err) => onErrorToast(err, 'Failed to assign member'),
     })
 }
 
-export const useRemoveMemberMutation = () => {
+export const useRemoveMemberMutation = (
+    onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
+) => {
     return useMutation({
         mutationKey: ['removeMember', 'job'],
         mutationFn: ({
@@ -293,13 +309,27 @@ export const useRemoveMemberMutation = () => {
         },
         onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobs', 'no', res.result?.no],
+                queryKey: jobsListOptions().queryKey,
             })
+            if (res.result?.no) {
+                queryClient.invalidateQueries({
+                    queryKey: jobByNoOptions(res.result?.no).queryKey,
+                })
+            }
             queryClient.invalidateQueries({
                 queryKey: ['jobActivityLog', String(res.result?.id)],
             })
-            queryClient.invalidateQueries({ queryKey: ['jobs'] })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Member removed',
+                    description: `A member has been removed from job ${res.result?.no}.`,
+                    color: 'success',
+                })
+            }
         },
+        onError: (err) => onErrorToast(err, 'Failed to remove member'),
     })
 }
 
@@ -307,7 +337,6 @@ type JobUpdateVariables = {
     jobId: string
     data: TUpdateJobInput // Your partial update type
 }
-type JobUpdateResponse = { id: string; no: string }
 export const useUpdateJobMutation = (
     onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
 ) => {

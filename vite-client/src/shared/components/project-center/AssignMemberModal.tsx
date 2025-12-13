@@ -1,6 +1,3 @@
-import { Button, Input, Skeleton } from '@heroui/react'
-import { type Key, useState } from 'react'
-
 import { INTERNAL_URLS } from '@/lib'
 import { useProfile, useUsers } from '@/lib/queries'
 import {
@@ -8,7 +5,8 @@ import {
     useJobByNo,
     useRemoveMemberMutation,
 } from '@/lib/queries/useJob'
-
+import { Button, Input, Skeleton } from '@heroui/react'
+import { type Key, useState } from 'react'
 import HeroCopyButton from '../ui/hero-copy-button'
 import {
     HeroModal,
@@ -39,7 +37,7 @@ export default function AssignMemberModal({
     const { isAdmin } = useProfile()
 
     const [memberSelected, setMemberSelected] = useState<Key | null>(null)
-    const { mutateAsync: assignMemberMutate } = useAssignMemberMutation(jobNo)
+    const { mutateAsync: assignMemberMutate } = useAssignMemberMutation()
     const { mutateAsync: removeMemberMutate } = useRemoveMemberMutation()
 
     const onAssignMember = async (updateMemberIds: string[]) => {
