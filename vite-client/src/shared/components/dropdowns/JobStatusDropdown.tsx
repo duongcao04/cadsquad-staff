@@ -1,6 +1,7 @@
 import {
     addToast,
     Button,
+    Divider,
     Popover,
     PopoverContent,
     PopoverTrigger,
@@ -20,6 +21,7 @@ import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
 import type { TJob, TJobStatus } from '@/shared/types'
 
 import { JobStatusChip } from '../chips/JobStatusChip'
+import { JobStatusSystemTypeEnum } from '../../enums'
 
 type JobStatusDropdownProps = {
     jobData: TJob
@@ -48,6 +50,11 @@ export default function JobStatusDropdown({
     )
     const { data: jobStatuses } = useJobStatuses()
 
+    const canClickable =
+        statusData.systemType !== JobStatusSystemTypeEnum.TERMINATED
+
+    console.log(statusData)
+
     const handleChangeStatus = async (nextStatus: TJobStatus) => {
         await changeStatusMutation.mutateAsync({
             jobId: jobData.id?.toString(),
@@ -64,8 +71,8 @@ export default function JobStatusDropdown({
             data: isAdmin
                 ? nextStatus
                 : nextStatus?.code === JOB_STATUS_CODES.delivered
-                    ? nextStatus
-                    : undefined,
+                  ? nextStatus
+                  : undefined,
             action: () => {
                 handleChangeStatus(nextStatus as TJobStatus)
             },
@@ -75,8 +82,8 @@ export default function JobStatusDropdown({
             data: isAdmin
                 ? prevStatus
                 : prevStatus?.code === JOB_STATUS_CODES.delivered
-                    ? prevStatus
-                    : undefined,
+                  ? prevStatus
+                  : undefined,
             action: () => {
                 handleChangeStatus(prevStatus as TJobStatus)
             },
@@ -90,13 +97,13 @@ export default function JobStatusDropdown({
         return resolvedTheme === 'light'
             ? data
                 ? lightenHexColor(
-                    data?.hexColor ? data.hexColor : '#ffffff',
-                    90
-                )
+                      data?.hexColor ? data.hexColor : '#ffffff',
+                      90
+                  )
                 : '#ffffff'
             : data
-                ? darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
-                : '#000000'
+              ? darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
+              : '#000000'
     }
 
     return (
@@ -112,7 +119,26 @@ export default function JobStatusDropdown({
             showArrow={true}
         >
             <PopoverTrigger className="opacity-100">
-                <button className="cursor-pointer">
+                {canClickable ? (
+                    <button className="cursor-pointer">
+                        <JobStatusChip
+                            data={statusData}
+                            classNames={{
+                                base: '!w-[120px]',
+                                content:
+                                    'uppercase text-xs font-semibold font-saira !w-[120px] text-nowrap line-clamp-1',
+                            }}
+                            childrenRender={(statusData) => {
+                                return (
+                                    <div className="flex items-center justify-between gap-2">
+                                        <p>{statusData.displayName}</p>
+                                        <ChevronDown size={14} />
+                                    </div>
+                                )
+                            }}
+                        />
+                    </button>
+                ) : (
                     <JobStatusChip
                         data={statusData}
                         classNames={{
@@ -120,16 +146,8 @@ export default function JobStatusDropdown({
                             content:
                                 'uppercase text-xs font-semibold font-saira !w-[120px] text-nowrap line-clamp-1',
                         }}
-                        childrenRender={(statusData) => {
-                            return (
-                                <div className="flex items-center justify-between gap-2">
-                                    <p>{statusData.displayName}</p>
-                                    <ChevronDown size={14} />
-                                </div>
-                            )
-                        }}
                     />
-                </button>
+                )}
             </PopoverTrigger>
             <PopoverContent aria-label="Change status action">
                 <Tabs
@@ -169,7 +187,7 @@ export default function JobStatusDropdown({
                                                                 item.data
                                                                     ?.hexColor
                                                                     ? item.data
-                                                                        ?.hexColor
+                                                                          ?.hexColor
                                                                     : '#ffffff',
                                                         }}
                                                     />
@@ -179,7 +197,7 @@ export default function JobStatusDropdown({
                                                             color: item.data
                                                                 ?.hexColor
                                                                 ? item.data
-                                                                    ?.hexColor
+                                                                      ?.hexColor
                                                                 : '#ffffff',
                                                         }}
                                                     >
@@ -247,9 +265,13 @@ export default function JobStatusDropdown({
                         </Tab>
                     )}
                 </Tabs>
-                <p className="border-t-1 border-text-muted pt-1.5 w-full text-center text-text-muted">
-                    <span className="font-bold">#{jobData?.no}</span> / Update
-                    status
+
+                <Divider className="bg-text-muted" />
+
+                <p className="text-xs pt-1.5 w-full text-center text-text-subdued">
+                    <span className="font-semibold">#{jobData?.no}</span>
+                    <span className="px-0.5">/</span>
+                    <span>Update status</span>
                 </p>
             </PopoverContent>
         </Popover>

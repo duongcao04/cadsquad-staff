@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 
 import { notificationApi } from '@/lib/api'
 import { axiosClient } from '@/lib/axios'
@@ -12,6 +11,7 @@ import type { IUserNotificationResponse } from '@/shared/interfaces'
 import type { TUserNotification } from '@/shared/types'
 
 import { queryClient } from '../../main'
+import { notificationsListOptions } from './options/notification-queries'
 
 export const mapUserNotification = (
     item: IUserNotificationResponse
@@ -32,26 +32,18 @@ export const mapUserNotification = (
 }
 
 export const useNotifications = () => {
-    const { data, isFetching, isLoading, refetch } = useQuery({
-        queryKey: ['notifications'],
-        queryFn: () => notificationApi.findAll(),
-        select: (res) => res.data.result,
-    })
+    const options = notificationsListOptions()
 
-    const notifications = useMemo(() => {
-        const notificationsData = data
+    const { data, refetch, error, isFetching, isLoading } = useQuery(options)
 
-        if (!Array.isArray(notificationsData)) {
-            return []
-        }
-
-        return notificationsData.map((item) => mapUserNotification(item))
-    }, [data])
-
+    // Data đã được map sẵn trong options.select
     return {
-        data: notifications ?? [],
-        isLoading: isLoading || isFetching,
         refetch,
+        isLoading: isLoading || isFetching,
+        error,
+        notifications: data?.notifications ?? [],
+        totalCount: data?.totalCount ?? 0,
+        unseenCount: data?.unseenCount ?? 0,
     }
 }
 

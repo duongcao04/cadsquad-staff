@@ -14,10 +14,16 @@ export const notificationApi = {
     },
     // Get all user notification
     // userId get from Authentication Header
-    findAll: () => {
-        return axiosClient.get<ApiResponse<IUserNotificationResponse[]>>(
-            '/v1/notifications'
-        )
+    findAll: async () => {
+        return axiosClient
+            .get<
+                ApiResponse<{
+                    notifications: IUserNotificationResponse[]
+                    totalCount: number
+                    unseenCount: number
+                }>
+            >('/v1/notifications')
+            .then((res) => res.data)
     },
     findOne: (id: string) => {
         return axiosClient.get<ApiResponse<IUserNotificationResponse>>(

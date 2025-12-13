@@ -3,9 +3,9 @@ import { Layout } from 'antd'
 import hotkeys from 'hotkeys-js'
 import { CircleHelpIcon, Search } from 'lucide-react'
 import { useEffect } from 'react'
-
 import CadsquadLogo from '../../CadsquadLogo'
 import { HeroButton } from '../../ui/hero-button'
+import { NotificationDropdown } from './NotificationDropdown'
 import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
@@ -81,7 +81,7 @@ export const Header = () => {
 
                 <div className="h-full flex justify-end items-center gap-3">
                     <div className="flex items-center justify-end gap-3">
-                        {/* <NotificationDropdown /> */}
+                        <NotificationDropdown />
                         <Button
                             variant="light"
                             startContent={<CircleHelpIcon size={18} />}
