@@ -32,7 +32,14 @@ export default function JobStatusDropdown({
     const { resolvedTheme } = useTheme()
 
     const { isAdmin } = useProfile()
-    const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
+
+    const changeStatusMutation = useChangeStatusMutation((res) => {
+        addToast({
+            title: 'Job status updated',
+            description: `Job ${res.result?.no} has been successfully updated`,
+        })
+    })
+
     const { jobStatus: nextStatus } = useJobStatusByOrder(
         statusData.nextStatusOrder
     )
@@ -42,37 +49,13 @@ export default function JobStatusDropdown({
     const { data: jobStatuses } = useJobStatuses()
 
     const handleChangeStatus = async (nextStatus: TJobStatus) => {
-        try {
-            await changeStatusMutation(
-                {
-                    jobId: jobData.id?.toString(),
-                    data: {
-                        fromStatusId: jobData?.status.id?.toString(),
-                        toStatusId: nextStatus.id?.toString(),
-                    },
-                },
-                {
-                    onSuccess: () => {
-                        addToast({
-                            title: 'Cập nhật trạng thái thành công',
-                            color: 'success',
-                        })
-                    },
-                    onError: () => {
-                        addToast({
-                            title: 'Cập nhật trạng thái thất bại',
-                            color: 'danger',
-                        })
-                    },
-                }
-            )
-        } catch (error) {
-            console.log(error)
-            addToast({
-                title: 'Cập nhật trạng thái thất bại',
-                color: 'danger',
-            })
-        }
+        await changeStatusMutation.mutateAsync({
+            jobId: jobData.id?.toString(),
+            data: {
+                fromStatusId: jobData?.status.id?.toString(),
+                toStatusId: nextStatus.id?.toString(),
+            },
+        })
     }
 
     const actions: { key: string; data?: TJobStatus; action: () => void }[] = [
@@ -81,8 +64,8 @@ export default function JobStatusDropdown({
             data: isAdmin
                 ? nextStatus
                 : nextStatus?.code === JOB_STATUS_CODES.delivered
-                  ? nextStatus
-                  : undefined,
+                    ? nextStatus
+                    : undefined,
             action: () => {
                 handleChangeStatus(nextStatus as TJobStatus)
             },
@@ -92,8 +75,8 @@ export default function JobStatusDropdown({
             data: isAdmin
                 ? prevStatus
                 : prevStatus?.code === JOB_STATUS_CODES.delivered
-                  ? prevStatus
-                  : undefined,
+                    ? prevStatus
+                    : undefined,
             action: () => {
                 handleChangeStatus(prevStatus as TJobStatus)
             },
@@ -107,13 +90,13 @@ export default function JobStatusDropdown({
         return resolvedTheme === 'light'
             ? data
                 ? lightenHexColor(
-                      data?.hexColor ? data.hexColor : '#ffffff',
-                      90
-                  )
+                    data?.hexColor ? data.hexColor : '#ffffff',
+                    90
+                )
                 : '#ffffff'
             : data
-              ? darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
-              : '#000000'
+                ? darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
+                : '#000000'
     }
 
     return (
@@ -186,7 +169,7 @@ export default function JobStatusDropdown({
                                                                 item.data
                                                                     ?.hexColor
                                                                     ? item.data
-                                                                          ?.hexColor
+                                                                        ?.hexColor
                                                                     : '#ffffff',
                                                         }}
                                                     />
@@ -196,7 +179,7 @@ export default function JobStatusDropdown({
                                                             color: item.data
                                                                 ?.hexColor
                                                                 ? item.data
-                                                                      ?.hexColor
+                                                                    ?.hexColor
                                                                 : '#ffffff',
                                                         }}
                                                     >

@@ -173,7 +173,9 @@ export const useCreateJobMutation = () => {
     })
 }
 
-export const useChangeStatusMutation = () => {
+export const useChangeStatusMutation = (
+    onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
+) => {
     return useMutation({
         mutationKey: ['changeStatus', 'job'],
         mutationFn: ({
@@ -187,20 +189,23 @@ export const useChangeStatusMutation = () => {
             return jobApi.changeStatus(jobId, data)
         },
         onSuccess: (res) => {
-            addToast({ title: res.message, color: 'success' })
-            queryClient.invalidateQueries({ queryKey: ['jobs'] })
-            // Lưu ý: Key phải khớp với key định nghĩa trong jobByNoOptions
-
+            queryClient.invalidateQueries({
+                queryKey: jobsListOptions().queryKey,
+            })
             if (res.result?.no) {
                 queryClient.invalidateQueries({
                     queryKey: jobByNoOptions(res.result?.no).queryKey,
                 })
             }
-
             if (res.result?.id) {
                 queryClient.invalidateQueries({
                     queryKey: ['jobActivityLog', String(res.result?.id)],
                 })
+            }
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({ title: res.message, color: 'success' })
             }
         },
         onError: (err) => onErrorToast(err, 'Change Status Failed'),
