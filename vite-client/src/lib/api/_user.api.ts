@@ -1,0 +1,30 @@
+import { ApiResponse, axiosClient } from '@/lib/axios'
+import { TCreateUserInput, TResetPasswordInput, TUpdatePasswordInput, TUpdateUserInput } from '@/lib/validationSchemas'
+import { IUserResponse } from '@/shared/interfaces'
+
+export const userApi = {
+	create: (data: TCreateUserInput) => {
+		return axiosClient.post<ApiResponse<IUserResponse>>('/v1/users', data)
+	},
+	findAll: () => {
+		return axiosClient.get<ApiResponse<IUserResponse[]>>('/v1/users')
+	},
+	checkUsernameValid: (username: string) => {
+		return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(`/v1/users/username/${username}`)
+	},
+	updatePassword: (data: TUpdatePasswordInput) => {
+		return axiosClient.patch<ApiResponse<{ id: string }>>('/v1/users/update-password', data)
+	},
+	resetPassword: (userId: string, data: TResetPasswordInput) => {
+		return axiosClient.patch<ApiResponse<{ username: string }>>(`/v1/users/${userId}/reset-password`, data)
+	},
+	findOne: (id: string) => {
+		return axiosClient.get<ApiResponse<IUserResponse>>(`/v1/users/${id}`)
+	},
+	update: (id: string, data: TUpdateUserInput) => {
+		return axiosClient.patch<ApiResponse<{ id: string }>>(`/v1/users/${id}`, data)
+	},
+	remove: (id: string) => {
+		return axiosClient.delete<ApiResponse<{ username: string }>>(`/v1/users/${id}`)
+	},
+}

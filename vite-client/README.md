@@ -1,75 +1,117 @@
-# React + TypeScript + Vite
+# 🚀 Nextjs Sample Template
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to **`nextjs-sample`**, a modern and extensible starter template for **Next.js 15** using **React 19**, **Tailwind CSS**, and essential tools for building fast, scalable, production-ready apps.
 
-Currently, two official plugins are available:
+This template is built to help developers start faster with best practices, common utilities, and powerful packages already pre-configured.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 📦 Tech Stack
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+This template includes:
 
-Note: This will impact Vite dev & build performances.
+- ✅ **Next.js 15.3.4** – App Router support, latest updates
+- ⚛️ **React 19** – Concurrent rendering, improved performance
+- 🎨 **Tailwind CSS** – Utility-first styling with `tailwind-merge` and `clsx`
+- 🌐 **next-intl** – Built-in internationalization (i18n)
+- 🧾 **Formik** + **Yup** – Form management and schema validation
+- ✉️ **Nodemailer** – Backend email sending
+- 🎞 **Motion** – Smooth animations
+- 🧩 **Lucide React** – Icon system with React components
+- 🧹 **Prettier Plugin** – Auto-sorted imports with `@trivago/prettier-plugin-sort-imports`
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ How to Start
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 1. Clone the Repository
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/your-org/nextjs-sample.git
+cd nextjs-sample
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install Dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Choose your package manager:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+
+### 3. Start the Development Server
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Then open http://localhost:3000 in your browser to view the app.
+
+### 4. Start Editing
+
+Open the main page:
+
+```bash
+app/page.tsx
+```
+
+Make changes, and they’ll reflect automatically thanks to hot reloading.
+
+## 📁 Project Structure
+
+```bash
+.
+├── src/
+│   ├── app/            		  # App Router pages
+│   ├── components/     		  # Shared and reusable UI components
+│   ├── styles/         		  # Tailwind CSS and global styles
+│   ├── fonts/         			  # App fonts
+│   ├── validationSchemas/    # Validation schema with Yup
+│   ├── lib/            		  # Business logic, API, DB, or framework-level code
+│	  │   ├── utils.ts    		  # pure helper functions (e.g., string, number helpers)
+│	  │   ├── auth.ts    			  # functions for session/user management
+│	  │   ├── db.ts				      # db connection setup, Prisma client, etc.
+│	  │   ├── motion.ts				  # motion wrapper tag config
+│	  │   ├── api.ts				    # functions to call external/internal APIs
+│	  │   └── formatDate.ts 	  # date formatting logic
+│   └── i18n/           		  # i18n locale files for next-intl
+├── public/             		  # Static assets
+├── .prettierrc         		  # Prettier config with import sorting
+└── package.json        		  # Dependencies and scripts
+```
+
+## 🔧 Configuration Highlights
+
+Prettier (with sorted imports)
+
+```json
+"prettier": {
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["^react", "^next", "^[a-z]", "^@", "^[./]"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true
+}
+```
+
+Example Scripts
+
+```json
+"scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint"
+}
 ```

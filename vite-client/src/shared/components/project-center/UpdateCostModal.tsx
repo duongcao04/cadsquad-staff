@@ -1,0 +1,180 @@
+import { type ApiError } from '@/lib/axios'
+import { useUpdateJobMutation } from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+import {
+    addToast,
+    Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    NumberInput,
+} from '@heroui/react'
+import { useMemo, useState } from 'react'
+
+type Props = {
+    data: TJob
+    isOpen: boolean
+    onClose: () => void
+    isLoading?: boolean
+}
+export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
+    const initialValues = useMemo(() => {
+        return {
+            incomeCost: data?.incomeCost,
+            staffCost: data?.staffCost,
+        }
+    }, [data])
+
+    const [incomeCostValue, setIncomeCostValue] = useState<number | undefined>(
+        initialValues.incomeCost
+    )
+    const [staffCostValue, setStaffCostValue] = useState<number | undefined>(
+        initialValues.staffCost
+    )
+
+    const handleCancel = () => {
+        onClose()
+        setIncomeCostValue(initialValues.incomeCost)
+        setStaffCostValue(initialValues.staffCost)
+    }
+
+    const { mutateAsync: updateJobMutation, isPending: isUpdating } =
+        useUpdateJobMutation()
+
+    const handleUpdate = async () => {
+        if (data?.id) {
+            await updateJobMutation(
+                {
+                    jobId: data.id,
+                    data: {
+                        staffCost: staffCostValue,
+                        incomeCost: incomeCostValue,
+                    },
+                },
+                {
+                    onSuccess: (res) => {
+                        addToast({
+                            title: t('success'),
+                            description: res.data.message,
+                            color: 'success',
+                        })
+                        queryClient.invalidateQueries({
+                            queryKey: ['jobs'],
+                        })
+                        onClose()
+                    },
+                    onError: (error) => {
+                        const err = error as unknown as ApiError
+                        addToast({
+                            title: t('failed'),
+                            description: err.message,
+                            color: 'danger',
+                        })
+                    },
+                }
+            )
+        } else {
+            addToast({
+                title: t('error'),
+                color: 'danger',
+            })
+        }
+    }
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={handleCancel}
+            placement="center"
+            hideCloseButton
+            classNames={{
+                base: '!p-0',
+            }}
+            size="lg"
+            motionProps={{
+                variants: {
+                    enter: {
+                        y: 0,
+                        opacity: 1,
+                        scale: 1,
+                        transition: {
+                            duration: 0.2,
+                            type: 'spring',
+                            bounce: 0,
+                            damping: 25,
+                            stiffness: 300,
+                        },
+                    },
+                    exit: {
+                        y: 20,
+                        opacity: 0,
+                        scale: 0.95,
+                        transition: {
+                            duration: 0.1,
+                            ease: 'easeIn',
+                        },
+                    },
+                },
+            }}
+        >
+            <ModalContent className="p-2">
+                <ModalHeader
+                    className="font-semibold text-lg text-white"
+                    style={{
+                        backgroundColor: 'var(--color-primary)',
+                    }}
+                >
+                    <p>Update cost value for #{data?.no}</p>
+                </ModalHeader>
+                <ModalBody>
+                    <div className="pt-2.5 px-0 space-y-4">
+                        <NumberInput
+                            id="incomeCost"
+                            name="incomeCost"
+                            label={t('jobColumns.incomeCost')}
+                            startContent={
+                                <p className="text-sm font-bold text-text-subdued">
+                                    $
+                                </p>
+                            }
+                            placeholder="Enter new income cost value"
+                            value={incomeCostValue}
+                            onValueChange={setIncomeCostValue}
+                            variant="underlined"
+                            hideStepper
+                        />
+                        <NumberInput
+                            id="staffCost"
+                            name="staffCost"
+                            label={t('jobColumns.staffCost')}
+                            startContent={
+                                <p className="text-sm font-bold text-text-subdued">
+                                    đ
+                                </p>
+                            }
+                            placeholder="Enter new staff cost value"
+                            value={staffCostValue}
+                            onValueChange={setStaffCostValue}
+                            variant="underlined"
+                            hideStepper
+                        />
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button variant="light" onPress={handleCancel}>
+                        {t('cancel')}
+                    </Button>
+                    <Button
+                        color="primary"
+                        isLoading={isUpdating}
+                        onPress={handleUpdate}
+                    >
+                        {t('update')}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    )
+}

@@ -1,0 +1,109 @@
+:root {
+	/*
+ * Thang màu 9 bước: Từ sáng (1) đến tối (9)
+ * - Các bước 1-4: Dùng cho nền, viền, các trạng thái UI.
+ * - Các bước 5-6: Dùng cho văn bản phụ, placeholder, text disabled.
+ * - Các bước 7-9: Dùng cho văn bản chính, tiêu đề.
+ */
+	/* Nền chính (Pure White) */
+	--text-1: hsl(0, 0%, 100%);
+	/* Nền mờ (Off-white) */
+	--text-2: hsl(0, 0%, 98%);
+	/* Viền, nền hover */
+	--text-3: hsl(0, 0%, 94%);
+	/* Viền đậm hơn, nền disabled */
+	--text-4: hsl(0, 0%, 88%);
+	/* Text placeholder, text disabled */
+	--text-5: hsl(0, 0%, 70%);
+	/* Text phụ, muted */
+	--text-6: hsl(0, 0%, 50%);
+	/* Text thứ cấp (secondary) */
+	--text-7: hsl(0, 0%, 30%);
+	/* Text chính (primary) */
+	--text-8: hsl(0, 0%, 15%);
+	/* Text tiêu đề, icon (Near-black) */
+	--text-9: hsl(0, 0%, 5%);
+
+	/*
+   * Các biến này đặt tên theo CHỨC NĂNG của chúng.
+   * Chúng chỉ tham chiếu đến Thang màu 9 bước.
+   */
+
+	--primary: var(--color-primary-800);
+	--secondary: var(--color-secondary-800);
+
+	/* Nền (Background) */
+	--background: var(--text-0);
+	/* Nền mờ, nền của khối code, v.v. */
+	--background-muted: var(--text-1);
+
+	/* Nền trước (Foreground) - Thường dùng cho các icon đậm */
+	--foreground: var(--text-8);
+
+	--foreground: hsl(0, 0%, 0%);
+
+	/* Viền (Border) */
+	--border: var(--text-3);
+	/* Viền mờ, ít thấy hơn */
+	--border-muted: var(--text-2);
+
+	/* Văn bản (Text) */
+	/* Chữ mặc định, mạnh nhất (thay cho --text-primary) */
+	--text-default: var(--text-8);
+	/* Chữ phụ, mờ hơn (thay cho --text-secondary) */
+	--text-subdued: var(--text-6);
+	/* Chữ mờ, timestamp, helper text */
+	--text-muted: var(--text-4);
+	/* Chữ bị vô hiệu hóa */
+	--text-disabled: var(--text-3);
+	/* Chữ trên nền tối */
+	--text-inverse: var(--text-0);
+
+	--color-link: var(--color-blue-600);
+
+	--color-currency: #252b5b;
+	
+	--highlight: oklch(0.852 0.199 91.936);
+	--brand: oklch(0.623 0.214 259.815);
+}
+
+@media (prefers-color-scheme: dark) {
+	.dark {
+		--highlight: oklch(0.852 0.199 91.936);
+		--brand: oklch(0.707 0.165 254.624);
+
+		--primary: var(--color-primary-500);
+		--secondary: var(--color-secondary-500);
+		/* Nền (Background) */
+		/* 5% - Nền tối */
+		--background: var(--text-9);
+		/* 15% - Nền tối mờ */
+		--background-muted: var(--text-8);
+
+		/* Nền trước (Foreground) - Dùng cho icon, v.v. */
+		/* 100% - Icon sáng */
+		--foreground: var(--text-1);
+
+		/* Viền (Border) */
+		/* 15% - Viền tối (hơi sáng hơn nền) */
+		--border: var(--text-6);
+		/* 5% - Viền siêu mờ (giống nền) */
+		--border-muted: var(--text-8);
+
+		/* Văn bản (Text) */
+		/* Lưu ý: Chúng ta dùng --text-2 (98%) cho text chính vì nó dịu mắt hơn --text-1 (100%) */
+		/* 98% - Text chính */
+		--text-default: var(--text-2);
+		/* 70% - Text phụ */
+		--text-subdued: var(--text-5);
+		/* 50% - Text mờ (timestamp) */
+		--text-muted: var(--text-6);
+		/* 30% - Text vô hiệu hóa */
+		--text-disabled: var(--text-7);
+		/* 5% - Text trên nền sáng (ví dụ: button) */
+		--text-inverse: var(--text-9);
+
+		--color-link: var(--color-blue-800);
+		--color-currency: #6169a3;
+	}
+}
