@@ -18,10 +18,11 @@ import type { TJobActivityLog } from '@/shared/types'
 interface JobActivityHistoryProps {
     logs: TJobActivityLog[]
 }
-
 export const JobActivityHistory: React.FC<JobActivityHistoryProps> = ({
     logs,
 }) => {
+    console.log(logs)
+
     if (!logs || logs.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-10 text-default-400">

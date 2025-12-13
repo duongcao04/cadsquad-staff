@@ -53,8 +53,6 @@ export default function JobStatusDropdown({
     const canClickable =
         statusData.systemType !== JobStatusSystemTypeEnum.TERMINATED
 
-    console.log(statusData)
-
     const handleChangeStatus = async (nextStatus: TJobStatus) => {
         await changeStatusMutation.mutateAsync({
             jobId: jobData.id?.toString(),
