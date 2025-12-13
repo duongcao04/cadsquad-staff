@@ -1,19 +1,3 @@
-'use client'
-
-import { envConfig } from '@/lib/config'
-import { dateFormatter } from '@/lib/dayjs'
-import { useJobStatuses } from '@/lib/queries'
-import {
-    currencyFormatter,
-    DUE_DATE_PRESETS,
-    IMAGES,
-    JOB_COLUMNS,
-} from '@/lib/utils'
-import { TJobFiltersInput } from '@/lib/validationSchemas'
-import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import { useSearchParam } from '@/shared/hooks'
-import { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import {
     Button,
     Dropdown,
@@ -24,9 +8,9 @@ import {
     Input,
     Pagination,
     Select,
-    Selection,
+    type Selection,
     SelectItem,
-    SharedSelection,
+    type SharedSelection,
     Skeleton,
     Spinner,
     Switch,
@@ -52,10 +36,26 @@ import {
     UserRoundPlus,
     X,
 } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
 import React from 'react'
+
+import { dateFormatter } from '@/lib/dayjs'
+import { useJobStatuses } from '@/lib/queries'
+import {
+    currencyFormatter,
+    DUE_DATE_PRESETS,
+    IMAGES,
+    INTERNAL_URLS,
+    JOB_COLUMNS,
+} from '@/lib/utils'
+import { type TJobFiltersInput } from '@/lib/validationSchemas'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import { useSearchParam } from '@/shared/hooks'
+import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
+
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore, projectCenterStore } from '../../stores'
+import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
+import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
@@ -161,11 +161,7 @@ export default function ProjectCenterTable({
     openJobDetailDrawer,
     onAssignMember,
 }: ProjectCenterTableProps) {
-    const t = useTranslations()
-
     const { data: jobStatuses } = useJobStatuses()
-
-    const locale = useLocale()
 
     const { setSearchParams } = useSearchParam()
 
@@ -218,6 +214,7 @@ export default function ProjectCenterTable({
         )
     }, [visibleColumns])
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const topContent = React.useMemo(() => {
         return (
             <div className="w-full flex flex-col gap-4">
@@ -366,7 +363,7 @@ export default function ProjectCenterTable({
                                     disallowEmptySelection
                                     aria-label="View settings dropdown"
                                 >
-                                    <DropdownSection title={t('viewSettings')}>
+                                    <DropdownSection title="View settings">
                                         <DropdownItem
                                             key="switch"
                                             isReadOnly
@@ -381,7 +378,7 @@ export default function ProjectCenterTable({
                                             }
                                         >
                                             <div className="w-full flex items-center justify-between gap-3">
-                                                <p>{t('hideFinishItems')}</p>
+                                                <p>Hide finish items</p>
                                                 {isLoading ? (
                                                     <Spinner size="sm" />
                                                 ) : (
@@ -411,7 +408,7 @@ export default function ProjectCenterTable({
                                             }
                                             onPress={openViewColDrawer}
                                         >
-                                            {t('viewColumns')}
+                                            View columns
                                         </DropdownItem>
                                     </DropdownSection>
                                 </DropdownMenu>
@@ -423,7 +420,7 @@ export default function ProjectCenterTable({
                         <div className="flex gap-3">
                             <HeroSelect
                                 selectionMode="multiple"
-                                className="min-w-[130px]"
+                                className="min-w-32.5"
                                 classNames={{
                                     trigger:
                                         'hover:shadow-SM border-border-default border-1 cursor-pointer',
@@ -471,7 +468,7 @@ export default function ProjectCenterTable({
                             </HeroSelect>
 
                             <HeroSelect
-                                className="min-w-[130px]"
+                                className="min-w-32.5"
                                 classNames={{
                                     trigger:
                                         'hover:shadow-SM border-border-default border-1 cursor-pointer',
@@ -549,11 +546,12 @@ export default function ProjectCenterTable({
         searchKeywords,
     ])
 
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const bottomContent = React.useMemo(() => {
         return (
             <div className="py-2 px-2 flex justify-between items-center">
                 <Select
-                    className="w-[120px]"
+                    className="w-30"
                     placeholder="Select rows per page"
                     variant="bordered"
                     classNames={{
@@ -601,6 +599,7 @@ export default function ProjectCenterTable({
     }, [selectedKeys, data?.length, pagination, hasSearchFilter])
 
     const renderCell: (data: TJob, columnKey: JobColumnKey) => React.ReactNode =
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
         React.useCallback((data: TJob, columnKey: JobColumnKey) => {
             const cellValue = lodash.has(data, columnKey)
                 ? (data[columnKey] as string)
@@ -643,7 +642,7 @@ export default function ProjectCenterTable({
                     )
                 case 'displayName':
                     return (
-                        <p className="w-[250px] line-clamp-1 font-medium">
+                        <p className="w-62.5 line-clamp-1 font-medium">
                             {data.displayName}
                         </p>
                     )
@@ -711,7 +710,7 @@ export default function ProjectCenterTable({
                 case 'assignee':
                     return !data.assignee.length ? (
                         <div className="size-full flex items-center justify-center">
-                            <HeroTooltip content={t('assignMembers')}>
+                            <HeroTooltip content="Assign members">
                                 <Button
                                     isIconOnly
                                     variant="light"
@@ -786,7 +785,7 @@ export default function ProjectCenterTable({
                 case 'action':
                     return (
                         <div className="flex items-center justify-end gap-2">
-                            <HeroTooltip content={t('viewDetail')}>
+                            <HeroTooltip content="View details">
                                 <Button
                                     isIconOnly
                                     variant="light"
@@ -808,12 +807,14 @@ export default function ProjectCenterTable({
                                     </p>
                                 </Button>
                             </HeroTooltip>
-                            <HeroTooltip content={t('copyLink')}>
+                            <HeroTooltip content="Copy link">
                                 <HeroCopyButton
                                     className="size-8! flex items-center justify-center"
                                     iconSize={16}
                                     iconClassName="opacity-60"
-                                    textValue={`${envConfig.NEXT_PUBLIC_URL}/${locale}/jobs/${data.no}`}
+                                    textValue={INTERNAL_URLS.getJobDetailUrl(
+                                        data.no
+                                    )}
                                 />
                             </HeroTooltip>
                             <ProjectCenterTableQuickActions data={data} />

@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 import { cookie } from '@/lib/cookie'
+
 import { apiBaseUrl, COOKIES } from './utils'
 
 export type ApiResponse<T = unknown, D = Record<string, unknown>> = {

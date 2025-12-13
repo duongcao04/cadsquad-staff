@@ -1,6 +1,8 @@
-import type { TPaymentChannel } from '@/shared/types'
 import { Avatar } from '@heroui/react'
 import React from 'react'
+
+import type { TPaymentChannel } from '@/shared/types'
+
 import { HeroAutocomplete, HeroAutocompleteItem } from '../ui/hero-autocomplete'
 
 interface PaymentChannelSelectProps {

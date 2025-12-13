@@ -1,7 +1,9 @@
-import { useResetPasswordMutation } from '@/lib/queries'
-import type { TUser } from '@/shared/types'
 import { Button, Radio, RadioGroup } from '@heroui/react'
 import React, { useState } from 'react'
+
+import { useResetPasswordMutation } from '@/lib/queries'
+import type { TUser } from '@/shared/types'
+
 import HeroCopyButton from '../ui/hero-copy-button'
 import {
     HeroModal,

@@ -1,14 +1,5 @@
-import { Drawer } from 'antd'
-import React from 'react'
-import { RoleEnum } from '@/shared/enums'
-import {
-    useJobColumns,
-    useProfile,
-    useUpdateConfigByCodeMutation,
-} from '@/lib/queries'
-import { USER_CONFIG_KEYS, USER_CONFIG_VALUES } from '@/lib/utils'
-import type { JobColumn, JobColumnKey } from '@/shared/types'
 import { Spinner } from '@heroui/react'
+import { Drawer } from 'antd'
 import {
     ArrowLeft,
     AtSign,
@@ -26,6 +17,17 @@ import {
     Text,
     UsersRound,
 } from 'lucide-react'
+import React from 'react'
+
+import {
+    useJobColumns,
+    useProfile,
+    useUpdateConfigByCodeMutation,
+} from '@/lib/queries'
+import { USER_CONFIG_KEYS, USER_CONFIG_VALUES } from '@/lib/utils'
+import { RoleEnum } from '@/shared/enums'
+import type { JobColumn, JobColumnKey } from '@/shared/types'
+
 import { ViewColumnSwitch } from './ViewColumnSwitch'
 
 type THeaderColumns = {

@@ -1,11 +1,13 @@
 'use client'
 
-import { useProfile } from '@/lib/queries'
 import { Button, Skeleton } from '@heroui/react'
 import { Image } from 'antd'
 import { X } from 'lucide-react'
-import { TUser } from '../../types'
+
+import { useProfile } from '@/lib/queries'
+
 import { optimizeCloudinary } from '../../../lib/cloudinary'
+import { TUser } from '../../types'
 
 type AssignMemberCardProps = {
     data: TUser

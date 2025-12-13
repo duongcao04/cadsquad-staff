@@ -1,27 +1,9 @@
-import { jobStatusApi } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
 import lodash from 'lodash'
 import { useMemo } from 'react'
-import { IJobStatusResponse } from '../../shared/interfaces'
-import { TJobStatus } from '../../shared/types'
-import { JobStatusSystemTypeEnum } from '../../shared/enums'
 
-const mapItem: (item: IJobStatusResponse) => TJobStatus = (item) => ({
-    code: item.code ?? '',
-    hexColor: item.hexColor ?? '#ffffff',
-    systemType: item.systemType ?? JobStatusSystemTypeEnum.STANDARD,
-    jobs: item.jobs ?? [],
-    order: item.order ?? 0,
-    icon: item.icon ?? '',
-    nextStatusOrder: item.nextStatusOrder ?? null,
-    prevStatusOrder: item.prevStatusOrder ?? null,
-    id: item.id,
-    displayName: item.displayName,
-    createdAt: new Date(item.createdAt),
-    updatedAt: new Date(item.updatedAt),
-    thumbnailUrl: item.thumbnailUrl ?? '',
-})
-
+import { jobStatusApi } from '@/lib/api'
+import { mapJobStatus } from './options/job-status-queries'
 export const useJobStatuses = () => {
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ['job-statuses'],
@@ -35,7 +17,7 @@ export const useJobStatuses = () => {
             return []
         }
 
-        return jobStatusesData.map((item) => mapItem(item))
+        return jobStatusesData.map((item) => mapJobStatus(item))
     }, [data])
 
     return {
@@ -65,7 +47,7 @@ export const useJobStatusDetail = (statusId?: string) => {
             return undefined
         }
 
-        return mapItem(jobData)
+        return mapJobStatus(jobData)
     }, [data])
 
     return {
@@ -96,7 +78,7 @@ export const useJobStatusByOrder = (orderNumber?: number | null) => {
             return undefined
         }
 
-        return mapItem(jobData)
+        return mapJobStatus(jobData)
     }, [data])
     return {
         refetch,

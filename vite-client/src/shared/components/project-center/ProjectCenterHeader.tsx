@@ -1,17 +1,15 @@
-'use client'
-
-import { Link } from '@/i18n/navigation'
-import { PageHeading } from '@/shared/components'
+/* eslint-disable react-hooks/set-state-in-effect */
 import { BreadcrumbItem, Breadcrumbs, Skeleton } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { HouseIcon } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
+
+import { PageHeading } from '@/shared/components'
+
 import { metadataStore } from '../../stores'
 
 export function ProjectCenterHeader() {
-    const t = useTranslations()
-    const tMetadata = useTranslations('metadata.projectCenter')
     const [isLoading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -25,44 +23,42 @@ export function ProjectCenterHeader() {
 
     return (
         <PageHeading
-            title={t('projectCenter')}
-            description={tMetadata('description')}
+            title="Project center"
+            description="Your project management hub — track progress and status effortlessly"
             classNames={{
                 wrapper: '!py-3 pl-6 pr-3.5',
             }}
             breadcrumbs={
-                false && (
-                    <Skeleton
-                        className="w-fit h-fit rounded-md"
-                        isLoaded={!isLoading}
-                    >
-                        <Breadcrumbs>
-                            <BreadcrumbItem>
-                                <Link
-                                    href={'/'}
-                                    title="Home"
-                                    className="block text-text-subdued hover:text-primary transition duration-100"
-                                >
-                                    <HouseIcon size={14} />
-                                </Link>
-                            </BreadcrumbItem>
-                            <BreadcrumbItem>
-                                <Link
-                                    href="/project-center"
-                                    title="Project Center"
-                                    className="block text-text-subdued hover:text-primary transition duration-100"
-                                >
-                                    {t('projectCenter')}
-                                </Link>
-                            </BreadcrumbItem>
-                            <BreadcrumbItem>
-                                <p className="text-primary font-medium">
-                                    {metadata.title}
-                                </p>
-                            </BreadcrumbItem>
-                        </Breadcrumbs>
-                    </Skeleton>
-                )
+                <Skeleton
+                    className="w-fit h-fit rounded-md"
+                    isLoaded={!isLoading}
+                >
+                    <Breadcrumbs>
+                        <BreadcrumbItem>
+                            <Link
+                                to={'/'}
+                                title="Home"
+                                className="block text-text-subdued hover:text-primary transition duration-100"
+                            >
+                                <HouseIcon size={14} />
+                            </Link>
+                        </BreadcrumbItem>
+                        <BreadcrumbItem>
+                            <Link
+                                to="/project-center"
+                                title="Project Center"
+                                className="block text-text-subdued hover:text-primary transition duration-100"
+                            >
+                                Project center
+                            </Link>
+                        </BreadcrumbItem>
+                        <BreadcrumbItem>
+                            <p className="text-primary font-medium">
+                                {metadata.title}
+                            </p>
+                        </BreadcrumbItem>
+                    </Breadcrumbs>
+                </Skeleton>
             }
         />
     )

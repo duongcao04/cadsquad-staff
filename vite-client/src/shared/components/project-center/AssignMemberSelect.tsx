@@ -1,9 +1,11 @@
 'use client'
 
-import { optimizeCloudinary } from '@/lib/cloudinary'
 import { Autocomplete, AutocompleteItem, Avatar } from '@heroui/react'
 import { SearchIcon } from 'lucide-react'
 import { Key, memo, useMemo, useState } from 'react'
+
+import { optimizeCloudinary } from '@/lib/cloudinary'
+
 import { TJob, TUser } from '../../types'
 
 interface Props {

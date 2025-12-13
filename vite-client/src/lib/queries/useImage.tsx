@@ -1,9 +1,8 @@
-'use client'
-
 import { addToast } from '@heroui/react'
 import { useMutation } from '@tanstack/react-query'
+
 import { imageApi } from '../api'
-import { ApiError } from '../axios'
+import { type ApiError } from '../axios'
 
 export const useUploadImageMutation = () => {
     return useMutation({

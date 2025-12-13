@@ -1,4 +1,4 @@
-import { ApiResponse, axiosClient } from '@/lib/axios'
+import { type ApiResponse, axiosClient } from '@/lib/axios'
 
 export const imageApi = {
     upload: async (image: File) => {

@@ -1,15 +1,12 @@
 'use client'
 
+import { Link } from '@tanstack/react-router'
 import React from 'react'
 
-import Image from 'next/image'
-
-import { Link } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 
-import { useTheme } from 'next-themes'
-import CSDWhiteLogo from '../../../public/logo-white.webp'
-import CSDLogo from '../../../public/logo.webp'
+import CSDLogo from '../../assets/logo.webp'
+import CSDWhiteLogo from '../../assets/logo-white.webp'
 
 type Props = {
     canRedirect?: boolean
@@ -27,12 +24,10 @@ function CadsquadLogo({
     href = '/',
     classNames,
 }: Props) {
-    const { resolvedTheme } = useTheme()
-
     const Wrapper = ({ children }: { children: React.ReactNode }) => {
         const wrapperClassName = cn('block w-fit', classNames?.root)
         return canRedirect ? (
-            <Link href={href} className={wrapperClassName}>
+            <Link to={href} className={wrapperClassName}>
                 {children}
             </Link>
         ) : (
@@ -40,20 +35,12 @@ function CadsquadLogo({
         )
     }
 
-    if (resolvedTheme === 'light') {
-        logoTheme = 'default'
-    } else {
-        logoTheme = 'white'
-    }
-
     return (
         <Wrapper>
-            <Image
+            <img
                 src={logoTheme === 'default' ? CSDLogo : CSDWhiteLogo}
                 alt="CSD Logo"
                 className={cn('object-contain w-fit', classNames?.logo)}
-                quality={100}
-                suppressHydrationWarning
             />
         </Wrapper>
     )

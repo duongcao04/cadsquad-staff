@@ -1,6 +1,6 @@
 'use client'
 
-import { Breadcrumbs, BreadcrumbItem, extendVariants } from '@heroui/react'
+import { BreadcrumbItem, Breadcrumbs, extendVariants } from '@heroui/react'
 
 export const HeroBreadcrumbs = extendVariants(Breadcrumbs, {
     variants: {

@@ -1,8 +1,9 @@
+import { isValid, parseISO } from 'date-fns'
 import * as yup from 'yup'
 import { z } from 'zod'
-import { arrayToString, optionalIsoDate } from '../zod'
+
 import { ProjectCenterTabEnum } from '../../shared/enums'
-import { isValid, parseISO } from 'date-fns'
+import { arrayToString, optionalIsoDate } from '../zod'
 
 export const CreateJobSchema = yup.object({
     no: yup.string().required('Job number is required'),
@@ -143,11 +144,6 @@ export type TJobQueryOutput = z.output<typeof JobQuerySchema> // Transformed out
 // ---------------------------------------------------------------
 // MUTATION SCHEMAS
 // ---------------------------------------------------------------
-export const ChangeStatusSchema = yup.object({
-    fromStatusId: yup.string().required(),
-    toStatusId: yup.string().required(),
-})
-export type TChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>
 
 export const BulkChangeStatusInputSchema = z.object({
     jobIds: z.array(z.string()).min(1, 'jobIds must contain at least one id'),

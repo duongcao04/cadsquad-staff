@@ -17,7 +17,7 @@ export const changeStatusInputSchema = z.object({
   fromStatusId: z.string(),
   toStatusId: z.string(),
 });
-export type ChangeStatusInput = z.infer<typeof changeStatusInputSchema>;
+export type TChangeStatusInput = z.infer<typeof changeStatusInputSchema>;
 
 export const UpdateJobStatusInputSchema = CreateJobStatusInputSchema.partial()
 export type TUpdateJobStatusInput = yup.InferType<typeof UpdateJobStatusInputSchema>

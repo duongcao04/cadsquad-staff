@@ -1,16 +1,16 @@
-'use client'
-
-import { Link, redirect } from '@/i18n/navigation'
-import { formatCurrencyVND } from '@/lib/formatCurrency'
-import { JobStatusChip } from '@/shared/components'
-import { useDevice } from '@/shared/hooks'
 import { Skeleton } from '@heroui/react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Image } from 'antd'
 import dayjs from 'dayjs'
 import { Clock2 } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
 import React from 'react'
-import { TJob } from '../../types'
+
+import { INTERNAL_URLS } from '@/lib'
+import { formatCurrencyVND } from '@/lib/formatCurrency'
+import { JobStatusChip } from '@/shared/components'
+import { useDevice } from '@/shared/hooks'
+import type { TJob } from '@/shared/types'
+
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 
@@ -19,10 +19,9 @@ type Props = {
     onPress?: () => void
 }
 function JobCard({ data, onPress }: Props) {
-    const locale = useLocale()
+    const navigate = useNavigate()
     const { isMobile, isTablet } = useDevice()
-    const t = useTranslations()
-    const jobDetailUrl = `/jobs/${data.no}`
+
     const targetDate = dayjs(data.dueAt)
 
     const clickable = isMobile || isTablet
@@ -35,9 +34,8 @@ function JobCard({ data, onPress }: Props) {
             }}
             onClick={() => {
                 if (clickable) {
-                    redirect({
-                        href: jobDetailUrl,
-                        locale,
+                    navigate({
+                        href: INTERNAL_URLS.getJobDetailUrl(data.no),
                     })
                     onPress?.()
                 }
@@ -59,7 +57,7 @@ function JobCard({ data, onPress }: Props) {
                         <HeroCopyButton textValue={data.no} />
                     </div>
                     <Link
-                        href={`/project-center/${data.no}`}
+                        to={`/project-center/${data.no}`}
                         className="mt-0.5 block font-semibold line-clamp-1!"
                         title="View detail"
                         target="_blank"
@@ -69,25 +67,19 @@ function JobCard({ data, onPress }: Props) {
                 </div>
             </div>
             <div className="hidden lg:flex flex-col items-center justify-center gap-1">
-                <p className="text-xs text-text-subdued">
-                    {t('jobColumns.clientName')}
-                </p>
+                <p className="text-xs text-text-subdued">Client name</p>
                 <p className="text-sm font-semibold text-center">
                     {data.clientName}
                 </p>
             </div>
             <div className="flex flex-col items-center justify-center gap-1">
-                <p className="text-xs text-text-subdued">
-                    {t('jobColumns.staffCost')}
-                </p>
+                <p className="text-xs text-text-subdued">Staff cost</p>
                 <p className="font-bold text-currency">
                     {formatCurrencyVND(data.staffCost)}
                 </p>
             </div>
             <div className="flex flex-col items-center justify-center gap-0.5">
-                <p className="text-xs  text-text-subdued">
-                    {t('jobColumns.dueAt')}
-                </p>
+                <p className="text-xs  text-text-subdued">Due on</p>
                 <p className="font-semibold text-sm flex items-center justify-center">
                     <Clock2 size={14} className="text-text-subdued mr-2" />
                     <CountdownTimer
@@ -97,17 +89,15 @@ function JobCard({ data, onPress }: Props) {
                 </p>
             </div>
             <div className="flex flex-col items-center justify-center gap-1">
-                <p className="text-xs  text-text-subdued">
-                    {t('jobColumns.status')}
-                </p>
+                <p className="text-xs  text-text-subdued">Status</p>
                 <JobStatusChip data={data.status} />
             </div>
             <Link
+                to={`/project-center/${data.no}`}
                 className="hidden lg:block text-sm font-semibold hover:underline! underline-offset-2 text-end text-link!"
-                href={`/project-center/${data.no}`}
                 target="_blank"
             >
-                {t('view')}
+                View
             </Link>
         </div>
     )

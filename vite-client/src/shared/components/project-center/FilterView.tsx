@@ -1,4 +1,8 @@
-'use client'
+import { Divider, Slider } from '@heroui/react'
+import { Avatar, Image } from 'antd'
+import dayjs, { Dayjs } from 'dayjs'
+import { Handshake, Landmark, Layers2, Loader, UsersRound } from 'lucide-react'
+import { useState } from 'react'
 
 import {
     useJobStatuses,
@@ -7,13 +11,8 @@ import {
     useUsers,
 } from '@/lib/queries'
 import { PAID_STATUS_ARRAY } from '@/lib/utils'
-import { TJobFiltersInput } from '@/lib/validationSchemas'
-import { Divider, Slider } from '@heroui/react'
-import { Avatar, Image } from 'antd'
-import dayjs, { Dayjs } from 'dayjs'
-import { Handshake, Landmark, Layers2, Loader, UsersRound } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { type TJobFiltersInput } from '@/lib/validationSchemas'
+
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import { HeroDateRangePicker } from '../ui/hero-date-picker'
 import { HeroNumberInput } from '../ui/hero-number-input'
@@ -26,8 +25,6 @@ type FilterViewProps = {
 export default function FilterView({
     filters: defaultFilters,
 }: FilterViewProps) {
-    const t = useTranslations()
-
     const { data: jobStatuses, isLoading: loadingJobStatuses } =
         useJobStatuses()
     const { data: paymentChannels, isLoading: loadingPaymentChannels } =
@@ -323,7 +320,7 @@ export default function FilterView({
                         <div className="mt-2 space-y-2">
                             <div className="flex items-center justify-between">
                                 <p className="font-medium text-text-default">
-                                    {t('jobColumns.paymentChannel')}
+                                    Payment channel
                                 </p>
                                 <div>
                                     <button className="link cursor-pointer hover:underline underline-offset-2 transition duration-150">
@@ -501,7 +498,7 @@ export default function FilterView({
                                         className="text-text-default"
                                     />
                                     <p className="font-medium text-base">
-                                        {t('jobColumns.status')}
+                                        Status
                                     </p>
                                 </div>
                                 <div>
@@ -606,7 +603,7 @@ export default function FilterView({
                                         className="text-text-default"
                                     />
                                     <p className="font-medium text-base">
-                                        {t('jobColumns.assignee')}
+                                        Assignees
                                     </p>
                                 </div>
                                 <div>
@@ -732,7 +729,7 @@ export default function FilterView({
                                         className="text-text-default"
                                     />
                                     <p className="font-medium text-base">
-                                        {t('jobColumns.type')}
+                                        Type
                                     </p>
                                 </div>
                                 <div>
@@ -837,7 +834,7 @@ export default function FilterView({
                                         className="text-text-default"
                                     />
                                     <p className="font-medium text-base">
-                                        {t('jobColumns.clientName')}
+                                        Client name
                                     </p>
                                 </div>
                                 <div>

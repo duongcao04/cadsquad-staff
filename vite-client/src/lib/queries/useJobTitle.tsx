@@ -1,12 +1,14 @@
-import { jobTitleApi } from '@/lib/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-    TCreateJobTitleInput,
-    TUpdateJobTitleInput,
-} from '../validationSchemas'
-import { IJobTitleResponse } from '../../shared/interfaces'
-import { TJobTitle } from '../../shared/types'
 import { useMemo } from 'react'
+
+import { jobTitleApi } from '@/lib/api'
+
+import type { IJobTitleResponse } from '../../shared/interfaces'
+import type { TJobTitle } from '../../shared/types'
+import {
+    type TCreateJobTitleInput,
+    type TUpdateJobTitleInput,
+} from '../validationSchemas'
 
 export const mapJobTitle: (item: IJobTitleResponse) => TJobTitle = (item) => ({
     id: item.id ?? '',

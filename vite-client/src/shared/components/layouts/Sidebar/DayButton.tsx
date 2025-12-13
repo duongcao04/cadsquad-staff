@@ -1,8 +1,9 @@
-import { useJobsByDeadline } from '@/lib/queries'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
 import React from 'react'
 import { CalendarDay } from 'react-day-picker'
+
+import { useJobsByDeadline } from '@/lib/queries'
 
 type Props = {
     selectedDate: Date | undefined

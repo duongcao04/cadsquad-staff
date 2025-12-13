@@ -1,22 +1,22 @@
-import { createRootRoute, Outlet } from '@tanstack/react-router'
+import { HeroUIProvider, ToastProvider } from '@heroui/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import {
+    createRootRoute,
+    createRootRouteWithContext,
+    Outlet,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { ConfigProvider } from 'antd'
 import { ThemeProvider } from 'antd-style'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { HeroUIProvider, ToastProvider } from '@heroui/react'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import { queryClient } from '../main'
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            refetchOnWindowFocus: false,
-        },
-    },
-})
-
-export const Route = createRootRoute({
+// 1. Định nghĩa Interface cho Context
+interface AppRouterContext {
+    queryClient: QueryClient
+}
+export const Route = createRootRouteWithContext<AppRouterContext>()({
     component: () => (
         <div
             id="app"

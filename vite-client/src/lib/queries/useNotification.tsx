@@ -1,18 +1,17 @@
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+
 import { notificationApi } from '@/lib/api'
 import { axiosClient } from '@/lib/axios'
 import {
-    TCreateNotificationInput,
-    TUpdateNotificationInput,
+    type TCreateNotificationInput,
+    type TUpdateNotificationInput,
 } from '@/lib/validationSchemas'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
-import {
-    NotificationStatusEnum,
-    NotificationTypeEnum,
-} from '../../shared/enums'
-import { IUserNotificationResponse } from '../../shared/interfaces'
-import { TUserNotification } from '../../shared/types'
+import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
+import type { IUserNotificationResponse } from '@/shared/interfaces'
+import type { TUserNotification } from '@/shared/types'
+
+import { queryClient } from '../../main'
 
 export const mapUserNotification = (
     item: IUserNotificationResponse

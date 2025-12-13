@@ -1,27 +1,29 @@
-import { dateFormatter } from '@/lib/dayjs'
-import { phoneNumberFormatter } from '@/lib/phone-number'
-import { TABLE_ROW_PER_PAGE_OPTIONS, USER_COLUMNS } from '@/lib/utils'
-import { DepartmentChip, UserActiveChip } from '@/shared/components'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import type { TUser, UserColumnKey } from '@/shared/types'
 import {
     Button,
     Input,
     Pagination,
     Select,
     SelectItem,
+    type SharedSelection,
     Skeleton,
     TableBody,
     TableCell,
     TableColumn,
     TableHeader,
     TableRow,
-    type SharedSelection,
 } from '@heroui/react'
 import { Image } from 'antd'
 import lodash from 'lodash'
 import { RotateCcw, SearchIcon, UserRoundPlus } from 'lucide-react'
 import React, { useState } from 'react'
+
+import { dateFormatter } from '@/lib/dayjs'
+import { phoneNumberFormatter } from '@/lib/phone-number'
+import { TABLE_ROW_PER_PAGE_OPTIONS, USER_COLUMNS } from '@/lib/utils'
+import { DepartmentChip, UserActiveChip } from '@/shared/components'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import type { TUser, UserColumnKey } from '@/shared/types'
+
 import { HeroButton } from '../ui/hero-button'
 import HeroCopyButton from '../ui/hero-copy-button'
 import { HeroTable } from '../ui/hero-table'

@@ -1,5 +1,5 @@
 import { axiosClient } from '@/lib/axios' // Removed ApiResponse as it's likely not needed for Blob return
-import { TDownloadExcelInput } from '@/lib/validationSchemas'
+import type { TDownloadExcelInput } from '@/lib/validationSchemas'
 
 export const excelApi = {
     /**

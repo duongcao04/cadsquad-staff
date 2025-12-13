@@ -1,5 +1,6 @@
-import type { JobColumn } from '@/shared/types'
 import { Spinner, Switch } from '@heroui/react'
+
+import type { JobColumn } from '@/shared/types'
 
 type Props = {
     isSelected: boolean

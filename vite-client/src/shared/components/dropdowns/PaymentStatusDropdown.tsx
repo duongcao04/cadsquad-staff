@@ -1,8 +1,10 @@
-import { darkenHexColor, lightenHexColor, PAID_STATUS_COLOR } from '@/lib/utils'
-import type { TJob } from '@/shared/types'
 import { Button, Popover, PopoverContent, PopoverTrigger } from '@heroui/react'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
+
+import { darkenHexColor, lightenHexColor, PAID_STATUS_COLOR } from '@/lib/utils'
+import type { TJob } from '@/shared/types'
+
 import { PaidChip } from '../chips/PaidChip'
 
 type Props = {

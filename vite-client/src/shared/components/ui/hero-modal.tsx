@@ -1,6 +1,5 @@
 'use client'
 
-import { smoothMotion } from '@/lib/motion'
 import {
     extendVariants,
     Modal,
@@ -13,6 +12,8 @@ import {
     ModalHeaderProps,
     ModalProps,
 } from '@heroui/react'
+
+import { smoothMotion } from '@/lib/motion'
 
 const StyledModal = extendVariants(Modal, {})
 

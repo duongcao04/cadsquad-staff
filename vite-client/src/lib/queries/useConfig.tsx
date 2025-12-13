@@ -1,12 +1,12 @@
-'use client'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
 import {
-    TCreateUserConfigInput,
-    TUpdateUserConfigInput,
+    type TCreateUserConfigInput,
+    type TUpdateUserConfigInput,
 } from '@/lib//validationSchemas'
 import { configApi } from '@/lib/api'
-import { useMutation, useQuery } from '@tanstack/react-query'
+
+import { queryClient } from '../../main'
 
 export const useConfigs = () => {
     return useQuery({

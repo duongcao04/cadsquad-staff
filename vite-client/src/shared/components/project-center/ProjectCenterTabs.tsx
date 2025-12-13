@@ -1,10 +1,5 @@
-'use client'
-
-import { useRouter } from '@/i18n/navigation'
-import { useJobs, useProfile } from '@/lib/queries'
-import { PROJECT_CENTER_TABS } from '@/lib/utils'
-import { ProjectCenterTabEnum } from '@/shared/enums'
-import { Tab, Tabs, TabsProps } from '@heroui/react'
+import { Tab, Tabs, type TabsProps } from '@heroui/react'
+import { useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import {
     CircleCheckBig,
@@ -14,15 +9,18 @@ import {
     Truck,
     Vote,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import React, { Key, useMemo } from 'react'
+import React, { type Key, useMemo } from 'react'
+
+import { useJobs, useProfile } from '@/lib/queries'
+import { PROJECT_CENTER_TABS } from '@/lib/utils'
+import { ProjectCenterTabEnum } from '@/shared/enums'
+
 import { metadataStore, projectCenterStore } from '../../stores'
 
 type Props = { defaultTab?: string }
 type TabItem = Omit<TabsProps, 'title'> & { title: React.ReactNode }
 
 function ProjectCenterTabs({ defaultTab }: Props) {
-    const t = useTranslations()
     const router = useRouter()
 
     const tabState = useStore(projectCenterStore, (state) => state.tab)
@@ -49,13 +47,14 @@ function ProjectCenterTabs({ defaultTab }: Props) {
     })
 
     const tabItems: TabItem[] = useMemo(
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
         () => [
             {
                 key: 'priority',
                 title: (
                     <div className="flex items-center space-x-2">
                         <PinIcon size={16} className="rotate-45" />
-                        <span>{t('priority')}</span>
+                        <span>Priority</span>
                         {priorityPaginate?.total ? (
                             Number(priorityPaginate?.total) > 0 && (
                                 <p className="w-fit text-xs">
@@ -73,7 +72,7 @@ function ProjectCenterTabs({ defaultTab }: Props) {
                 title: (
                     <div className="flex items-center space-x-2">
                         <Vote size={16} />
-                        <span>{t('active')}</span>
+                        <span>Active</span>
                         {activePaginate?.total ? (
                             activePaginate?.total > 0 && (
                                 <p className="w-fit text-xs">
@@ -91,7 +90,7 @@ function ProjectCenterTabs({ defaultTab }: Props) {
                 title: (
                     <div className="flex items-center space-x-2">
                         <ClockAlert size={16} />
-                        <span>{t('late')}</span>
+                        <span>Late</span>
                         {latePaginate?.total ? (
                             latePaginate?.total > 0 && (
                                 <p className="w-fit text-xs">
@@ -109,7 +108,7 @@ function ProjectCenterTabs({ defaultTab }: Props) {
                 title: (
                     <div className="flex items-center space-x-2">
                         <Truck size={16} />
-                        <span>{t('delivered')}</span>
+                        <span>Delivered</span>
                         {deliveredPaginate?.total ? (
                             deliveredPaginate?.total > 0 && (
                                 <p className="w-fit text-xs">
@@ -127,7 +126,7 @@ function ProjectCenterTabs({ defaultTab }: Props) {
                 title: (
                     <div className="flex items-center space-x-2">
                         <CircleCheckBig size={16} />
-                        <span>{t('completed')}</span>
+                        <span>Completed</span>
                         {completedPaginate?.total ? (
                             completedPaginate?.total > 0 && (
                                 <p className="w-fit text-xs">
@@ -145,7 +144,7 @@ function ProjectCenterTabs({ defaultTab }: Props) {
                 title: (
                     <div className="flex items-center space-x-2">
                         <SquareX size={16} />
-                        <span>{t('cancelled')}</span>
+                        <span>Canceled</span>
                         {cancelledPaginate?.total ? (
                             cancelledPaginate?.total > 0 && (
                                 <p className="w-fit text-xs">
@@ -169,12 +168,14 @@ function ProjectCenterTabs({ defaultTab }: Props) {
     const handleChangeTab = (key: Key) => {
         const tabValue = key.toString()
         metadataStore.setState((state) => {
-            return { ...state, title: t(tabValue) }
+            return { ...state, title: tabValue }
         })
         projectCenterStore.setState((state) => {
             return { ...state, tab: tabValue as ProjectCenterTabEnum }
         })
-        router.replace(`/project-center/${tabValue}`)
+        router.navigate({
+            href: `/project-center/${tabValue}`,
+        })
     }
 
     return (

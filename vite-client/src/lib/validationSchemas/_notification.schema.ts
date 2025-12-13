@@ -1,5 +1,6 @@
-import { NotificationStatusEnum, NotificationTypeEnum } from "@/shared/enums"
 import * as yup from "yup"
+
+import { NotificationStatusEnum, NotificationTypeEnum } from "@/shared/enums"
 
 export const CreateNotificationInputSchema = yup.object({
     title: yup

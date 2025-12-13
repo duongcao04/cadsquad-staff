@@ -1,5 +1,6 @@
 import { Store } from '@tanstack/react-store'
-import { TJob } from '../types'
+
+import type { TJob } from '../types'
 
 export const pCenterTableStore = new Store<{
     selectedKeys: Set<string> | 'all'

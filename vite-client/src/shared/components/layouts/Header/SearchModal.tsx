@@ -1,8 +1,5 @@
 'use client'
 
-import { IMAGES, INTERNAL_URLS, WEB_PAGES } from '@/lib'
-import { useSearchJobs } from '@/lib/queries/useJob'
-import type { TJob } from '@/shared/types'
 import { Divider, Kbd, Tab, Tabs } from '@heroui/react'
 import { useRouter } from '@tanstack/react-router'
 import { Image } from 'antd'
@@ -16,6 +13,11 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useRef } from 'react'
 import { useDebounceValue } from 'usehooks-ts'
+
+import { IMAGES, INTERNAL_URLS, WEB_PAGES } from '@/lib'
+import { useSearchJobs } from '@/lib/queries/useJob'
+import type { TJob } from '@/shared/types'
+
 import { HeroButton } from '../../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../../ui/hero-card'
 import { HeroInput } from '../../ui/hero-input'

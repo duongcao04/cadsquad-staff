@@ -1,10 +1,3 @@
-import { type ApiError } from '@/lib/axios'
-import {
-    useDeleteJobMutation,
-    useProfile,
-    useUpdateJobMutation,
-} from '@/lib/queries'
-import type { TJob } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -25,12 +18,21 @@ import {
     Trash,
     UserPlus,
 } from 'lucide-react'
+
+import { type ApiError } from '@/lib/axios'
+import {
+    useDeleteJobMutation,
+    useProfile,
+    useUpdateJobMutation,
+} from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+
 import { INTERNAL_URLS } from '../../../lib'
-import { queryClient } from '../../../routes/__root'
 import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import ConfirmModal from '../ui/confirm-modal'
+import { queryClient } from '../../../main'
 
 type WorkbenchTableQuickActionsProps = {
     data: TJob

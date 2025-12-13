@@ -1,8 +1,9 @@
+import { Image } from 'antd'
+
 import { useUpdateNotification } from '@/lib/queries/useNotification'
 import CadsquadLogo from '@/shared/components/CadsquadLogo'
 import { NotificationStatusEnum } from '@/shared/enums/_notification-status.enum'
 import type { TUserNotification } from '@/shared/types'
-import { Image } from 'antd'
 
 export function NotificationCard({ data }: { data: TUserNotification }) {
     const { mutateAsync: updateNotificationMutate } = useUpdateNotification()

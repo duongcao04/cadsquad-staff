@@ -1,14 +1,3 @@
-import { MotionDiv } from '@/lib/motion'
-import { useProfile } from '@/lib/queries'
-import {
-    CreateJobModal,
-    CreateNotificationModal,
-    CreateUserModal,
-    IconAlertColorful,
-    IconPeopleColorful,
-    IconWorkColorful,
-} from '@/shared/components'
-import { appStore, ESidebarStatus } from '@/shared/stores'
 import {
     Button,
     Dropdown,
@@ -23,6 +12,18 @@ import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
 import { type Variants } from 'motion/react'
 import { useEffect } from 'react'
+
+import { MotionDiv } from '@/lib/motion'
+import { useProfile } from '@/lib/queries'
+import {
+    CreateJobModal,
+    CreateNotificationModal,
+    CreateUserModal,
+    IconAlertColorful,
+    IconPeopleColorful,
+    IconWorkColorful,
+} from '@/shared/components'
+import { appStore, ESidebarStatus } from '@/shared/stores'
 
 export function ActionButton() {
     const { isAdmin, isAccounting, isStaff } = useProfile()

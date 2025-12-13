@@ -1,9 +1,10 @@
+import { Link } from '@tanstack/react-router'
 import { Image } from 'antd'
 import { Check } from 'lucide-react'
 import { useTheme } from 'next-themes'
+
 // import {  APP_TABLE_SIZES } from '@/lib/utils'
 import { APP_THEME_COLORS, APP_THEMES } from '@/lib/utils'
-import { Link } from '@tanstack/react-router'
 
 export function EditAppearanceForm() {
     const { theme, setTheme } = useTheme()

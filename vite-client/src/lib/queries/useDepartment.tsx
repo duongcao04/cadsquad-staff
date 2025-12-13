@@ -1,14 +1,14 @@
-'use client'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
 
 import { departmentApi } from '@/lib/api'
 import {
-    TCreateDepartmentInput,
-    TUpdateDepartmentInput,
+    type TCreateDepartmentInput,
+    type TUpdateDepartmentInput,
 } from '@/lib/validationSchemas'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { IDepartmentResponse } from '../../shared/interfaces'
-import { TDepartment } from '../../shared/types'
-import { useMemo } from 'react'
+
+import type { IDepartmentResponse } from '../../shared/interfaces'
+import type { TDepartment } from '../../shared/types'
 
 export const mapDepartment: (item: IDepartmentResponse) => TDepartment = (
     item

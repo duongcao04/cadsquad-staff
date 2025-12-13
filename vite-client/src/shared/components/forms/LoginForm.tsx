@@ -1,14 +1,17 @@
-import { useLogin } from '@/lib/queries'
-import { INTERNAL_URLS } from '@/lib/utils'
-import { type TLoginInput, LoginInputSchema } from '@/lib/validationSchemas'
-import { useDevice, useSearchParam } from '@/shared/hooks'
 import { addToast, Button, Input } from '@heroui/react'
-import { Link, redirect } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 
+import { useLogin } from '@/lib/queries'
+import { INTERNAL_URLS } from '@/lib/utils'
+import { LoginInputSchema, type TLoginInput } from '@/lib/validationSchemas'
+import { useDevice, useSearchParam } from '@/shared/hooks'
+
 export function LoginForm() {
+    const navigate = useNavigate()
+
     const { isMobile, isTablet } = useDevice()
 
     const { getSearchParam } = useSearchParam()
@@ -34,7 +37,7 @@ export function LoginForm() {
                 {
                     async onSuccess(res) {
                         addToast({ title: res.data.message, color: 'success' })
-                        redirect({
+                        navigate({
                             href: redirectUrl,
                         })
                     },
@@ -58,11 +61,11 @@ export function LoginForm() {
             <h1 className="text-lg lg:text-2xl font-bold text-center lg:text-left font-saira">
                 Sign in
             </h1>
-            <p className="text-center lg:text-left text-xs lg:text-base">
+            <p className="text-center lg:text-left text-sm! lg:text-base">
                 Login to continue to
                 <Link
                     to={INTERNAL_URLS.home}
-                    className="pl-2 text-blue-700 hover:underline underline-offset-2"
+                    className="pl-1 text-blue-500! hover:underline underline-offset-2"
                 >
                     staff.cadsquad.vn
                 </Link>
@@ -119,11 +122,11 @@ export function LoginForm() {
                         formik.errors.password
                     }
                 />
-                <p className="ml-1 text-center lg:text-left text-xs lg:text-base">
+                <p className="ml-1 text-center lg:text-left text-sm! lg:text-base">
                     You need support? Contact to:
                     <a
                         href={'mailto:ch.duong@cadsquad.vn'}
-                        className="pl-2 text-blue-700 hover:underline underline-offset-2"
+                        className="pl-1 text-blue-500! hover:underline underline-offset-2"
                     >
                         Ch.duong@cadsquad.vn
                     </a>

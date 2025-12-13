@@ -1,8 +1,9 @@
-import { cn, darkenHexColor, lightenHexColor } from '@/lib/utils'
-import { type TJobStatus } from '@/shared/types'
 import { Chip, type ChipProps } from '@heroui/react'
 import { useTheme } from 'next-themes'
 import React from 'react'
+
+import { cn, darkenHexColor, lightenHexColor } from '@/lib/utils'
+import { type TJobStatus } from '@/shared/types'
 
 type Props = {
     data: TJobStatus

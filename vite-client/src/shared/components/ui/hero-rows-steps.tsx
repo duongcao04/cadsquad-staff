@@ -1,11 +1,10 @@
 'use client'
 
 import type { ButtonProps } from '@heroui/react'
-import type { ComponentProps } from 'react'
-
 import { cn } from '@heroui/react'
 import { useControlledState } from '@react-stately/utils'
-import { LazyMotion, domAnimation, m } from 'framer-motion'
+import { domAnimation, LazyMotion, m } from 'framer-motion'
+import type { ComponentProps } from 'react'
 import React from 'react'
 
 // --- Types ---

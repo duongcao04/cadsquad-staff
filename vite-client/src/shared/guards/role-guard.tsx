@@ -1,12 +1,12 @@
-'use client'
+import { addToast } from '@heroui/react'
+import { useLocation, useRouter } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 
 import { authApi } from '@/lib/api'
-import { addToast } from '@heroui/react'
-import { useEffect, useState } from 'react'
+
 import { cookie } from '../../lib/cookie'
-import { COOKIES } from '../../lib/utils'
+import { COOKIES, INTERNAL_URLS } from '../../lib/utils'
 import { RoleEnum } from '../enums'
-import { useLocation, useRouter } from '@tanstack/react-router'
 
 interface RoleGuardProps {
     children: React.ReactNode
@@ -34,7 +34,9 @@ export default function RoleGuard({
 
                 if (!token) {
                     // Redirect to login, remembering where they wanted to go
-                    router.navigate({ href: `/auth?redirect=${pathname}` })
+                    router.navigate({
+                        href: INTERNAL_URLS.login + `?redirect=${pathname}`,
+                    })
                     return
                 }
 
@@ -72,7 +74,7 @@ export default function RoleGuard({
                     color: 'primary',
                 })
                 // On error (token expired, api down), force re-login
-                router.navigate({ href: '/auth' })
+                router.navigate({ href: INTERNAL_URLS.login })
             } finally {
                 setIsLoading(false)
             }

@@ -1,6 +1,8 @@
-import { Calendar } from '@/shared/components/ui/calendar'
 import { useDisclosure } from '@heroui/react'
 import * as React from 'react'
+
+import { Calendar } from '@/shared/components/ui/calendar'
+
 import JobDueModal from '../../modals/JobDueModal'
 import DayButton from './DayButton'
 

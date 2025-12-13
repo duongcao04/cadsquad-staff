@@ -1,10 +1,9 @@
-'use client'
-
-import { TJobFiltersInput } from '@/lib/validationSchemas'
-import { JobColumn } from '@/shared/types'
 import { Button, Divider } from '@heroui/react'
-import { useTranslations } from 'next-intl'
 import React from 'react'
+
+import { type TJobFiltersInput } from '@/lib/validationSchemas'
+import type { JobColumn } from '@/shared/types'
+
 import {
     HeroDrawer,
     HeroDrawerBody,
@@ -32,12 +31,10 @@ export function FilterDrawer({
     filters,
     onFiltersChange,
 }: FilterDrawerProps) {
-    const t = useTranslations()
-
     return (
         <HeroDrawer isOpen={isOpen} onClose={onClose} closeButton>
             <HeroDrawerContent className="max-w-full lg:max-w-[50%] xl:max-w-[30%]">
-                <HeroDrawerHeader>{t('filter')}</HeroDrawerHeader>
+                <HeroDrawerHeader>Filter jobs</HeroDrawerHeader>
                 <Divider />
                 <HeroDrawerBody>
                     <FilterView

@@ -1,4 +1,5 @@
 import { Badge } from '@heroui/react'
+
 import { PageHeading } from '..'
 
 export default function ManageTeamHeading() {

@@ -1,6 +1,3 @@
-import { useDeleteUser } from '@/lib/queries'
-import { ConfirmDeleteModal } from '@/shared/components'
-import type { TUser } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -20,8 +17,12 @@ import {
     Trash2,
     UserPen,
 } from 'lucide-react'
+
+import { useDeleteUser } from '@/lib/queries'
+import { ConfirmDeleteModal } from '@/shared/components'
+import type { TUser } from '@/shared/types'
+
 import ResetPasswordModal from '../modals/ResetPasswordModal'
-import UpdateUsernameModal from '../modals/UpdateUsernameModal'
 
 type UserTableQuickActionsProps = {
     data: TUser
@@ -40,13 +41,6 @@ export function UserTableQuickActions({ data }: UserTableQuickActionsProps) {
         onClose: onCloseResetPWModal,
     } = useDisclosure({
         id: 'ResetPasswordModal',
-    })
-    const {
-        isOpen: isOpenUpdateUsernameModal,
-        onOpen: onOpenUpdateUsernameModal,
-        onClose: onCloseUpdateUsernameModal,
-    } = useDisclosure({
-        id: 'UpdateUsernameModal',
     })
     const router = useRouter()
 
@@ -91,13 +85,13 @@ export function UserTableQuickActions({ data }: UserTableQuickActionsProps) {
                     data={data}
                 />
             )}
-            {isOpenUpdateUsernameModal && (
+            {/* {isOpenUpdateUsernameModal && (
                 <UpdateUsernameModal
                     isOpen={isOpenUpdateUsernameModal}
                     onClose={onCloseUpdateUsernameModal}
                     data={data}
                 />
-            )}
+            )} */}
 
             <Dropdown>
                 <DropdownTrigger>
@@ -145,7 +139,7 @@ export function UserTableQuickActions({ data }: UserTableQuickActionsProps) {
                             startContent={
                                 <UserPen size={14} className="text-text-8" />
                             }
-                            onPress={onOpenUpdateUsernameModal}
+                            // onPress={onOpenUpdateUsernameModal}
                         >
                             Rename user
                         </DropdownItem>

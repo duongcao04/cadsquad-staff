@@ -1,14 +1,3 @@
-import { optimizeCloudinary } from '@/lib/cloudinary'
-import {
-    currencyFormatter,
-    IMAGES,
-    INTERNAL_URLS,
-    JOB_COLUMNS,
-} from '@/lib/utils'
-import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import { useSearchParam } from '@/shared/hooks'
-import { JobColumnKey, TJob } from '@/shared/types'
 import {
     Button,
     Input,
@@ -25,12 +14,26 @@ import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { EyeIcon, SearchIcon, UserRoundPlus } from 'lucide-react'
 import React from 'react'
+
+import { optimizeCloudinary } from '@/lib/cloudinary'
+import {
+    currencyFormatter,
+    IMAGES,
+    INTERNAL_URLS,
+    JOB_COLUMNS,
+} from '@/lib/utils'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import { useSearchParam } from '@/shared/hooks'
+import { JobColumnKey, TJob } from '@/shared/types'
+
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import {
     pCenterTableStore,
     projectCenterStore,
     workbenchStore,
 } from '../../stores'
+import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
+import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import {

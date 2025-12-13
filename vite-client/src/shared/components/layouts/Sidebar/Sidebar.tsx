@@ -1,3 +1,8 @@
+import { useLocation } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
+import { type Variants } from 'motion/react'
+import { type SVGProps, useState } from 'react'
+
 import { MotionAside } from '@/lib/motion'
 import {
     IconCalendarOutline,
@@ -13,10 +18,7 @@ import {
     IconWorkbenchOutline,
 } from '@/shared/components/icons/sidebar-icons/IconWorkbench'
 import { appStore, ESidebarStatus, toggleSidebar } from '@/shared/stores'
-import { useLocation } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
-import { type Variants } from 'motion/react'
-import { type SVGProps, useState } from 'react'
+
 import SidebarItem from './SidebarItem'
 import TaskCalendar from './TaskCalendar'
 import TaskCalendarPopover from './TaskCalendarPopover'

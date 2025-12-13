@@ -1,13 +1,13 @@
-'use client'
+import { Divider, Tab, Tabs } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
+import { Image } from 'antd'
+import { Building2, UserRound, UserRoundPen } from 'lucide-react'
 
-import { Link } from '@/i18n/navigation'
 import { INTERNAL_URLS } from '@/lib'
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import { useProfile } from '@/lib/queries'
-import { Divider, Tab, Tabs } from '@heroui/react'
-import { Image } from 'antd'
-import { Building2, UserRound, UserRoundPen } from 'lucide-react'
-import { HeroButton } from '../ui'
+
+import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import { ProfileOrganization } from './ProfileOrganization'
 import { ProfileOverview } from './ProfileOverview'
@@ -19,10 +19,7 @@ export function ProfileCard() {
         <HeroCard className="h-fit">
             <HeroCardHeader className="relative group py-6 flex flex-col items-center">
                 <div className="absolute hidden group-hover:block top-5 right-5">
-                    <Link
-                        className="block"
-                        href={INTERNAL_URLS.accountSettings}
-                    >
+                    <Link className="block" to={INTERNAL_URLS.accountSettings}>
                         <HeroButton
                             isIconOnly
                             className="size-6"

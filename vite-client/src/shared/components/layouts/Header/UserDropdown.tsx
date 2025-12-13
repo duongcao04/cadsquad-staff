@@ -1,4 +1,3 @@
-import { useLogout, useProfile } from '@/lib/queries'
 import {
     addToast,
     Avatar,
@@ -11,6 +10,7 @@ import {
     SelectItem,
     User as UserComp,
 } from '@heroui/react'
+import { useRouter } from '@tanstack/react-router'
 import {
     ChartArea,
     LogOut,
@@ -19,9 +19,10 @@ import {
     UserCircle,
     UserCog,
 } from 'lucide-react'
-import { THEME_SELECTS } from '@/lib/utils'
 import { useTheme } from 'next-themes'
-import { useRouter } from '@tanstack/react-router'
+
+import { useLogout, useProfile } from '@/lib/queries'
+import { INTERNAL_URLS, THEME_SELECTS } from '@/lib/utils'
 
 export function UserDropdown() {
     const { theme, setTheme } = useTheme()
@@ -37,7 +38,7 @@ export function UserDropdown() {
                 color: 'success',
             })
             router.navigate({
-                href: `/auth`,
+                href: INTERNAL_URLS.login,
             })
         })
     }

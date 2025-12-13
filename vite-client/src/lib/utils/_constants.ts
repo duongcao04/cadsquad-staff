@@ -1,6 +1,3 @@
-import { envConfig } from '@/lib/config'
-import { JobColumn, JobColumnKey } from '@/shared/types'
-import { RoleEnum } from '../../shared/enums'
 import { capitalize } from 'lodash'
 import {
     CircleUserRound,
@@ -11,6 +8,11 @@ import {
     SwatchBook,
     UsersRound,
 } from 'lucide-react'
+
+import { envConfig } from '@/lib/config'
+import type { JobColumn, JobColumnKey } from '@/shared/types'
+
+import { RoleEnum } from '../../shared/enums'
 
 export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const
 
@@ -30,28 +32,19 @@ export const APP_THEME_COLORS = [
 ]
 
 export const INTERNAL_URLS = {
-    home: envConfig.NEXT_PUBLIC_URL + '/',
-    projectCenter: envConfig.NEXT_PUBLIC_URL + '/' + 'project-center',
-    workbench: envConfig.NEXT_PUBLIC_URL + '/',
-    auth: envConfig.NEXT_PUBLIC_URL + '/' + 'auth',
-    profile: envConfig.NEXT_PUBLIC_URL + '/' + 'profile',
-    settings: envConfig.NEXT_PUBLIC_URL + '/' + 'settings',
-    manageUser: envConfig.NEXT_PUBLIC_URL + '/' + 'admin/mgmt/team',
-    accountSettings:
-        envConfig.NEXT_PUBLIC_URL + '/' + 'settings/personal_details',
+    home: envConfig.APP_URL + '/',
+    projectCenter: envConfig.APP_URL + '/' + 'project-center',
+    workbench: envConfig.APP_URL + '/',
+    auth: envConfig.APP_URL + '/' + 'auth',
+    profile: envConfig.APP_URL + '/' + 'profile',
+    settings: envConfig.APP_URL + '/' + 'settings',
+    manageUser: envConfig.APP_URL + '/' + 'admin/mgmt/team',
+    accountSettings: envConfig.APP_URL + '/' + 'settings/personal_details',
     getJobDetailUrl: (jobNo: string, locale?: string) => {
-        if (!locale)
-            return envConfig.NEXT_PUBLIC_URL + '/' + 'jobs' + '/' + jobNo
-        return (
-            envConfig.NEXT_PUBLIC_URL +
-            '/' +
-            locale +
-            '/' +
-            'jobs' +
-            '/' +
-            jobNo
-        )
+        if (!locale) return envConfig.APP_URL + '/' + 'jobs' + '/' + jobNo
+        return envConfig.APP_URL + '/' + locale + '/' + 'jobs' + '/' + jobNo
     },
+    login: envConfig.APP_URL + '/' + 'login',
 }
 
 export const WEB_PAGES = [
@@ -92,9 +85,9 @@ export const WEB_PAGES = [
     },
 ]
 
-export const baseUrl = envConfig.NEXT_PUBLIC_URL ?? 'http://localhost'
-export const apiBaseUrl = envConfig.NEXT_PUBLIC_API_ENDPOINT
-    ? `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/api`
+export const baseUrl = envConfig.APP_URL ?? 'http://localhost'
+export const apiBaseUrl = envConfig.API_ENDPOINT
+    ? `${envConfig.API_ENDPOINT}/api`
     : 'https://testapi.appnavotar.com/api'
 
 export const STORAGE_KEYS = {
@@ -153,12 +146,11 @@ export const STORAGE_DEFAULTS = {
     theme: 'system' as const,
 }
 
-export const UI_APPLICATION_NAME =
-    envConfig.NEXT_PUBLIC_APP_TITLE ?? 'Cadsquad Staff'
-export const DEPLOYMENT_ENV = process.env.NODE_ENV || 'development'
+export const UI_APPLICATION_NAME = envConfig.APP_TITLE ?? 'Cadsquad Staff'
+export const DEPLOYMENT_ENV = import.meta.env.NODE_ENV || 'development'
 
 export const IS_DEV = DEPLOYMENT_ENV !== 'production'
-export const APP_VERSION = envConfig.NEXT_PUBLIC_APP_VERSION ?? '0.0.0-release'
+export const APP_VERSION = envConfig.APP_VERSION ?? '0.0.0-release'
 
 export const SETTINGS_LOCATION_KEYS = {
     application: 'application',

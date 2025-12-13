@@ -1,11 +1,12 @@
 import {
-    type LucideProps,
     BriefcaseBusiness,
     CircleDollarSign,
+    type LucideProps,
     MonitorCog,
     UsersRound,
 } from 'lucide-react'
 import { type ForwardRefExoticComponent, type RefAttributes } from 'react'
+
 import { SettingSidebar } from './SettingSidebar'
 
 type ChildrenItem = {

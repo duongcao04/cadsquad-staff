@@ -1,8 +1,3 @@
-import { optimizeCloudinary } from '@/lib'
-import { userApi } from '@/lib/api'
-import { useProfile, useUpdateUserMutation } from '@/lib/queries'
-import { IMAGES } from '@/lib/utils'
-import { type TUpdateUserInput } from '@/lib/validationSchemas'
 import {
     addToast,
     Button,
@@ -15,6 +10,13 @@ import { Link } from '@tanstack/react-router'
 import { Image } from 'antd'
 import { useFormik } from 'formik'
 import { useMemo, useState } from 'react'
+
+import { optimizeCloudinary } from '@/lib'
+import { userApi } from '@/lib/api'
+import { useProfile, useUpdateUserMutation } from '@/lib/queries'
+import { IMAGES } from '@/lib/utils'
+import { type TUpdateUserInput } from '@/lib/validationSchemas'
+
 import UploadAvatarModal from './UploadAvatarModal'
 
 const getPhoneNumber = (phoneNum: string) => {

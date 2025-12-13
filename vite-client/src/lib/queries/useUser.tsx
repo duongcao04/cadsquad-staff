@@ -1,10 +1,12 @@
+import { addToast } from '@heroui/react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+
 import { userApi } from '@/lib/api'
 import { type ApiError } from '@/lib/axios'
 import type { IUserResponse } from '@/shared/interfaces'
 import type { TUser } from '@/shared/types'
-import { addToast } from '@heroui/react'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { queryClient } from '../../routes/__root'
+
+import { queryClient } from '../../main'
 import { IMAGES } from '../utils'
 import type {
     TCreateUserInput,

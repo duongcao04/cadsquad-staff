@@ -1,16 +1,15 @@
-'use client'
-
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
-import { authApi } from '@/lib/api'
-import { ApiError } from '@/lib/axios'
-import { cookie } from '@/lib/cookie'
-import { COOKIES, IMAGES } from '@/lib/utils'
-import { LoginInput } from '@/lib/validationSchemas'
-import { RoleEnum } from '@/shared/enums'
-import { TUser } from '@/shared/types'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import lodash from 'lodash'
 import { useMemo } from 'react'
+
+import { authApi } from '@/lib/api'
+import { type ApiError } from '@/lib/axios'
+import { cookie } from '@/lib/cookie'
+import { COOKIES, IMAGES } from '@/lib/utils'
+import type { TLoginInput } from '@/lib/validationSchemas'
+import { RoleEnum } from '@/shared/enums'
+import type { TUser } from '@/shared/types'
+import { queryClient } from '../../main'
 
 function parseExpires(expiresAt: string | number) {
     if (typeof expiresAt === 'number') {
@@ -23,7 +22,7 @@ function parseExpires(expiresAt: string | number) {
 
 export const useLogin = () => {
     const mutation = useMutation({
-        mutationFn: (data: LoginInput) => authApi.login(data),
+        mutationFn: (data: TLoginInput) => authApi.login(data),
         onSuccess: (res) => {
             const {
                 accessToken: { token, expiresAt },

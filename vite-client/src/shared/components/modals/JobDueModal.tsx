@@ -1,9 +1,11 @@
-import { dateFormatter } from '@/lib/dayjs'
-import { useJobsByDeadline } from '@/lib/queries'
 import { Skeleton } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
 import { CalendarDays } from 'lucide-react'
 import React from 'react'
-import { ScrollArea, ScrollBar } from '../ui/scroll-area'
+
+import { dateFormatter } from '@/lib/dayjs'
+import { useJobsByDeadline } from '@/lib/queries'
+
 import JobCard, { JobCardSkeleton } from '../profile/JobCard'
 import {
     HeroModal,
@@ -11,7 +13,7 @@ import {
     HeroModalContent,
     HeroModalHeader,
 } from '../ui/hero-modal'
-import { Link } from '@tanstack/react-router'
+import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 
 type Props = {
     isOpen: boolean

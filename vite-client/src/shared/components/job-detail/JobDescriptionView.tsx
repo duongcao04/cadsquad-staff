@@ -31,7 +31,13 @@ type JobDescriptionViewProps = {
     job: TJob
 }
 export default function JobDescriptionView({ job }: JobDescriptionViewProps) {
-    const updateJobMutation = useUpdateJobMutation()
+    const updateJobMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Description updated',
+            description: `The description for job ${res.result?.no} has been successfully updated.`,
+            color: 'success',
+        })
+    })
 
     const [isEditable, setIsEditable] = useState(false)
 

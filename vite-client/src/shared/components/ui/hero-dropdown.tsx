@@ -1,13 +1,13 @@
 'use client'
 
 import {
-    extendVariants,
     Dropdown,
-    DropdownTrigger,
     DropdownItem,
-    DropdownSection,
     DropdownMenu,
     DropdownProps,
+    DropdownSection,
+    DropdownTrigger,
+    extendVariants,
 } from '@heroui/react'
 
 export const StyledDropdown = extendVariants(Dropdown, {
@@ -63,8 +63,8 @@ export const HeroDropdown = (props: DropdownProps) => {
 }
 
 export {
-    DropdownTrigger as HeroDropdownTrigger,
     DropdownItem as HeroDropdownItem,
-    DropdownSection as HeroDropdownSection,
     DropdownMenu as HeroDropdownMenu,
+    DropdownSection as HeroDropdownSection,
+    DropdownTrigger as HeroDropdownTrigger,
 }

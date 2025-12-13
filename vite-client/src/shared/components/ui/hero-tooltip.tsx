@@ -1,6 +1,6 @@
 'use client'
 
-import { Tooltip, TooltipProps, extendVariants } from '@heroui/react'
+import { extendVariants,Tooltip, TooltipProps } from '@heroui/react'
 
 // 1. Cấu hình Motion "Quick & Snappy"
 // Nhanh, dứt khoát, không nảy (bounce)

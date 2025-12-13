@@ -1,4 +1,4 @@
-import { IUserResponse } from '../interfaces'
+import type { IUserResponse } from '../interfaces'
 
 /**
  * Example of a user-related type.

@@ -1,3 +1,3 @@
-import { IPaymentChannelResponse } from "../interfaces";
+import type { IPaymentChannelResponse } from '../interfaces'
 
 export type TPaymentChannel = Omit<IPaymentChannelResponse, ''>

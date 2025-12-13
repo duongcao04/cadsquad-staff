@@ -1,14 +1,3 @@
-'use client'
-
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
-import { ApiError } from '@/lib/axios'
-import {
-    useDeleteJobMutation,
-    useProfile,
-    useUpdateJobMutation,
-} from '@/lib/queries'
-import { ConfirmDeleteModal } from '@/shared/components'
-import { TJob } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -28,9 +17,20 @@ import {
     Trash,
     UserPlus,
 } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
+
+import { type ApiError } from '@/lib/axios'
+import {
+    useDeleteJobMutation,
+    useProfile,
+    useUpdateJobMutation,
+} from '@/lib/queries'
+import { ConfirmDeleteModal } from '@/shared/components'
+import type { TJob } from '@/shared/types'
+
+import { INTERNAL_URLS } from '../../../lib'
 import AssignMemberModal from './AssignMemberModal'
 import UpdateCostModal from './UpdateCostModal'
+import { queryClient } from '../../../main'
 
 type ProjectCenterTableQuickActionsProps = {
     data: TJob
@@ -38,9 +38,6 @@ type ProjectCenterTableQuickActionsProps = {
 export function ProjectCenterTableQuickActions({
     data,
 }: ProjectCenterTableQuickActionsProps) {
-    const locale = useLocale()
-    const t = useTranslations()
-
     const { isAdmin, isAccounting } = useProfile()
     const { mutateAsync: updateJobMutation, isPending: isUpdating } =
         useUpdateJobMutation()
@@ -87,11 +84,9 @@ export function ProjectCenterTableQuickActions({
     }
 
     const handleOpenMarkAsPaidModal = () => {
-        if (Boolean(data.isPaid)) {
+        if (data.isPaid) {
             addToast({
-                title: t('jobPaid', {
-                    jobNo: `#${data.no}`,
-                }),
+                title: `#${data.no} is already paid`,
                 color: 'danger',
             })
         } else {
@@ -111,10 +106,8 @@ export function ProjectCenterTableQuickActions({
                 {
                     onSuccess: (res) => {
                         addToast({
-                            title: t('successfully'),
-                            description: t('markJobAsPaidSuccess', {
-                                jobNo: `#${res.data.result?.no ?? data?.no}`,
-                            }),
+                            title: 'Mark as paid successfully',
+                            description: `#${res.data.result?.no ?? data?.no} is paid successfully`,
                             color: 'success',
                         })
                         queryClient.invalidateQueries({
@@ -125,7 +118,7 @@ export function ProjectCenterTableQuickActions({
                     onError(error) {
                         const err = error as unknown as ApiError
                         addToast({
-                            title: t('failed'),
+                            title: 'Mark as paid failed',
                             description: err.message,
                             color: 'danger',
                         })
@@ -158,7 +151,7 @@ export function ProjectCenterTableQuickActions({
                     onError(error) {
                         const err = error as unknown as ApiError
                         addToast({
-                            title: t('failed'),
+                            title: 'Pin job failed',
                             description: err.message,
                             color: 'danger',
                         })
@@ -170,41 +163,41 @@ export function ProjectCenterTableQuickActions({
 
     return (
         <>
-            <ConfirmDeleteModal
-                isOpen={isOpenModal}
-                onClose={onCloseModal}
-                onConfirm={onDeleteJob}
-                title={t('deleteJob')}
-                description={t('deleteJobDesc', {
-                    jobNo: `#${data?.no}`,
-                })}
-                isLoading={isDeleting}
-                style={{
-                    zIndex: 9999999999,
-                }}
-            />
-            <UpdateCostModal
-                isOpen={isOpenUCostModal}
-                onClose={onCloseUCostModal}
-                data={data}
-            />
-            <ConfirmDeleteModal
-                isOpen={isOpenMAPModal}
-                onClose={onCloseMAPModal}
-                onConfirm={handleMarkAsPaid}
-                title={t('markJobAsPaid', {
-                    jobNo: `#${data.no}`,
-                })}
-                description={t('markJobAsPaidDesc', {
-                    jobNo: `#${data.no}`,
-                })}
-                confirmText={t('yes')}
-                isLoading={isUpdating}
-                style={{
-                    zIndex: 9999999999,
-                }}
-                color="primary"
-            />
+            {isOpenModal && (
+                <ConfirmDeleteModal
+                    isOpen={isOpenModal}
+                    onClose={onCloseModal}
+                    onConfirm={onDeleteJob}
+                    title={'Delete job'}
+                    description={`#${data?.no}`}
+                    isLoading={isDeleting}
+                    style={{
+                        zIndex: 9999999999,
+                    }}
+                />
+            )}
+            {isOpenUCostModal && (
+                <UpdateCostModal
+                    isOpen={isOpenUCostModal}
+                    onClose={onCloseUCostModal}
+                    data={data}
+                />
+            )}
+            {isOpenMAPModal && (
+                <ConfirmDeleteModal
+                    isOpen={isOpenMAPModal}
+                    onClose={onCloseMAPModal}
+                    onConfirm={handleMarkAsPaid}
+                    title={`Mark #${data.no} as paid`}
+                    description={`Are you sure you want to mark #${data.no} as paid? This action cannot be undone.`}
+                    confirmText="Yes"
+                    isLoading={isUpdating}
+                    style={{
+                        zIndex: 9999999999,
+                    }}
+                    color="primary"
+                />
+            )}
 
             <AssignMemberModal
                 isOpen={isOpenAssignModal}
@@ -230,7 +223,7 @@ export function ProjectCenterTableQuickActions({
                             }
                             onPress={() =>
                                 window.open(
-                                    `/${locale}/jobs/${data.no}`,
+                                    INTERNAL_URLS.getJobDetailUrl(data.no),
                                     '_blank'
                                 )
                             }

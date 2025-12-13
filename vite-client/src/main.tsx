@@ -1,13 +1,28 @@
-import { RouterProvider, createRouter } from '@tanstack/react-router'
+import './styles/global.css'
+
+import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
-import './styles/global.css'
 
 // Import file được tự động sinh ra
 import { routeTree } from './routeTree.gen'
+import { QueryClient } from '@tanstack/react-query'
+
+export const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false,
+        },
+    },
+})
 
 // Tạo router instance
-const router = createRouter({ routeTree })
+const router = createRouter({
+    routeTree,
+    context: {
+        queryClient,
+    },
+})
 
 // Đăng ký kiểu dữ liệu (Quan trọng để có Type-safe)
 declare module '@tanstack/react-router' {

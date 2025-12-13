@@ -1,10 +1,10 @@
-'use client'
-
-import { paymentChannelApi } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { IPaymentChannelResponse } from '../../shared/interfaces'
-import { TPaymentChannel } from '../../shared/types'
+
+import { paymentChannelApi } from '@/lib/api'
+
+import type { IPaymentChannelResponse } from '../../shared/interfaces'
+import type { TPaymentChannel } from '../../shared/types'
 
 export const mapPaymentChannels: (
     item: IPaymentChannelResponse

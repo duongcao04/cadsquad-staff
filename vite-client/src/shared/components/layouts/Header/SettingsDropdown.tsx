@@ -1,5 +1,3 @@
-import { useProfile } from '@/lib/queries'
-import { SettingsGearIcon } from '@/shared/components'
 import {
     Button,
     Dropdown,
@@ -20,6 +18,9 @@ import {
     SquareUserRound,
     Users,
 } from 'lucide-react'
+
+import { useProfile } from '@/lib/queries'
+import { SettingsGearIcon } from '@/shared/components'
 
 interface ChildItem {
     id: number

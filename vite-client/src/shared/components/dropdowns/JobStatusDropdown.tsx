@@ -1,12 +1,4 @@
 import {
-    useChangeStatusMutation,
-    useJobStatusByOrder,
-    useJobStatuses,
-    useProfile,
-} from '@/lib/queries'
-import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
-import type { TJob, TJobStatus } from '@/shared/types'
-import {
     addToast,
     Button,
     Popover,
@@ -17,6 +9,16 @@ import {
 } from '@heroui/react'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
+
+import {
+    useChangeStatusMutation,
+    useJobStatusByOrder,
+    useJobStatuses,
+    useProfile,
+} from '@/lib/queries'
+import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
+import type { TJob, TJobStatus } from '@/shared/types'
+
 import { JobStatusChip } from '../chips/JobStatusChip'
 
 type JobStatusDropdownProps = {

@@ -1,5 +1,7 @@
-import { useUsers } from '@/lib/queries'
 import { useDisclosure } from '@heroui/react'
+
+import { useUsers } from '@/lib/queries'
+
 import { CreateUserModal } from '../modals/CreateUserModal'
 import UserTable from './UserTable'
 

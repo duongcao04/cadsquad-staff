@@ -1,15 +1,14 @@
-'use client'
+import { Button, Input, Skeleton } from '@heroui/react'
+import { type Key, useState } from 'react'
 
-import { envConfig } from '@/lib/config'
+import { INTERNAL_URLS } from '@/lib'
 import { useProfile, useUsers } from '@/lib/queries'
 import {
     useAssignMemberMutation,
     useJobByNo,
     useRemoveMemberMutation,
 } from '@/lib/queries/useJob'
-import { Button, Input, Skeleton } from '@heroui/react'
-import { useTranslations } from 'next-intl'
-import { Key, useState } from 'react'
+
 import HeroCopyButton from '../ui/hero-copy-button'
 import {
     HeroModal,
@@ -32,17 +31,12 @@ export default function AssignMemberModal({
     isOpen,
     onClose,
 }: AssignMemberModalProps) {
-    const t = useTranslations()
-
     const { job, isLoading: loadingJob } = useJobByNo(jobNo)
     const { users, isLoading: loadingUsers } = useUsers()
 
     const isLoading = !job || loadingJob
 
     const { isAdmin } = useProfile()
-
-    const JOB_DETAIL_URL =
-        envConfig.NEXT_PUBLIC_URL + `/project-center?detail=${jobNo}`
 
     const [memberSelected, setMemberSelected] = useState<Key | null>(null)
     const { mutateAsync: assignMemberMutate } = useAssignMemberMutation(jobNo)
@@ -86,7 +80,7 @@ export default function AssignMemberModal({
                 <HeroModalHeader>
                     <div className="size-full">
                         <p className="text-lg font-semibold mb-2.5">
-                            {t('assignMemberTo', { jobNo: `#${job?.no}` })}
+                            Assign members to #{job?.no}
                         </p>
                         {isAdmin && (
                             <div className="space-y-1.5">
@@ -122,7 +116,7 @@ export default function AssignMemberModal({
                                         }}
                                         color="primary"
                                     >
-                                        {t('assign')}
+                                        Assign
                                     </Button>
                                 </div>
                             </div>
@@ -142,7 +136,7 @@ export default function AssignMemberModal({
                                     <span>({job?.assignee?.length})</span>
                                 </Skeleton>
                             </div>
-                            <div className="space-y-1.5 max-h-[430px] overflow-y-auto -mx-2">
+                            <div className="space-y-1.5 max-h-107.5 overflow-y-auto -mx-2">
                                 {loadingJob &&
                                     new Array(6).fill(0).map((_, idx) => {
                                         return (
@@ -171,15 +165,17 @@ export default function AssignMemberModal({
                         <hr className="mb-2 text-text-muted" />
                         <div className="flex items-center justify-start gap-4">
                             <p className="font-medium text-nowrap h-full">
-                                {t('copyLink')}
+                                Copy link
                             </p>
                             <Input
-                                value={JOB_DETAIL_URL}
+                                value={INTERNAL_URLS.getJobDetailUrl(jobNo)}
                                 className="opacity-70!"
                                 endContent={
-                                    <HeroTooltip content={t('copy')}>
+                                    <HeroTooltip content="Copy">
                                         <HeroCopyButton
-                                            textValue={JOB_DETAIL_URL}
+                                            textValue={INTERNAL_URLS.getJobDetailUrl(
+                                                jobNo
+                                            )}
                                         />
                                     </HeroTooltip>
                                 }

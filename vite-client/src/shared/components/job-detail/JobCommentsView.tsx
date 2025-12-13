@@ -1,7 +1,3 @@
-import { optimizeCloudinary } from '@/lib/cloudinary'
-import { dateFormatter } from '@/lib/dayjs'
-import { useComments, useCreateComment, useProfile } from '@/lib/queries'
-import type { TJob } from '@/shared/types'
 import { addToast, Avatar, Button, Divider } from '@heroui/react'
 import {
     BlockquotePlugin,
@@ -15,6 +11,12 @@ import {
 import { MessageSquareMore } from 'lucide-react'
 import { Plate, usePlateEditor } from 'platejs/react'
 import { serializeHtml } from 'platejs/static'
+
+import { optimizeCloudinary } from '@/lib/cloudinary'
+import { dateFormatter } from '@/lib/dayjs'
+import { useComments, useCreateComment, useProfile } from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+
 import { BlockquoteElement } from '../ui/blockquote-node'
 import { Editor, EditorContainer } from '../ui/editor'
 import { FixedToolbar } from '../ui/fixed-toolbar'

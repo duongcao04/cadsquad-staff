@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+
 import { ActionButton, Header, Sidebar } from '../shared/components'
 import { AuthGuard } from '../shared/guards'
 

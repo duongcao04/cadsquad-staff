@@ -1,23 +1,22 @@
-import { cookie } from '@/lib/cookie'
+import { addToast,Button, type InputProps, Textarea } from '@heroui/react'
+import { Image, Modal } from 'antd'
+import { useFormik } from 'formik'
+import { capitalize } from 'lodash'
+import { useMemo } from 'react'
+
 import {
     useProfile,
     useSendNotificationMutation,
     useUsers,
 } from '@/lib/queries'
-import { authSocket } from '@/lib/socket'
 import {
-    type TCreateNotificationInput,
     CreateNotificationInputSchema,
+    type TCreateNotificationInput,
 } from '@/lib/validationSchemas'
 import { NotificationTypeEnum } from '@/shared/enums'
-import { Button, type InputProps, Textarea, addToast } from '@heroui/react'
-import { Image, Modal } from 'antd'
-import { useFormik } from 'formik'
-import { capitalize } from 'lodash'
-import { useMemo } from 'react'
+
 import { HeroInput } from '../ui/hero-input'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
-import { COOKIES } from '../../../lib/utils'
 
 const inputClassNames: InputProps['classNames'] = {
     base: 'grid grid-cols-[140px_1fr] gap-3',
@@ -31,7 +30,6 @@ type Props = {
     onClose: () => void
 }
 export function CreateNotificationModal({ isOpen, onClose }: Props) {
-    const token = cookie.get(COOKIES.authentication)
     const { users, isLoading: loadingUsers } = useUsers()
     const { profile } = useProfile()
 
@@ -78,12 +76,6 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
                             title: values.title,
                             userId,
                         }
-                        const socket = authSocket()
-                        // GÁN token vào handshake trước khi connect
-                        socket.auth = { token }
-                        socket.connect()
-
-                        socket.emit('send_message', message)
                         // sendNotificationMutate(message)
                     })
 

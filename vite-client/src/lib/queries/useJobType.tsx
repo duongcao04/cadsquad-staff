@@ -1,10 +1,10 @@
-'use client'
-
 import { useQuery } from '@tanstack/react-query'
-import { jobTypeApi } from '@/lib/api'
-import { IJobTypeResponse } from '../../shared/interfaces'
-import { TJobType } from '../../shared/types'
 import { useMemo } from 'react'
+
+import { jobTypeApi } from '@/lib/api'
+
+import type { IJobTypeResponse } from '../../shared/interfaces'
+import type { TJobType } from '../../shared/types'
 
 export const mapJobType: (item: IJobTypeResponse) => TJobType = (item) => ({
     code: item.code,

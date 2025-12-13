@@ -1,3 +1,7 @@
+import { Divider, Spacer } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
+import { useFormik } from 'formik'
+
 import {
     useCreateUserMutation,
     useDepartments,
@@ -8,9 +12,7 @@ import {
     CreateUserSchema,
     type TCreateUserInput,
 } from '@/lib/validationSchemas'
-import { Divider, Spacer } from '@heroui/react'
-import { Link } from '@tanstack/react-router'
-import { useFormik } from 'formik'
+
 import { RoleEnum } from '../../enums'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardFooter } from '../ui/hero-card'

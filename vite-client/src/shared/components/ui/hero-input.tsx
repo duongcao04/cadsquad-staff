@@ -1,6 +1,6 @@
 'use client'
 
-import { Input, extendVariants } from '@heroui/react'
+import { extendVariants,Input } from '@heroui/react'
 
 export const HeroInput = extendVariants(Input, {
     variants: {

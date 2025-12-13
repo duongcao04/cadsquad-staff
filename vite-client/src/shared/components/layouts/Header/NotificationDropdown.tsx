@@ -1,9 +1,4 @@
-import { cookie } from '@/lib/cookie'
-import { useNotifications } from '@/lib/queries/useNotification'
-import { authSocket } from '@/lib/socket'
-import { NotificationStatusEnum } from '@/shared/enums'
 import {
-    addToast,
     Button,
     Dropdown,
     DropdownItem,
@@ -13,41 +8,15 @@ import {
     Spinner,
 } from '@heroui/react'
 import { Bell } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import type { TUserNotification } from '@/shared/types'
+
+import { useNotifications } from '@/lib/queries/useNotification'
+import { NotificationStatusEnum } from '@/shared/enums'
+
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { NotificationCard } from './NotificationCard'
-import { COOKIES } from '@/lib/utils'
 
 export function NotificationDropdown() {
-    const token = cookie.get(COOKIES.authentication)
-    const { data: notifications, isLoading, refetch } = useNotifications()
-    const [newNotification, setNewNotification] =
-        useState<TUserNotification | null>(null)
-
-    const countUnseen =
-        notifications?.filter(
-            (item) => item.status === NotificationStatusEnum.UNSEEN
-        ).length ?? 0
-
-    const socket = authSocket()
-    socket.auth = { token }
-    socket.connect()
-    socket.once('received_message', (data: Notification) => {
-        setNewNotification(data)
-    })
-
-    useEffect(() => {
-        if (newNotification) {
-            refetch()
-            addToast({
-                title: newNotification.title ?? 'You have notification!',
-                description: newNotification.content,
-                color: 'success',
-                shouldShowTimeoutProgress: true,
-            })
-        }
-    }, [newNotification, refetch])
+    const { data: notifications, isLoading } = useNotifications()
 
     return (
         <Dropdown placement="bottom-end">
@@ -59,9 +28,9 @@ export function NotificationDropdown() {
                             <div className="absolute -top-1 right-0">
                                 <span
                                     className="relative flex size-2"
-                                    style={{
-                                        display: countUnseen > 0 ? '' : 'none',
-                                    }}
+                                    // style={{
+                                    //     display: countUnseen > 0 ? '' : 'none',
+                                    // }}
                                 >
                                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-danger-300 opacity-75"></span>
                                     <span className="relative inline-flex size-2 rounded-full bg-danger"></span>
@@ -91,7 +60,7 @@ export function NotificationDropdown() {
                         <p className="font-semibold">
                             Notifications
                             <span className="pl-0.5 tracking-wider text-text-muted">
-                                ({countUnseen ?? 0})
+                                {/* ({countUnseen ?? 0}) */}
                             </span>
                         </p>
                     </DropdownItem>

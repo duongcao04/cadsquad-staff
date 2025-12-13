@@ -1,4 +1,4 @@
-import { TJob } from '../types'
+import type { TJob } from '../types'
 
 /**
  * Represents a payment channel, such as a bank account or online payment service.

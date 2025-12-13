@@ -1,7 +1,9 @@
 import { Avatar, useDisclosure } from '@heroui/react'
 import { UserRoundPlus } from 'lucide-react'
+
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import { useJobAssignees, useProfile } from '@/lib/queries'
+
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'

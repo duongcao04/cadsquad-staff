@@ -1,9 +1,11 @@
-import { MotionButton, MotionDiv, MotionP } from '@/lib/motion'
-import { appStore, ESidebarStatus } from '@/shared/stores'
 import { Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
 import { type Variants } from 'motion/react'
 import React, { type Dispatch, type SetStateAction } from 'react'
+
+import { MotionButton, MotionDiv, MotionP } from '@/lib/motion'
+import { appStore, ESidebarStatus } from '@/shared/stores'
+
 import type { TSidebarItem } from './Sidebar'
 
 const SidebarItem = ({

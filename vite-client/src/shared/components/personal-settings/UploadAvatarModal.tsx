@@ -1,6 +1,8 @@
-import { useUpdateUserMutation, useUploadImageMutation } from '@/lib/queries'
 import { addToast, Divider } from '@heroui/react'
 import React, { useState } from 'react'
+
+import { useUpdateUserMutation, useUploadImageMutation } from '@/lib/queries'
+
 import AvatarUpload from '../file-upload/avatar-upload'
 import { HeroButton } from '../ui/hero-button'
 import {

@@ -1,8 +1,3 @@
-import { optimizeCloudinary } from '@/lib/cloudinary'
-import { dateFormatter } from '@/lib/dayjs'
-import { useProfile, useUpdateJobMutation } from '@/lib/queries'
-import { currencyFormatter } from '@/lib/utils'
-import type { TJob } from '@/shared/types'
 import {
     addToast,
     Avatar,
@@ -20,8 +15,17 @@ import {
     Link as IconLink,
     MessageSquare,
     Pencil,
+    Trash2,
 } from 'lucide-react'
 import React from 'react'
+
+import { optimizeCloudinary } from '@/lib/cloudinary'
+import { dateFormatter } from '@/lib/dayjs'
+import { useProfile, useUpdateJobMutation } from '@/lib/queries'
+import { currencyFormatter } from '@/lib/utils'
+import type { TJob } from '@/shared/types'
+
+import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
@@ -29,7 +33,6 @@ import { HeroTooltip } from '../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 import { JobActivityHistory } from './JobActivityLog'
 import JobAssigneesView from './JobAssigneesView'
-import JobAttachmentsView from './JobAttachmentsView'
 import JobCommentsView from './JobCommentsView'
 import JobDescriptionView from './JobDescriptionView'
 
@@ -40,30 +43,45 @@ interface JobDetailProps {
 export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
     const { isAdmin } = useProfile()
 
-    const updateJobMutation = useUpdateJobMutation()
+    const updateAttachmentMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Attachments updated',
+            description: `The attachments for job ${res.result?.no} have been updated.`,
+            color: 'success',
+        })
+    })
+
+    const removeAttachmentMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Attachment removed',
+            description: `The attachment for job ${res.result?.no} has been removed.`,
+            color: 'success',
+            icon: <Trash2 />,
+        })
+    })
 
     const { isOpen, onClose, onOpen } = useDisclosure({ id: 'UpdateCostModal' })
 
     const handleAddAttachment = (attachments: string[]) =>
-        updateJobMutation.mutate(
-            {
-                jobId: job.id,
-                data: {
-                    attachmentUrls: attachments,
-                },
+        updateAttachmentMutation.mutate({
+            jobId: job.id,
+            data: {
+                attachmentUrls: attachments,
             },
-            {
-                onSuccess: () => {
-                    addToast({
-                        title: 'Thêm tài liệu thành công',
-                        color: 'success',
-                    })
-                },
-            }
-        )
+        })
+    const handleRemoveAttachment = (attachments: string[]) =>
+        removeAttachmentMutation.mutate({
+            jobId: job.id,
+            data: {
+                attachmentUrls: attachments,
+            },
+        })
+
     return (
         <>
-            <UpdateCostModal data={job} isOpen={isOpen} onClose={onClose} />
+            {isOpen && (
+                <UpdateCostModal data={job} isOpen={isOpen} onClose={onClose} />
+            )}
             <div className="w-full h-full flex flex-col gap-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* LEFT COLUMN (Details & Tabs) */}
@@ -122,9 +140,10 @@ export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
                                     </div>
                                 }
                             >
-                                <JobAttachmentsView
+                                <JobAttachmentsField
                                     defaultAttachments={job.attachmentUrls}
                                     onChange={handleAddAttachment}
+                                    onRemove={handleRemoveAttachment}
                                 />
                             </Tab>
 

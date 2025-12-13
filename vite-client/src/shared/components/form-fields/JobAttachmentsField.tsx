@@ -7,19 +7,22 @@ import {
     X,
 } from 'lucide-react'
 import { useState } from 'react'
-import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
+
 import { HeroButton } from '../ui/hero-button'
+import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import { HeroInput } from '../ui/hero-input'
 
 type JobAttachmentsFieldProps = {
     defaultAttachments?: string[]
     // Sửa lại type onChange để trả về data cho form cha
     onChange: (attachments: string[]) => void
+    onRemove?: (attachments: string[]) => void
 }
 
 export default function JobAttachmentsField({
     defaultAttachments = [],
     onChange,
+    onRemove,
 }: JobAttachmentsFieldProps) {
     const [attachments, setAttachments] = useState<string[]>(defaultAttachments)
     const [isAdding, setIsAdding] = useState(false)
@@ -38,7 +41,11 @@ export default function JobAttachmentsField({
             (_, idx) => idx !== indexToRemove
         )
         setAttachments(newAttachments)
-        onChange(newAttachments)
+        if (onRemove) {
+            onRemove(newAttachments)
+        } else {
+            onChange(newAttachments)
+        }
     }
 
     return (

@@ -1,11 +1,12 @@
+import { Chip, type ChipProps } from '@heroui/react'
+import { useTheme } from 'next-themes'
+
 import {
     cn,
     darkenHexColor,
     lightenHexColor,
     PAID_STATUS_COLOR,
 } from '@/lib/utils'
-import { Chip, type ChipProps } from '@heroui/react'
-import { useTheme } from 'next-themes'
 
 type Props = {
     status: 'paid' | 'unpaid'

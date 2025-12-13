@@ -1,3 +1,6 @@
-import { IUserNotificationResponse } from "../interfaces";
+import type { IUserNotificationResponse } from '../interfaces'
 
-export type TUserNotification = Omit<IUserNotificationResponse, 'userId' | 'senderId'>
+export type TUserNotification = Omit<
+    IUserNotificationResponse,
+    'userId' | 'senderId'
+>

@@ -1,14 +1,16 @@
+import { Button, Kbd } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
+import { CircleHelpIcon, Search } from 'lucide-react'
+import { type Variants } from 'motion/react'
+
 import { MotionButton } from '@/lib/motion'
 import {
     NotificationDropdown,
     SettingsDropdown,
     UserDropdown,
 } from '@/shared/components'
-import { Button, Kbd } from '@heroui/react'
-import { CircleHelpIcon, Search } from 'lucide-react'
-import { type Variants } from 'motion/react'
+
 import CadsquadLogo from '../../CadsquadLogo'
-import { Link } from '@tanstack/react-router'
 
 const buttonVariants: Variants = {
     init: {

@@ -1,22 +1,32 @@
-'use client'
-
+import { useRouter } from '@tanstack/react-router'
 import { useCallback } from 'react'
 
-import { useSearchParams } from 'next/navigation'
-
-import { usePathname, useRouter } from '@/i18n/navigation'
-
 export function useSearchParam() {
-    const searchParams = useSearchParams()
     const router = useRouter()
-    const pathname = usePathname()
+    const { pathname, search } = router.history.location
+
+    const searchParams = new URLSearchParams(search)
+
+    const navigateWithParams = useCallback(
+        (
+            newSearchParams: URLSearchParams,
+            options: { replace?: boolean } = {}
+        ) => {
+            router.navigate({
+                to: pathname,
+                search: newSearchParams,
+                replace: options.replace,
+            })
+        },
+        [router, pathname]
+    )
 
     const setSearchParams = useCallback(
         (
             params: Record<string, string | null | undefined>,
             options: { replace?: boolean } = {}
         ) => {
-            const newSearchParams = new URLSearchParams(searchParams)
+            const newSearchParams = new URLSearchParams(search)
 
             Object.entries(params).forEach(([key, value]) => {
                 if (value === null || value === undefined || value === '') {
@@ -26,16 +36,9 @@ export function useSearchParam() {
                 }
             })
 
-            const queryString = newSearchParams.toString()
-            const newUrl = queryString ? `${pathname}?${queryString}` : pathname
-
-            if (options.replace) {
-                router.replace(newUrl)
-            } else {
-                router.push(newUrl)
-            }
+            navigateWithParams(newSearchParams, options)
         },
-        [searchParams, router, pathname]
+        [search, navigateWithParams]
     )
 
     const getSearchParam = useCallback(
@@ -51,50 +54,32 @@ export function useSearchParam() {
 
     const removeSearchParam = useCallback(
         (paramKey: string, options: { replace?: boolean } = {}) => {
-            const newSearchParams = new URLSearchParams(searchParams)
+            const newSearchParams = new URLSearchParams(search)
             newSearchParams.delete(paramKey)
 
-            const queryString = newSearchParams.toString()
-            const newUrl = queryString ? `${pathname}?${queryString}` : pathname
-
-            if (options.replace) {
-                router.replace(newUrl)
-            } else {
-                router.push(newUrl)
-            }
+            navigateWithParams(newSearchParams, options)
         },
-        [searchParams, router, pathname]
+        [search, navigateWithParams]
     )
 
     const removeSearchParams = useCallback(
         (paramKeys: string[], options: { replace?: boolean } = {}) => {
-            const newSearchParams = new URLSearchParams(searchParams)
+            const newSearchParams = new URLSearchParams(search)
 
             paramKeys.forEach((key) => {
                 newSearchParams.delete(key)
             })
 
-            const queryString = newSearchParams.toString()
-            const newUrl = queryString ? `${pathname}?${queryString}` : pathname
-
-            if (options.replace) {
-                router.replace(newUrl)
-            } else {
-                router.push(newUrl)
-            }
+            navigateWithParams(newSearchParams, options)
         },
-        [searchParams, router, pathname]
+        [search, navigateWithParams]
     )
 
     const removeAllSearchParams = useCallback(
         (options: { replace?: boolean } = {}) => {
-            if (options.replace) {
-                router.replace(pathname)
-            } else {
-                router.push(pathname)
-            }
+            navigateWithParams(new URLSearchParams(), options)
         },
-        [router, pathname]
+        [navigateWithParams]
     )
 
     const hasSearchParam = useCallback(
@@ -106,15 +91,17 @@ export function useSearchParam() {
 
     const toggleSearchParam = useCallback(
         (key: string, value: string, options: { replace?: boolean } = {}) => {
-            const currentValue = searchParams.get(key)
+            const newSearchParams = new URLSearchParams(search)
+            const currentValue = newSearchParams.get(key)
 
             if (currentValue === value) {
-                removeSearchParam(key, options)
+                newSearchParams.delete(key)
             } else {
-                setSearchParams({ [key]: value }, options)
+                newSearchParams.set(key, value)
             }
+            navigateWithParams(newSearchParams, options)
         },
-        [searchParams, setSearchParams, removeSearchParam]
+        [search, navigateWithParams]
     )
 
     const updateSearchParam = useCallback(

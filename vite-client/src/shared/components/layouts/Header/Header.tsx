@@ -3,6 +3,7 @@ import { Layout } from 'antd'
 import hotkeys from 'hotkeys-js'
 import { CircleHelpIcon, Search } from 'lucide-react'
 import { useEffect } from 'react'
+
 import CadsquadLogo from '../../CadsquadLogo'
 import { HeroButton } from '../../ui/hero-button'
 import { SearchModal } from './SearchModal'

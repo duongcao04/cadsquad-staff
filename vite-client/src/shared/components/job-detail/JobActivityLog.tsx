@@ -1,5 +1,3 @@
-import { ActivityTypeEnum } from '@/shared/enums'
-import type { TJobActivityLog } from '@/shared/types'
 import { Avatar, Chip, ScrollShadow } from '@heroui/react'
 import {
     ArrowRightLeft,
@@ -13,6 +11,9 @@ import {
     UserPlus,
 } from 'lucide-react'
 import React from 'react'
+
+import { ActivityTypeEnum } from '@/shared/enums'
+import type { TJobActivityLog } from '@/shared/types'
 
 interface JobActivityHistoryProps {
     logs: TJobActivityLog[]
