@@ -26,7 +26,7 @@ import TaskCalendarPopover from './TaskCalendarPopover'
 export type TSidebarItem = {
     icon: (props: SVGProps<SVGSVGElement>) => React.ReactElement
     iconFill: (props: SVGProps<SVGSVGElement>) => React.ReactElement
-    titleKey: string
+    title: string
     path: string
 }
 // eslint-disable-next-line react-refresh/only-export-components
@@ -34,15 +34,15 @@ export const sidebarActions: TSidebarItem[] = [
     {
         icon: IconWorkbenchOutline,
         iconFill: IconWorkbench,
-        titleKey: 'workbench',
+        title: 'Workbench',
         path: '/',
     },
     // { icon: Grip, title: 'Overview', path: '/' },
     {
         icon: IconOnboardOutline,
         iconFill: IconOnboard,
-        titleKey: 'projectCenter',
-        path: '/project-center',
+        title: 'Project center',
+        path: '/project-center/priority',
     },
     // {
     //     icon: IconDocumentsOutline,

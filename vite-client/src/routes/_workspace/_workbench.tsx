@@ -1,35 +1,20 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { z } from 'zod'
-
 import { PageHeading } from '@/shared/components'
 import WorkbenchTableView from '@/shared/components/workbench/WorkbenchTableView'
-import { ProjectCenterTabEnum } from '@/shared/enums'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
 import { jobsListOptions } from '../../lib/queries'
+import AppLoading from '../../shared/components/app/AppLoading'
 
+const DEFAULT_SORT = 'displayName:asc'
 export const workbenchParamsSchema = z.object({
-    sort: z
-        .union([z.string(), z.array(z.string())])
-        .optional()
-        .default(['displayName:asc'])
-        .transform((val) => {
-            if (Array.isArray(val)) return val
-            return val ? val.split(',') : ['displayName:asc']
-        }),
-
-    tab: z
-        .nativeEnum(ProjectCenterTabEnum)
-        .optional()
-        .default(ProjectCenterTabEnum.ACTIVE),
+    sort: z.string().optional().catch(DEFAULT_SORT).default(DEFAULT_SORT),
 
     search: z.string().trim().optional(),
 
-    hideFinishItems: z.enum(['0', '1']).optional().default('0'),
+    limit: z.coerce.number().int().min(1).max(100).catch(10).default(10),
 
-    // Pagination (Using coerce to handle URL query string numbers)
-    limit: z.coerce.number().int().min(1).max(100).optional().default(10),
-
-    page: z.coerce.number().int().min(1).optional().default(1),
+    page: z.coerce.number().int().min(1).catch(1).default(1),
 })
 
 export type TWorkbenchSearch = z.infer<typeof workbenchParamsSchema>
@@ -37,27 +22,82 @@ export type TWorkbenchSearch = z.infer<typeof workbenchParamsSchema>
 export const Route = createFileRoute('/_workspace/_workbench')({
     validateSearch: (search) => workbenchParamsSchema.parse(search),
     loaderDeps: ({ search }) => ({ search }),
+    pendingComponent: () => <AppLoading />,
     loader: ({ context, deps }) => {
-        // Prefetch dữ liệu
-        return context.queryClient.ensureQueryData(jobsListOptions(deps.search))
+        return context.queryClient.ensureQueryData(
+            jobsListOptions({
+                ...deps.search,
+                hideFinishItems: '1',
+            })
+        )
     },
+
     component: WorkbenchPage,
 })
 
 export function WorkbenchPage() {
-    // 1. Lấy Search Params (Đã được validate & type-safe)
     const search = Route.useSearch()
+    const navigate = Route.useNavigate()
 
-    // 2. Tạo Query Options từ search params
-    const options = jobsListOptions(search)
+    const options = jobsListOptions({
+        ...search,
+        hideFinishItems: '1',
+    })
 
-    // 3. Dùng useSuspenseQuery để lấy data
-    // Không cần check isLoading vì đã có
-    const { data } = useSuspenseQuery(options)
+    const { data, refetch, isPending } = useSuspenseQuery(options)
+
+    const handlePageChange = (newPage: number) => {
+        navigate({
+            // Bây giờ 'old' sẽ có kiểu dữ liệu chính xác thay vì 'never'
+            search: (old: TWorkbenchSearch) => {
+                return {
+                    ...old,
+                    page: newPage,
+                } as never
+            },
+            replace: true,
+        })
+    }
+    const handleSortChange = (newSort: string | null) => {
+        navigate({
+            search: (old: TWorkbenchSearch) => {
+                return {
+                    ...old,
+                    sort: newSort || undefined, // Nếu null thì xóa sort (về default)
+                    page: 1, // Reset về trang 1
+                } as never
+            },
+            replace: true,
+        })
+    }
+    const handleLimitChange = (newLimit: number) => {
+        navigate({
+            search: (old: TWorkbenchSearch) => {
+                return {
+                    ...old,
+                    limit: newLimit,
+                    page: 1, // Reset về trang 1
+                } as never
+            },
+            replace: true,
+        })
+    }
 
     return (
         <WorkbenchLayout>
-            <WorkbenchTableView data={data.jobs} />
+            <WorkbenchTableView
+                data={data.jobs}
+                onRefresh={refetch}
+                onSortChange={handleSortChange}
+                isDataLoading={isPending}
+                onPageChange={handlePageChange}
+                onLimitChange={handleLimitChange}
+                pagination={{
+                    limit: search.limit,
+                    page: search.page,
+                    totalPages: data.paginate?.totalPages ?? 1,
+                }}
+            />
         </WorkbenchLayout>
     )
 }

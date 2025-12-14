@@ -1,4 +1,10 @@
 import {
+    useDeleteJobMutation,
+    useProfile,
+    useUpdateJobMutation,
+} from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+import {
     addToast,
     Button,
     Dropdown,
@@ -14,25 +20,17 @@ import {
     CircleDollarSign,
     EllipsisVerticalIcon,
     PinIcon,
+    PinOff,
     SquareArrowOutUpRight,
     Trash,
     UserPlus,
 } from 'lucide-react'
-
-import { type ApiError } from '@/lib/axios'
-import {
-    useDeleteJobMutation,
-    useProfile,
-    useUpdateJobMutation,
-} from '@/lib/queries'
-import type { TJob } from '@/shared/types'
-
 import { INTERNAL_URLS } from '../../../lib'
+import { queryClient } from '../../../main'
 import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import ConfirmModal from '../ui/confirm-modal'
-import { queryClient } from '../../../main'
 
 type WorkbenchTableQuickActionsProps = {
     data: TJob
@@ -41,8 +39,44 @@ export function WorkbenchTableQuickActions({
     data,
 }: WorkbenchTableQuickActionsProps) {
     const { isAdmin, isAccounting } = useProfile()
-    const { mutateAsync: updateJobMutation, isPending: isUpdating } =
-        useUpdateJobMutation()
+
+    const jobPinned = data.isPinned
+
+    const markAsPaidMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Mark as paid successfully',
+            description: `#${res.result?.no ?? data?.no} has been marked as paid`,
+            color: 'success',
+        })
+        queryClient.invalidateQueries({
+            queryKey: ['jobs'],
+        })
+    })
+
+    const pinJobMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Pin job successfully',
+            description: `#${res.result?.no ?? data?.no} has been pinned`,
+            color: 'success',
+            icon: <PinIcon />,
+        })
+        queryClient.invalidateQueries({
+            queryKey: ['jobs'],
+        })
+    })
+
+    const unpinJobMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Unpinned job successfully',
+            description: `#${res.result?.no ?? data?.no} has been unpinned`,
+            color: 'success',
+            icon: <PinOff />,
+        })
+        queryClient.invalidateQueries({
+            queryKey: ['jobs'],
+        })
+    })
+
     const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
         useDeleteJobMutation()
 
@@ -105,7 +139,7 @@ export function WorkbenchTableQuickActions({
 
     const handleMarkAsPaid = async () => {
         if (data?.id) {
-            await updateJobMutation(
+            await markAsPaidMutation.mutateAsync(
                 {
                     jobId: data?.id,
                     data: {
@@ -113,24 +147,40 @@ export function WorkbenchTableQuickActions({
                     },
                 },
                 {
-                    onSuccess: (res) => {
-                        addToast({
-                            title: 'Mark as paid successfully',
-                            description: `#${res.data.result?.no ?? data?.no} has been marked as paid`,
-                            color: 'success',
-                        })
-                        queryClient.invalidateQueries({
-                            queryKey: ['jobs'],
-                        })
+                    onSuccess: () => {
+                        onCloseMAPModal()
+                    },
+                }
+            )
+        }
+    }
+
+    const handlePinJob = async () => {
+        if (data.isPinned) {
+            await unpinJobMutation.mutateAsync(
+                {
+                    jobId: data.id,
+                    data: {
+                        isPinned: false,
+                    },
+                },
+                {
+                    onSuccess: () => {
                         onCloseModal()
                     },
-                    onError(error) {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: 'Failed',
-                            description: err.message,
-                            color: 'danger',
-                        })
+                }
+            )
+        } else {
+            await pinJobMutation.mutateAsync(
+                {
+                    jobId: data?.id,
+                    data: {
+                        isPinned: true,
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        onCloseModal()
                     },
                 }
             )
@@ -166,7 +216,7 @@ export function WorkbenchTableQuickActions({
                     content={`Are you sure you want to mark job ${data.no} as paid? This action will confirm that the payment has been received.`}
                     variant="warning"
                     confirmLabel="Yes"
-                    isLoading={isUpdating}
+                    isLoading={markAsPaidMutation.isPending}
                 />
             )}
 
@@ -216,14 +266,21 @@ export function WorkbenchTableQuickActions({
                         <DropdownItem
                             key="pin"
                             startContent={
-                                <PinIcon
-                                    size={14}
-                                    className="text-text-subdued rotate-45"
-                                />
+                                jobPinned ? (
+                                    <PinOff
+                                        size={14}
+                                        className="text-text-subdued rotate-45"
+                                    />
+                                ) : (
+                                    <PinIcon
+                                        size={14}
+                                        className="text-text-subdued rotate-45"
+                                    />
+                                )
                             }
-                            onPress={() => alert('Feature under development')}
+                            onPress={handlePinJob}
                         >
-                            Pin Job
+                            {jobPinned ? 'Unpin' : 'Pin'}
                         </DropdownItem>
                         <DropdownItem
                             key="assignReassign"

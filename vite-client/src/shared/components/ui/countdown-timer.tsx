@@ -1,7 +1,7 @@
 'use client'
 
 import dayjs, { Dayjs } from 'dayjs'
-import React, { useEffect, useMemo,useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 // --- Types ---
 export type TimeUnit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
@@ -181,7 +181,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 {unitsToShow.map((unit) => (
                     <div
                         key={unit}
-                        className={`flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 p-2 rounded-md shadow-sm min-w-[60px] ${itemClass}`}
+                        className={`flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 p-2 rounded-md shadow-sm min-w-15 ${itemClass}`}
                     >
                         <span className="text-2xl font-bold text-gray-800 dark:text-gray-100 leading-none">
                             {String(timeLeft[unit]).padStart(2, '0')}

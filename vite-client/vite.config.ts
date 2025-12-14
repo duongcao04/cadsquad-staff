@@ -10,6 +10,7 @@ export default defineConfig({
         port: 3000, // Thay đổi port
         host: true, // Mở port ra mạng local nếu cần truy cập từ thiết bị khác
         strictPort: true, // Buộc Vite phải dùng đúng port này, nếu không sẽ báo lỗi
+        allowedHosts: ['nonresiliently-sociologistic-liliana.ngrok-free.dev'],
     },
     plugins: [
         tailwindcss(),
@@ -26,14 +27,14 @@ export default defineConfig({
         },
     },
     build: {
-    rollupOptions: {
-      onwarn(warning, warn) {
-        // Bỏ qua cảnh báo về "use client"
-        if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
-          return
-        }
-        warn(warning)
-      },
+        rollupOptions: {
+            onwarn(warning, warn) {
+                // Bỏ qua cảnh báo về "use client"
+                if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
+                    return
+                }
+                warn(warning)
+            },
+        },
     },
-  },
 })

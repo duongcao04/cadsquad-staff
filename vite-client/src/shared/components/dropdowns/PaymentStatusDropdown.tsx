@@ -1,17 +1,35 @@
-import { Button, Popover, PopoverContent, PopoverTrigger } from '@heroui/react'
+import {
+    addToast,
+    Button,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@heroui/react'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
-
 import { darkenHexColor, lightenHexColor, PAID_STATUS_COLOR } from '@/lib/utils'
 import type { TJob } from '@/shared/types'
-
+import { useProfile, useUpdateJobMutation } from '@/lib'
 import { PaidChip } from '../chips/PaidChip'
+import { queryClient } from '../../../main'
 
 type Props = {
     jobData: TJob
 }
 export default function PaymentStatusDropdown({ jobData }: Props) {
+    const { isAdmin, isAccounting } = useProfile()
     const { resolvedTheme } = useTheme()
+
+    const updateJobMutation = useUpdateJobMutation((res) => {
+        queryClient.invalidateQueries({
+            queryKey: ['jobs'],
+        })
+        addToast({
+            title: 'Mark as paid successfully',
+            description: `#${res.result?.no} is paid successfully`,
+            color: 'success',
+        })
+    })
 
     const getBackgroundColor = (statusTitle: 'paid' | 'unpaid') => {
         return resolvedTheme === 'light'
@@ -29,9 +47,22 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
               )
     }
 
+    const handleMarkAsPaid = async () => {
+        if (jobData?.id) {
+            await updateJobMutation.mutateAsync({
+                jobId: jobData?.id,
+                data: {
+                    isPaid: true,
+                },
+            })
+        }
+    }
+
     const statusTitle = jobData.isPaid ? 'paid' : 'unpaid'
 
     const changeStatusTitle = !jobData.isPaid ? 'paid' : 'unpaid'
+
+    const canChangeStatus = (isAdmin || isAccounting) && !jobData.isPaid
 
     return (
         <Popover
@@ -46,7 +77,25 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
             showArrow={true}
         >
             <PopoverTrigger className="opacity-100">
-                <button className="cursor-pointer">
+                {canChangeStatus ? (
+                    <button className="cursor-pointer">
+                        <PaidChip
+                            status={statusTitle}
+                            classNames={{
+                                base: '!w-[100px]',
+                                content: '!w-[100px] text-center',
+                            }}
+                            childrenRender={(paidStatus) => {
+                                return (
+                                    <div className="flex items-center justify-between gap-2">
+                                        <p>{paidStatus.title}</p>
+                                        <ChevronDown size={14} />
+                                    </div>
+                                )
+                            }}
+                        />
+                    </button>
+                ) : (
                     <PaidChip
                         status={statusTitle}
                         classNames={{
@@ -57,12 +106,11 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
                             return (
                                 <div className="flex items-center justify-between gap-2">
                                     <p>{paidStatus.title}</p>
-                                    <ChevronDown size={14} />
                                 </div>
                             )
                         }}
                     />
-                </button>
+                )}
             </PopoverTrigger>
             <PopoverContent aria-label="Change payment status action">
                 <div className="size-full space-y-2.5">
@@ -71,6 +119,16 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
                         style={{
                             backgroundColor:
                                 getBackgroundColor(changeStatusTitle),
+                        }}
+                        onPress={() => {
+                            if (!jobData.isPaid) {
+                                handleMarkAsPaid()
+                            } else {
+                                addToast({
+                                    title: 'Job is already paid',
+                                    color: 'danger',
+                                })
+                            }
                         }}
                     >
                         <div className="flex items-center justify-start gap-2">

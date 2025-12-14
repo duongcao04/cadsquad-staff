@@ -190,7 +190,7 @@ export const useChangeStatusMutation = (
         },
         onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: jobsListOptions().queryKey,
+                queryKey: ['jobs'],
             })
             if (res.result?.no) {
                 queryClient.invalidateQueries({
@@ -212,7 +212,9 @@ export const useChangeStatusMutation = (
     })
 }
 
-export const useRescheduleMutation = () => {
+export const useRescheduleMutation = (
+    onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
+) => {
     return useMutation({
         mutationKey: ['reschedule', 'job'],
         mutationFn: ({
@@ -226,7 +228,11 @@ export const useRescheduleMutation = () => {
             return jobApi.reschedule(jobId, data)
         },
         onSuccess: (res) => {
-            addToast({ title: res.message, color: 'success' })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({ title: res.message, color: 'success' })
+            }
             queryClient.invalidateQueries({ queryKey: ['jobs'] })
             queryClient.invalidateQueries({
                 queryKey: ['jobs', 'no', res.result?.no],
@@ -273,7 +279,7 @@ export const useAssignMemberMutation = (
         },
         onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: jobsListOptions().queryKey,
+                queryKey: ['jobs'],
             })
             if (res.result?.no) {
                 queryClient.invalidateQueries({
@@ -314,7 +320,7 @@ export const useRemoveMemberMutation = (
         },
         onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: jobsListOptions().queryKey,
+                queryKey: ['jobs'],
             })
             if (res.result?.no) {
                 queryClient.invalidateQueries({

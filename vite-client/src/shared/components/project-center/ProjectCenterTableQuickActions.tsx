@@ -18,7 +18,6 @@ import {
     UserPlus,
 } from 'lucide-react'
 
-import { type ApiError } from '@/lib/axios'
 import {
     useDeleteJobMutation,
     useProfile,
@@ -28,9 +27,9 @@ import { ConfirmDeleteModal } from '@/shared/components'
 import type { TJob } from '@/shared/types'
 
 import { INTERNAL_URLS } from '../../../lib'
+import { queryClient } from '../../../main'
 import AssignMemberModal from './AssignMemberModal'
 import UpdateCostModal from './UpdateCostModal'
-import { queryClient } from '../../../main'
 
 type ProjectCenterTableQuickActionsProps = {
     data: TJob
@@ -39,8 +38,29 @@ export function ProjectCenterTableQuickActions({
     data,
 }: ProjectCenterTableQuickActionsProps) {
     const { isAdmin, isAccounting } = useProfile()
-    const { mutateAsync: updateJobMutation, isPending: isUpdating } =
-        useUpdateJobMutation()
+
+    const markAsPaidMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Mark as paid successfully',
+            description: `#${res.result?.no ?? data?.no} has been marked as paid`,
+            color: 'success',
+        })
+        queryClient.invalidateQueries({
+            queryKey: ['jobs'],
+        })
+    })
+
+    const pinJobMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Pin job successfully',
+            description: `#${res.result?.no ?? data?.no} has been pinned`,
+            color: 'success',
+        })
+        queryClient.invalidateQueries({
+            queryKey: ['jobs'],
+        })
+    })
+
     const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
         useDeleteJobMutation()
 
@@ -96,7 +116,7 @@ export function ProjectCenterTableQuickActions({
 
     const handleMarkAsPaid = async () => {
         if (data?.id) {
-            await updateJobMutation(
+            await markAsPaidMutation.mutateAsync(
                 {
                     jobId: data?.id,
                     data: {
@@ -104,24 +124,8 @@ export function ProjectCenterTableQuickActions({
                     },
                 },
                 {
-                    onSuccess: (res) => {
-                        addToast({
-                            title: 'Mark as paid successfully',
-                            description: `#${res.data.result?.no ?? data?.no} is paid successfully`,
-                            color: 'success',
-                        })
-                        queryClient.invalidateQueries({
-                            queryKey: ['jobs'],
-                        })
-                        onCloseModal()
-                    },
-                    onError(error) {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: 'Mark as paid failed',
-                            description: err.message,
-                            color: 'danger',
-                        })
+                    onSuccess: () => {
+                        onCloseMAPModal()
                     },
                 }
             )
@@ -129,35 +133,27 @@ export function ProjectCenterTableQuickActions({
     }
 
     const handlePinJob = async () => {
-        if (data?.id) {
-            await updateJobMutation(
-                {
-                    jobId: data?.id,
-                    data: {
-                        isPinned: true,
+        if (data.isPinned) {
+            addToast({
+                title: `Job ${data.no} already pinned`,
+                color: 'danger',
+            })
+        } else {
+            if (data?.id) {
+                await pinJobMutation.mutateAsync(
+                    {
+                        jobId: data?.id,
+                        data: {
+                            isPinned: true,
+                        },
                     },
-                },
-                {
-                    onSuccess: () => {
-                        addToast({
-                            title: 'Pin job thành công',
-                            color: 'success',
-                        })
-                        queryClient.invalidateQueries({
-                            queryKey: ['jobs'],
-                        })
-                        onCloseModal()
-                    },
-                    onError(error) {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: 'Pin job failed',
-                            description: err.message,
-                            color: 'danger',
-                        })
-                    },
-                }
-            )
+                    {
+                        onSuccess: () => {
+                            onCloseModal()
+                        },
+                    }
+                )
+            }
         }
     }
 
@@ -191,7 +187,7 @@ export function ProjectCenterTableQuickActions({
                     title={`Mark #${data.no} as paid`}
                     description={`Are you sure you want to mark #${data.no} as paid? This action cannot be undone.`}
                     confirmText="Yes"
-                    isLoading={isUpdating}
+                    isLoading={markAsPaidMutation.isPending}
                     style={{
                         zIndex: 9999999999,
                     }}

@@ -79,7 +79,7 @@ const SidebarItem = ({
             <Link
                 to={data.path}
                 className="grid grid-cols-[16px_1fr] place-items-center"
-                title={data.titleKey}
+                title={data.title}
             >
                 <div className="w-4 flex items-center">
                     <MotionDiv
@@ -115,7 +115,7 @@ const SidebarItem = ({
                                 isActivated ? 'font-semibold text-primary!' : ''
                             } text-nowrap overflow-hidden py-2 pr-2 pl-0.5`}
                         >
-                            {data.titleKey}
+                            {data.title}
                         </MotionP>
                     )}
                 </MotionButton>

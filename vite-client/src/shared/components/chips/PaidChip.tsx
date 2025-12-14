@@ -23,17 +23,17 @@ export function PaidChip({ status, classNames, props, childrenRender }: Props) {
     const backgroundColor =
         resolvedTheme === 'light'
             ? lightenHexColor(
-                  PAID_STATUS_COLOR[status]?.hexColor
-                      ? PAID_STATUS_COLOR[status].hexColor
-                      : '#ffffff',
-                  90
-              )
+                PAID_STATUS_COLOR[status]?.hexColor
+                    ? PAID_STATUS_COLOR[status].hexColor
+                    : '#ffffff',
+                90
+            )
             : darkenHexColor(
-                  PAID_STATUS_COLOR[status]?.hexColor
-                      ? PAID_STATUS_COLOR[status].hexColor
-                      : '#000000',
-                  70
-              )
+                PAID_STATUS_COLOR[status]?.hexColor
+                    ? PAID_STATUS_COLOR[status].hexColor
+                    : '#000000',
+                70
+            )
 
     return (
         <Chip

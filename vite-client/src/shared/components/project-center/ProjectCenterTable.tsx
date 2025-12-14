@@ -10,7 +10,6 @@ import {
     Select,
     type Selection,
     SelectItem,
-    type SharedSelection,
     Skeleton,
     Spinner,
     Switch,
@@ -37,7 +36,6 @@ import {
     X,
 } from 'lucide-react'
 import React from 'react'
-
 import { dateFormatter } from '@/lib/dayjs'
 import { useJobStatuses } from '@/lib/queries'
 import {
@@ -46,14 +44,13 @@ import {
     IMAGES,
     INTERNAL_URLS,
     JOB_COLUMNS,
+    TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
-import { type TJobFiltersInput } from '@/lib/validationSchemas'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { useSearchParam } from '@/shared/hooks'
 import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
-
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
-import { pCenterTableStore, projectCenterStore } from '../../stores'
+import { pCenterTableStore } from '../../stores'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
 import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
@@ -70,13 +67,8 @@ import {
 import { HeroTooltip } from '../ui/hero-tooltip'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
-
-const ROW_PER_PAGE_OPTIONS = [
-    { displayName: '5 items', value: 5 },
-    { displayName: '10 items', value: 10 },
-    { displayName: '15 items', value: 15 },
-    { displayName: '20 items', value: 20 },
-]
+import { ProjectCenterTableViewProps } from './ProjectCenterTableView'
+import JobFinishChip from '../chips/JobFinishChip'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
@@ -117,21 +109,10 @@ export const getDueDateRange = (key: string | undefined | null) => {
 type ProjectCenterOptions = {
     fillContainerHeight?: boolean
 }
-type ProjectCenterTableProps = {
-    data: TJob[]
-    isLoading?: boolean
-    onRefresh?: () => void
-    currentPage?: number
-    totalPages?: number
+type ProjectCenterTableProps = ProjectCenterTableViewProps & {
     visibleColumns: 'all' | JobColumnKey[]
     options?: ProjectCenterOptions
     showFinishItems: boolean
-    searchKeywords?: string
-    filters: TJobFiltersInput
-    onFiltersChange?: (filters: TJobFiltersInput) => void
-    onSearchKeywordsChange?: (searchKeywords: string | undefined) => void
-    sortString?: string
-    onSortStringChange: (sortString: string) => void
     onDownloadCsv: () => void
     onShowFinishItemsChange?: (state: boolean) => void
     openFilterDrawer: () => void
@@ -141,14 +122,13 @@ type ProjectCenterTableProps = {
 }
 export default function ProjectCenterTable({
     data,
-    isLoading = false,
+    isLoadingData = false,
     visibleColumns,
     onRefresh,
-    currentPage = 1,
-    totalPages = 1,
-    sortString,
-    onSortStringChange,
+    sort,
+    onSortChange,
     searchKeywords,
+    pagination,
     onSearchKeywordsChange,
     filters,
     onFiltersChange,
@@ -160,6 +140,8 @@ export default function ProjectCenterTable({
     openViewColDrawer,
     openJobDetailDrawer,
     onAssignMember,
+    onLimitChange,
+    onPageChange,
 }: ProjectCenterTableProps) {
     const { data: jobStatuses } = useJobStatuses()
 
@@ -173,13 +155,6 @@ export default function ProjectCenterTable({
             contextItem: value,
         }))
     }
-
-    const pagination = useStore(projectCenterStore, (state) => ({
-        rowPerPage: state.limit,
-        page: state.page,
-        totalPages: 10,
-    }))
-
     const selectedKeys = useStore(
         pCenterTableStore,
         (state) => state.selectedKeys
@@ -190,20 +165,6 @@ export default function ProjectCenterTable({
             selectedKeys:
                 keys === 'all' ? 'all' : new Set(keys as unknown as string[]),
         }))
-    }
-
-    const onRowPerPageChange = (keys: SharedSelection) => {
-        const value = Array.from(keys)[0]
-        projectCenterStore.setState((state) => ({
-            ...state,
-            limit: parseInt(value.toString()),
-        }))
-        setSearchParams({ l: value.toString() })
-    }
-
-    const onPageChange = (page: number) => {
-        projectCenterStore.setState((state) => ({ ...state, page }))
-        setSearchParams({ p: page.toString() })
     }
 
     const headerColumns = React.useMemo(() => {
@@ -240,9 +201,9 @@ export default function ProjectCenterTable({
                                 </div>
                             }
                             value={searchKeywords}
-                            onClear={() => onSearchKeywordsChange?.(undefined)}
+                            onClear={() => onSearchKeywordsChange('')}
                             onValueChange={(value) =>
-                                onSearchKeywordsChange?.(value)
+                                onSearchKeywordsChange(value)
                             }
                         />
 
@@ -379,7 +340,7 @@ export default function ProjectCenterTable({
                                         >
                                             <div className="w-full flex items-center justify-between gap-3">
                                                 <p>Hide finish items</p>
-                                                {isLoading ? (
+                                                {isLoadingData ? (
                                                     <Spinner size="sm" />
                                                 ) : (
                                                     <Switch
@@ -542,7 +503,7 @@ export default function ProjectCenterTable({
         hasSearchFilter,
         selectedKeys,
         showFinishItems,
-        isLoading,
+        isLoadingData,
         searchKeywords,
     ])
 
@@ -551,17 +512,20 @@ export default function ProjectCenterTable({
         return (
             <div className="py-2 px-2 flex justify-between items-center">
                 <Select
-                    className="w-30"
-                    placeholder="Select rows per page"
+                    className="w-40"
+                    label="Rows per page"
                     variant="bordered"
                     classNames={{
                         trigger: 'shadow-SM',
                     }}
+                    size="sm"
                     selectionMode="single"
-                    selectedKeys={[pagination.rowPerPage.toString()]}
-                    onSelectionChange={onRowPerPageChange}
+                    defaultSelectedKeys={[pagination.limit.toString()]}
+                    onSelectionChange={(keys) => {
+                        onLimitChange(Number(keys.currentKey))
+                    }}
                 >
-                    {ROW_PER_PAGE_OPTIONS.map((opt) => (
+                    {TABLE_ROW_PER_PAGE_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value}>
                             {opt.displayName}
                         </SelectItem>
@@ -572,8 +536,8 @@ export default function ProjectCenterTable({
                     showControls
                     showShadow
                     color="primary"
-                    page={currentPage}
-                    total={totalPages}
+                    page={pagination.page}
+                    total={pagination.totalPages}
                     onChange={onPageChange}
                 />
                 <div className="hidden sm:flex w-[30%] justify-end gap-2">
@@ -668,19 +632,33 @@ export default function ProjectCenterTable({
                         </div>
                     )
                 case 'dueAt': {
-                    const isPaused =
+                    const isCompleted =
                         data.status.systemType ===
-                            JobStatusSystemTypeEnum.TERMINATED ||
+                        JobStatusSystemTypeEnum.COMPLETED
+                    const isFinish =
                         data.status.systemType ===
-                            JobStatusSystemTypeEnum.COMPLETED
+                        JobStatusSystemTypeEnum.TERMINATED
+
+                    const isPaused = isCompleted || isFinish
                     const targetDate = dayjs(data.dueAt)
+
                     return (
-                        <CountdownTimer
-                            targetDate={targetDate}
-                            hiddenUnits={['second', 'year']}
-                            paused={isPaused}
-                            className="text-right!"
-                        />
+                        <div className="w-full">
+                            {isPaused ? (
+                                <JobFinishChip
+                                    status={
+                                        isCompleted ? 'completed' : 'finish'
+                                    }
+                                />
+                            ) : (
+                                <CountdownTimer
+                                    targetDate={targetDate}
+                                    hiddenUnits={['second', 'year']}
+                                    paused={isPaused}
+                                    className="text-right!"
+                                />
+                            )}
+                        </div>
                     )
                 }
                 case 'attachmentUrls':
@@ -764,10 +742,10 @@ export default function ProjectCenterTable({
                         <p>-</p>
                     )
                 case 'completedAt':
-                    return data.completedAt ? (
-                        <span>{dateFormatter(data.completedAt)}</span>
-                    ) : (
-                        <span className="text-text-subdued">-</span>
+                    return (
+                        data.completedAt && (
+                            <span>{dateFormatter(data.completedAt)}</span>
+                        )
                     )
                 case 'createdAt':
                     return data.createdAt ? (
@@ -835,8 +813,8 @@ export default function ProjectCenterTable({
             selectedKeys={selectedKeys}
             selectionMode="multiple"
             topContent={topContent}
-            sortString={sortString ?? undefined}
-            onSortStringChange={onSortStringChange}
+            sortString={sort ?? undefined}
+            onSortStringChange={onSortChange}
             BaseComponent={(found) => {
                 return (
                     <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
@@ -852,7 +830,7 @@ export default function ProjectCenterTable({
             // onSortChange={setSortDescriptor}'
             classNames={{
                 base: `${options.fillContainerHeight ? 'h-full' : ''}`,
-                table: !isLoading ? 'relative' : 'relative min-h-[480px]!',
+                table: !isLoadingData ? 'relative' : 'relative min-h-[480px]!',
             }}
         >
             <HeroTableHeader columns={headerColumns}>
@@ -871,11 +849,11 @@ export default function ProjectCenterTable({
             </HeroTableHeader>
             <HeroTableBody
                 emptyContent={'No items found'}
-                items={isLoading ? [] : data}
+                items={isLoadingData ? [] : data}
                 loadingContent={
                     <div className="flex flex-col gap-3 w-full mt-16">
                         {Array.from({
-                            length: pagination.rowPerPage || 10,
+                            length: pagination.limit || 10,
                         }).map((_, index) => (
                             <Skeleton
                                 key={index}
@@ -884,7 +862,7 @@ export default function ProjectCenterTable({
                         ))}
                     </div>
                 }
-                isLoading={isLoading}
+                isLoading={isLoadingData}
             >
                 {(item) => (
                     <HeroTableRow

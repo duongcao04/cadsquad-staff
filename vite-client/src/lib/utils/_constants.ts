@@ -362,10 +362,10 @@ export const USER_COLUMNS = [
 ]
 
 export const TABLE_ROW_PER_PAGE_OPTIONS = [
-    { displayName: '5 items', value: 5 },
-    { displayName: '10 items', value: 10 },
-    { displayName: '15 items', value: 15 },
-    { displayName: '20 items', value: 20 },
+    { displayName: '5 items', value: 5, key: '5items' },
+    { displayName: '10 items', value: 10, key: '10items' },
+    { displayName: '15 items', value: 15, key: '15items' },
+    { displayName: '20 items', value: 20, key: '20items' },
 ]
 
 export const APP_THEMES = [

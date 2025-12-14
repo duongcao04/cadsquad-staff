@@ -199,7 +199,7 @@ export class JobService {
                     // Custom Toggle: Hide Finished Items
                     // (Standardize string '0'/'1' to boolean check)
                     hideFinishItems === '1'
-                        ? { status: { is: { systemType: 'TERMINATED' } } }
+                        ? { status: { isNot: { systemType: 'TERMINATED' } } }
                         : {},
 
                     // Apply Built Filters (Client, Status, Date Ranges, etc.)

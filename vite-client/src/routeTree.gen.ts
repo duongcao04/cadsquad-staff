@@ -18,11 +18,12 @@ import { Route as SettingsPassword_securityRouteImport } from './routes/settings
 import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
 import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
 import { Route as WorkspaceProfileRouteImport } from './routes/_workspace/profile'
+import { Route as WorkspaceJobsRouteImport } from './routes/_workspace/jobs'
 import { Route as WorkspaceWorkbenchRouteImport } from './routes/_workspace/_workbench'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
-import { Route as WorkspaceProjectCenterIndexRouteImport } from './routes/_workspace/project-center/index'
 import { Route as AdminMgmtTeamRouteImport } from './routes/admin/mgmt/team'
 import { Route as WorkspaceProjectCenterTabRouteImport } from './routes/_workspace/project-center/$tab'
+import { Route as WorkspaceJobsNoRouteImport } from './routes/_workspace/jobs/$no'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -68,6 +69,11 @@ const WorkspaceProfileRoute = WorkspaceProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => WorkspaceRoute,
 } as any)
+const WorkspaceJobsRoute = WorkspaceJobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceWorkbenchRoute = WorkspaceWorkbenchRouteImport.update({
   id: '/_workbench',
   getParentRoute: () => WorkspaceRoute,
@@ -77,12 +83,6 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
-const WorkspaceProjectCenterIndexRoute =
-  WorkspaceProjectCenterIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => WorkspaceProjectCenterRoute,
-  } as any)
 const AdminMgmtTeamRoute = AdminMgmtTeamRouteImport.update({
   id: '/mgmt/team',
   path: '/mgmt/team',
@@ -94,30 +94,38 @@ const WorkspaceProjectCenterTabRoute =
     path: '/$tab',
     getParentRoute: () => WorkspaceProjectCenterRoute,
   } as any)
+const WorkspaceJobsNoRoute = WorkspaceJobsNoRouteImport.update({
+  id: '/$no',
+  path: '/$no',
+  getParentRoute: () => WorkspaceJobsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
   '/login': typeof AuthLoginRoute
+  '/jobs': typeof WorkspaceJobsRouteWithChildren
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/password_security': typeof SettingsPassword_securityRoute
   '/settings/': typeof SettingsIndexRoute
+  '/jobs/$no': typeof WorkspaceJobsNoRoute
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin/mgmt/team': typeof AdminMgmtTeamRoute
-  '/project-center/': typeof WorkspaceProjectCenterIndexRoute
 }
 export interface FileRoutesByTo {
   '/admin': typeof AdminRouteWithChildren
   '/login': typeof AuthLoginRoute
+  '/jobs': typeof WorkspaceJobsRouteWithChildren
   '/profile': typeof WorkspaceProfileRoute
+  '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/password_security': typeof SettingsPassword_securityRoute
   '/settings': typeof SettingsIndexRoute
+  '/jobs/$no': typeof WorkspaceJobsNoRoute
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin/mgmt/team': typeof AdminMgmtTeamRoute
-  '/project-center': typeof WorkspaceProjectCenterIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,14 +135,15 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_workspace/_workbench': typeof WorkspaceWorkbenchRoute
+  '/_workspace/jobs': typeof WorkspaceJobsRouteWithChildren
   '/_workspace/profile': typeof WorkspaceProfileRoute
   '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/password_security': typeof SettingsPassword_securityRoute
   '/settings/': typeof SettingsIndexRoute
+  '/_workspace/jobs/$no': typeof WorkspaceJobsNoRoute
   '/_workspace/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin/mgmt/team': typeof AdminMgmtTeamRoute
-  '/_workspace/project-center/': typeof WorkspaceProjectCenterIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,25 +151,28 @@ export interface FileRouteTypes {
     | '/admin'
     | '/settings'
     | '/login'
+    | '/jobs'
     | '/profile'
     | '/project-center'
     | '/settings/appearance'
     | '/settings/password_security'
     | '/settings/'
+    | '/jobs/$no'
     | '/project-center/$tab'
     | '/admin/mgmt/team'
-    | '/project-center/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/admin'
     | '/login'
+    | '/jobs'
     | '/profile'
+    | '/project-center'
     | '/settings/appearance'
     | '/settings/password_security'
     | '/settings'
+    | '/jobs/$no'
     | '/project-center/$tab'
     | '/admin/mgmt/team'
-    | '/project-center'
   id:
     | '__root__'
     | '/_auth'
@@ -169,14 +181,15 @@ export interface FileRouteTypes {
     | '/settings'
     | '/_auth/login'
     | '/_workspace/_workbench'
+    | '/_workspace/jobs'
     | '/_workspace/profile'
     | '/_workspace/project-center'
     | '/settings/appearance'
     | '/settings/password_security'
     | '/settings/'
+    | '/_workspace/jobs/$no'
     | '/_workspace/project-center/$tab'
     | '/admin/mgmt/team'
-    | '/_workspace/project-center/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceProfileRouteImport
       parentRoute: typeof WorkspaceRoute
     }
+    '/_workspace/jobs': {
+      id: '/_workspace/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof WorkspaceJobsRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/_workspace/_workbench': {
       id: '/_workspace/_workbench'
       path: ''
@@ -264,13 +284,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
-    }
-    '/_workspace/project-center/': {
-      id: '/_workspace/project-center/'
-      path: '/'
-      fullPath: '/project-center/'
-      preLoaderRoute: typeof WorkspaceProjectCenterIndexRouteImport
-      parentRoute: typeof WorkspaceProjectCenterRoute
     }
     '/admin/mgmt/team': {
       id: '/admin/mgmt/team'
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceProjectCenterTabRouteImport
       parentRoute: typeof WorkspaceProjectCenterRoute
     }
+    '/_workspace/jobs/$no': {
+      id: '/_workspace/jobs/$no'
+      path: '/$no'
+      fullPath: '/jobs/$no'
+      preLoaderRoute: typeof WorkspaceJobsNoRouteImport
+      parentRoute: typeof WorkspaceJobsRoute
+    }
   }
 }
 
@@ -299,15 +319,25 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface WorkspaceJobsRouteChildren {
+  WorkspaceJobsNoRoute: typeof WorkspaceJobsNoRoute
+}
+
+const WorkspaceJobsRouteChildren: WorkspaceJobsRouteChildren = {
+  WorkspaceJobsNoRoute: WorkspaceJobsNoRoute,
+}
+
+const WorkspaceJobsRouteWithChildren = WorkspaceJobsRoute._addFileChildren(
+  WorkspaceJobsRouteChildren,
+)
+
 interface WorkspaceProjectCenterRouteChildren {
   WorkspaceProjectCenterTabRoute: typeof WorkspaceProjectCenterTabRoute
-  WorkspaceProjectCenterIndexRoute: typeof WorkspaceProjectCenterIndexRoute
 }
 
 const WorkspaceProjectCenterRouteChildren: WorkspaceProjectCenterRouteChildren =
   {
     WorkspaceProjectCenterTabRoute: WorkspaceProjectCenterTabRoute,
-    WorkspaceProjectCenterIndexRoute: WorkspaceProjectCenterIndexRoute,
   }
 
 const WorkspaceProjectCenterRouteWithChildren =
@@ -317,12 +347,14 @@ const WorkspaceProjectCenterRouteWithChildren =
 
 interface WorkspaceRouteChildren {
   WorkspaceWorkbenchRoute: typeof WorkspaceWorkbenchRoute
+  WorkspaceJobsRoute: typeof WorkspaceJobsRouteWithChildren
   WorkspaceProfileRoute: typeof WorkspaceProfileRoute
   WorkspaceProjectCenterRoute: typeof WorkspaceProjectCenterRouteWithChildren
 }
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceWorkbenchRoute: WorkspaceWorkbenchRoute,
+  WorkspaceJobsRoute: WorkspaceJobsRouteWithChildren,
   WorkspaceProfileRoute: WorkspaceProfileRoute,
   WorkspaceProjectCenterRoute: WorkspaceProjectCenterRouteWithChildren,
 }

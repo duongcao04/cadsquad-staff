@@ -1,117 +1,60 @@
-'use client'
-
-import { useDisclosure } from '@heroui/react'
-import { useStore } from '@tanstack/react-store'
-import { useDebounce } from 'hooks-ts'
-import lodash from 'lodash'
-import { useEffect, useState } from 'react'
-import { useLocalStorage } from 'usehooks-ts'
-
 import { excelApi } from '@/lib/api'
-import { useJobColumns, useJobs } from '@/lib/queries'
-import { safeArray, safeISODate, safeString } from '@/lib/query-string'
+import { useJobColumns } from '@/lib/queries'
 import { JOB_COLUMNS, STORAGE_KEYS } from '@/lib/utils'
 import { TDownloadExcelInput, TJobFiltersInput } from '@/lib/validationSchemas'
-
-import { ProjectCenterTabEnum } from '../../enums'
-import { useSearchParam } from '../../hooks'
-import { pCenterTableStore, projectCenterStore } from '../../stores'
-import { JobColumnKey } from '../../types'
+import { useDisclosure } from '@heroui/react'
+import { useStore } from '@tanstack/react-store'
+import lodash from 'lodash'
+import { useState } from 'react'
+import { useLocalStorage } from 'usehooks-ts'
+import { pCenterTableStore } from '../../stores'
+import { JobColumnKey, TJob } from '../../types'
 import JobDetailDrawer from '../job-detail/JobDetailDrawer'
 import AssignMemberModal from './AssignMemberModal'
 import { FilterDrawer } from './FilterDrawer'
 import ProjectCenterTable from './ProjectCenterTable'
 import { ViewColumnsDrawer } from './ViewColumnsDrawer'
 
-type ProjectCenterTableViewProps = {
-    tab: ProjectCenterTabEnum
+type Pagination = {
+    page: number
+    totalPages: number
+    limit: number
+    total: number
+}
+export type ProjectCenterTableViewProps = {
+    data: TJob[]
+    isLoadingData?: boolean
+    filters: TJobFiltersInput
+    onFiltersChange: (filters: TJobFiltersInput) => void
+    sort?: string
+    onSortChange: (sort: string) => void
+    searchKeywords?: string
+    onSearchKeywordsChange: (searchKeywords: string) => void
+    pagination: Pagination
+    onRefresh?: () => void
+    onLimitChange: (limit: number) => void
+    onPageChange: (page: number) => void
 }
 export default function ProjectCenterTableView({
-    tab = ProjectCenterTabEnum.PRIORITY,
+    data,
+    isLoadingData = false,
+    filters,
+    onFiltersChange,
+    sort,
+    searchKeywords,
+    onSortChange,
+    onSearchKeywordsChange,
+    onRefresh,
+    pagination,
+    onLimitChange,
+    onPageChange,
 }: ProjectCenterTableViewProps) {
-    const { getSearchParam, setSearchParams } = useSearchParam()
-
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
-
-    const [filters, setFilters] = useState<TJobFiltersInput>({
-        clientName: getSearchParam('clientName') || '',
-        status: safeArray(getSearchParam('status')),
-        type: safeArray(getSearchParam('type')),
-        assignee: safeArray(getSearchParam('assignee')),
-        paymentChannel: safeArray(getSearchParam('paymentChannel')),
-
-        createdAtFrom: safeISODate(getSearchParam('createdAtFrom')),
-        createdAtTo: safeISODate(getSearchParam('createdAtTo')),
-        dueAtFrom: safeISODate(getSearchParam('dueAtFrom')),
-        dueAtTo: safeISODate(getSearchParam('dueAtTo')),
-        completedAtFrom: safeISODate(getSearchParam('completedAtFrom')),
-        completedAtTo: safeISODate(getSearchParam('completedAtTo')),
-        finishedAtFrom: safeISODate(getSearchParam('finishedAtFrom')),
-        finishedAtTo: safeISODate(getSearchParam('finishedAtTo')),
-
-        incomeCostMin: safeString(getSearchParam('incomeCostMin')),
-        incomeCostMax: safeString(getSearchParam('incomeCostMax')),
-        staffCostMin: safeString(getSearchParam('staffCostMin')),
-        staffCostMax: safeString(getSearchParam('staffCostMax')),
-    })
-
-    // --- 1. SORTING (URL is Single Source of Truth) ---
-    // We read directly from the URL. No local state needed for sort.
-    // This ensures the back button works and we don't accidentally overwrite the URL.
-    const sortString = getSearchParam('sort') || undefined
-
-    const handleSortChange = (newSort: string) => {
-        setSearchParams({ sort: newSort })
-    }
-
-    // --- 2. SEARCH (Local State + Debounce -> URL) ---
-    // We initialize from URL so a refresh keeps the search.
-    // We keep local state so the Input field is responsive (no typing lag).
-    const [searchKeywords, setSearchKeywords] = useState<string | undefined>(
-        () => getSearchParam('k') || ''
-    )
-
-    // Debounce the LOCAL value (wait 500ms after typing stops)
-    const searchDebounced = useDebounce(searchKeywords, 500)
-
-    // Sync Debounced Value -> URL
-    useEffect(() => {
-        // Only update if the URL value is different to avoid redundant pushes
-        const currentUrlK = getSearchParam('k')
-        if (searchDebounced !== currentUrlK) {
-            setSearchParams({ k: searchDebounced || undefined }) // undefined removes the param
-        }
-    }, [searchDebounced, getSearchParam, setSearchParams])
 
     const [localShowFinishItems, setLocalShowFinishItems] = useLocalStorage(
         STORAGE_KEYS.projectCenterFinishItems,
         false
     )
-
-    const pagination = useStore(projectCenterStore, (state) => ({
-        rowPerPage: state.limit,
-        page: state.page,
-        totalPages: 10,
-    }))
-
-    const {
-        data: jobs,
-        isLoading: isJobLoadings,
-        paginate,
-        refetch: onRefresh,
-    } = useJobs({
-        // Paginate
-        tab: tab,
-        limit: pagination.rowPerPage,
-        page: pagination.page,
-        // Filters
-        status: filters.status,
-        dueAtFrom: filters.dueAtFrom,
-        dueAtTo: filters.dueAtTo,
-        search: searchDebounced ?? undefined,
-        sort: sortString ?? undefined,
-        hideFinishItems: localShowFinishItems ? '1' : '0',
-    })
 
     const { jobColumns: showColumns } = useJobColumns()
 
@@ -172,7 +115,7 @@ export default function ProjectCenterTableView({
                     header: col.displayName,
                     key: col.uid,
                 })),
-                data: jobs.map((item) => {
+                data: data.map((item) => {
                     return {
                         no: item.no,
                         displayName: item.displayName,
@@ -214,51 +157,56 @@ export default function ProjectCenterTableView({
 
     return (
         <>
-            <FilterDrawer
-                isOpen={isOpenFilterDrawer}
-                onClose={onCloseFilterDrawer}
-                filters={filters}
-                onFiltersChange={setFilters}
-            />
-            <ViewColumnsDrawer
-                isOpen={isOpenViewColDrawer}
-                onClose={onCloseViewColDrawer}
-            />
-            {viewDetail && (
+            {isOpenFilterDrawer && (
+                <FilterDrawer
+                    isOpen={isOpenFilterDrawer}
+                    onClose={onCloseFilterDrawer}
+                    filters={filters}
+                    onFiltersChange={onFiltersChange}
+                />
+            )}
+            {isOpenViewColDrawer && (
+                <ViewColumnsDrawer
+                    isOpen={isOpenViewColDrawer}
+                    onClose={onCloseViewColDrawer}
+                />
+            )}
+            {isOpenJobDetailDrawer && viewDetail && (
                 <JobDetailDrawer
                     isOpen={isOpenJobDetailDrawer}
                     onClose={onCloseJobDetailDrawer}
                     jobNo={viewDetail}
                 />
             )}
-            <AssignMemberModal
-                jobNo={assignMemberTo ?? ''}
-                isOpen={
-                    !lodash.isNull(assignMemberTo) && isOpenAssignMemberModal
-                }
-                onClose={onCloseAssignMemberModal}
-            />
+            {isOpenAssignMemberModal && !lodash.isNull(assignMemberTo) && (
+                <AssignMemberModal
+                    jobNo={assignMemberTo ?? ''}
+                    isOpen={isOpenAssignMemberModal}
+                    onClose={onCloseAssignMemberModal}
+                />
+            )}
 
             <ProjectCenterTable
-                data={jobs}
-                isLoading={isJobLoadings}
+                data={data}
+                isLoadingData={isLoadingData}
                 visibleColumns={showColumns}
                 showFinishItems={localShowFinishItems}
                 onRefresh={onRefresh}
-                sortString={sortString}
+                sort={sort}
                 onAssignMember={onAssignMember}
-                onSortStringChange={handleSortChange}
+                onSortChange={onSortChange}
                 searchKeywords={searchKeywords}
-                onSearchKeywordsChange={setSearchKeywords}
+                onSearchKeywordsChange={onSearchKeywordsChange}
                 onDownloadCsv={handleExport}
                 filters={filters}
-                currentPage={paginate?.page}
-                totalPages={paginate?.totalPages}
-                onFiltersChange={setFilters}
+                pagination={pagination}
+                onFiltersChange={onFiltersChange}
                 onShowFinishItemsChange={setLocalShowFinishItems}
                 openFilterDrawer={onOpenFilterDrawer}
                 openViewColDrawer={onOpenViewColDrawer}
                 openJobDetailDrawer={onOpenJobDetailDrawer}
+                onLimitChange={onLimitChange}
+                onPageChange={onPageChange}
             />
         </>
     )
