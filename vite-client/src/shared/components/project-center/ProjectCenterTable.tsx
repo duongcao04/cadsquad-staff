@@ -69,6 +69,7 @@ import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
 import { ProjectCenterTableViewProps } from './ProjectCenterTableView'
 import JobFinishChip from '../chips/JobFinishChip'
+import { optimizeCloudinary } from '../../../lib'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
@@ -144,8 +145,6 @@ export default function ProjectCenterTable({
     onPageChange,
 }: ProjectCenterTableProps) {
     const { data: jobStatuses } = useJobStatuses()
-
-    const { setSearchParams } = useSearchParam()
 
     const hasSearchFilter = Boolean(searchKeywords)
 
@@ -725,7 +724,7 @@ export default function ProjectCenterTable({
                                 {data.assignee.map((member) => (
                                     <Avatar
                                         key={member.id}
-                                        src={member.avatar}
+                                        src={optimizeCloudinary(member.avatar)}
                                     />
                                 ))}
                             </Avatar.Group>

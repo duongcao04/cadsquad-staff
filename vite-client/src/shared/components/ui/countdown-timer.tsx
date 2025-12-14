@@ -2,6 +2,7 @@
 
 import dayjs, { Dayjs } from 'dayjs'
 import React, { useEffect, useMemo, useState } from 'react'
+import { cn } from '../../../lib'
 
 // --- Types ---
 export type TimeUnit = 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second'
@@ -141,7 +142,11 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
     // Fallback khi hết giờ
     if (!timeLeft) {
-        return <div className={className}>{fallback}</div>
+        return (
+            <div className={cn('text-danger text-xs font-semibold', className)}>
+                {fallback}
+            </div>
+        )
     }
 
     // --- Logic Lọc Unit để hiển thị ---

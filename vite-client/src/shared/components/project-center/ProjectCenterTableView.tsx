@@ -1,12 +1,11 @@
 import { excelApi } from '@/lib/api'
 import { useJobColumns } from '@/lib/queries'
-import { JOB_COLUMNS, STORAGE_KEYS } from '@/lib/utils'
+import { JOB_COLUMNS } from '@/lib/utils'
 import { TDownloadExcelInput, TJobFiltersInput } from '@/lib/validationSchemas'
 import { useDisclosure } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import lodash from 'lodash'
 import { useState } from 'react'
-import { useLocalStorage } from 'usehooks-ts'
 import { pCenterTableStore } from '../../stores'
 import { JobColumnKey, TJob } from '../../types'
 import JobDetailDrawer from '../job-detail/JobDetailDrawer'
@@ -34,6 +33,8 @@ export type ProjectCenterTableViewProps = {
     onRefresh?: () => void
     onLimitChange: (limit: number) => void
     onPageChange: (page: number) => void
+    onShowFinishItemsChange: (state: boolean) => void
+    showFinishItems: boolean
 }
 export default function ProjectCenterTableView({
     data,
@@ -47,14 +48,11 @@ export default function ProjectCenterTableView({
     onRefresh,
     pagination,
     onLimitChange,
+    onShowFinishItemsChange,
     onPageChange,
+    showFinishItems,
 }: ProjectCenterTableViewProps) {
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
-
-    const [localShowFinishItems, setLocalShowFinishItems] = useLocalStorage(
-        STORAGE_KEYS.projectCenterFinishItems,
-        false
-    )
 
     const { jobColumns: showColumns } = useJobColumns()
 
@@ -190,7 +188,7 @@ export default function ProjectCenterTableView({
                 data={data}
                 isLoadingData={isLoadingData}
                 visibleColumns={showColumns}
-                showFinishItems={localShowFinishItems}
+                showFinishItems={showFinishItems}
                 onRefresh={onRefresh}
                 sort={sort}
                 onAssignMember={onAssignMember}
@@ -201,7 +199,7 @@ export default function ProjectCenterTableView({
                 filters={filters}
                 pagination={pagination}
                 onFiltersChange={onFiltersChange}
-                onShowFinishItemsChange={setLocalShowFinishItems}
+                onShowFinishItemsChange={onShowFinishItemsChange}
                 openFilterDrawer={onOpenFilterDrawer}
                 openViewColDrawer={onOpenViewColDrawer}
                 openJobDetailDrawer={onOpenJobDetailDrawer}

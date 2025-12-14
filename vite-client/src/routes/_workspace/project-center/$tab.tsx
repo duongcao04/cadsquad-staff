@@ -1,3 +1,4 @@
+import { STORAGE_KEYS } from '@/lib'
 import { jobsListOptions, useProfile } from '@/lib/queries'
 import ProjectCenterTableView from '@/shared/components/project-center/ProjectCenterTableView'
 import { ProjectCenterTabEnum } from '@/shared/enums'
@@ -12,6 +13,7 @@ import {
     Truck,
     Vote,
 } from 'lucide-react'
+import { useLocalStorage } from 'usehooks-ts'
 import { z } from 'zod'
 
 const DEFAULT_SORT = 'displayName:asc'
@@ -53,10 +55,19 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
 
     // Data Loading
     loader: ({ context, deps, params }) => {
+        let hideFinishItems: '1' | '0' = '1'
+        // 1. Check if we are in the browser
+        if (typeof window !== 'undefined') {
+            const storageValue = localStorage.getItem(
+                STORAGE_KEYS.projectCenterFinishItems
+            )
+            hideFinishItems = storageValue === 'true' ? '1' : '0'
+        }
         return context.queryClient.ensureQueryData(
             jobsListOptions({
                 ...deps.search,
                 tab: params.tab,
+                hideFinishItems: hideFinishItems,
             })
         )
     },
@@ -69,11 +80,18 @@ export function ProjectCenterPage() {
     const navigate = Route.useNavigate()
     const { tab } = Route.useParams()
 
-    // Query Data
-    const options = jobsListOptions({ ...search, tab })
-    const { data, refetch, isFetching } = useSuspenseQuery(options)
+    const [localShowFinishItems, setLocalShowFinishItems] = useLocalStorage(
+        STORAGE_KEYS.projectCenterFinishItems,
+        false
+    )
 
-    // --- HANDLERS (Đã fix Type Safe - Không cần 'as never') ---
+    // Query Data
+    const options = jobsListOptions({
+        ...search,
+        tab,
+        hideFinishItems: Boolean(localShowFinishItems) ? '1' : '0',
+    })
+    const { data, refetch, isFetching } = useSuspenseQuery(options)
 
     const handlePageChange = (newPage: number) => {
         navigate({
@@ -127,9 +145,6 @@ export function ProjectCenterPage() {
         })
     }
 
-    // --- RENDER ---
-
-    // Fallback pagination an toàn để tránh crash nếu API lỗi
     const pagination = {
         limit: data.paginate?.limit ?? 10,
         page: data.paginate?.page ?? 1,
@@ -139,11 +154,10 @@ export function ProjectCenterPage() {
 
     return (
         <div className="space-y-5">
-            <ProjectCenterTabs
-                onTabChange={handleTabChange}
-                defaultTab={tab} // Tab đã được validate từ Route, không cần cast
-            />
+            <ProjectCenterTabs onTabChange={handleTabChange} defaultTab={tab} />
             <ProjectCenterTableView
+                showFinishItems={localShowFinishItems}
+                onShowFinishItemsChange={setLocalShowFinishItems}
                 data={data.jobs}
                 pagination={pagination}
                 // State props
@@ -152,7 +166,7 @@ export function ProjectCenterPage() {
                 isLoadingData={isFetching}
                 // Actions
                 onRefresh={refetch}
-                onFiltersChange={() => {}} // Chưa implement logic filter object?
+                onFiltersChange={() => {}}
                 onPageChange={handlePageChange}
                 onSearchKeywordsChange={handleSearchChange}
                 onSortChange={handleSortChange}
