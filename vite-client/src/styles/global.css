@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+@import './foundation.css';
+@import './theme.css';
+@import './utility.css';
+@import "tw-animate-css";
+/*
+---break---
+*/
+@custom-variant dark (&:is(.dark *));
+
+/*
+** Import heroui
+*/
+@plugin '../lib/hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@font-face {
+    font-family: 'segoeui';
+    src: url('../fonts/SegoeUI.ttf') format('ttf');
+    /* Adjust the path and format */
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'inter';
+    src: url('../fonts/Inter.ttf') format('ttf');
+    /* Adjust the path and format */
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'saira';
+    src: url('../fonts/Saira.ttf') format('ttf');
+    /* Adjust the path and format */
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'quicksand';
+    src: url('../fonts/Quicksand.ttf') format('ttf');
+    /* Adjust the path and format */
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    color: var(--color-text-default) !important;
+    font-family: var(--font-segoeui), 'Inter', Arial, Helvetica, sans-serif;
+}
+
+a {
+    color: var(--color-text-default) !important;
+}

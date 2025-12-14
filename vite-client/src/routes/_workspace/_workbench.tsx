@@ -1,0 +1,119 @@
+import { PageHeading } from '@/shared/components'
+import WorkbenchTableView from '@/shared/components/workbench/WorkbenchTableView'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
+import { jobsListOptions } from '../../lib/queries'
+import AppLoading from '../../shared/components/app/AppLoading'
+
+const DEFAULT_SORT = 'displayName:asc'
+export const workbenchParamsSchema = z.object({
+    sort: z.string().optional().catch(DEFAULT_SORT).default(DEFAULT_SORT),
+
+    search: z.string().trim().optional(),
+
+    limit: z.coerce.number().int().min(1).max(100).catch(10).default(10),
+
+    page: z.coerce.number().int().min(1).catch(1).default(1),
+})
+
+export type TWorkbenchSearch = z.infer<typeof workbenchParamsSchema>
+
+export const Route = createFileRoute('/_workspace/_workbench')({
+    validateSearch: (search) => workbenchParamsSchema.parse(search),
+    loaderDeps: ({ search }) => ({ search }),
+    pendingComponent: () => <AppLoading />,
+    loader: ({ context, deps }) => {
+        return context.queryClient.ensureQueryData(
+            jobsListOptions({
+                ...deps.search,
+                hideFinishItems: '1',
+            })
+        )
+    },
+
+    component: WorkbenchPage,
+})
+
+export function WorkbenchPage() {
+    const search = Route.useSearch()
+    const navigate = Route.useNavigate()
+
+    const options = jobsListOptions({
+        ...search,
+        hideFinishItems: '1',
+    })
+
+    const { data, refetch, isPending } = useSuspenseQuery(options)
+
+    const handlePageChange = (newPage: number) => {
+        navigate({
+            // Bây giờ 'old' sẽ có kiểu dữ liệu chính xác thay vì 'never'
+            search: (old: TWorkbenchSearch) => {
+                return {
+                    ...old,
+                    page: newPage,
+                } as never
+            },
+            replace: true,
+        })
+    }
+    const handleSortChange = (newSort: string | null) => {
+        navigate({
+            search: (old: TWorkbenchSearch) => {
+                return {
+                    ...old,
+                    sort: newSort || undefined, // Nếu null thì xóa sort (về default)
+                    page: 1, // Reset về trang 1
+                } as never
+            },
+            replace: true,
+        })
+    }
+    const handleLimitChange = (newLimit: number) => {
+        navigate({
+            search: (old: TWorkbenchSearch) => {
+                return {
+                    ...old,
+                    limit: newLimit,
+                    page: 1, // Reset về trang 1
+                } as never
+            },
+            replace: true,
+        })
+    }
+
+    return (
+        <WorkbenchLayout>
+            <WorkbenchTableView
+                data={data.jobs}
+                onRefresh={refetch}
+                onSortChange={handleSortChange}
+                isDataLoading={isPending}
+                onPageChange={handlePageChange}
+                onLimitChange={handleLimitChange}
+                pagination={{
+                    limit: search.limit,
+                    page: search.page,
+                    totalPages: data.paginate?.totalPages ?? 1,
+                }}
+            />
+        </WorkbenchLayout>
+    )
+}
+
+function WorkbenchLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="bg-background h-full flex flex-col">
+            <div className="border-b border-border-default">
+                <PageHeading
+                    title="Workbench"
+                    classNames={{
+                        wrapper: '!py-3 pl-6 pr-3.5',
+                    }}
+                />
+            </div>
+            <div className="pl-5 pr-3.5 pt-5">{children}</div>
+        </div>
+    )
+}

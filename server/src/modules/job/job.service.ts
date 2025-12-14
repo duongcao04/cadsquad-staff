@@ -199,7 +199,7 @@ export class JobService {
                     // Custom Toggle: Hide Finished Items
                     // (Standardize string '0'/'1' to boolean check)
                     hideFinishItems === '1'
-                        ? { status: { is: { systemType: 'TERMINATED' } } }
+                        ? { status: { isNot: { systemType: 'TERMINATED' } } }
                         : {},
 
                     // Apply Built Filters (Client, Status, Date Ranges, etc.)
@@ -871,7 +871,7 @@ export class JobService {
                 }
 
                 // 2. Update job - remove the member
-                await tx.job.update({
+                const updated = await tx.job.update({
                     where: { id: jobId },
                     data: {
                         assignee: {
@@ -896,7 +896,7 @@ export class JobService {
                     },
                 })
 
-                return { id: jobId }
+                return { id: jobId, no: updated.no }
             })
         } catch (error) {
             throw new InternalServerErrorException('Remove member failed')
