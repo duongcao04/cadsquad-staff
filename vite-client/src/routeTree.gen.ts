@@ -9,11 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as WorkspaceRouteImport } from './routes/_workspace'
 import { Route as AuthRouteImport } from './routes/_auth'
+import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as SettingsPassword_securityRouteImport } from './routes/settings/password_security'
+import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
+import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
+import { Route as WorkspaceProfileRouteImport } from './routes/_workspace/profile'
 import { Route as WorkspaceWorkbenchRouteImport } from './routes/_workspace/_workbench'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as WorkspaceProjectCenterIndexRouteImport } from './routes/_workspace/project-center/index'
+import { Route as AdminMgmtTeamRouteImport } from './routes/admin/mgmt/team'
+import { Route as WorkspaceProjectCenterTabRouteImport } from './routes/_workspace/project-center/$tab'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkspaceRoute = WorkspaceRouteImport.update({
   id: '/_workspace',
   getParentRoute: () => rootRouteImport,
@@ -21,6 +41,32 @@ const WorkspaceRoute = WorkspaceRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsIndexRoute = SettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsPassword_securityRoute =
+  SettingsPassword_securityRouteImport.update({
+    id: '/password_security',
+    path: '/password_security',
+    getParentRoute: () => SettingsRoute,
+  } as any)
+const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
+  id: '/appearance',
+  path: '/appearance',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const WorkspaceProjectCenterRoute = WorkspaceProjectCenterRouteImport.update({
+  id: '/project-center',
+  path: '/project-center',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceProfileRoute = WorkspaceProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceWorkbenchRoute = WorkspaceWorkbenchRouteImport.update({
   id: '/_workbench',
@@ -31,40 +77,131 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => AuthRoute,
 } as any)
+const WorkspaceProjectCenterIndexRoute =
+  WorkspaceProjectCenterIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => WorkspaceProjectCenterRoute,
+  } as any)
+const AdminMgmtTeamRoute = AdminMgmtTeamRouteImport.update({
+  id: '/mgmt/team',
+  path: '/mgmt/team',
+  getParentRoute: () => AdminRoute,
+} as any)
+const WorkspaceProjectCenterTabRoute =
+  WorkspaceProjectCenterTabRouteImport.update({
+    id: '/$tab',
+    path: '/$tab',
+    getParentRoute: () => WorkspaceProjectCenterRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
+  '/admin': typeof AdminRouteWithChildren
+  '/settings': typeof SettingsRouteWithChildren
   '/login': typeof AuthLoginRoute
+  '/profile': typeof WorkspaceProfileRoute
+  '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/password_security': typeof SettingsPassword_securityRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
+  '/admin/mgmt/team': typeof AdminMgmtTeamRoute
+  '/project-center/': typeof WorkspaceProjectCenterIndexRoute
 }
 export interface FileRoutesByTo {
+  '/admin': typeof AdminRouteWithChildren
   '/login': typeof AuthLoginRoute
+  '/profile': typeof WorkspaceProfileRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/password_security': typeof SettingsPassword_securityRoute
+  '/settings': typeof SettingsIndexRoute
+  '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
+  '/admin/mgmt/team': typeof AdminMgmtTeamRoute
+  '/project-center': typeof WorkspaceProjectCenterIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
   '/_workspace': typeof WorkspaceRouteWithChildren
+  '/admin': typeof AdminRouteWithChildren
+  '/settings': typeof SettingsRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_workspace/_workbench': typeof WorkspaceWorkbenchRoute
+  '/_workspace/profile': typeof WorkspaceProfileRoute
+  '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
+  '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/password_security': typeof SettingsPassword_securityRoute
+  '/settings/': typeof SettingsIndexRoute
+  '/_workspace/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
+  '/admin/mgmt/team': typeof AdminMgmtTeamRoute
+  '/_workspace/project-center/': typeof WorkspaceProjectCenterIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login'
+  fullPaths:
+    | '/admin'
+    | '/settings'
+    | '/login'
+    | '/profile'
+    | '/project-center'
+    | '/settings/appearance'
+    | '/settings/password_security'
+    | '/settings/'
+    | '/project-center/$tab'
+    | '/admin/mgmt/team'
+    | '/project-center/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login'
+  to:
+    | '/admin'
+    | '/login'
+    | '/profile'
+    | '/settings/appearance'
+    | '/settings/password_security'
+    | '/settings'
+    | '/project-center/$tab'
+    | '/admin/mgmt/team'
+    | '/project-center'
   id:
     | '__root__'
     | '/_auth'
     | '/_workspace'
+    | '/admin'
+    | '/settings'
     | '/_auth/login'
     | '/_workspace/_workbench'
+    | '/_workspace/profile'
+    | '/_workspace/project-center'
+    | '/settings/appearance'
+    | '/settings/password_security'
+    | '/settings/'
+    | '/_workspace/project-center/$tab'
+    | '/admin/mgmt/team'
+    | '/_workspace/project-center/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   WorkspaceRoute: typeof WorkspaceRouteWithChildren
+  AdminRoute: typeof AdminRouteWithChildren
+  SettingsRoute: typeof SettingsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_workspace': {
       id: '/_workspace'
       path: ''
@@ -78,6 +215,41 @@ declare module '@tanstack/react-router' {
       fullPath: ''
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/settings/': {
+      id: '/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/password_security': {
+      id: '/settings/password_security'
+      path: '/password_security'
+      fullPath: '/settings/password_security'
+      preLoaderRoute: typeof SettingsPassword_securityRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/appearance': {
+      id: '/settings/appearance'
+      path: '/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof SettingsAppearanceRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/_workspace/project-center': {
+      id: '/_workspace/project-center'
+      path: '/project-center'
+      fullPath: '/project-center'
+      preLoaderRoute: typeof WorkspaceProjectCenterRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/_workspace/profile': {
+      id: '/_workspace/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof WorkspaceProfileRouteImport
+      parentRoute: typeof WorkspaceRoute
     }
     '/_workspace/_workbench': {
       id: '/_workspace/_workbench'
@@ -93,6 +265,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_workspace/project-center/': {
+      id: '/_workspace/project-center/'
+      path: '/'
+      fullPath: '/project-center/'
+      preLoaderRoute: typeof WorkspaceProjectCenterIndexRouteImport
+      parentRoute: typeof WorkspaceProjectCenterRoute
+    }
+    '/admin/mgmt/team': {
+      id: '/admin/mgmt/team'
+      path: '/mgmt/team'
+      fullPath: '/admin/mgmt/team'
+      preLoaderRoute: typeof AdminMgmtTeamRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_workspace/project-center/$tab': {
+      id: '/_workspace/project-center/$tab'
+      path: '/$tab'
+      fullPath: '/project-center/$tab'
+      preLoaderRoute: typeof WorkspaceProjectCenterTabRouteImport
+      parentRoute: typeof WorkspaceProjectCenterRoute
+    }
   }
 }
 
@@ -106,21 +299,69 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface WorkspaceProjectCenterRouteChildren {
+  WorkspaceProjectCenterTabRoute: typeof WorkspaceProjectCenterTabRoute
+  WorkspaceProjectCenterIndexRoute: typeof WorkspaceProjectCenterIndexRoute
+}
+
+const WorkspaceProjectCenterRouteChildren: WorkspaceProjectCenterRouteChildren =
+  {
+    WorkspaceProjectCenterTabRoute: WorkspaceProjectCenterTabRoute,
+    WorkspaceProjectCenterIndexRoute: WorkspaceProjectCenterIndexRoute,
+  }
+
+const WorkspaceProjectCenterRouteWithChildren =
+  WorkspaceProjectCenterRoute._addFileChildren(
+    WorkspaceProjectCenterRouteChildren,
+  )
+
 interface WorkspaceRouteChildren {
   WorkspaceWorkbenchRoute: typeof WorkspaceWorkbenchRoute
+  WorkspaceProfileRoute: typeof WorkspaceProfileRoute
+  WorkspaceProjectCenterRoute: typeof WorkspaceProjectCenterRouteWithChildren
 }
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceWorkbenchRoute: WorkspaceWorkbenchRoute,
+  WorkspaceProfileRoute: WorkspaceProfileRoute,
+  WorkspaceProjectCenterRoute: WorkspaceProjectCenterRouteWithChildren,
 }
 
 const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
   WorkspaceRouteChildren,
 )
 
+interface AdminRouteChildren {
+  AdminMgmtTeamRoute: typeof AdminMgmtTeamRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminMgmtTeamRoute: AdminMgmtTeamRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface SettingsRouteChildren {
+  SettingsAppearanceRoute: typeof SettingsAppearanceRoute
+  SettingsPassword_securityRoute: typeof SettingsPassword_securityRoute
+  SettingsIndexRoute: typeof SettingsIndexRoute
+}
+
+const SettingsRouteChildren: SettingsRouteChildren = {
+  SettingsAppearanceRoute: SettingsAppearanceRoute,
+  SettingsPassword_securityRoute: SettingsPassword_securityRoute,
+  SettingsIndexRoute: SettingsIndexRoute,
+}
+
+const SettingsRouteWithChildren = SettingsRoute._addFileChildren(
+  SettingsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   WorkspaceRoute: WorkspaceRouteWithChildren,
+  AdminRoute: AdminRouteWithChildren,
+  SettingsRoute: SettingsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
