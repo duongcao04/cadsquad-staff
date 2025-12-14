@@ -22,7 +22,7 @@ import { Avatar, Image } from 'antd'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { EyeIcon, RotateCcw, SearchIcon, UserRoundPlus } from 'lucide-react'
-import React from 'react'
+
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore, workbenchStore } from '../../stores'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
@@ -41,6 +41,7 @@ import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
 import { WorkbenchTableViewProps } from './WorkbenchTableView'
 import JobFinishChip from '../chips/JobFinishChip'
+import { ReactNode, useCallback, useMemo } from 'react'
 
 type Options = {
     fillContainerHeight?: boolean
@@ -96,7 +97,7 @@ export default function WorkbenchTable({
         setSearchValue(value)
     }
 
-    const headerColumns = React.useMemo(() => {
+    const headerColumns = useMemo(() => {
         const visibleColumns = [
             'thumbnailUrl',
             'no',
@@ -114,7 +115,7 @@ export default function WorkbenchTable({
         )
     }, [])
 
-    const topContent = React.useMemo(() => {
+    const topContent = useMemo(() => {
         return (
             <div className="flex items-center justify-start gap-2">
                 <Input
@@ -245,7 +246,7 @@ export default function WorkbenchTable({
         )
     }, [data.length, hasSearchFilter, selectedKeys, searchValue, isDataLoading])
 
-    const bottomContent = React.useMemo(() => {
+    const bottomContent = useMemo(() => {
         return (
             <div className="py-2 px-2 flex justify-between items-center">
                 <Select
@@ -282,9 +283,9 @@ export default function WorkbenchTable({
         )
     }, [selectedKeys, data.length, pagination, hasSearchFilter, onLimitChange])
 
-    const renderCell: (data: TJob, columnKey: JobColumnKey) => React.ReactNode =
+    const renderCell: (data: TJob, columnKey: JobColumnKey) => ReactNode =
         // eslint-disable-next-line react-hooks/preserve-manual-memoization
-        React.useCallback((data: TJob, columnKey: JobColumnKey) => {
+        useCallback((data: TJob, columnKey: JobColumnKey) => {
             const cellValue = lodash.has(data, columnKey)
                 ? (data[columnKey] as string)
                 : ''

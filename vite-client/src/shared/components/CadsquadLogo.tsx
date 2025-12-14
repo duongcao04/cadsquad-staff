@@ -1,12 +1,8 @@
-'use client'
-
-import { Link } from '@tanstack/react-router'
-import React from 'react'
-
 import { cn } from '@/lib/utils'
-
-import CSDLogo from '../../assets/logo.webp'
+import { Link } from '@tanstack/react-router'
+import { memo } from 'react'
 import CSDWhiteLogo from '../../assets/logo-white.webp'
+import CSDLogo from '../../assets/logo.webp'
 
 type Props = {
     canRedirect?: boolean
@@ -45,4 +41,4 @@ function CadsquadLogo({
         </Wrapper>
     )
 }
-export default React.memo(CadsquadLogo)
+export default memo(CadsquadLogo)

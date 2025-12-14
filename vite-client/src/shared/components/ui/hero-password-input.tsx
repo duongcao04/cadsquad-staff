@@ -1,9 +1,7 @@
-'use client'
-
 import { InputProps } from '@heroui/react'
-import React from 'react'
 
 import { HeroInput } from './hero-input'
+import { useState } from 'react'
 
 // Biểu tượng con mắt đóng
 export const EyeSlashFilledIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -83,7 +81,7 @@ export const HeroPasswordInput: React.FC<HeroPasswordInputProps> = ({
     required,
     ...props
 }) => {
-    const [isVisible, setIsVisible] = React.useState(false)
+    const [isVisible, setIsVisible] = useState(false)
     const toggleVisibility = () => setIsVisible((prev) => !prev)
 
     return (

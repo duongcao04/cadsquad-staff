@@ -17,7 +17,7 @@ import {
     Text,
     UsersRound,
 } from 'lucide-react'
-import React from 'react'
+
 
 import {
     useJobColumns,

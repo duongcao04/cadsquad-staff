@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { BreadcrumbItem, Breadcrumbs, Skeleton } from '@heroui/react'
 import { Link } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
@@ -7,6 +6,7 @@ import { useEffect, useState } from 'react'
 
 import { PageHeading } from '@/shared/components'
 
+import { INTERNAL_URLS } from '../../../lib'
 import { metadataStore } from '../../stores'
 
 export function ProjectCenterHeader() {
@@ -36,7 +36,7 @@ export function ProjectCenterHeader() {
                     <Breadcrumbs>
                         <BreadcrumbItem>
                             <Link
-                                to={'/'}
+                                to={INTERNAL_URLS.home}
                                 title="Home"
                                 className="block text-text-subdued hover:text-primary transition duration-100"
                             >

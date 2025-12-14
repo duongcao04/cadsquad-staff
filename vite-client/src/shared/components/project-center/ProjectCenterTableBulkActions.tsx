@@ -1,5 +1,3 @@
-'use client'
-
 import {
     Button,
     Dropdown,
@@ -16,9 +14,7 @@ import BulkChangeStatusModal from './BulkChangeStatusModal'
 type ProjectCenterTableBulkActionsProps = {
     keys: Set<string> | 'all'
 }
-export default function ProjectCenterTableBulkActions({
-    keys,
-}: ProjectCenterTableBulkActionsProps) {
+export default function ProjectCenterTableBulkActions({}: ProjectCenterTableBulkActionsProps) {
     const { isOpen, onClose, onOpen } = useDisclosure({
         id: 'ProjectCenterTableBulkActions',
     })

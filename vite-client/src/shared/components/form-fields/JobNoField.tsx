@@ -63,8 +63,8 @@ export function JobNoField({
 
                 const res = await jobApi.getNextNo(selectedKey)
 
-                if (!isCancelled && res?.data?.result) {
-                    const newNo = res.data.result
+                if (!isCancelled && res?.result) {
+                    const newNo = res?.result
 
                     // Cập nhật UI nội bộ
                     setJobNoResult(newNo)

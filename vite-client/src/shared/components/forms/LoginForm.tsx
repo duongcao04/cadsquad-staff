@@ -7,15 +7,12 @@ import { useState } from 'react'
 import { useLogin } from '@/lib/queries'
 import { INTERNAL_URLS } from '@/lib/utils'
 import { LoginInputSchema, type TLoginInput } from '@/lib/validationSchemas'
-import { useDevice, useSearchParam } from '@/shared/hooks'
+import { useDevice } from '@/shared/hooks'
 
 export function LoginForm() {
     const navigate = useNavigate()
 
     const { isMobile, isTablet } = useDevice()
-
-    const { getSearchParam } = useSearchParam()
-    const redirectUrl = getSearchParam('redirect') ?? '/'
 
     const [isVisible, setIsVisible] = useState(false)
     const toggleVisibility = () => setIsVisible(!isVisible)
@@ -38,7 +35,7 @@ export function LoginForm() {
                     async onSuccess(res) {
                         addToast({ title: res.data.message, color: 'success' })
                         navigate({
-                            href: redirectUrl,
+                            href: '/',
                         })
                     },
                     onError(error) {

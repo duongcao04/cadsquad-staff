@@ -1,11 +1,8 @@
-'use client'
-
 import type { ButtonProps } from '@heroui/react'
 import { cn } from '@heroui/react'
 import { useControlledState } from '@react-stately/utils'
 import { domAnimation, LazyMotion, m } from 'framer-motion'
-import type { ComponentProps } from 'react'
-import React from 'react'
+import { forwardRef, type ComponentProps } from 'react'
 
 // --- Types ---
 
@@ -29,11 +26,10 @@ export type HeroStepSlots = {
     connector?: string // The progress line
 }
 
-export interface HeroRowsStepProps
-    extends Omit<
-        React.HTMLAttributes<HTMLButtonElement>,
-        'title' | 'onChange'
-    > {
+export interface HeroRowsStepProps extends Omit<
+    React.HTMLAttributes<HTMLButtonElement>,
+    'title' | 'onChange'
+> {
     /**
      * An array of steps.
      */
@@ -102,7 +98,7 @@ function DefaultCheckIcon(props: ComponentProps<'svg'>) {
 
 // --- Main Component ---
 
-const HeroRowsStep = React.forwardRef<HTMLButtonElement, HeroRowsStepProps>(
+const HeroRowsStep = forwardRef<HTMLButtonElement, HeroRowsStepProps>(
     (
         {
             color = 'primary',
@@ -166,8 +162,8 @@ const HeroRowsStep = React.forwardRef<HTMLButtonElement, HeroRowsStepProps>(
                             currentStep === stepIdx
                                 ? 'active'
                                 : currentStep < stepIdx
-                                ? 'inactive'
-                                : 'complete'
+                                  ? 'inactive'
+                                  : 'complete'
                         const isLast = stepIdx === steps.length - 1
 
                         return (

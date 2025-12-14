@@ -7,7 +7,7 @@ import {
     ModalHeader,
     type ModalProps,
 } from '@heroui/react'
-import React from 'react'
+
 
 type ConfirmDeleteModalProps = Omit<
     ModalProps,

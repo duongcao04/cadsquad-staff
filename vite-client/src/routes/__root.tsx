@@ -1,11 +1,7 @@
 import { HeroUIProvider, ToastProvider } from '@heroui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import {
-    createRootRoute,
-    createRootRouteWithContext,
-    Outlet,
-} from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { ConfigProvider } from 'antd'
 import { ThemeProvider } from 'antd-style'

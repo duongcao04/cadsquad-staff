@@ -35,7 +35,7 @@ import {
     UserRoundPlus,
     X,
 } from 'lucide-react'
-import React from 'react'
+
 import { dateFormatter } from '@/lib/dayjs'
 import { useJobStatuses } from '@/lib/queries'
 import {
@@ -47,10 +47,12 @@ import {
     TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import { useSearchParam } from '@/shared/hooks'
 import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
+import { ReactNode, useCallback, useMemo } from 'react'
+import { optimizeCloudinary } from '../../../lib'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore } from '../../stores'
+import JobFinishChip from '../chips/JobFinishChip'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
 import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
@@ -68,8 +70,6 @@ import { HeroTooltip } from '../ui/hero-tooltip'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
 import { ProjectCenterTableViewProps } from './ProjectCenterTableView'
-import JobFinishChip from '../chips/JobFinishChip'
-import { optimizeCloudinary } from '../../../lib'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
@@ -166,7 +166,7 @@ export default function ProjectCenterTable({
         }))
     }
 
-    const headerColumns = React.useMemo(() => {
+    const headerColumns = useMemo(() => {
         if (visibleColumns === 'all') return JOB_COLUMNS
 
         return JOB_COLUMNS.filter((column) =>
@@ -175,7 +175,7 @@ export default function ProjectCenterTable({
     }, [visibleColumns])
 
     // eslint-disable-next-line react-hooks/preserve-manual-memoization
-    const topContent = React.useMemo(() => {
+    const topContent = useMemo(() => {
         return (
             <div className="w-full flex flex-col gap-4">
                 <div className="w-full flex justify-between gap-3 items-end">
@@ -507,7 +507,7 @@ export default function ProjectCenterTable({
     ])
 
     // eslint-disable-next-line react-hooks/preserve-manual-memoization
-    const bottomContent = React.useMemo(() => {
+    const bottomContent = useMemo(() => {
         return (
             <div className="py-2 px-2 flex justify-between items-center">
                 <Select
@@ -561,9 +561,9 @@ export default function ProjectCenterTable({
         )
     }, [selectedKeys, data?.length, pagination, hasSearchFilter])
 
-    const renderCell: (data: TJob, columnKey: JobColumnKey) => React.ReactNode =
+    const renderCell: (data: TJob, columnKey: JobColumnKey) => ReactNode =
         // eslint-disable-next-line react-hooks/preserve-manual-memoization
-        React.useCallback((data: TJob, columnKey: JobColumnKey) => {
+        useCallback((data: TJob, columnKey: JobColumnKey) => {
             const cellValue = lodash.has(data, columnKey)
                 ? (data[columnKey] as string)
                 : ''

@@ -9,7 +9,7 @@ import {
 import { CalendarDate } from '@internationalized/date'
 import dayjs, { Dayjs } from 'dayjs'
 import { X } from 'lucide-react'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { cn } from '../../../lib/utils'
 import { HeroButton } from './hero-button'

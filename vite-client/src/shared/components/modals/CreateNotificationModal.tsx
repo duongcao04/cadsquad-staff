@@ -1,4 +1,4 @@
-import { addToast,Button, type InputProps, Textarea } from '@heroui/react'
+import { addToast, Button, type InputProps, Textarea } from '@heroui/react'
 import { Image, Modal } from 'antd'
 import { useFormik } from 'formik'
 import { capitalize } from 'lodash'
@@ -33,10 +33,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
     const { users, isLoading: loadingUsers } = useUsers()
     const { profile } = useProfile()
 
-    const {
-        mutateAsync: sendNotificationMutate,
-        isPending: isSendingNotification,
-    } = useSendNotificationMutation()
+    const { isPending: isSendingNotification } = useSendNotificationMutation()
 
     const notificationTypeEnumList = Object.entries(NotificationTypeEnum).map(
         (i) => {
@@ -67,15 +64,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
             try {
                 if (values.userIds?.length) {
                     // map các userId thành mảng promise
-                    const sendAll = values.userIds.map((userId) => {
-                        const message = {
-                            content: values.content,
-                            type: values.type,
-                            imageUrl: values.imageUrl,
-                            senderId: values.senderId,
-                            title: values.title,
-                            userId,
-                        }
+                    const sendAll = values.userIds.map(() => {
                         // sendNotificationMutate(message)
                     })
 
@@ -244,7 +233,7 @@ export function CreateNotificationModal({ isOpen, onClose }: Props) {
                                                     src={usr.avatar as string}
                                                     alt="user avatar"
                                                     rootClassName="!size-10 rounded-full"
-                                                    className="!size-full rounded-full p-[1px] border-2"
+                                                    className="size-full! rounded-full p-px border-2"
                                                     preview={false}
                                                     style={{
                                                         borderColor:

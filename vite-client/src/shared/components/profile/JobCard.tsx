@@ -3,7 +3,6 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Image } from 'antd'
 import dayjs from 'dayjs'
 import { Clock2 } from 'lucide-react'
-import React from 'react'
 
 import { INTERNAL_URLS } from '@/lib'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
@@ -13,6 +12,7 @@ import type { TJob } from '@/shared/types'
 
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
+import React from 'react'
 
 type Props = {
     data: TJob
@@ -57,7 +57,7 @@ function JobCard({ data, onPress }: Props) {
                         <HeroCopyButton textValue={data.no} />
                     </div>
                     <Link
-                        to={`/project-center/${data.no}`}
+                        to={INTERNAL_URLS.getJobDetailUrl(data.no)}
                         className="mt-0.5 block font-semibold line-clamp-1!"
                         title="View detail"
                         target="_blank"
@@ -93,7 +93,7 @@ function JobCard({ data, onPress }: Props) {
                 <JobStatusChip data={data.status} />
             </div>
             <Link
-                to={`/project-center/${data.no}`}
+                to={INTERNAL_URLS.getJobDetailUrl(data.no)}
                 className="hidden lg:block text-sm font-semibold hover:underline! underline-offset-2 text-end text-link!"
                 target="_blank"
             >

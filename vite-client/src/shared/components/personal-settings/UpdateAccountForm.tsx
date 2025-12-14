@@ -323,7 +323,7 @@ export function UpdateAccountForm() {
                 <p className="text-sm">
                     Đổi mật khẩu, nhấn vào{' '}
                     <Link
-                        to={'/settings/password_and_security'}
+                        to={'/settings/password_security'}
                         className="text-primary-600 underline"
                     >
                         đây

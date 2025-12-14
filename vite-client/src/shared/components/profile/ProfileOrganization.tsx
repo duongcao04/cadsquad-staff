@@ -1,4 +1,3 @@
-import React from 'react'
 export function ProfileOrganization() {
     return (
         <div className="mt-4 w-full flex flex-col items-center justify-center gap-2 hover:bg-text-3 px-3 py-2 rounded-md">

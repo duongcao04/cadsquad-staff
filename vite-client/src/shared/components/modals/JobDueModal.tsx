@@ -1,11 +1,10 @@
 import { Skeleton } from '@heroui/react'
-import { Link } from '@tanstack/react-router'
 import { CalendarDays } from 'lucide-react'
-import React from 'react'
 
 import { dateFormatter } from '@/lib/dayjs'
 import { useJobsByDeadline } from '@/lib/queries'
 
+import React from 'react'
 import JobCard, { JobCardSkeleton } from '../profile/JobCard'
 import {
     HeroModal,
@@ -83,12 +82,12 @@ function JobDueModal({ isOpen, onClose, currentDate }: Props) {
                                     </p>
                                     <p className="tracking-wide text-sm">
                                         View all jobs
-                                        <Link
-                                            to={'/project-center?tab=active'}
+                                        <a
+                                            href={'/project-center/active'}
                                             className="pl-2 link underline!"
                                         >
                                             here
-                                        </Link>
+                                        </a>
                                     </p>
                                 </div>
                             )}

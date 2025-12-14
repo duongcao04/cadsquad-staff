@@ -1,7 +1,3 @@
-'use client'
-
-import React from 'react'
-
 export function GlassBackground({ children }: { children: React.ReactNode }) {
     return (
         <div
@@ -14,7 +10,10 @@ export function GlassBackground({ children }: { children: React.ReactNode }) {
             }}
             className="max-w-screen h-screen backdrop-blur-3xl"
         >
-            <div className="bg-background-muted opacity-95" suppressHydrationWarning>
+            <div
+                className="bg-background-muted opacity-95"
+                suppressHydrationWarning
+            >
                 {children}
             </div>
         </div>

@@ -1,5 +1,5 @@
 import { Avatar } from '@heroui/react'
-import React from 'react'
+
 
 import type { TPaymentChannel } from '@/shared/types'
 

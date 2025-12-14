@@ -1,5 +1,5 @@
 import type { SVGProps } from 'react'
-import React from 'react'
+
 
 export function IconWorkColorful(props: SVGProps<SVGSVGElement>) {
     return (

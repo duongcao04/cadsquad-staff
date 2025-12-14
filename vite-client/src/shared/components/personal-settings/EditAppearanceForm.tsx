@@ -142,7 +142,7 @@ export function EditAppearanceForm() {
                                 </div>
                             )
                         })} */}
-                        {t('featureUnderDevelopment')}
+                        Feature under development
                     </div>
                 </div>
             </div>

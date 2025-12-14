@@ -17,7 +17,7 @@ import {
     Pencil,
     Trash2,
 } from 'lucide-react'
-import React from 'react'
+
 
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import { dateFormatter } from '@/lib/dayjs'
