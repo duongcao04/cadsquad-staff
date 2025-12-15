@@ -6,14 +6,15 @@ import { useDisclosure } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import lodash from 'lodash'
 import { useState } from 'react'
+import { Route } from '../../../routes/_workspace/project-center/$tab'
 import { pCenterTableStore } from '../../stores'
 import { JobColumnKey, TJob } from '../../types'
 import JobDetailDrawer from '../job-detail/JobDetailDrawer'
+import AddAttachmentsModal from './AddAttachmentsModal'
 import AssignMemberModal from './AssignMemberModal'
 import { FilterDrawer } from './FilterDrawer'
 import ProjectCenterTable from './ProjectCenterTable'
 import { ViewColumnsDrawer } from './ViewColumnsDrawer'
-import { Route } from '../../../routes/_workspace/project-center/$tab'
 
 type Pagination = {
     page: number
@@ -37,26 +38,16 @@ export type ProjectCenterTableViewProps = {
     onShowFinishItemsChange: (state: boolean) => void
     showFinishItems: boolean
 }
-export default function ProjectCenterTableView({
-    data,
-    isLoadingData = false,
-    filters,
-    onFiltersChange,
-    sort,
-    searchKeywords,
-    onSortChange,
-    onSearchKeywordsChange,
-    onRefresh,
-    pagination,
-    onLimitChange,
-    onShowFinishItemsChange,
-    onPageChange,
-    showFinishItems,
-}: ProjectCenterTableViewProps) {
+export default function ProjectCenterTableView(
+    props: ProjectCenterTableViewProps
+) {
     const search = Route.useSearch()
     const { tab } = Route.useParams()
 
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
+    const [insertAttachmentsTo, setInsertAttachmentsTo] = useState<
+        string | null
+    >(null)
 
     const { jobColumns: showColumns } = useJobColumns()
 
@@ -85,10 +76,22 @@ export default function ProjectCenterTableView({
     } = useDisclosure({
         id: 'AssignMemberModal',
     })
+    const {
+        isOpen: isOpenAttachmentsModal,
+        onOpen: onOpenAttachmentsModal,
+        onClose: onCloseAttachmentsModal,
+    } = useDisclosure({
+        id: 'AddAttachmentsModal',
+    })
 
     const onAssignMember = (jobNo: string) => {
         setAssignMemberTo(jobNo)
         onOpenAssignMemberModal()
+    }
+
+    const handleAddAttachments = (jobNo: string) => {
+        setInsertAttachmentsTo(jobNo)
+        onOpenAttachmentsModal()
     }
 
     const handleExport = async () => {
@@ -171,8 +174,8 @@ export default function ProjectCenterTableView({
                 <FilterDrawer
                     isOpen={isOpenFilterDrawer}
                     onClose={onCloseFilterDrawer}
-                    filters={filters}
-                    onFiltersChange={onFiltersChange}
+                    filters={props.filters}
+                    onFiltersChange={props.onFiltersChange}
                 />
             )}
             {isOpenViewColDrawer && (
@@ -190,33 +193,28 @@ export default function ProjectCenterTableView({
             )}
             {isOpenAssignMemberModal && !lodash.isNull(assignMemberTo) && (
                 <AssignMemberModal
-                    jobNo={assignMemberTo ?? ''}
+                    jobNo={assignMemberTo}
                     isOpen={isOpenAssignMemberModal}
                     onClose={onCloseAssignMemberModal}
                 />
             )}
+            {isOpenAttachmentsModal && !lodash.isNull(insertAttachmentsTo) && (
+                <AddAttachmentsModal
+                    jobNo={insertAttachmentsTo}
+                    isOpen={isOpenAttachmentsModal}
+                    onClose={onCloseAttachmentsModal}
+                />
+            )}
 
             <ProjectCenterTable
-                data={data}
-                isLoadingData={isLoadingData}
                 visibleColumns={showColumns}
-                showFinishItems={showFinishItems}
-                onRefresh={onRefresh}
-                sort={sort}
                 onAssignMember={onAssignMember}
-                onSortChange={onSortChange}
-                searchKeywords={searchKeywords}
-                onSearchKeywordsChange={onSearchKeywordsChange}
                 onDownloadCsv={handleExport}
-                filters={filters}
-                pagination={pagination}
-                onFiltersChange={onFiltersChange}
-                onShowFinishItemsChange={onShowFinishItemsChange}
                 openFilterDrawer={onOpenFilterDrawer}
                 openViewColDrawer={onOpenViewColDrawer}
                 openJobDetailDrawer={onOpenJobDetailDrawer}
-                onLimitChange={onLimitChange}
-                onPageChange={onPageChange}
+                onAddAttachments={handleAddAttachments}
+                {...props}
             />
         </>
     )
