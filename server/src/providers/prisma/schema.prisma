@@ -53,7 +53,7 @@ model User {
   isActive            Boolean            @default(true)
   lastLoginAt         DateTime?
   notifications       Notification[]     @relation("UserNotifications")
-  jobsAssigned        Job[]              @relation("UserJobs") // Jobs assigned 
+  jobsAssigned        Job[]              @relation("UserJobs") // Jobs assigned
   jobsCreated         Job[]              @relation("JobCreator")
   filesCreated        FileSystem[]       @relation("CreatedFiles")
   files               FileSystem[]       @relation("UserFiles")
