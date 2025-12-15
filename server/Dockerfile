@@ -1,29 +1,28 @@
 # -----------------------------------------------------------------------------
 # Stage 0: base (shared)
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS base
+FROM oven/bun:1-alpine AS base
 WORKDIR /app
+# OpenSSL and libc6-compat are still often needed in Alpine
 RUN apk add --no-cache openssl libc6-compat
 
-# Copy package files first (for better caching)
-COPY package*.json ./
-# copy lock file if exists
-COPY pnpm-lock.yaml* yarn.lock* package-lock.json* bun.lock* ./
+# Copy package files (prioritize bun.lockb if you have one)
+COPY package.json bun.lockb* ./
 
 # -----------------------------------------------------------------------------
 # Stage 1: deps - install dependencies and generate Prisma client
 # -----------------------------------------------------------------------------
 FROM base AS deps
 
-# install deps
-RUN npm ci --only=production=false || npm install
+# Install dependencies (including devDependencies for NestJS build)
+RUN bun install --frozen-lockfile
 
-# Copy Prisma schema & migrations explicitly so prisma generate works
+# Copy Prisma schema & migrations
 COPY ./src/providers/prisma/schema.prisma ./prisma/schema.prisma
 COPY ./src/providers/prisma/migrations ./prisma/migrations
 
-# If you use prisma client generation
-RUN npx prisma generate
+# Generate Prisma client
+RUN bunx prisma generate
 
 # -----------------------------------------------------------------------------
 # Stage 2: builder - build TypeScript (nest build)
@@ -33,60 +32,58 @@ WORKDIR /app
 
 # Copy node_modules from deps
 COPY --from=deps /app/node_modules ./node_modules
-# Copy prisma generated client (so build can reference it if needed)
+# Copy prisma generated client
 COPY --from=deps /app/prisma ./prisma
 
-# Copy source files needed for build
+# Copy source files
 COPY tsconfig*.json ./
 COPY nest-cli.json ./
 COPY src ./src
-COPY package*.json ./
-# Copy Prisma schema + migrations
-COPY src/providers/prisma/schema.prisma ./prisma/
-COPY src/providers/prisma/migrations ./prisma/migrations
+COPY package.json ./
 
-# Run build (nest build => outputs to dist/)
-RUN npm run build
+# Run build
+RUN bun run build
 
 # -----------------------------------------------------------------------------
 # Stage 3: runner - minimal runtime image
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS runner
+FROM oven/bun:1-alpine AS runner
 WORKDIR /app
 
-# Install OpenSSL for Prisma AND postgresql-client for psql command
+# Install system dependencies
 RUN apk update && apk add --no-cache \
     openssl \
     libc6-compat \
     postgresql16-client
 
-# Create non-root user
+# Create non-root user (sticking to 'nodejs' to match your previous setup)
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nodejs
 
-# copy node_modules for production only
+# Copy node_modules
+# Note: To optimize image size further, you could add a separate stage 
+# to run `bun install --production` and copy that here instead.
 COPY --from=deps /app/node_modules ./node_modules
-# copy prisma client & migrations if runtime needs them
 COPY --from=deps /app/prisma ./prisma
-# copy built dist
 COPY --from=builder /app/dist ./dist
-# copy package.json to allow running npm scripts if necessary
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package.json ./
 
 COPY database ./database
 
-# Copy entrypoint script and make it executable
+# Copy entrypoint script
 COPY --chown=nodejs:nodejs ./entrypoint.sh ./
 RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
-# Change ownership AFTER copying all files
+# Change ownership
 RUN chown -R nodejs:nodejs /app
+
+USER nodejs
 
 EXPOSE 8080
 
+# Bun implements Node.js compatibility, so the http check still works via 'bun -e'
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
+  CMD bun -e "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
 
-ENTRYPOINT ["sh","./entrypoint.sh"]
-# The entrypoint will handle migrations and seeding, then exec this CMD
-CMD ["node", "dist/main.js"]
+ENTRYPOINT ["sh", "./entrypoint.sh"]
+CMD ["bun", "dist/main.js"]

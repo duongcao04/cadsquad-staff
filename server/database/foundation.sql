@@ -432,7 +432,7 @@ VALUES
 		'#00509B',
 		NOW (),
 		NOW ()
-	);
+	) ON CONFLICT DO NOTHING;
 
 -- =============================================
 -- 6. SEED USER (Updated for Better Auth Schema)

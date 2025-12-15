@@ -1,4 +1,4 @@
-import { excelApi } from '@/lib/api'
+import { excelApi, jobApi } from '@/lib/api'
 import { useJobColumns } from '@/lib/queries'
 import { JOB_COLUMNS } from '@/lib/utils'
 import { TDownloadExcelInput, TJobFiltersInput } from '@/lib/validationSchemas'
@@ -13,6 +13,7 @@ import AssignMemberModal from './AssignMemberModal'
 import { FilterDrawer } from './FilterDrawer'
 import ProjectCenterTable from './ProjectCenterTable'
 import { ViewColumnsDrawer } from './ViewColumnsDrawer'
+import { Route } from '../../../routes/_workspace/project-center/$tab'
 
 type Pagination = {
     page: number
@@ -52,6 +53,9 @@ export default function ProjectCenterTableView({
     onPageChange,
     showFinishItems,
 }: ProjectCenterTableViewProps) {
+    const search = Route.useSearch()
+    const { tab } = Route.useParams()
+
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
 
     const { jobColumns: showColumns } = useJobColumns()
@@ -88,23 +92,31 @@ export default function ProjectCenterTableView({
     }
 
     const handleExport = async () => {
+        const showColumns: JobColumnKey[] = [
+            'no',
+            'displayName',
+            'clientName',
+            'assignee',
+            'incomeCost',
+            'staffCost',
+            'type',
+            'status',
+            'dueAt',
+            'completedAt',
+            'createdAt',
+            'updatedAt',
+            'isPaid',
+            'paymentChannel',
+        ]
+
         try {
-            const showColumns: JobColumnKey[] = [
-                'no',
-                'displayName',
-                'clientName',
-                'assignee',
-                'incomeCost',
-                'staffCost',
-                'type',
-                'status',
-                'dueAt',
-                'completedAt',
-                'createdAt',
-                'updatedAt',
-                'isPaid',
-                'paymentChannel',
-            ]
+            const data = (await jobApi
+                .findAll({
+                    ...search,
+                    tab,
+                    isAll: '1',
+                })
+                .then((res) => res.result?.data)) as TJob[]
 
             const payload: TDownloadExcelInput = {
                 columns: JOB_COLUMNS.filter((item) =>

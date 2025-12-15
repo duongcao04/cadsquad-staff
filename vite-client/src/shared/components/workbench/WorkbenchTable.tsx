@@ -21,10 +21,17 @@ import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
-import { EyeIcon, RotateCcw, SearchIcon, UserRoundPlus } from 'lucide-react'
-
+import {
+    EyeIcon,
+    PinIcon,
+    RotateCcw,
+    SearchIcon,
+    UserRoundPlus,
+} from 'lucide-react'
+import { ReactNode, useCallback, useMemo } from 'react'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
-import { pCenterTableStore, workbenchStore } from '../../stores'
+import { pCenterTableStore } from '../../stores'
+import JobFinishChip from '../chips/JobFinishChip'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
 import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
@@ -40,16 +47,12 @@ import {
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
 import { WorkbenchTableViewProps } from './WorkbenchTableView'
-import JobFinishChip from '../chips/JobFinishChip'
-import { ReactNode, useCallback, useMemo } from 'react'
 
 type Options = {
     fillContainerHeight?: boolean
 }
 type Props = WorkbenchTableViewProps & {
-    data: TJob[]
     options?: Options
-    sort: string | null
     onViewDetail: (jobNo: string) => void
     onAssignMember: (jobNo: string) => void
 }
@@ -58,6 +61,8 @@ export default function WorkbenchTable({
     data,
     onViewDetail,
     sort,
+    search,
+    onSearchChange,
     onSortChange,
     onAssignMember,
     onRefresh,
@@ -66,17 +71,7 @@ export default function WorkbenchTable({
     onLimitChange,
     options = { fillContainerHeight: false },
 }: Props) {
-    const searchValue = useStore(
-        workbenchStore,
-        (state) => state.searchKeywords
-    )
-    const setSearchValue = (newValue: string) => {
-        workbenchStore.setState((state) => ({
-            ...state,
-            searchKeywords: newValue,
-        }))
-    }
-    const hasSearchFilter = Boolean(searchValue)
+    const hasSearchFilter = Boolean(search)
 
     const selectedKeys = useStore(
         pCenterTableStore,
@@ -88,13 +83,6 @@ export default function WorkbenchTable({
             selectedKeys:
                 keys === 'all' ? 'all' : new Set(keys as unknown as string[]),
         }))
-    }
-
-    const onSearchClear = () => {
-        setSearchValue('')
-    }
-    const onSearchChange = (value: string) => {
-        setSearchValue(value)
     }
 
     const headerColumns = useMemo(() => {
@@ -137,9 +125,9 @@ export default function WorkbenchTable({
                             />
                         </div>
                     }
-                    value={searchValue}
-                    onClear={onSearchClear}
-                    onValueChange={onSearchChange}
+                    value={search}
+                    onClear={() => onSearchChange(undefined)}
+                    onValueChange={(value) => onSearchChange(value)}
                 />
                 <div className="w-px mx-3 h-5 bg-text-muted"></div>
                 <div className="flex gap-3">
@@ -158,8 +146,8 @@ export default function WorkbenchTable({
 
                 <div className="w-px mx-3 h-5 bg-text-muted"></div>
 
-                {/* <div className="flex gap-3">
-                    <HeroSelect
+                <div className="flex gap-3">
+                    {/* <HeroSelect
                         selectionMode="multiple"
                         className="min-w-32.5"
                         classNames={{
@@ -203,9 +191,9 @@ export default function WorkbenchTable({
                                 </HeroSelectItem>
                             )
                         })}
-                    </HeroSelect>
+                    </HeroSelect> */}
 
-                    <HeroSelect
+                    {/* <HeroSelect
                         className="min-w-32.5"
                         classNames={{
                             trigger:
@@ -240,15 +228,15 @@ export default function WorkbenchTable({
                                 </HeroSelectItem>
                             )
                         })}
-                    </HeroSelect>
-                </div> */}
+                    </HeroSelect> */}
+                </div>
             </div>
         )
-    }, [data.length, hasSearchFilter, selectedKeys, searchValue, isDataLoading])
+    }, [data.length, hasSearchFilter, selectedKeys, search, isDataLoading])
 
     const bottomContent = useMemo(() => {
         return (
-            <div className="py-2 px-2 flex justify-between items-center">
+            <div className="py-2 px-2 grid grid-cols-3 gap-5">
                 <Select
                     className="w-40"
                     label="Rows per page"
@@ -269,15 +257,17 @@ export default function WorkbenchTable({
                         </SelectItem>
                     ))}
                 </Select>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={pagination.page}
-                    total={pagination.totalPages}
-                    onChange={onPageChange}
-                />
+                <div className="flex items-center justify-center">
+                    <Pagination
+                        isCompact
+                        showControls
+                        showShadow
+                        color="primary"
+                        page={pagination.page}
+                        total={pagination.totalPages}
+                        onChange={onPageChange}
+                    />
+                </div>
                 <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
             </div>
         )
@@ -325,9 +315,17 @@ export default function WorkbenchTable({
                     )
                 case 'displayName':
                     return (
-                        <p className="w-62.5 line-clamp-1 font-medium">
-                            {data.displayName}
-                        </p>
+                        <div className="w-62.5 flex items-center justify-start gap-4">
+                            <p className="line-clamp-1 font-medium">
+                                {data.displayName}
+                            </p>
+                            {data.isPinned && (
+                                <PinIcon
+                                    className="text-text-subdued"
+                                    size={14}
+                                />
+                            )}
+                        </div>
                     )
                 case 'staffCost':
                     return (
@@ -488,19 +486,14 @@ export default function WorkbenchTable({
             selectedKeys={selectedKeys}
             selectionMode="multiple"
             topContent={topContent}
-            BaseComponent={(found) => {
-                return (
-                    <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
-                        <ScrollBar orientation="horizontal" />
-                        <ScrollBar orientation="vertical" />
-                        {found.children}
-                    </ScrollArea>
-                )
-            }}
-            // sortDescriptor={sortDescriptor}
             topContentPlacement="outside"
+            selectionBehavior="replace"
             onSelectionChange={setSelectedKeys}
-            // onSortChange={setSortDescriptor}'
+            onDoubleClick={() => {
+                const jobNoValue = Array.from(selectedKeys)[0]
+                onViewDetail(jobNoValue)
+                setSelectedKeys(new Set())
+            }}
             classNames={{
                 base: `${options.fillContainerHeight ? 'h-full' : ''}`,
                 table: 'relative',
@@ -535,7 +528,7 @@ export default function WorkbenchTable({
                 isLoading={isDataLoading}
             >
                 {(item) => (
-                    <HeroTableRow key={item.id}>
+                    <HeroTableRow key={item.no}>
                         {(columnKey) => (
                             <HeroTableCell>
                                 {renderCell(item, columnKey as JobColumnKey)}

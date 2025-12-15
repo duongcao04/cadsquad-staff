@@ -40,7 +40,7 @@ export class JobService {
         private readonly userService: UserService,
         private readonly configService: ConfigService,
         private readonly notificationService: NotificationService
-    ) {}
+    ) { }
     private readonly logger = new Logger(JobService.name)
 
     /**
@@ -65,8 +65,8 @@ export class JobService {
                         statusId: statusId,
                         assignee: assigneeIds?.length
                             ? {
-                                  connect: assigneeIds.map((id) => ({ id })),
-                              }
+                                connect: assigneeIds.map((id) => ({ id })),
+                            }
                             : undefined,
                         attachmentUrls: jobData.attachmentUrls
                             ? Array.isArray(jobData.attachmentUrls)
@@ -172,6 +172,7 @@ export class JobService {
                 limit: take = 10,
                 search,
                 sort = 'isPinned:asc',
+                isAll,
                 ...filters
             } = query
 
@@ -197,8 +198,7 @@ export class JobService {
                     this.buildPermission(userRole, userId),
 
                     // Custom Toggle: Hide Finished Items
-                    // (Standardize string '0'/'1' to boolean check)
-                    hideFinishItems === '1'
+                    hideFinishItems
                         ? { status: { isNot: { systemType: 'TERMINATED' } } }
                         : {},
 
@@ -214,13 +214,40 @@ export class JobService {
                 this.prisma.job.findMany({
                     where: queryBuilder,
                     orderBy,
-                    take, // Uses fallback from DTO (10)
-                    skip: (page - 1) * take, // Uses getter from DTO
+                    // If isAll is true, set take/skip to undefined (Prisma ignores them)
+                    take: isAll ? undefined : take, // Uses fallback from DTO (10)
+                    skip: isAll ? undefined : (page - 1) * take, // Uses getter from DTO
                     include: {
-                        type: true,
-                        assignee: true,
-                        status: true,
-                        paymentChannel: true,
+                        type: {
+                            select: {
+                                displayName: true,
+                            },
+                        },
+                        assignee: {
+                            select: {
+                                avatar: true,
+                                displayName: true,
+                                username: true,
+                            },
+                        },
+                        status: {
+                            select: {
+                                displayName: true,
+                                thumbnailUrl: true,
+                                order: true,
+                                systemType: true,
+                                nextStatusOrder: true,
+                                prevStatusOrder: true,
+                                allowedRolesToSet: true,
+                                code: true,
+                                hexColor: true,
+                            },
+                        },
+                        paymentChannel: {
+                            select: {
+                                displayName: true,
+                            },
+                        },
                     },
                 }),
                 this.prisma.job.count({ where: queryBuilder }),
@@ -230,16 +257,24 @@ export class JobService {
                 this.logger.warn(`No jobs found for user ${userId}`)
             }
 
-            return {
-                data: plainToInstance(this.responseSchema(userRole), data, {
-                    excludeExtraneousValues: true,
-                }) as unknown as Job[],
-                paginate: {
+            const paginateResults = isAll
+                ? {
+                    limit: 0,
+                    page: 1,
+                    total: total ?? 0,
+                    totalPages: Math.ceil(total / Number(take ?? 10)),
+                }
+                : {
                     limit: take ?? 10,
                     page: page ?? 1,
                     total: total ?? 0,
                     totalPages: Math.ceil(total / Number(take ?? 10)),
-                },
+                }
+            return {
+                data: plainToInstance(this.responseSchema(userRole), data, {
+                    excludeExtraneousValues: true,
+                }) as unknown as Job[],
+                paginate: paginateResults,
             }
         } catch (error) {
             // Log the actual error to your terminal for debugging
@@ -745,14 +780,14 @@ export class JobService {
                     data: {
                         ...(data.updateMemberIds &&
                             JSON.parse(data.updateMemberIds).length > 0 && {
-                                assignee: {
-                                    connect: JSON.parse(
-                                        data.updateMemberIds
-                                    ).map((id: string) => ({
-                                        id,
-                                    })),
-                                },
-                            }),
+                            assignee: {
+                                connect: JSON.parse(
+                                    data.updateMemberIds
+                                ).map((id: string) => ({
+                                    id,
+                                })),
+                            },
+                        }),
                     },
                 })
 

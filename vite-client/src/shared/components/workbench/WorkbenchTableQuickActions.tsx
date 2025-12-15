@@ -269,12 +269,12 @@ export function WorkbenchTableQuickActions({
                                 jobPinned ? (
                                     <PinOff
                                         size={14}
-                                        className="text-text-subdued rotate-45"
+                                        className="text-text-subdued"
                                     />
                                 ) : (
                                     <PinIcon
                                         size={14}
-                                        className="text-text-subdued rotate-45"
+                                        className="text-text-subdued"
                                     />
                                 )
                             }

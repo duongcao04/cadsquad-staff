@@ -29,7 +29,6 @@ export type TSidebarItem = {
     title: string
     path: string
 }
-// eslint-disable-next-line react-refresh/only-export-components
 export const sidebarActions: TSidebarItem[] = [
     {
         icon: IconWorkbenchOutline,

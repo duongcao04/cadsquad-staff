@@ -59,6 +59,8 @@ export const jobsListOptions = (
         page: 1,
         limit: 10,
         tab: ProjectCenterTabEnum.ACTIVE,
+        isAll: '0',
+        sort: ['displayName:asc'],
     }
 ) => {
     const { hideFinishItems, page, limit, search, tab, sort, ...filters } =

@@ -130,6 +130,8 @@ export const JobQuerySchema = JobFiltersSchema.merge(JobSortSchema).extend({
 
     hideFinishItems: z.enum(['0', '1']).optional().default('0'),
 
+    isAll: z.enum(['0', '1']).optional().default('0'),
+
     // Pagination (Using coerce to handle URL query string numbers)
     limit: z.coerce.number().int().min(1).max(100).optional().default(10),
 

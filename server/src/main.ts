@@ -5,7 +5,6 @@ import { ValidationError } from 'class-validator';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/exceptions/http-exception-filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
-import { updateGlobalConfig } from 'nestjs-paginate'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -32,14 +31,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor(new Reflector()))
 
   app.useGlobalFilters(new HttpExceptionFilter());
-
-  // nest-paginate default configuration
-  updateGlobalConfig({
-    // this is default configuration
-    defaultOrigin: undefined,
-    defaultLimit: 20,
-    defaultMaxLimit: 100,
-  });
 
   // Swagger API docs setup
   const config = new DocumentBuilder()

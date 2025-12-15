@@ -47,17 +47,22 @@ done
 
 echo "[entrypoint] Database is available"
 
-# Run Prisma migrations (use original DATABASE_URL with ?schema=)
-if [ -f "./node_modules/.bin/prisma" ] || command -v prisma >/dev/null 2>&1; then
+# Run Prisma migrations using Bun
+# We check if 'bun' is available or if the prisma binary exists in node_modules
+if command -v bun >/dev/null 2>&1 || [ -f "./node_modules/.bin/prisma" ]; then
   echo "[entrypoint] Running Prisma migrations..."
-  if npx prisma migrate deploy --schema=./prisma/schema.prisma; then
+  
+  # Using 'bunx' instead of 'npx'
+  if bunx prisma migrate deploy --schema=./prisma/schema.prisma; then
     echo "[entrypoint] Migrations completed successfully"
   else
     EXIT_CODE=$?
     echo "[entrypoint] WARNING: prisma migrate deploy failed (exit code: $EXIT_CODE)"
+    # Optional: Exit if you want strict failure on migration error
+    # exit 1
   fi
 else
-  echo "[entrypoint] WARNING: Prisma CLI not found, skipping migrations"
+  echo "[entrypoint] WARNING: Bun or Prisma CLI not found, skipping migrations"
 fi
 
 # Run SQL seed file (use PSQL_URL without query params)

@@ -20,6 +20,7 @@ export const COOKIES = {
     authentication: 'csd-authTk',
 }
 
+
 export const APP_THEME_COLORS = [
     'var(--color-primary)',
     '#e11d48',
@@ -99,6 +100,7 @@ export const STORAGE_KEYS = {
     currency: 'app-runtime:currency',
     currencyDigits: 'app-runtime:currency-digits',
     projectCenterFinishItems: 'project-center-finish-items',
+    sidebarStatus: 'csd-side'
 } as const
 
 export const IMAGES = {

@@ -323,7 +323,7 @@ export default function UserTable({
         return (
             <div className="py-2 px-2 flex justify-between items-center">
                 <Select
-                    className="w-[120px]"
+                    className="w-30"
                     placeholder="Rows per page"
                     variant="bordered"
                     classNames={{ trigger: 'shadow-SM' }}
