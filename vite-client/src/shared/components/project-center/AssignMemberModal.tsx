@@ -30,7 +30,7 @@ export default function AssignMemberModal({
     onClose,
 }: AssignMemberModalProps) {
     const { job, isLoading: loadingJob } = useJobByNo(jobNo)
-    const { users, isLoading: loadingUsers } = useUsers()
+    const { data: users, isLoading: loadingUsers } = useUsers()
 
     const isLoading = !job || loadingJob
 

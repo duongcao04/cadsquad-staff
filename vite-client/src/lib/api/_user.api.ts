@@ -11,8 +11,8 @@ export const userApi = {
     create: (data: TCreateUserInput) => {
         return axiosClient.post<ApiResponse<IUserResponse>>('/v1/users', data)
     },
-    findAll: () => {
-        return axiosClient.get<ApiResponse<IUserResponse[]>>('/v1/users')
+    findAll: async () => {
+        return axiosClient.get<ApiResponse<IUserResponse[]>>('/v1/users').then(res => res.data)
     },
     checkUsernameValid: (username: string) => {
         return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(
@@ -31,8 +31,8 @@ export const userApi = {
             data
         )
     },
-    findOne: (id: string) => {
-        return axiosClient.get<ApiResponse<IUserResponse>>(`/v1/users/${id}`)
+    findOne: async (id: string) => {
+        return axiosClient.get<ApiResponse<IUserResponse>>(`/v1/users/${id}`).then(res => res.data)
     },
     update: (id: string, data: TUpdateUserInput) => {
         return axiosClient.patch<ApiResponse<{ id: string }>>(

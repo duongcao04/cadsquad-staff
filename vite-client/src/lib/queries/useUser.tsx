@@ -14,6 +14,7 @@ import type {
     TUpdatePasswordInput,
     TUpdateUserInput,
 } from '../validationSchemas'
+import { usersListOptions } from './options/user-queries'
 
 export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     id: item.id,
@@ -45,25 +46,19 @@ export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     createdAt: new Date(item.createdAt),
     updatedAt: new Date(item.updatedAt),
 })
-export const useUsers = () => {
-    const { data, isLoading, isFetching, refetch } = useQuery({
-        queryKey: ['users'],
-        queryFn: () => userApi.findAll(),
-        select: (res) => {
-            // Giả sử API trả về cấu trúc: { data: { result: User[] } }
-            // Nếu API trả về mảng trực tiếp thì bỏ .result
-            const rawUsers = res.data?.result || []
-            return rawUsers.map(mapUser)
-        },
 
-        // Giữ data cũ trong khi fetch mới để UI không bị nháy
-        placeholderData: (previousData) => previousData,
-    })
+export const useUsers = () => {
+    // Gọi Options
+    const options = usersListOptions()
+
+    const { data, refetch, error, isFetching, isLoading } = useQuery(options)
+
+    // Data đã được map sẵn trong options.select
     return {
-        data: data ?? [],
-        users: data ?? [],
         refetch,
         isLoading: isLoading || isFetching,
+        error,
+        data: data?.users ?? [],
     }
 }
 

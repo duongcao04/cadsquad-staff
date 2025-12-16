@@ -32,7 +32,7 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
     /**
      * Get initial data
      */
-    const { users } = useUsers()
+    const { data: users } = useUsers()
     const { data: jobTypes } = useJobTypes()
     const { data: paymentChannels } = usePaymentChannels()
 

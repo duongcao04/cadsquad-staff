@@ -17,10 +17,8 @@ import type { ApiResponse } from '../axios'
 import { onErrorToast } from './helper'
 import {
     countJobByTabOptions,
-    jobActivityLogsOptions,
     jobAssigneesOptions,
     jobByNoOptions,
-    jobColumnsOptions,
     jobDetailOptions,
     jobsByDeadlineOptions,
     jobsByStatusCodeOptions,

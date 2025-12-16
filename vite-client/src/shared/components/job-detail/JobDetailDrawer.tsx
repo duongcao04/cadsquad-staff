@@ -14,13 +14,8 @@ import {
     SquareArrowOutUpRight,
     UserRound,
 } from 'lucide-react'
-
 import { dateFormatter } from '@/lib/dayjs'
-import {
-    useChangeStatusMutation,
-    useJobByNo,
-    useJobStatusByOrder,
-} from '@/lib/queries'
+import { jobByNoOptions, useChangeStatusMutation } from '@/lib/queries'
 import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
 import type { TJobStatus } from '../../types'
 import { JobStatusChip } from '../chips/JobStatusChip'
@@ -50,7 +45,10 @@ export default function JobDetailDrawer({
     isOpen,
     onClose,
 }: JobDetailDrawerProps) {
-    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
+    const { data: job, isLoading: loadingJob } = useQuery({
+        ...jobByNoOptions(jobNo),
+        enabled: !!jobNo && isOpen,
+    })
 
     const changeStatusMutation = useChangeStatusMutation()
 

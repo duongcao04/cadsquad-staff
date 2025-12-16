@@ -30,7 +30,7 @@ export default function FilterView({
     const { data: paymentChannels, isLoading: loadingPaymentChannels } =
         usePaymentChannels()
     const { data: jobTypes, isLoading: loadingJobTypes } = useJobTypes()
-    const { users, isLoading: loadingUsers } = useUsers()
+    const { data: users, isLoading: loadingUsers } = useUsers()
 
     const [filters, setFilters] = useState(defaultFilters)
 

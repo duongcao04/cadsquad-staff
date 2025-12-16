@@ -15,6 +15,7 @@ import {
     Link as IconLink,
     MessageSquare,
     Pencil,
+    RotateCcw,
     Trash2,
 } from 'lucide-react'
 
@@ -27,7 +28,6 @@ import {
 } from '@/lib/queries'
 import { currencyFormatter } from '@/lib/utils'
 import type { TJob } from '@/shared/types'
-
 import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import { HeroButton } from '../ui/hero-button'
@@ -47,7 +47,11 @@ interface JobDetailProps {
 export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
     const { isAdmin } = useProfile()
 
-    const { data: activityLogs } = useQuery({
+    const {
+        data: activityLogs,
+        refetch,
+        isFetching: isActivityLogLoading,
+    } = useQuery({
         // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
         // The query won't run because of 'enabled' below.
         ...jobActivityLogsOptions(job.id ?? -1),
@@ -126,14 +130,32 @@ export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
                                     <Divider className="mt-5" />
 
                                     <HeroCard className="shadow-none border-none px-0! py-0!">
-                                        <HeroCardHeader>
+                                        <HeroCardHeader className="flex items-center justify-between">
                                             <h3 className="text-sm uppercase">
                                                 Activity logs
                                             </h3>
+                                            <HeroButton
+                                                startContent={
+                                                    <RotateCcw
+                                                        className="text-small"
+                                                        size={14}
+                                                    />
+                                                }
+                                                variant="bordered"
+                                                size="sm"
+                                                className="hover:shadow-SM border-border-default border-1"
+                                                onPress={refetch}
+                                                color="default"
+                                            >
+                                                <span className="font-medium">
+                                                    Refresh
+                                                </span>
+                                            </HeroButton>
                                         </HeroCardHeader>
                                         <HeroCardBody>
                                             <JobActivityHistory
                                                 logs={activityLogs}
+                                                isLoading={isActivityLogLoading}
                                             />
                                         </HeroCardBody>
                                     </HeroCard>

@@ -1,4 +1,4 @@
-import { Avatar, Chip, ScrollShadow } from '@heroui/react'
+import { Avatar, Chip, ScrollShadow, User } from '@heroui/react'
 import {
     ArrowRightLeft,
     CreditCard,
@@ -10,18 +10,21 @@ import {
     UserMinus,
     UserPlus,
 } from 'lucide-react'
-
 import { ActivityTypeEnum } from '@/shared/enums'
 import type { TJobActivityLog } from '@/shared/types'
+import { useQuery } from '@tanstack/react-query'
+import { userOptions } from '../../../lib/queries/options/user-queries'
+import { IMAGES, optimizeCloudinary } from '../../../lib'
+import lodash from 'lodash'
 
 interface JobActivityHistoryProps {
     logs: TJobActivityLog[]
+    isLoading?: boolean
 }
 export const JobActivityHistory: React.FC<JobActivityHistoryProps> = ({
     logs,
+    isLoading = false,
 }) => {
-    console.log(logs)
-
     if (!logs || logs.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-10 text-default-400">
@@ -40,13 +43,16 @@ export const JobActivityHistory: React.FC<JobActivityHistoryProps> = ({
     )
 
     return (
-        <ScrollShadow className="h-full w-full pr-4 max-h-125">
-            <div className="relative pl-4 border-l border-default-200 ml-4 my-2 space-y-8">
-                {sortedLogs.map((log) => (
+        <div className="relative pl-4 border-l border-default-200 ml-4 my-2 space-y-8">
+            {!isLoading &&
+                sortedLogs.map((log) => (
                     <ActivityItem key={log.id} log={log} />
                 ))}
-            </div>
-        </ScrollShadow>
+            {isLoading &&
+                [...Array(3)].map((_, i) => {
+                    return <ActivityItemSkeleton key={i} />
+                })}
+        </div>
     )
 }
 
@@ -61,7 +67,7 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
         <div className="relative">
             {/* Timeline Dot with Icon */}
             <div
-                className={`absolute -left-7.25 top-0 flex items-center justify-center w-8 h-8 rounded-full border-2 border-background ${config.bgClass} ${config.textClass}`}
+                className={`absolute -left-7.25 top-2 flex items-center justify-center w-8 h-8 rounded-full border-2 border-background ${config.bgClass} ${config.textClass}`}
             >
                 <Icon size={14} />
             </div>
@@ -71,12 +77,12 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
                 {/* Header: User & Time */}
                 <div className="flex items-center gap-2 mb-1">
                     <Avatar
-                        src={log.modifiedBy.avatar}
+                        src={optimizeCloudinary(log.modifiedBy.avatar)}
                         name={log.modifiedBy.displayName}
                         // size="xs"
-                        className="w-5 h-5 text-[9px]"
+                        className="size-8 text-[9px]"
                     />
-                    <span className="text-xs font-semibold text-default-800">
+                    <span className="text-sm font-semibold text-default-800">
                         {log.modifiedBy.displayName}
                     </span>
                     <span className="text-[10px] text-default-400">
@@ -104,7 +110,36 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
         </div>
     )
 }
+const ActivityItemSkeleton = () => {
+    return (
+        <div className="relative">
+            {/* Timeline Dot Skeleton */}
+            {/* Matches absolute positioning of the original icon */}
+            <div className="absolute -left-7.25 top-0 w-8 h-8 rounded-full border-2 border-text-6 bg-default-200 animate-pulse" />
 
+            {/* Content Skeleton */}
+            <div className="flex flex-col gap-2">
+                {/* Header: Avatar, Name, Time */}
+                <div className="flex items-center gap-2 mb-1">
+                    {/* Avatar */}
+                    <div className="w-5 h-5 rounded-full bg-default-200 animate-pulse" />
+
+                    {/* Name */}
+                    <div className="w-24 h-3 rounded-medium bg-default-200 animate-pulse" />
+
+                    {/* Date (lighter/smaller) */}
+                    <div className="w-16 h-2 rounded-medium bg-default-100 animate-pulse" />
+                </div>
+
+                {/* Action Description Lines */}
+                <div className="flex flex-col gap-1.5">
+                    <div className="w-3/4 h-3 rounded-medium bg-default-200 animate-pulse" />
+                    <div className="w-1/2 h-3 rounded-medium bg-default-100 animate-pulse" />
+                </div>
+            </div>
+        </div>
+    )
+}
 // --- Helpers for formatting and icons ---
 
 const renderDiff = (log: TJobActivityLog) => {
@@ -132,12 +167,25 @@ const renderDiff = (log: TJobActivityLog) => {
                 </span>
             )
         case ActivityTypeEnum.AssignMember:
-        case ActivityTypeEnum.UnassignMember:
+        case ActivityTypeEnum.UnassignMember: {
+            // 1. Parse an toàn (đề phòng null/undefined trả về mảng rỗng)
+            const prev = JSON.parse(log.previousValue || '[]')
+            const curr = JSON.parse(log.currentValue || '[]')
+
+            // 2. Dùng XOR để tìm ID bị thay đổi (người được add hoặc người bị remove)
+            // Kết quả của lodash luôn là Array, không cần check Array.isArray sau đó
+            const diff: string[] = lodash.xor(prev, curr)
+
+            if (diff.length === 0) return null
+
             return (
-                <span className="ml-1 font-semibold text-default-900">
-                    {log.currentValue}
-                </span>
+                <div className="flex flex-col items-start pl-3 gap-0.5 mt-1">
+                    {diff.map((userId: string) => (
+                        <UserDisplay key={userId} userId={userId} />
+                    ))}
+                </div>
             )
+        }
 
         case ActivityTypeEnum.UpdateInformation:
             return (
@@ -229,4 +277,35 @@ const getActivityConfig = (
                 textClass: 'text-default-600',
             }
     }
+}
+
+const UserDisplay = ({ userId }: { userId: string }) => {
+    const { data: user, isLoading } = useQuery({
+        ...userOptions(userId),
+        enabled: !!userId, // Only fetch if userId exists
+    })
+
+    if (isLoading) {
+        return (
+            <span className="animate-pulse bg-default-200 h-4 w-20 inline-block rounded-sm align-middle" />
+        )
+    }
+
+    if (!user)
+        return <span className="italic text-default-400">Unknown user</span>
+
+    return (
+        <User
+            avatarProps={{
+                src: optimizeCloudinary(user.avatar ?? IMAGES.emptyAvatar),
+                size: 'sm',
+                className: 'size-5!',
+            }}
+            name={user.displayName}
+            classNames={{
+                base: 'py-1',
+                name: 'text-xs text-text-7',
+            }}
+        />
+    )
 }

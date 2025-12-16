@@ -1186,7 +1186,7 @@ export class JobService {
 
                 await tx.jobActivityLog.create({
                     data: {
-                        activityType: ActivityType.AssignMember,
+                        activityType: ActivityType.UnassignMember,
                         previousValue: JSON.stringify(prevMemberIds),
                         currentValue: JSON.stringify(updatedMemberIds),
                         fieldName: 'Assignee',
