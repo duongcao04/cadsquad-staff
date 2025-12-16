@@ -4,13 +4,10 @@ import { CircleHelpIcon, Search } from 'lucide-react'
 import { type Variants } from 'motion/react'
 
 import { MotionButton } from '@/lib/motion'
-import {
-    NotificationDropdown,
-    SettingsDropdown,
-    UserDropdown,
-} from '@/shared/components'
+import { SettingsDropdown, UserDropdown } from '@/shared/components'
 
 import CadsquadLogo from '../../CadsquadLogo'
+import NotificationDropdown from '../Header/NotificationDropdown'
 
 const buttonVariants: Variants = {
     init: {

@@ -75,11 +75,6 @@ export const useJobsByDeadline = (isoDate?: string) => {
     }
 }
 
-export const useJobColumns = () => {
-    const { data } = useQuery(jobColumnsOptions())
-    return { jobColumns: data ?? [] }
-}
-
 export const useJobsDueOnDate = (dueAt?: string) => {
     const { data, isLoading, isFetching } = useQuery(
         jobsDueOnDateOptions(dueAt)
@@ -145,18 +140,6 @@ export const useJobDetail = (id?: string) => {
     }
 }
 
-export const useJobActivityLogs = (jobId?: string) => {
-    const { data, refetch, error, isLoading } = useQuery(
-        jobActivityLogsOptions(jobId)
-    )
-    return {
-        refetch,
-        activityLogs: data,
-        error,
-        isLoading,
-    }
-}
-
 // --- MUTATIONS (Giữ nguyên logic nhưng code gọn hơn 1 chút) ---
 export const useCreateJobMutation = () => {
     return useMutation({
@@ -182,15 +165,12 @@ export const useChangeStatusMutation = (
             jobId,
             data,
         }: {
-            jobId?: string
+            jobId: string
             data: TChangeStatusInput
-        }) => {
-            if (!jobId) throw new Error('Job ID missing')
-            return jobApi.changeStatus(jobId, data)
-        },
+        }) => jobApi.changeStatus(jobId, data),
         onSuccess: (res) => {
             queryClient.invalidateQueries({
-                queryKey: ['jobs'],
+                queryKey: jobsListOptions().queryKey,
             })
             if (res.result?.no) {
                 queryClient.invalidateQueries({
@@ -242,6 +222,22 @@ export const useRescheduleMutation = (
             })
         },
         onError: (err) => onErrorToast(err, 'Reschedule Failed'),
+    })
+}
+
+export const useTogglePinJobMutation = () => {
+    return useMutation({
+        mutationKey: ['togglePin', 'job'],
+        mutationFn: (jobId: string) => jobApi.togglePin(jobId),
+        onSuccess: (res) => {
+            queryClient.invalidateQueries({ queryKey: ['jobs'] })
+            addToast({
+                title: res.result?.isPinned ? 'Job pinned' : 'Job unpinned',
+                description: res.result?.message,
+                color: 'success',
+            })
+        },
+        onError: (err) => onErrorToast(err, 'Pin job failed'),
     })
 }
 
@@ -387,5 +383,24 @@ export const useDeleteJobMutation = () => {
             })
         },
         onError: (err) => onErrorToast(err, 'Delete job failed'),
+    })
+}
+export const useMarkPaidMutation = () => {
+    return useMutation({
+        mutationKey: ['mark-paid', 'job'],
+        mutationFn: (jobId: string) => {
+            return jobApi.markPaid(jobId)
+        },
+        onSuccess: (res) => {
+            addToast({
+                title: 'Mark as paid successfully',
+                description: `#${res.result?.no} has been marked as paid`,
+                color: 'success',
+            })
+            queryClient.invalidateQueries({
+                queryKey: ['jobs'],
+            })
+        },
+        onError: (err) => onErrorToast(err, 'Mark as paid failed'),
     })
 }

@@ -5,13 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
-
-// generator docs {
-//   provider = "node node_modules/prisma-docs-generator"
-//   output   = "./docs"
-// }
 
 datasource db {
   provider = "postgresql"
@@ -59,13 +55,14 @@ model User {
   files               FileSystem[]       @relation("UserFiles")
   sendedNotifications Notification[]     @relation("UserSendedNotifications")
   jobActivityLog      JobActivityLog[]
-  configs             Config[]
+  configs             UserConfig[]
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   comment             Comment[]
   gallery             Gallery[]
   userDevices         UserDevices[]
   statusChanges       JobStatusHistory[]
+  pinnedJobs          PinnedJob[]
 
   // Quan hệ Auth
   sessions Session[]
@@ -169,17 +166,25 @@ model Department {
   updatedAt   DateTime @updatedAt
 }
 
-model Config {
-  id          String   @id @default(uuid())
+model UserConfig {
+  id          String              @id @default(uuid())
   userId      String?
-  user        User?    @relation(fields: [userId], references: [id])
-  displayName String
+  user        User?               @relation(fields: [userId], references: [id])
+  displayName String // VD: "Danh sách việc đã ghim"
+  description String? // VD: "Chứa các ID của việc làm được user quan tâm"
   code        String
-  value       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  // Dùng Json để lưu mảng ID hoặc Object phức tạp
+  group       UserConfigGroupEnum @default(SYSTEM)
+  value       Json
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@unique([userId, code])
+}
+
+enum UserConfigGroupEnum {
+  SYSTEM
+  USER
 }
 
 enum RoleEnum {
@@ -243,7 +248,7 @@ model Job {
   startedAt        DateTime           @default(now())
   priority         JobPriority        @default(MEDIUM)
   files            FileSystem[]
-  isPinned         Boolean            @default(false)
+  // isPinned         Boolean            @default(false)
   isPublished      Boolean            @default(false)
   isPaid           Boolean            @default(false)
   dueAt            DateTime
@@ -255,11 +260,24 @@ model Job {
   deletedAt        DateTime?
   comments         Comment[]
   statusHistory    JobStatusHistory[]
+  pinnedByUsers    PinnedJob[]
 
   @@index([no])
   @@index([statusId])
   @@index([createdById])
   @@index([priority])
+}
+
+model PinnedJob {
+  userId   String
+  jobId    String
+  pinnedAt DateTime @default(now()) // Thời điểm lưu
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Composite ID: Đảm bảo 1 user chỉ pin 1 job được 1 lần
+  @@id([userId, jobId])
 }
 
 enum JobPriority {

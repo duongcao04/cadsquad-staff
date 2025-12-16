@@ -42,10 +42,15 @@ export function NotificationCard({ data }: { data: TUserNotification }) {
                 )}
             </div>
             <div className="space-y-1">
-                <p className="text-sm font-semibold line-clamp-1">
-                    {data?.title}
+                <p
+                    className="text-sm font-semibold line-clamp-1"
+                    title={data.title ?? ''}
+                >
+                    {data.title}
                 </p>
-                <p className="text-sm line-clamp-2">{data?.content}</p>
+                <p className="text-sm line-clamp-2" title={data.content}>
+                    {data.content}
+                </p>
             </div>
             {data.status === NotificationStatusEnum.UNSEEN && (
                 <div className="w-full aspect-square rounded-full bg-gray-500"></div>

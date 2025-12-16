@@ -27,7 +27,18 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
                     <HeroUIProvider>
                         <AntdProvider>
                             <ToastProvider
-                                placement="bottom-center"
+                                placement="bottom-right"
+                                maxVisibleToasts={10}
+                                toastOffset={20}
+                                toastProps={{
+                                    radius: 'sm',
+                                    timeout: 1200,
+                                    variant: 'flat',
+                                    classNames: {
+                                        closeButton:
+                                            'opacity-100 absolute right-4 top-1/2 -translate-y-1/2',
+                                    },
+                                }}
                                 regionProps={{
                                     classNames: {
                                         base: '!z-[10000]',

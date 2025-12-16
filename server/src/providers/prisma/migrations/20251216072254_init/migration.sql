@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "UserConfigGroupEnum" AS ENUM ('SYSTEM', 'USER');
+
+-- CreateEnum
 CREATE TYPE "RoleEnum" AS ENUM ('USER', 'ADMIN', 'ACCOUNTING');
 
 -- CreateEnum
@@ -156,16 +159,18 @@ CREATE TABLE "Department" (
 );
 
 -- CreateTable
-CREATE TABLE "Config" (
+CREATE TABLE "UserConfig" (
     "id" TEXT NOT NULL,
     "userId" TEXT,
     "displayName" TEXT NOT NULL,
+    "description" TEXT,
     "code" TEXT NOT NULL,
-    "value" TEXT NOT NULL,
+    "group" "UserConfigGroupEnum" NOT NULL DEFAULT 'SYSTEM',
+    "value" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Config_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "UserConfig_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -194,14 +199,13 @@ CREATE TABLE "Job" (
     "description" TEXT,
     "attachmentUrls" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "clientName" TEXT NOT NULL,
-    "incomeCost" INTEGER NOT NULL,
-    "staffCost" INTEGER NOT NULL,
+    "incomeCost" DOUBLE PRECISION NOT NULL,
+    "staffCost" DOUBLE PRECISION NOT NULL,
     "createdById" TEXT NOT NULL,
     "paymentChannelId" TEXT,
     "statusId" TEXT NOT NULL,
     "startedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "priority" "JobPriority" NOT NULL DEFAULT 'MEDIUM',
-    "isPinned" BOOLEAN NOT NULL DEFAULT false,
     "isPublished" BOOLEAN NOT NULL DEFAULT false,
     "isPaid" BOOLEAN NOT NULL DEFAULT false,
     "dueAt" TIMESTAMP(3) NOT NULL,
@@ -213,6 +217,15 @@ CREATE TABLE "Job" (
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Job_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PinnedJob" (
+    "userId" TEXT NOT NULL,
+    "jobId" TEXT NOT NULL,
+    "pinnedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PinnedJob_pkey" PRIMARY KEY ("userId","jobId")
 );
 
 -- CreateTable
@@ -255,6 +268,7 @@ CREATE TABLE "JobStatus" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "systemType" "JobStatusSystemType" NOT NULL DEFAULT 'STANDARD',
+    "allowedRolesToSet" "RoleEnum"[] DEFAULT ARRAY['ADMIN']::"RoleEnum"[],
 
     CONSTRAINT "JobStatus_pkey" PRIMARY KEY ("id")
 );
@@ -347,7 +361,7 @@ CREATE UNIQUE INDEX "JobTitle_code_key" ON "JobTitle"("code");
 CREATE UNIQUE INDEX "Department_code_key" ON "Department"("code");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Config_userId_code_key" ON "Config"("userId", "code");
+CREATE UNIQUE INDEX "UserConfig_userId_code_key" ON "UserConfig"("userId", "code");
 
 -- CreateIndex
 CREATE INDEX "FileSystem_createdById_idx" ON "FileSystem"("createdById");
@@ -437,7 +451,7 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Comment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Config" ADD CONSTRAINT "Config_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "UserConfig" ADD CONSTRAINT "UserConfig_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "FileSystem" ADD CONSTRAINT "FileSystem_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -456,6 +470,12 @@ ALTER TABLE "Job" ADD CONSTRAINT "Job_paymentChannelId_fkey" FOREIGN KEY ("payme
 
 -- AddForeignKey
 ALTER TABLE "Job" ADD CONSTRAINT "Job_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "JobStatus"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PinnedJob" ADD CONSTRAINT "PinnedJob_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PinnedJob" ADD CONSTRAINT "PinnedJob_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "JobStatusHistory" ADD CONSTRAINT "JobStatusHistory_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;

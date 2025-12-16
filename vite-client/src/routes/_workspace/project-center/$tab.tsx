@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from '@/lib'
-import { jobsListOptions, useProfile } from '@/lib/queries'
+import { jobColumnsOptions, jobsListOptions, useProfile } from '@/lib/queries'
 import ProjectCenterTableView from '@/shared/components/project-center/ProjectCenterTableView'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { Tab, Tabs } from '@heroui/react'
@@ -70,6 +70,8 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
             search,
             sort = DEFAULT_SORT,
         } = deps.search
+
+        context.queryClient.ensureQueryData(jobColumnsOptions())
 
         return context.queryClient.ensureQueryData(
             jobsListOptions({

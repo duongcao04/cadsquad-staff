@@ -8,9 +8,18 @@ import { NotificationStatus } from '@prisma/client'
 
 @Injectable()
 export class NotificationService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(
+        data: CreateNotificationDto
+    ): Promise<NotificationResponseDto> {
+        const notification = await this.prisma.notification.create({ data })
+        return plainToInstance(NotificationResponseDto, notification, {
+            excludeExtraneousValues: true,
+        })
+    }
+
+    async send(
         data: CreateNotificationDto
     ): Promise<NotificationResponseDto> {
         const notification = await this.prisma.notification.create({ data })
@@ -35,7 +44,7 @@ export class NotificationService {
             }),
             this.prisma.notification.count({
                 where: {
-                    AND: [{ userId }, { status: NotificationStatus.SEEN }],
+                    AND: [{ userId }, { status: NotificationStatus.UNSEEN }],
                 },
             }),
         ])

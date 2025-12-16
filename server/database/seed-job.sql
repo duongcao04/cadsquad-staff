@@ -31,7 +31,7 @@ BEGIN
       id, no, "typeId", "displayName", "clientName",
       "incomeCost", "staffCost", "statusId",
       "createdById", "paymentChannelId",
-      "isPaid", "isPinned", "isPublished", "dueAt", "createdAt", "updatedAt"
+      "isPaid", "isPublished", "dueAt", "createdAt", "updatedAt"
     )
     VALUES (
       gen_random_uuid(),
@@ -46,7 +46,6 @@ BEGIN
       v_status.id,
       v_creator.id,
       v_payment.id,
-      (random() < 0.5),
       (random() < 0.5),
       (random() < 0.5),
       NOW() + ((1 + floor(random() * 70))::text || ' days')::interval,

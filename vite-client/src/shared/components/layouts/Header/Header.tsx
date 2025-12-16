@@ -5,10 +5,10 @@ import { CircleHelpIcon, Search } from 'lucide-react'
 import { useEffect } from 'react'
 import CadsquadLogo from '../../CadsquadLogo'
 import { HeroButton } from '../../ui/hero-button'
-import { NotificationDropdown } from './NotificationDropdown'
 import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
+import NotificationDropdown from './NotificationDropdown'
 
 const { Header: AntHeader } = Layout
 

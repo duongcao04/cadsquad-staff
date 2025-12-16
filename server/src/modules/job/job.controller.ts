@@ -46,7 +46,14 @@ export class JobController {
         private readonly jobService: JobService,
         private readonly jobTypeService: JobTypeService,
         private readonly activityLogService: ActivityLogService
-    ) {}
+    ) { }
+
+
+    @Post(':id/toggle-pin')
+    async togglePin(@Req() request: Request, @Param('id') jobId: string) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.togglePin(userPayload.sub, jobId);
+    }
 
     @Post()
     @ApiBearerAuth()
@@ -100,6 +107,24 @@ export class JobController {
     async findAll(@Req() request: Request, @Query() query: JobQueryDto) {
         const userPayload: TokenPayload = await request['user']
         return this.jobService.findAll(userPayload.sub, userPayload.role, query)
+    }
+
+    @Get('workbench')
+    @HttpCode(200)
+    @ResponseMessage('Get workbench data page')
+    @UseGuards(JwtGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get a list of jobs with pagination, filtering, and sorting, pinned job',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Return a list of jobs.',
+        type: [JobResponseDto],
+    })
+    async getWorkbenchData(@Req() request: Request, @Query() query: JobQueryDto) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.getWorkbenchData(userPayload.sub, userPayload.role, query)
     }
 
     @Get('search')
@@ -172,18 +197,6 @@ export class JobController {
             userPayload.role,
             jobNo
         )
-    }
-
-    @Get('columns')
-    @HttpCode(200)
-    @ResponseMessage('Get columns successfully')
-    @UseGuards(JwtGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get job columns for a user' })
-    @ApiResponse({ status: 200, description: 'Return a list of columns.' })
-    async getColumns(@Req() request: Request) {
-        const userPayload: TokenPayload = await request['user']
-        return this.jobService.getColumns(userPayload.sub)
     }
 
     @Get('dueOn/:inputDate')
@@ -309,7 +322,7 @@ export class JobController {
         return this.jobService.rescheduleJob(id, userPayload.sub, data)
     }
 
-    @Patch(':id/mark-paid')
+    @Post(':id/mark-paid')
     @HttpCode(200)
     @ResponseMessage('Mark as paid job successfully')
     @UseGuards(AdminGuard, JwtGuard)

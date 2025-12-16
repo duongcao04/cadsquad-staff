@@ -18,10 +18,13 @@ import {
     Trash2,
 } from 'lucide-react'
 
-
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import { dateFormatter } from '@/lib/dayjs'
-import { useProfile, useUpdateJobMutation } from '@/lib/queries'
+import {
+    jobActivityLogsOptions,
+    useProfile,
+    useUpdateJobMutation,
+} from '@/lib/queries'
 import { currencyFormatter } from '@/lib/utils'
 import type { TJob } from '@/shared/types'
 
@@ -35,6 +38,7 @@ import { JobActivityHistory } from './JobActivityLog'
 import JobAssigneesView from './JobAssigneesView'
 import JobCommentsView from './JobCommentsView'
 import JobDescriptionView from './JobDescriptionView'
+import { useQuery } from '@tanstack/react-query'
 
 interface JobDetailProps {
     data: TJob
@@ -42,6 +46,15 @@ interface JobDetailProps {
 }
 export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
     const { isAdmin } = useProfile()
+
+    const { data: activityLogs } = useQuery({
+        // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+        // The query won't run because of 'enabled' below.
+        ...jobActivityLogsOptions(job.id ?? -1),
+
+        // Only fetch if nextStatusOrder exists
+        enabled: !!job.id,
+    })
 
     const updateAttachmentMutation = useUpdateJobMutation((res) => {
         addToast({
@@ -120,7 +133,7 @@ export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
                                         </HeroCardHeader>
                                         <HeroCardBody>
                                             <JobActivityHistory
-                                                logs={job.activityLog}
+                                                logs={activityLogs}
                                             />
                                         </HeroCardBody>
                                     </HeroCard>

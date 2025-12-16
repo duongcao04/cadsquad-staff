@@ -6,7 +6,6 @@ import {
     JOB_COLUMNS,
     TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import { JobColumnKey, TJob } from '@/shared/types'
 import {
     Button,
@@ -434,6 +433,7 @@ export default function WorkbenchTable({
                             <JobStatusDropdown
                                 jobData={data}
                                 statusData={data.status}
+                                afterChangeStatus={onRefresh}
                             />
                         </div>
                     )

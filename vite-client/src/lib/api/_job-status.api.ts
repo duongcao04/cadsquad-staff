@@ -29,10 +29,10 @@ export const jobStatusApi = {
             `/v1/job-statuses/${id}`
         )
     },
-    findByOrder: (orderNum: number) => {
+    findByOrder: async (orderNum: number) => {
         return axiosClient.get<ApiResponse<IJobStatusResponse>>(
             `/v1/job-statuses/order/${orderNum}`
-        )
+        ).then(res => res.data)
     },
     update: (id: string, data: TUpdateJobStatusInput) => {
         return axiosClient.patch<ApiResponse<{ id: string }>>(

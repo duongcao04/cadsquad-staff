@@ -1,6 +1,9 @@
 import { JobStatusSystemTypeEnum } from '@/shared/enums'
 import type { IJobStatusResponse } from '@/shared/interfaces'
 import type { TJobStatus } from '@/shared/types'
+import { queryOptions } from '@tanstack/react-query'
+import { jobStatusApi } from '../../api'
+import lodash from 'lodash'
 
 export const mapJobStatus: (item: IJobStatusResponse) => TJobStatus = (
     item
@@ -19,3 +22,14 @@ export const mapJobStatus: (item: IJobStatusResponse) => TJobStatus = (
     updatedAt: new Date(item.updatedAt),
     thumbnailUrl: item.thumbnailUrl ?? '',
 })
+
+export const statusByOrderOptions = (order: number) =>
+    queryOptions({
+        queryKey: ['job-statuses', 'order', order],
+        queryFn: () => jobStatusApi.findByOrder(order),
+        select: (res) => {
+            const statusData = res?.result
+            return lodash.isEmpty(statusData) ? undefined : mapJobStatus(statusData)
+        },
+    })
+

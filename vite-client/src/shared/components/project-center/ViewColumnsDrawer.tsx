@@ -1,4 +1,6 @@
-import { Spinner } from '@heroui/react'
+import { JOB_COLUMNS } from '@/lib/utils'
+import type { JobColumnKey } from '@/shared/types'
+import { useStore } from '@tanstack/react-store'
 import { Drawer } from 'antd'
 import {
     ArrowLeft,
@@ -17,34 +19,27 @@ import {
     Text,
     UsersRound,
 } from 'lucide-react'
-
-
-import {
-    useJobColumns,
-    useProfile,
-    useUpdateConfigByCodeMutation,
-} from '@/lib/queries'
-import { USER_CONFIG_KEYS, USER_CONFIG_VALUES } from '@/lib/utils'
-import { RoleEnum } from '@/shared/enums'
-import type { JobColumn, JobColumnKey } from '@/shared/types'
-
+import { pCenterTableStore, toggleJobColumns } from '../../stores'
 import { ViewColumnSwitch } from './ViewColumnSwitch'
+import { useProfile } from '../../../lib'
 
-type THeaderColumns = {
-    title: string
-    key: JobColumn
-    icon?: React.ReactNode
-}[]
 type Props = { isOpen: boolean; onClose: () => void }
 
 export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
-    const { jobColumns: showColumns } = useJobColumns()
-    const { userRole } = useProfile()
-    const { mutateAsync: updateConfigMutate, isPending: isLoading } =
-        useUpdateConfigByCodeMutation()
+    const { isAdmin, isAccounting } = useProfile()
+
+    const JOB_COLUMNS_FINAL =
+        isAdmin || isAccounting
+            ? JOB_COLUMNS
+            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
+
+    const visibleColumns = useStore(
+        pCenterTableStore,
+        (state) => state.jobColumns
+    )
 
     const columnMeta: Record<
-        JobColumn,
+        JobColumnKey,
         { title: string; icon?: React.ReactNode }
     > = {
         no: {
@@ -55,7 +50,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
             title: 'Type',
             icon: <Layers2 size={20} className="text-text-subdued" />,
         },
-        thumbnail: {
+        thumbnailUrl: {
             title: 'Thumbnail',
             icon: <GalleryThumbnails size={20} className="text-text-subdued" />,
         },
@@ -121,42 +116,8 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
         },
     }
 
-    // Auto-generate headerColumns from JobCols
-    const headerColumns: THeaderColumns = (
-        Object.keys(columnMeta) as JobColumn[]
-    ).map((key) => ({
-        key,
-        ...columnMeta[key],
-    }))
-    const canShowCols =
-        userRole === RoleEnum.ADMIN
-            ? USER_CONFIG_VALUES.allJobColumns.admin
-            : USER_CONFIG_VALUES.allJobColumns.user
-    const finalColumns = headerColumns.filter((col) => {
-        return canShowCols.includes(col.key)
-    })
-
-    const handleSwitch = (colKey: string, isSelected: boolean) => {
-        if (showColumns) {
-            if (!isSelected) {
-                const newCols = showColumns?.filter((item) => item !== colKey)
-                updateConfigMutate({
-                    code: USER_CONFIG_KEYS.jobShowColumns,
-                    data: {
-                        value: JSON.stringify(newCols),
-                    },
-                })
-            } else {
-                const newCols = [...showColumns, colKey]
-                updateConfigMutate({
-                    code: USER_CONFIG_KEYS.jobShowColumns,
-                    data: {
-                        value: JSON.stringify(newCols),
-                    },
-                })
-            }
-        }
-    }
+    const handleSwitch = (key: JobColumnKey, isVisible: boolean) =>
+        toggleJobColumns(key, isVisible)
 
     return (
         <Drawer
@@ -172,53 +133,19 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
             }}
         >
             <div className="relative size-full">
-                {isLoading && (
-                    <div className="absolute bg-background opacity-50 size-full z-20 flex items-center justify-center">
-                        <Spinner size="lg" className="opacity-100!" />
-                    </div>
-                )}
                 <div className="flex items-center justify-between">
                     <p className="font-medium text-text-subdued">
                         Show columns
                     </p>
-                    <button
-                        className="cursor-pointer hover:underline underline-offset-2 transition duration-150"
-                        onClick={() => {
-                            const canShowAll =
-                                showColumns && showColumns.length === 0
-                            if (canShowAll) {
-                                const data =
-                                    userRole === RoleEnum.ADMIN
-                                        ? USER_CONFIG_VALUES.allJobColumns.admin
-                                        : USER_CONFIG_VALUES.allJobColumns.user
-                                updateConfigMutate({
-                                    code: USER_CONFIG_KEYS.jobShowColumns,
-                                    data: {
-                                        value: JSON.stringify(data),
-                                    },
-                                })
-                            } else {
-                                updateConfigMutate({
-                                    code: USER_CONFIG_KEYS.jobShowColumns,
-                                    data: {
-                                        value: JSON.stringify([]),
-                                    },
-                                })
-                            }
-                        }}
-                    >
-                        <p className="font-medium text-text-subdued">
-                            {showColumns?.length === 0
-                                ? 'Show all'
-                                : 'Hide all'}
-                        </p>
-                    </button>
                 </div>
                 <div className="mt-2">
-                    {finalColumns.map((col, idx) => {
+                    {JOB_COLUMNS_FINAL?.map((col, idx) => {
                         const isSelected =
-                            showColumns?.includes(col.key as JobColumnKey) ??
-                            false
+                            visibleColumns === 'all'
+                                ? true
+                                : visibleColumns?.includes(
+                                      col.uid as JobColumnKey
+                                  )
 
                         return (
                             <div
@@ -226,13 +153,15 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                                 className="flex items-center justify-between"
                             >
                                 <div className="py-2.5 flex items-center justify-start gap-3">
-                                    <div className="size-6 flex items-center justify-center">
-                                        {col.icon}
-                                    </div>
-                                    <p className="text-base">{col.title}</p>
+                                    <p className="text-text-7">
+                                        {columnMeta[col.uid]?.icon}
+                                    </p>
+                                    <p className="text-sm font-medium text-text-7">
+                                        {col.displayName}
+                                    </p>
                                 </div>
                                 <ViewColumnSwitch
-                                    colKey={col.key}
+                                    colKey={col.uid}
                                     isSelected={isSelected}
                                     onSwitch={handleSwitch}
                                 />

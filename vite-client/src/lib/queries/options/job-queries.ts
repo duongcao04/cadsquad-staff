@@ -91,6 +91,45 @@ export const jobsListOptions = (
     })
 }
 
+
+// 1. Danh sách Jobs
+export const workbenchDataOptions = (
+    params: Omit<TJobQueryInput, 'tab' | 'isAll' | 'hideFinishItems'> = {
+        page: 1,
+        limit: 10,
+        sort: ['displayName:asc'],
+    }
+) => {
+    const { page, limit, search, sort, ...filters } =
+        params
+
+    return queryOptions({
+        queryKey: [
+            'workbench-data',
+            `limit=${limit}`,
+            `page=${page}`,
+            `keywords=${search}`,
+            `sort=${sort}`,
+            `filters=${queryString.stringify(filters)}`,
+        ],
+        queryFn: () => {
+            const newParams = lodash.omitBy(params, lodash.isUndefined)
+            return jobApi.workbenchData({
+                ...newParams,
+                hideFinishItems: '1'
+            })
+        },
+        // ✅ Select & Map data ngay tại đây
+        select: (res) => ({
+            jobs: Array.isArray(res.result?.data)
+                ? res.result.data.map(mapJob)
+                : [],
+            paginate: res.result?.paginate,
+        }),
+    })
+}
+
+
 // 2. Tìm kiếm Jobs
 export const jobsSearchOptions = (keywords?: string) =>
     queryOptions({
@@ -183,10 +222,12 @@ export const jobDetailOptions = (id?: string) =>
     })
 
 // 11. Activity Logs
-export const jobActivityLogsOptions = (jobId?: string) =>
+export const jobActivityLogsOptions = (jobId: string) =>
     queryOptions({
-        queryKey: jobId ? ['jobActivityLog', jobId] : ['jobActivityLog'],
-        queryFn: () => axiosClient.get(`jobs/${jobId}/activity-log`),
-        enabled: !!jobId,
-        select: (res: any) => res.result,
+        queryKey: jobId ? ['job-activity-log', 'id', jobId] : ['jobActivityLog'],
+        queryFn: () => jobApi.getJobActivityLog(jobId),
+        select: (res) => {
+            const logs = res?.result
+            return lodash.isEmpty(logs) ? [] : logs
+        },
     })

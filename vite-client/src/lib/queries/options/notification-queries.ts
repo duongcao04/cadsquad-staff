@@ -27,12 +27,15 @@ export const notificationsListOptions = () => {
     return queryOptions({
         queryKey: ['notifications'],
         queryFn: () => notificationApi.findAll(),
-        select: (res) => ({
-            notifications: Array.isArray(res.result)
-                ? res.result.map(mapUserNotification)
-                : [],
-            totalCount: res.result?.totalCount,
-            unseenCount: res.result?.unseenCount,
-        }),
+        select: (res) => {
+            const notificationsData = res.result?.notifications
+            return ({
+                notifications: Array.isArray(notificationsData)
+                    ? notificationsData.map(mapUserNotification)
+                    : [],
+                totalCount: res.result?.totalCount ?? 0,
+                unseenCount: res.result?.unseenCount ?? 0,
+            })
+        },
     })
 }

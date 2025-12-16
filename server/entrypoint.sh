@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "[entrypoint] Starting entrypoint script..."
+echo "[backend] Starting entrypoint script..."
 
 # Validate DATABASE_URL
 if [ -z "$DATABASE_URL" ]; then

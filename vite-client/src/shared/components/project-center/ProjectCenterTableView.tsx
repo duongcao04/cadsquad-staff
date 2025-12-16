@@ -1,5 +1,4 @@
 import { excelApi, jobApi } from '@/lib/api'
-import { useJobColumns } from '@/lib/queries'
 import { JOB_COLUMNS } from '@/lib/utils'
 import { TDownloadExcelInput, TJobFiltersInput } from '@/lib/validationSchemas'
 import { useDisclosure } from '@heroui/react'
@@ -49,9 +48,8 @@ export default function ProjectCenterTableView(
         string | null
     >(null)
 
-    const { jobColumns: showColumns } = useJobColumns()
-
     const viewDetail = useStore(pCenterTableStore, (state) => state.viewDetail)
+    const jobColumns = useStore(pCenterTableStore, (state) => state.jobColumns)
 
     // --- DRAWERS & MODALS ---
     const {
@@ -207,7 +205,7 @@ export default function ProjectCenterTableView(
             )}
 
             <ProjectCenterTable
-                visibleColumns={showColumns}
+                visibleColumns={jobColumns}
                 onAssignMember={onAssignMember}
                 onDownloadCsv={handleExport}
                 openFilterDrawer={onOpenFilterDrawer}

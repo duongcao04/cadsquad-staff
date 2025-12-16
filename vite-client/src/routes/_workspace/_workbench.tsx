@@ -3,7 +3,7 @@ import WorkbenchTableView from '@/shared/components/workbench/WorkbenchTableView
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { jobsListOptions } from '../../lib/queries'
+import { workbenchDataOptions } from '../../lib/queries'
 import AppLoading from '../../shared/components/app/AppLoading'
 
 const DEFAULT_SORT = 'displayName:asc'
@@ -32,12 +32,11 @@ export const Route = createFileRoute('/_workspace/_workbench')({
             sort = DEFAULT_SORT,
         } = deps.search
         return context.queryClient.ensureQueryData(
-            jobsListOptions({
+            workbenchDataOptions({
                 limit,
                 page,
                 search,
-                sort: ['isPinned:desc', sort],
-                hideFinishItems: '1',
+                sort: [sort],
             })
         )
     },
@@ -54,12 +53,11 @@ export function WorkbenchPage() {
     } = Route.useSearch()
     const navigate = Route.useNavigate()
 
-    const options = jobsListOptions({
+    const options = workbenchDataOptions({
         limit,
         page,
         search,
-        sort: ['isPinned:desc', sort],
-        hideFinishItems: '1',
+        sort: [sort],
     })
 
     const { data, refetch, isPending } = useSuspenseQuery(options)
