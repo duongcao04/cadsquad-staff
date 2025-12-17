@@ -14,6 +14,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as WorkspaceRouteImport } from './routes/_workspace'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SettingsPassword_securityRouteImport } from './routes/settings/password_security'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
 import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
@@ -47,6 +48,11 @@ const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SettingsRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const SettingsPassword_securityRoute =
   SettingsPassword_securityRouteImport.update({
@@ -109,19 +115,20 @@ export interface FileRoutesByFullPath {
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/password_security': typeof SettingsPassword_securityRoute
+  '/admin/': typeof AdminIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/jobs/$no': typeof WorkspaceJobsNoRoute
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin/mgmt/team': typeof AdminMgmtTeamRoute
 }
 export interface FileRoutesByTo {
-  '/admin': typeof AdminRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/jobs': typeof WorkspaceJobsRouteWithChildren
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/password_security': typeof SettingsPassword_securityRoute
+  '/admin': typeof AdminIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/jobs/$no': typeof WorkspaceJobsNoRoute
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
@@ -140,6 +147,7 @@ export interface FileRoutesById {
   '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/password_security': typeof SettingsPassword_securityRoute
+  '/admin/': typeof AdminIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/_workspace/jobs/$no': typeof WorkspaceJobsNoRoute
   '/_workspace/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
@@ -156,19 +164,20 @@ export interface FileRouteTypes {
     | '/project-center'
     | '/settings/appearance'
     | '/settings/password_security'
+    | '/admin/'
     | '/settings/'
     | '/jobs/$no'
     | '/project-center/$tab'
     | '/admin/mgmt/team'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/admin'
     | '/login'
     | '/jobs'
     | '/profile'
     | '/project-center'
     | '/settings/appearance'
     | '/settings/password_security'
+    | '/admin'
     | '/settings'
     | '/jobs/$no'
     | '/project-center/$tab'
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/_workspace/project-center'
     | '/settings/appearance'
     | '/settings/password_security'
+    | '/admin/'
     | '/settings/'
     | '/_workspace/jobs/$no'
     | '/_workspace/project-center/$tab'
@@ -235,6 +245,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof SettingsRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/settings/password_security': {
       id: '/settings/password_security'
@@ -364,10 +381,12 @@ const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
   AdminMgmtTeamRoute: typeof AdminMgmtTeamRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
   AdminMgmtTeamRoute: AdminMgmtTeamRoute,
 }
 

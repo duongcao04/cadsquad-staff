@@ -21,6 +21,7 @@ import { UploadModule } from './modules/upload/upload.module'
 import { HealthModule } from './modules/health/health.module'
 import { ExcelModule } from './modules/excel/excel.module'
 import { AblyModule } from './modules/ably/ably.module'
+import { AnalyticsModule } from './modules/analytics/analytics.module'
 
 @Module({
     imports: [
@@ -42,7 +43,8 @@ import { AblyModule } from './modules/ably/ably.module'
         BrowserSubscribesModule,
         UploadModule,
         HealthModule,
-        ExcelModule
+        ExcelModule,
+        AnalyticsModule
     ],
     controllers: [AppController],
     providers: [AppService],
