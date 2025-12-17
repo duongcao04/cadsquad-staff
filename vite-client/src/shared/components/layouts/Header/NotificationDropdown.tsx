@@ -1,5 +1,9 @@
-import { NotificationStatusEnum } from '@/shared/enums'
+import { cn } from '@/lib'
+import { CHANNELS } from '@/lib/ably'
+import { notificationsListOptions } from '@/lib/queries/options/notification-queries'
+import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
 import {
+    addToast,
     Badge,
     Button,
     Chip,
@@ -10,20 +14,79 @@ import {
     Spinner,
 } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
+import { useChannel } from 'ably/react'
 import { CheckCheck, Inbox, RefreshCcw } from 'lucide-react'
-import { useState } from 'react'
-import { notificationsListOptions } from '../../../../lib/queries/options/notification-queries'
+import { use, useState } from 'react'
+import { TUserNotification } from '../../../types'
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { HeroButton } from '../../ui/hero-button'
 import { NotificationCard } from './NotificationCard'
-import { useRouter } from '@tanstack/react-router'
+import { queryClient } from '../../../../main'
+import { jobsListOptions, useProfile } from '../../../../lib/queries'
+import { workbenchDataOptions } from '../../../../lib/queries/options/job-queries'
 
 export default function NotificationDropdown() {
+    const { profile } = useProfile()
     const router = useRouter()
     const [isOpen, setOpen] = useState(false)
 
     const { data, isLoading, refetch } = useQuery({
         ...notificationsListOptions(),
+        retry: isOpen,
+    })
+
+    console.log(CHANNELS.userNotificationsKey(profile.id))
+
+    useChannel(CHANNELS.userNotificationsKey(profile.id), (message) => {
+        console.log('Nhận tin:', message)
+        const noti: TUserNotification = message.data
+        addToast({
+            title: noti.title,
+            description: noti.content,
+            color: 'default',
+            classNames: {
+                base: cn([
+                    'bg-default-50 dark:bg-background shadow-sm',
+                    'border border-l-8 rounded-md rounded-l-none',
+                    'flex flex-col items-start',
+                    'border-primary-200 dark:border-primary-100 border-l-primary',
+                ]),
+                icon: 'w-6 h-6 fill-current',
+            },
+            endContent: (
+                <div className="ms-11 my-2 flex gap-x-2">
+                    <Button
+                        color={'primary'}
+                        size="sm"
+                        variant="bordered"
+                        onPress={() => {
+                            router.navigate({
+                                href: noti.redirectUrl ?? '#',
+                            })
+                        }}
+                    >
+                        View
+                    </Button>
+                    <Button
+                        className="underline-offset-2"
+                        color={'primary'}
+                        size="sm"
+                        variant="light"
+                    >
+                        Maybe Later
+                    </Button>
+                </div>
+            ),
+        })
+        if (message.name === NotificationTypeEnum.JOB_UPDATE) {
+            queryClient.invalidateQueries({
+                queryKey: [
+                    jobsListOptions().queryKey,
+                    workbenchDataOptions().queryKey,
+                ],
+            })
+        }
     })
 
     const hasUnseen = (data?.unseenCount ?? 0) > 0
@@ -121,10 +184,10 @@ export default function NotificationDropdown() {
                                         role="button"
                                         tabIndex={0}
                                         className={`
-                                            group relative flex w-full cursor-pointer items-start gap-3 p-4 transition-all duration-200 border-b border-divider/50 last:border-none outline-none
-                                            hover:bg-default-100 active:scale-[0.99]
-                                            ${isUnseen ? 'bg-primary-50/50 dark:bg-primary-50/10' : 'bg-transparent'}
-                                        `}
+                                                group relative flex w-full cursor-pointer items-start gap-3 p-4 transition-all duration-200 border-b border-divider/50 last:border-none outline-none
+                                                hover:bg-default-100 active:scale-[0.99]
+                                                ${isUnseen ? 'bg-primary-50/50 dark:bg-primary-50/10' : 'bg-transparent'}
+                                            `}
                                         onClick={() => {
                                             router.navigate({
                                                 href:

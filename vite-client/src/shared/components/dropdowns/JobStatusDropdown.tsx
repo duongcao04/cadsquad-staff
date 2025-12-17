@@ -264,6 +264,10 @@ export default function JobStatusDropdown({
                                                 onPress={() => {
                                                     handleChangeStatus(item)
                                                 }}
+                                                isDisabled={
+                                                    item.code ===
+                                                    statusData.code
+                                                }
                                             >
                                                 {item && (
                                                     <div className="flex items-center justify-start gap-2">

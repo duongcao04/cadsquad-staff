@@ -9,10 +9,14 @@ import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
 import NotificationDropdown from './NotificationDropdown'
+import { ChannelProvider } from 'ably/react'
+import { CHANNELS } from '../../../../lib/ably'
+import { useProfile } from '../../../../lib'
 
 const { Header: AntHeader } = Layout
 
 export const Header = () => {
+    const { profile } = useProfile()
     const { isOpen, onClose, onOpen } = useDisclosure({
         id: 'SearchModal',
     })
@@ -81,7 +85,13 @@ export const Header = () => {
 
                 <div className="h-full flex justify-end items-center gap-3">
                     <div className="flex items-center justify-end gap-3">
-                        <NotificationDropdown />
+                        <ChannelProvider
+                            channelName={CHANNELS.userNotificationsKey(
+                                profile.id
+                            )}
+                        >
+                            <NotificationDropdown />
+                        </ChannelProvider>
                         <Button
                             variant="light"
                             startContent={<CircleHelpIcon size={18} />}

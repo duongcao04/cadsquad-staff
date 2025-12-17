@@ -3,7 +3,6 @@ import {
     useMarkPaidMutation,
     useProfile,
     useTogglePinJobMutation,
-    useUpdateJobMutation,
 } from '@/lib/queries'
 import type { TJob } from '@/shared/types'
 import {
@@ -28,7 +27,6 @@ import {
     UserPlus,
 } from 'lucide-react'
 import { INTERNAL_URLS } from '../../../lib'
-import { queryClient } from '../../../main'
 import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'

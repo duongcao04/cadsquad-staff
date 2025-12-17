@@ -75,7 +75,7 @@ export const useUpdateNotification = (onSuccess?: () => void) => {
         },
         onSuccess: () => {
             // invalidate query notifications để refetch dữ liệu mới
-            queryClient.invalidateQueries({ queryKey: ['notifications'] })
+            queryClient.refetchQueries({ queryKey: ['notifications'] })
             onSuccess?.()
         },
     })

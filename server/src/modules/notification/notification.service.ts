@@ -5,10 +5,11 @@ import { CreateNotificationDto } from './dto/create-notification.dto'
 import { NotificationResponseDto } from './dto/notification-response.dto'
 import { UpdateNotificationDto } from './dto/update-notification.dto'
 import { NotificationStatus } from '@prisma/client'
+import { AblyService } from '../ably/ably.service'
 
 @Injectable()
 export class NotificationService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService, private readonly ablyService: AblyService) { }
 
     async create(
         data: CreateNotificationDto
@@ -23,6 +24,13 @@ export class NotificationService {
         data: CreateNotificationDto
     ): Promise<NotificationResponseDto> {
         const notification = await this.prisma.notification.create({ data })
+        // 2. Bắn tín hiệu sang Ably sau khi lưu thành công
+        // Channel: 'system-updates'
+        // Event: 'order-created'
+        await this.ablyService.publish(`user-notifications:${notification.userId}`, notification.type, {
+            ...notification,
+            timestamp: new Date(),
+        });
         return plainToInstance(NotificationResponseDto, notification, {
             excludeExtraneousValues: true,
         })

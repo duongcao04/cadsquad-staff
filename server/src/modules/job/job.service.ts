@@ -806,6 +806,11 @@ export class JobService {
                         select: {
                             id: true
                         }
+                    },
+                    status: {
+                        select: {
+                            systemType: true
+                        }
                     }
                 },
             })
@@ -825,13 +830,25 @@ export class JobService {
                 throw new BadRequestException('Job has already been paid')
             }
 
+            const finishStatus = await tx.jobStatus.findFirst({
+                where: { systemType: JobStatusSystemType.TERMINATED },
+                select: { id: true }
+            })
+
             // 3. Update: Mark to Paid
+            const updateData = job.status.systemType === JobStatusSystemType.COMPLETED ? {
+                isPaid: true,
+                paidAt: new Date(),
+                statusId: finishStatus?.id,
+                finishedAt: new Date()
+            } : {
+                isPaid: true,
+                paidAt: new Date(),
+            }
+
             const updateJob = await tx.job.update({
                 where: { id: jobId },
-                data: {
-                    isPaid: true,
-                    paidAt: new Date(), // Nên lưu lại thời điểm thanh toán thực tế nếu DB có field này
-                },
+                data: updateData
             })
 
             // 4. Ghi log
@@ -841,7 +858,7 @@ export class JobService {
                     previousValue: 'false',
                     currentValue: 'true',
                     modifiedById: modifierId,
-                    fieldName: 'isPaid',
+                    fieldName: 'mark paid',
                     activityType: ActivityType.UpdateInformation,
                 },
             })
@@ -890,6 +907,9 @@ export class JobService {
             // 1. Find job (Cần lấy field completedAt hiện tại để check)
             const job = await tx.job.findUnique({
                 where: { id: jobId },
+                include: {
+                    status: true
+                }
             })
 
             if (!job) throw new NotFoundException('Job not found')
@@ -901,32 +921,29 @@ export class JobService {
             if (!targetStatus)
                 throw new NotFoundException('Target status not found')
 
-            // 3. Xử lý Logic CompletedAt
-            let newCompletedAt: Date | null = null
 
-            if (targetStatus.systemType === JobStatusSystemType.COMPLETED) {
-                // Case 1: Chuyển sang Completed -> Luôn set thời gian hiện tại
-                newCompletedAt = new Date()
-            } else if (targetStatus.systemType === JobStatusSystemType.TERMINATED) {
-                // Case 2: Chuyển sang Finish
-                // Logic: Nếu đã có completedAt cũ thì giữ nguyên. Nếu chưa (null) thì set Now (nhảy cóc).
-                newCompletedAt = job.completedAt ? job.completedAt : new Date()
+            const getUpdateData = () => {
+                let base = {
+                    statusId: targetStatus.id
+                }
+                if (targetStatus.systemType === JobStatusSystemType.COMPLETED) {
+                    return Object.assign(base, { completedAt: new Date() });
+                }
+                if (targetStatus.systemType === JobStatusSystemType.TERMINATED) {
+                    if (job.status.systemType !== JobStatusSystemType.COMPLETED) {
+                        return Object.assign(base, { completedAt: new Date(), finishedAt: new Date(), isPaid: true });
+                    } else {
+                        return Object.assign(base, { finishedAt: new Date(), isPaid: true });
+                    }
+                }
+                return base
             }
-            // Case 3: Các trạng thái khác (Revision, In Progress) -> newCompletedAt vẫn là null (reset)
 
-            // 4. Xử lý Logic FinishedAt & IsPaid
-            const isTerminated =
-                targetStatus.systemType === JobStatusSystemType.TERMINATED
-
+            const updateData = getUpdateData()
             // 5. Update Job
             const updateJob = await tx.job.update({
                 where: { id: jobId },
-                data: {
-                    statusId: targetStatus.id,
-                    completedAt: newCompletedAt, // Logic mới
-                    finishedAt: isTerminated ? new Date() : null, // Logic cũ: Finish mới có finishedAt
-                    isPaid: isTerminated ? true : false, // Logic cũ
-                },
+                data: updateData,
             })
 
             // 6. Create activity log

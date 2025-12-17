@@ -7,6 +7,8 @@ import { ConfigProvider } from 'antd'
 import { ThemeProvider } from 'antd-style'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { queryClient } from '../main'
+import { AblyProvider } from 'ably/react'
+import { ablyClient } from '../lib/ably'
 
 // 1. Định nghĩa Interface cho Context
 interface AppRouterContext {
@@ -18,41 +20,43 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
             id="app"
             className="w-screen h-screen bg-background-muted scroll-smooth"
         >
-            <QueryClientProvider client={queryClient}>
-                <NextThemesProvider
-                    attribute="class"
-                    defaultTheme="light"
-                    enableSystem={true}
-                >
-                    <HeroUIProvider>
-                        <AntdProvider>
-                            <ToastProvider
-                                placement="bottom-right"
-                                maxVisibleToasts={10}
-                                toastOffset={20}
-                                toastProps={{
-                                    radius: 'sm',
-                                    timeout: 1200,
-                                    variant: 'flat',
-                                    classNames: {
-                                        closeButton:
-                                            'opacity-100 absolute right-4 top-1/2 -translate-y-1/2',
-                                    },
-                                }}
-                                regionProps={{
-                                    classNames: {
-                                        base: '!z-[10000]',
-                                    },
-                                }}
-                            />
-                            <Outlet />
-                        </AntdProvider>
-                    </HeroUIProvider>
-                </NextThemesProvider>
+            <AblyProvider client={ablyClient}>
+                <QueryClientProvider client={queryClient}>
+                    <NextThemesProvider
+                        attribute="class"
+                        defaultTheme="light"
+                        enableSystem={true}
+                    >
+                        <HeroUIProvider>
+                            <AntdProvider>
+                                <ToastProvider
+                                    placement="bottom-right"
+                                    maxVisibleToasts={10}
+                                    toastOffset={20}
+                                    toastProps={{
+                                        radius: 'sm',
+                                        timeout: 1200,
+                                        variant: 'flat',
+                                        classNames: {
+                                            closeButton:
+                                                'opacity-100 absolute right-4 top-1/2 -translate-y-1/2',
+                                        },
+                                    }}
+                                    regionProps={{
+                                        classNames: {
+                                            base: '!z-[10000]',
+                                        },
+                                    }}
+                                />
+                                <Outlet />
+                            </AntdProvider>
+                        </HeroUIProvider>
+                    </NextThemesProvider>
 
-                <ReactQueryDevtools />
-                <TanStackRouterDevtools />
-            </QueryClientProvider>
+                    <ReactQueryDevtools />
+                    <TanStackRouterDevtools />
+                </QueryClientProvider>
+            </AblyProvider>
         </div>
     ),
 })

@@ -396,7 +396,12 @@ export default function WorkbenchTable({
                         </div>
                     )
                 case 'isPaid':
-                    return <PaymentStatusDropdown jobData={data} />
+                    return (
+                        <PaymentStatusDropdown
+                            jobData={data}
+                            afterChangeStatus={onRefresh}
+                        />
+                    )
                 case 'dueAt': {
                     const isCompleted =
                         data.status.systemType ===
