@@ -1,117 +1,285 @@
-import React from 'react'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import {
+    dateFormatter,
+    getGradientColor,
+    INTERNAL_URLS,
+    lightenHexColor,
+    optimizeCloudinary,
+} from '@/lib'
+import { jobsDueOnDateOptions } from '@/lib/queries'
+import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
+import {
+    Calendar as CalendarIcon,
+    CalendarX,
+    ChevronLeft,
+    RefreshCw,
+} from 'lucide-react'
+import { useState } from 'react'
+import { HeroButton } from '../ui/hero-button'
+import { Avatar, AvatarGroup } from '@heroui/react'
+import WeekCalendar from './WeekCalendar'
 
 export const DashboardRightPanel = () => {
-    const scheduleItems = [
-        {
-            id: 1,
-            title: 'Meeting with Herry',
-            time: '12:00 - 01:00 PM',
-            avatars: 3,
-            color: 'border-l-teal-500',
-        },
-        {
-            id: 2,
-            title: 'Meeting with Salah',
-            time: '10:00 - 11:30 AM',
-            avatars: 2,
-            color: 'border-l-blue-500',
-        },
-        {
-            id: 3,
-            title: 'Meeting with Mbappe',
-            time: '02:00 - 03:00 PM',
-            avatars: 4,
-            color: 'border-l-orange-500',
-        },
-    ]
+    const [isCollapsed, setIsCollapsed] = useState(false)
+    const [selectedDate, setSelectedDate] = useState(
+        new Date().toISOString().split('T')[0]
+    )
+
+    const {
+        data: jobs,
+        refetch,
+        isFetching: isLoadingJobs,
+    } = useQuery({
+        ...jobsDueOnDateOptions(selectedDate),
+        enabled: !isCollapsed,
+    })
 
     return (
-        <div className="w-80 bg-white p-6 hidden xl:block">
-            {/* Mini Calendar Header */}
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-slate-800">January 2024</h3>
-                <div className="flex gap-1">
-                    <button className="p-1 rounded hover:bg-slate-100 text-slate-400">
-                        <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button className="p-1 rounded hover:bg-slate-100 text-slate-400">
-                        <ChevronRight className="w-4 h-4" />
-                    </button>
+        <div
+            className={`
+                bg-white border-l border-slate-100 h-screen hidden xl:flex flex-col transition-all duration-300 ease-in-out sticky top-0 right-0
+                ${isCollapsed ? 'w-20 p-4' : 'w-80 p-6'}
+            `}
+        >
+            {/* Calendar Section */}
+            {!isCollapsed ? (
+                // EXPANDED: Full Calendar
+                <div className="mb-8">
+                    <WeekCalendar
+                        onChangeDate={(date) =>
+                            setSelectedDate(date.toISOString().split('T')[0])
+                        }
+                        onClickMenuButton={() => setIsCollapsed(!isCollapsed)}
+                        isCollapsed={isCollapsed}
+                    />
                 </div>
-            </div>
-
-            {/* Calendar Grid (Simplified Visual) */}
-            <div className="grid grid-cols-7 gap-2 mb-8 text-center text-sm">
-                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-                    <span
-                        key={i}
-                        className="text-slate-400 text-xs font-medium"
+            ) : (
+                // COLLAPSED: Simple Icon
+                <div className="flex flex-col items-center mb-8 gap-2">
+                    <HeroButton
+                        onPress={() => setIsCollapsed(false)}
+                        isIconOnly
+                        size="sm"
+                        variant="bordered"
+                        className="border-1"
+                        color="default"
                     >
-                        {d}
+                        <ChevronLeft size={18} />
+                    </HeroButton>
+                    <div className="mt-2 w-10 h-10 rounded-xl bg-primary-50 text-primary-800 flex items-center justify-center">
+                        <CalendarIcon size={20} />
+                    </div>
+                    <span className="text-[10px] font-bold text-text-8">
+                        {dateFormatter(selectedDate, {
+                            format: 'dateMonth',
+                        })}
                     </span>
-                ))}
-                {Array.from({ length: 7 }).map((_, i) => (
-                    <span
-                        key={i}
-                        className={`p-2 rounded-full text-xs cursor-pointer ${i === 4 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'text-slate-600 hover:bg-slate-50'}`}
-                    >
-                        {15 + i}
-                    </span>
-                ))}
-            </div>
-
-            {/* Today Schedule */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                        Today
-                    </h4>
                 </div>
+            )}
 
-                <div className="space-y-4">
-                    {scheduleItems.map((item) => (
-                        <div
-                            key={item.id}
-                            className={`bg-slate-50 p-4 rounded-xl border-l-4 ${item.color} relative group hover:bg-white hover:shadow-md transition-all`}
-                        >
-                            <h5 className="font-bold text-slate-800 text-sm mb-1">
-                                {item.title}
-                            </h5>
-                            <p className="text-xs text-slate-500 mb-3">
-                                {item.time}
-                            </p>
-
-                            <div className="flex -space-x-2">
-                                {[1, 2, 3].map((i) => (
-                                    <img
-                                        key={i}
-                                        src={`https://i.pravatar.cc/150?u=${i * 10}`}
-                                        className="w-6 h-6 rounded-full border-2 border-white"
-                                    />
-                                ))}
-                                <div className="w-6 h-6 rounded-full bg-slate-200 border-2 border-white flex items-center justify-center text-[9px] font-bold text-slate-500">
-                                    +{item.avatars}
-                                </div>
+            {/* Schedule Section */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                <div
+                    className={`flex items-center mb-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}
+                >
+                    {!isCollapsed && (
+                        <div className="w-full flex items-end justify-between">
+                            <div>
+                                <h3 className="text-sm font-semibold text-text-subdued">
+                                    Events for{' '}
+                                </h3>
+                                <h4 className="text-base font-medium text-text-7">
+                                    {dateFormatter(selectedDate, {
+                                        format: 'longDate',
+                                    })}
+                                </h4>
                             </div>
+                            <HeroButton
+                                size="sm"
+                                onPress={refetch}
+                                variant="bordered"
+                                color="default"
+                                isIconOnly
+                                className="border-1"
+                                startContent={
+                                    <RefreshCw
+                                        size={16}
+                                        className={`${
+                                            isLoadingJobs
+                                                ? 'animate-spin-smooth'
+                                                : ''
+                                        } text-text-7`}
+                                    />
+                                }
+                            />
                         </div>
-                    ))}
+                    )}
                 </div>
-            </div>
 
-            {/* Bottom Card: Job Applications */}
-            <div className="bg-orange-50 p-5 rounded-2xl">
-                <p className="text-orange-800 text-xs font-bold uppercase mb-2">
-                    Job Applications
-                </p>
-                <h3 className="text-xl font-bold text-slate-800 mb-1">
-                    Job Applications
-                </h3>
-                <p className="text-slate-500 text-xs mb-4">
-                    246 Interviews • 101 Hired
-                </p>
-                <div className="h-16 bg-gradient-to-r from-orange-200 to-orange-100 rounded-xl opacity-50"></div>
+                {!isCollapsed && (
+                    <div className="space-y-4">
+                        {isLoadingJobs && (
+                            <JobSkeleton count={3} isCollapsed={isCollapsed} />
+                        )}
+                        {!isLoadingJobs && jobs && jobs.length === 0 ? (
+                            <div className="border border-text-subdued py-6 rounded-lg flex flex-col items-center justify-center gap-1 text-text-subdued">
+                                <CalendarX size={32} strokeWidth={1.2} />
+                                <p className="text-sm mt-2">
+                                    No events scheduled for this day.
+                                </p>
+                            </div>
+                        ) : (
+                            jobs?.map((item, index) => {
+                                const borderLeftColor = getGradientColor(
+                                    index * 30
+                                )
+                                const borderColor = lightenHexColor(
+                                    getGradientColor(index * 30),
+                                    50
+                                )
+                                const backgroundColor = lightenHexColor(
+                                    getGradientColor(index * 30),
+                                    96
+                                )
+                                const collapseBackground = lightenHexColor(
+                                    getGradientColor(index * 30),
+                                    90
+                                )
+
+                                return (
+                                    <Link
+                                        key={item.id}
+                                        className="block"
+                                        to={INTERNAL_URLS.getJobDetailUrl(
+                                            item.no
+                                        )}
+                                        target="_blank"
+                                    >
+                                        <div
+                                            className={`
+                                    relative group transition-all cursor-pointer hover:shadow-sm
+                                    ${
+                                        isCollapsed
+                                            ? 'w-10 h-10 rounded-full flex items-center justify-center mx-auto'
+                                            : `p-4 rounded-xl border-l-6 hover:bg-white border-1`
+                                    }
+                                `}
+                                            style={{
+                                                borderColor: borderColor,
+                                                borderLeftColor:
+                                                    borderLeftColor,
+                                                backgroundColor: isCollapsed
+                                                    ? collapseBackground
+                                                    : backgroundColor,
+                                            }}
+                                        >
+                                            {!isCollapsed ? (
+                                                // EXPANDED: Detailed Card
+                                                <>
+                                                    <h5 className="font-bold text-slate-800 text-sm mb-1 truncate">
+                                                        {item.displayName}
+                                                    </h5>
+                                                    <p className="text-xs text-slate-500 mb-3">
+                                                        {dateFormatter(
+                                                            item.dueAt
+                                                        )}
+                                                    </p>
+                                                    <div className="flex">
+                                                        <AvatarGroup
+                                                            isBordered
+                                                            max={3}
+                                                            size="sm"
+                                                        >
+                                                            {item.assignee.map(
+                                                                (i, index) => (
+                                                                    <Avatar
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        src={optimizeCloudinary(
+                                                                            i.avatar
+                                                                        )}
+                                                                        classNames={{
+                                                                            base: 'size-7! opacity-100!',
+                                                                        }}
+                                                                        alt="avatar"
+                                                                        isDisabled
+                                                                    />
+                                                                )
+                                                            )}
+                                                        </AvatarGroup>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                // COLLAPSED: Simple Dot indicator with tooltip behavior
+                                                <div
+                                                    className={`w-3 h-3 rounded-full bg-blue-500`}
+                                                    title={item.displayName}
+                                                ></div>
+                                            )}
+                                        </div>
+                                    </Link>
+                                )
+                            })
+                        )}
+                    </div>
+                )}
             </div>
         </div>
+    )
+}
+
+interface JobSkeletonProps {
+    count?: number
+    isCollapsed?: boolean
+}
+
+const JobSkeleton = ({ count = 3, isCollapsed = false }: JobSkeletonProps) => {
+    return (
+        <>
+            {Array.from({ length: count }).map((_, index) => (
+                <div
+                    key={index}
+                    className="block animate-pulse mb-3" // Add margin bottom if your list needs spacing
+                >
+                    <div
+                        className={`
+              relative transition-all 
+              ${
+                  isCollapsed
+                      ? 'w-10 h-10 rounded-full mx-auto bg-slate-100 flex items-center justify-center'
+                      : 'p-4 rounded-xl border-l-6 border-slate-200 bg-white border-1'
+              }
+            `}
+                    >
+                        {!isCollapsed ? (
+                            // EXPANDED SKELETON
+                            <div className="w-full">
+                                {/* Title Line */}
+                                <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
+
+                                {/* Date Line */}
+                                <div className="h-3 bg-slate-100 rounded w-1/3 mb-3"></div>
+
+                                {/* Avatars */}
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3].map((i) => (
+                                        <div
+                                            key={i}
+                                            className="w-6 h-6 rounded-full border-2 border-white bg-slate-200"
+                                        ></div>
+                                    ))}
+                                    {/* Extra count bubble */}
+                                    <div className="w-6 h-6 rounded-full bg-slate-100 border-2 border-white"></div>
+                                </div>
+                            </div>
+                        ) : (
+                            // COLLAPSED SKELETON
+                            <div className="w-3 h-3 rounded-full bg-slate-300"></div>
+                        )}
+                    </div>
+                </div>
+            ))}
+        </>
     )
 }

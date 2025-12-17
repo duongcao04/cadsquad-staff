@@ -2,7 +2,7 @@ import { Skeleton } from '@heroui/react'
 import { CalendarDays } from 'lucide-react'
 
 import { dateFormatter } from '@/lib/dayjs'
-import { useJobsByDeadline } from '@/lib/queries'
+import { useJobsDueOnDate } from '@/lib/queries'
 
 import React from 'react'
 import JobCard, { JobCardSkeleton } from '../profile/JobCard'
@@ -21,7 +21,7 @@ type Props = {
 }
 
 function JobDueModal({ isOpen, onClose, currentDate }: Props) {
-    const { data: jobs, isLoading } = useJobsByDeadline(
+    const { data: jobs, isLoading } = useJobsDueOnDate(
         currentDate.toISOString()
     )
 

@@ -565,7 +565,7 @@ export class JobService {
     /**
      * Find job by deadline.
      */
-    async findJobDeadline(
+    async findJobsDueAt(
         userId: string,
         userRole: RoleEnum,
         isoDate: string
@@ -607,7 +607,11 @@ export class JobService {
                 },
                 include: {
                     type: true,
-                    assignee: true,
+                    assignee: {
+                        select: {
+                            avatar: true
+                        }
+                    },
                     createdBy: true,
                     paymentChannel: true,
                     status: true,
@@ -653,48 +657,6 @@ export class JobService {
             }) as unknown as Job
         } catch (error) {
             throw new InternalServerErrorException('Get job by id failed')
-        }
-    }
-
-    /**
-     * Lấy danh sách job đến hạn vào ngày input
-     * @param inputDate ngày cần kiểm tra (Date hoặc string)
-     * @returns danh sách job
-     */
-    async getJobsDueOnDate(
-        userId: string,
-        userRole: RoleEnum,
-        inputDate: Date | string
-    ): Promise<Job[]> {
-        const startOfDay = dayjs(inputDate).startOf('day').toDate()
-        const endOfDay = dayjs(inputDate).endOf('day').toDate()
-        try {
-            const jobs = await this.prisma.job.findMany({
-                where: {
-                    ...this.buildPermission(userRole, userId),
-                    dueAt: {
-                        gte: startOfDay,
-                        lte: endOfDay,
-                    },
-                },
-                include: {
-                    status: true,
-                    type: true,
-                },
-                orderBy: { dueAt: 'asc' },
-            })
-
-            if (!jobs) {
-                throw new NotFoundException('Jobs not found')
-            }
-
-            return plainToInstance(this.responseSchema(userRole), jobs, {
-                excludeExtraneousValues: true,
-            }) as unknown as Job[]
-        } catch (error) {
-            throw new InternalServerErrorException(
-                'Get jobs due on date failed'
-            )
         }
     }
 

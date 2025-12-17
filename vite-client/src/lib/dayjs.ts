@@ -38,6 +38,9 @@ export const localizedFormats = {
     /** Example: August 16, 2018 */
     longDate: 'MMMM D, YYYY',
 
+    /** Example: 19 Jan */
+    dateMonth: 'D MMM',
+
     /** Example: August 16, 2018 8:02 PM */
     longDateTime: 'MMMM D, YYYY h:mm A',
 

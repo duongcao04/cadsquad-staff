@@ -94,13 +94,15 @@ export const AdminHeader = () => {
 
                 <div className="h-full flex justify-end items-center gap-3">
                     <div className="flex items-center justify-end gap-3">
-                        <ChannelProvider
-                            channelName={CHANNELS.userNotificationsKey(
-                                profile.id
-                            )}
-                        >
-                            <NotificationDropdown />
-                        </ChannelProvider>
+                        {profile.id && (
+                            <ChannelProvider
+                                channelName={CHANNELS.userNotificationsKey(
+                                    profile.id
+                                )}
+                            >
+                                <NotificationDropdown />
+                            </ChannelProvider>
+                        )}
                         <Button
                             variant="light"
                             startContent={<CircleHelpIcon size={18} />}

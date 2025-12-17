@@ -3,7 +3,6 @@ import lodash from 'lodash'
 import queryString from 'query-string'
 
 import { jobApi, jobStatusApi } from '@/lib/api'
-import { axiosClient } from '@/lib/axios'
 import { USER_CONFIG_KEYS } from '@/lib/utils'
 import { TJobQueryInput } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
@@ -143,12 +142,16 @@ export const jobsSearchOptions = (keywords?: string) =>
     })
 
 // 3. Jobs theo Deadline
-export const jobsByDeadlineOptions = (isoDate?: string) =>
+export const jobsDueOnDateOptions = (isoDate: string) =>
     queryOptions({
-        queryKey: ['jobs', `deadline=${isoDate}`],
-        queryFn: () => (isoDate ? jobApi.findByDeadline(isoDate) : null),
+        queryKey: ['jobs', 'due-on', isoDate],
+        queryFn: () => jobApi.getJobsDueOnDate(isoDate),
         enabled: !!isoDate,
-        select: (res) => res?.result,
+        select: (res) => {
+            return Array.isArray(res.result)
+                ? res.result.map(mapJob)
+                : []
+        },
     })
 
 // 4. Job Columns Config
@@ -157,15 +160,6 @@ export const jobColumnsOptions = () =>
         queryKey: ['configs', 'code', USER_CONFIG_KEYS.jobShowColumns],
         queryFn: () => jobApi.columns(),
         select: (res) => res?.result ?? [],
-    })
-
-// 5. Jobs Due On Date
-export const jobsDueOnDateOptions = (dueAt?: string) =>
-    queryOptions({
-        queryKey: ['jobs', 'dueOn', dueAt ?? ''],
-        queryFn: () => (dueAt ? jobApi.getJobsDueOnDate(dueAt) : null),
-        enabled: !!dueAt,
-        select: (res) => res?.result,
     })
 
 // 6. Count Jobs By Tab

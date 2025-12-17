@@ -27,6 +27,7 @@ import {
     EyeIcon,
     FilePlus,
     Filter,
+    RefreshCw,
     RotateCcw,
     SearchIcon,
     Sheet,
@@ -213,9 +214,13 @@ export default function ProjectCenterTable({
                         <div className="flex gap-3">
                             <Button
                                 startContent={
-                                    <RotateCcw
-                                        className="text-small"
+                                    <RefreshCw
                                         size={14}
+                                        className={`text-small ${
+                                            isLoadingData
+                                                ? 'animate-spin-smooth'
+                                                : ''
+                                        }`}
                                     />
                                 }
                                 variant="bordered"

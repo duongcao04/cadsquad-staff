@@ -1,15 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Plus } from 'lucide-react'
-import { RevenueChart } from '../../shared/components/admin/charts/RevenueChart'
-import { TopPerformers } from '../../shared/components/admin/charts/TopPerformers'
-import { TopStats } from '../../shared/components/admin/charts/TopStats'
-import { HeroButton } from '../../shared/components'
-import { useProfile } from '../../lib'
-import { jobsListOptions } from '../../lib/queries'
+import { RevenueChart } from '../../../shared/components/admin/charts/RevenueChart'
+import { TopPerformers } from '../../../shared/components/admin/charts/TopPerformers'
+import { TopStats } from '../../../shared/components/admin/charts/TopStats'
+import { HeroButton } from '../../../shared/components'
+import { useProfile } from '../../../lib'
+import { jobsListOptions } from '../../../lib/queries'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-export const Route = createFileRoute('/admin/')({
+export const Route = createFileRoute('/_administrator/admin/')({
     loader: ({ context }) => {
         return context.queryClient.ensureQueryData(
             jobsListOptions({

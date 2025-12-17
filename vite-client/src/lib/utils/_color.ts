@@ -78,3 +78,17 @@ export function darkenHexColor(hex: string, percent: number): string {
 
 	return `#${toHex(darkenedR)}${toHex(darkenedG)}${toHex(darkenedB)}`;
 }
+
+/**
+ * Dynamic Generation (TypeScript/JavaScript)
+ *  If you prefer to generate this dynamically (which is lighter for your codebase than hardcoding 200 strings), here is a helper function:
+ */
+export function getGradientColor(percentage: number): string {
+	// percentage should be 0 to 100
+	// 0 = Red (Danger), 50 = Yellow, 100 = Green (Safe)
+
+	const r = percentage < 50 ? 255 : Math.floor(255 - (percentage * 2 - 100) * 255 / 100);
+	const g = percentage > 50 ? 255 : Math.floor((percentage * 2) * 255 / 100);
+
+	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}00`;
+}

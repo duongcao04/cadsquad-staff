@@ -3,7 +3,7 @@ import lodash from 'lodash'
 
 import { CalendarDay } from 'react-day-picker'
 
-import { useJobsByDeadline } from '@/lib/queries'
+import { useJobsDueOnDate } from '@/lib/queries'
 
 type Props = {
     selectedDate: Date | undefined
@@ -18,7 +18,7 @@ export default function DayButton({
     calendarDay,
     openModal,
 }: Props) {
-    const { data: jobs } = useJobsByDeadline(calendarDay.date?.toISOString())
+    const { data: jobs } = useJobsDueOnDate(calendarDay.date?.toISOString())
     // eslint-disable-next-line react-hooks/purity
     const today = new Date(Date.now())
     const isSelected = lodash.isEqual(selectedDate, calendarDay.date)

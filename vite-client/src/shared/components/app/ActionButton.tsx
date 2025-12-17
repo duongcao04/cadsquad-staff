@@ -25,11 +25,15 @@ import {
 } from '@/shared/components'
 import { appStore, ESidebarStatus } from '@/shared/stores'
 
-export function ActionButton() {
+export function ActionButton({
+    forceStatus,
+}: {
+    forceStatus?: 'collapse' | 'expand'
+}) {
     const { isAdmin, isAccounting, isStaff } = useProfile()
 
     if (isAdmin) {
-        return <AdminCreateButton />
+        return <AdminCreateButton forceStatus={forceStatus} />
     }
     if (isAccounting) {
         return <AccountingButton />
@@ -47,8 +51,14 @@ export function AccountingButton() {
     return <div></div>
 }
 
-export function AdminCreateButton() {
-    const sidebarStatus = useStore(appStore, (state) => state.sidebarStatus)
+export function AdminCreateButton({
+    forceStatus,
+}: {
+    forceStatus?: 'collapse' | 'expand'
+}) {
+    const sidebarStatus = forceStatus
+        ? forceStatus
+        : useStore(appStore, (state) => state.sidebarStatus)
 
     const {
         isOpen: isOpenJM,

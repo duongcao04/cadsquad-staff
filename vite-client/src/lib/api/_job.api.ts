@@ -52,9 +52,9 @@ export const jobApi = {
             >(`/v1/jobs?${queryStringFormatter}`)
             .then((res) => res.data)
     },
-    findByDeadline: async (isoDate: string) => {
+    getJobsDueOnDate: async (isoDate: string) => {
         return axiosClient
-            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/deadline/${isoDate}`)
+            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/due-at/${isoDate}`)
             .then((res) => res.data)
     },
     searchJobs: async (keywords: string) => {
@@ -79,11 +79,6 @@ export const jobApi = {
     markPaid: async (jobId: string) => {
         return axiosClient
             .post<ApiResponse<{ id: string, no: string }>>(`/v1/jobs/${jobId}/mark-paid`)
-            .then((res) => res.data)
-    },
-    getJobsDueOnDate: async (inputDate: string) => {
-        return axiosClient
-            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/dueOn/${inputDate}`)
             .then((res) => res.data)
     },
     columns: async () => {

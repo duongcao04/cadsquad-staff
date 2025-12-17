@@ -150,7 +150,7 @@ export class JobController {
         )
     }
 
-    @Get('deadline/:isoDate')
+    @Get('due-at/:isoDate')
     @HttpCode(200)
     @UseGuards(JwtGuard)
     @ResponseMessage('Get jobs by deadline successfully')
@@ -166,12 +166,12 @@ export class JobController {
         description: 'Return a list of jobs.',
         type: [JobResponseDto],
     })
-    async findJobDeadline(
+    async findJobsDueAt(
         @Req() request: Request,
         @Param('isoDate') isoDate: string
     ) {
         const userPayload: TokenPayload = await request['user']
-        return this.jobService.findJobDeadline(
+        return this.jobService.findJobsDueAt(
             userPayload.sub,
             userPayload.role,
             isoDate
@@ -196,30 +196,6 @@ export class JobController {
             userPayload.sub,
             userPayload.role,
             jobNo
-        )
-    }
-
-    @Get('dueOn/:inputDate')
-    @HttpCode(200)
-    @ResponseMessage('Get job due on today successfully')
-    @UseGuards(JwtGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get jobs due on a specific date' })
-    @ApiResponse({
-        status: 200,
-        description: 'Return a list of jobs.',
-        type: [JobResponseDto],
-    })
-    async getJobsDueOnDate(
-        @Req() request: Request,
-        @Param() params: GetJobsDueDto
-    ) {
-        const userPayload: TokenPayload = request['user']
-        const { inputDate } = params
-        return this.jobService.getJobsDueOnDate(
-            userPayload.sub,
-            userPayload.role,
-            inputDate
         )
     }
 

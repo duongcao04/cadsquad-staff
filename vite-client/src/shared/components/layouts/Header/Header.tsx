@@ -1,21 +1,23 @@
+import { INTERNAL_URLS, useProfile } from '@/lib'
+import { CHANNELS } from '@/lib/ably'
 import { Button, Kbd, useDisclosure } from '@heroui/react'
+import { useRouter } from '@tanstack/react-router'
+import { ChannelProvider } from 'ably/react'
 import { Layout } from 'antd'
 import hotkeys from 'hotkeys-js'
 import { CircleHelpIcon, Search } from 'lucide-react'
 import { useEffect } from 'react'
 import CadsquadLogo from '../../CadsquadLogo'
 import { HeroButton } from '../../ui/hero-button'
+import NotificationDropdown from './NotificationDropdown'
 import { SearchModal } from './SearchModal'
 import { SettingsDropdown } from './SettingsDropdown'
 import { UserDropdown } from './UserDropdown'
-import NotificationDropdown from './NotificationDropdown'
-import { ChannelProvider } from 'ably/react'
-import { CHANNELS } from '../../../../lib/ably'
-import { useProfile } from '../../../../lib'
 
 const { Header: AntHeader } = Layout
 
 export const Header = () => {
+    const router = useRouter()
     const { profile } = useProfile()
     const { isOpen, onClose, onOpen } = useDisclosure({
         id: 'SearchModal',
@@ -85,19 +87,25 @@ export const Header = () => {
 
                 <div className="h-full flex justify-end items-center gap-3">
                     <div className="flex items-center justify-end gap-3">
-                        <ChannelProvider
-                            channelName={CHANNELS.userNotificationsKey(
-                                profile.id
-                            )}
-                        >
-                            <NotificationDropdown />
-                        </ChannelProvider>
+                        {profile.id && (
+                            <ChannelProvider
+                                channelName={CHANNELS.userNotificationsKey(
+                                    profile.id
+                                )}
+                            >
+                                <NotificationDropdown />
+                            </ChannelProvider>
+                        )}
                         <Button
                             variant="light"
                             startContent={<CircleHelpIcon size={18} />}
                             size="sm"
                             isIconOnly
-                            onPress={() => console.log('Help clicked')}
+                            onPress={() => {
+                                router.navigate({
+                                    href: INTERNAL_URLS.helpCenter,
+                                })
+                            }}
                         />
                         <SettingsDropdown />
                     </div>

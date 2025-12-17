@@ -1,112 +1,287 @@
+import { INTERNAL_URLS } from '@/lib'
+import { Link, useMatchRoute } from '@tanstack/react-router'
 import {
+    BadgeDollarSign,
     Calendar,
     CheckSquare,
-    ChevronDown, // Mapped to Job
+    ChevronLeft,
+    ChevronRight,
+    DiamondPercent,
+    Dock,
     FileText,
-    LayoutDashboard, // Mapped to FileSystem/Notes
-    Mail, // Schedule based on Job dueAt
-    PieChart, // Invite Team
-    Settings, // Mapped to User
-    UserPlus, // Reports
-    Users, // Mapped to User
+    Group,
+    LayoutDashboard,
+    Mail,
+    PieChart,
+    Settings,
+    Settings2,
+    UserPlus,
+    Users,
 } from 'lucide-react'
-import React from 'react'
+import React, { useState } from 'react'
+import { ActionButton } from '../../app/ActionButton'
+import { HeroButton } from '../../ui/hero-button'
+import { HeroTooltip } from '../../ui/hero-tooltip'
 
+// --- Types ---
 interface SidebarItemProps {
     icon: React.ElementType
     label: string
     isActive?: boolean
     badge?: number
+    isCollapsed: boolean
+    url: string
 }
 
+// --- Sub-Component: Sidebar Item ---
 const SidebarItem: React.FC<SidebarItemProps> = ({
     icon: Icon,
     label,
-    isActive,
+    isActive: defaultActive,
     badge,
-}) => (
-    <div
-        className={`flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 group ${
-            isActive
-                ? 'bg-primary-50 text-primary-800 font-semibold'
-                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-        }`}
-    >
-        <div className="flex items-center gap-3">
-            <Icon
-                className={`w-5 h-5 ${isActive ? 'text-primary-800' : 'text-slate-400 group-hover:text-slate-600'}`}
-            />
-            <span>{label}</span>
-        </div>
-        {badge && (
-            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                {badge}
-            </span>
-        )}
-    </div>
-)
+    isCollapsed,
+    url,
+}) => {
+    const matchRoute = useMatchRoute()
 
-export const AdminSidebar = () => {
+    // Returns false if not matched, or the params object if matched
+    const isActiveLink = matchRoute({
+        to: url,
+        fuzzy: false, // matches /admin, /admin/users, etc.
+    })
+
+    const isActive = defaultActive || isActiveLink
+
     return (
-        <aside className="w-64 bg-white flex flex-col overflow-y-auto">
-            {/* Navigation Groups */}
-            <div className="flex-1 px-4 space-y-8">
+        <HeroTooltip
+            isDisabled={!isCollapsed}
+            content={label}
+            placement="right"
+        >
+            <Link to={url} className="block">
+                <div
+                    title={isCollapsed ? label : undefined} // Tooltip for collapsed state
+                    className={`
+          flex items-center cursor-pointer transition-all duration-200 group relative
+          ${isCollapsed ? 'px-2' : 'justify-between pl-1 pr-4'}
+          ${
+              isActive
+                  ? 'bg-primary-50 text-primary rounded-lg'
+                  : 'text-slate-500 hover:bg-text-disabled hover:text-slate-900 rounded-lg'
+          }
+        `}
+                >
+                    <div
+                        className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-1'}`}
+                    >
+                        <div className="size-10 grid place-items-center">
+                            <Icon
+                                className={`transition-colors size-4.5! ${
+                                    isActive
+                                        ? 'text-primary'
+                                        : 'text-text-subdued group-hover:text-text-7'
+                                }`}
+                            />
+                        </div>
+
+                        {/* Label: Hide when collapsed */}
+                        {!isCollapsed && (
+                            <span className="font-medium text-sm whitespace-nowrap">
+                                {label}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Badge Logic */}
+                    {badge && (
+                        <>
+                            {/* Expanded: Badge on the right */}
+                            {!isCollapsed ? (
+                                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                    {badge}
+                                </span>
+                            ) : (
+                                /* Collapsed: Badge as a dot on top-right of icon */
+                                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                            )}
+                        </>
+                    )}
+                </div>
+            </Link>
+        </HeroTooltip>
+    )
+}
+
+// --- Main Component ---
+export const AdminSidebar = () => {
+    const [isCollapsed, setIsCollapsed] = useState(false)
+
+    return (
+        <aside
+            className={`flex flex-col h-full justify-between transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'w-20' : 'w-64'}
+      `}
+        >
+            {/* Scrollable Content */}
+            <div className={`pt-5 ${isCollapsed ? 'px-6 mb-3' : 'px-4 mb-2'}`}>
+                <ActionButton
+                    forceStatus={isCollapsed ? 'collapse' : 'expand'}
+                />
+            </div>
+            <div className="flex-1 px-3 space-y-6 overflow-y-auto overflow-x-hidden">
                 {/* Main Menu */}
                 <div>
-                    <p className="px-2 text-xs font-semibold text-text-subdued tracking-wider mb-2">
-                        Main Menu
-                    </p>
+                    {!isCollapsed && (
+                        <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                            Main Menu
+                        </p>
+                    )}
                     <div className="space-y-1">
                         <SidebarItem
                             icon={LayoutDashboard}
                             label="Dashboard"
-                            isActive
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.admin}
                         />
-                        {/* Map 'Tasks' to your 'Job' model */}
                         <SidebarItem
                             icon={CheckSquare}
                             label="All Jobs"
                             badge={12}
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.jobManage}
                         />
-                        {/* Map 'Notes' to 'JobActivityLog' or 'FileSystem' */}
-                        <SidebarItem icon={FileText} label="Files & Docs" />
-                        {/* Map 'Email' to 'Notification' */}
-                        <SidebarItem icon={Mail} label="Inbox" badge={5} />
-                        <SidebarItem icon={Calendar} label="Schedule" />
+                        <SidebarItem
+                            icon={FileText}
+                            label="Files & Docs"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.fileDocs}
+                        />
+                        <SidebarItem
+                            icon={Mail}
+                            label="Inbox"
+                            badge={5}
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.admin + '/inbox'}
+                        />
+                        <SidebarItem
+                            icon={Calendar}
+                            label="Schedule"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.schedule}
+                        />
                     </div>
                 </div>
 
                 {/* Management */}
                 <div>
-                    <p className="px-2 text-xs font-semibold text-text-subdued tracking-wider mb-2">
-                        Management
-                    </p>
+                    {!isCollapsed && (
+                        <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                            Management
+                        </p>
+                    )}
                     <div className="space-y-1">
-                        <SidebarItem icon={PieChart} label="Revenue Reports" />
-                        <SidebarItem icon={Users} label="Staff Directory" />
-                        <SidebarItem icon={UserPlus} label="Invite Member" />
+                        <SidebarItem
+                            icon={PieChart}
+                            label="Revenue Reports"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.revenueReports}
+                        />
+                        <SidebarItem
+                            icon={Users}
+                            label="Staff Directory"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.staffDirectory}
+                        />
+                        <SidebarItem
+                            icon={UserPlus}
+                            label="Invite Member"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.inviteMember}
+                        />
                     </div>
                 </div>
 
-                {/* Projects / Departments */}
+                {/* Financial */}
                 <div>
-                    <div className="flex items-center justify-between px-2 mb-2">
-                        <p className="text-xs font-semibold text-text-subdued tracking-wider">
-                            Departments
+                    {!isCollapsed && (
+                        <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                            Financial
                         </p>
-                        <Settings className="w-3 h-3 text-slate-400 cursor-pointer" />
+                    )}
+                    <div className="space-y-1">
+                        <SidebarItem
+                            icon={DiamondPercent}
+                            label="Overview"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.profitLoss}
+                        />
+                        <SidebarItem
+                            icon={BadgeDollarSign}
+                            label="Transaction Reports"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.payment}
+                        />
+                        <SidebarItem
+                            icon={Dock}
+                            label="Tax Declaration"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.payroll}
+                        />
+                        <SidebarItem
+                            icon={Group}
+                            label="Reimbursements"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.reimbursements}
+                        />
+                        <SidebarItem
+                            icon={Settings2}
+                            label="Financial Settings"
+                            isCollapsed={isCollapsed}
+                            url={INTERNAL_URLS.financialSettings}
+                        />
                     </div>
+                </div>
+
+                {/* Departments */}
+                <div>
+                    {!isCollapsed ? (
+                        <div className="flex items-center justify-between px-2 mb-2">
+                            <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                                Departments
+                            </p>
+                            <Settings className="w-3 h-3 cursor-pointer" />
+                        </div>
+                    ) : (
+                        // Centered Settings icon when collapsed
+                        <div className="flex justify-center mb-2">
+                            <Settings className="w-4 h-4 text-slate-300" />
+                        </div>
+                    )}
+
                     <div className="space-y-1">
                         {['Design Team', 'Development', 'Marketing'].map(
                             (dept, idx) => (
                                 <div
                                     key={idx}
-                                    className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-emerald-700 cursor-pointer text-sm"
+                                    title={isCollapsed ? dept : undefined}
+                                    className={`flex items-center cursor-pointer text-slate-500 hover:text-emerald-700 hover:bg-slate-50 rounded-xl transition-all duration-200
+                   ${isCollapsed ? 'justify-center py-3' : 'gap-3 px-4 py-2 text-sm'}
+                `}
                                 >
                                     <span
-                                        className={`w-2 h-2 rounded-full ${idx === 0 ? 'bg-purple-500' : idx === 1 ? 'bg-blue-500' : 'bg-orange-500'}`}
+                                        className={`rounded-full shrink-0 ${
+                                            idx === 0
+                                                ? 'bg-purple-500'
+                                                : idx === 1
+                                                  ? 'bg-blue-500'
+                                                  : 'bg-orange-500'
+                                        } ${isCollapsed ? 'w-3 h-3' : 'w-2 h-2'}`}
                                     ></span>
-                                    {dept}
+                                    {!isCollapsed && (
+                                        <span className="whitespace-nowrap">
+                                            {dept}
+                                        </span>
+                                    )}
                                 </div>
                             )
                         )}
@@ -114,24 +289,23 @@ export const AdminSidebar = () => {
                 </div>
             </div>
 
-            {/* User Profile at Bottom */}
-            <div className="p-4 border-t border-slate-100">
-                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 cursor-pointer border border-transparent hover:border-slate-200 transition-all">
-                    <img
-                        src="https://i.pravatar.cc/150?u=admin"
-                        alt="User"
-                        className="w-9 h-9 rounded-lg bg-emerald-100 object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-slate-800 truncate">
-                            Cao Hải Dương
-                        </h4>
-                        <p className="text-xs text-slate-500 truncate">
-                            Admin Workspace
-                        </p>
-                    </div>
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                </div>
+            <div className="h-30 px-3 w-full overflow-x-hidden">
+                <HeroButton
+                    variant="light"
+                    startContent={
+                        isCollapsed ? (
+                            <ChevronRight size={18} />
+                        ) : (
+                            <ChevronLeft size={18} />
+                        )
+                    }
+                    color="default"
+                    className="w-full"
+                    isIconOnly={isCollapsed}
+                    onPress={() => setIsCollapsed(!isCollapsed)}
+                >
+                    {!isCollapsed && 'Collapse'}
+                </HeroButton>
             </div>
         </aside>
     )

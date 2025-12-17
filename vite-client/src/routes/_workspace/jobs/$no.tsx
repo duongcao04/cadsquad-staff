@@ -1,13 +1,7 @@
 import { dateFormatter } from '@/lib'
 import { useJobByNo } from '@/lib/queries/useJob'
 import { INTERNAL_URLS } from '@/lib/utils'
-import {
-    HeroButton,
-    JobStatusChip,
-    PageHeading,
-    PaidChip,
-} from '@/shared/components'
-import JobStatusDropdown from '@/shared/components/dropdowns/JobStatusDropdown'
+import { JobStatusChip, PageHeading, PaidChip } from '@/shared/components'
 import { JobDetailView } from '@/shared/components/job-detail/JobDetailView'
 import CountdownTimer from '@/shared/components/ui/countdown-timer'
 import {
@@ -25,6 +19,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { CalendarDays, House, LibraryBig, UserRound } from 'lucide-react'
+import { JobActionToolbar } from '../../../shared/components/job-detail/JobActionToolbar'
 
 export const Route = createFileRoute('/_workspace/jobs/$no')({
     component: JobDetailPage,
@@ -40,19 +35,19 @@ function JobDetailPage() {
     const isJobCompleted = job?.completedAt !== null
 
     return (
-        <>
-            <div className="bg-background h-full flex flex-col">
-                {/* HEADING */}
-                <div className="border-b border-border-default">
-                    <PageHeading
-                        title="Project Center"
-                        classNames={{
-                            wrapper: 'py-3! pl-6 pr-3.5',
-                        }}
-                    />
-                </div>
+        <div className="bg-background h-full flex flex-col">
+            {/* HEADING */}
+            <div className="border-b border-border-default">
+                <PageHeading
+                    title="Project Center"
+                    classNames={{
+                        wrapper: 'py-3! pl-6 pr-3.5',
+                    }}
+                />
+            </div>
 
-                <HeroBreadcrumbs className="pt-4! pb-3! pl-6 pr-3.5">
+            <div className="w-7xl mx-auto">
+                <HeroBreadcrumbs className="pt-4! pb-3! px-2">
                     <HeroBreadcrumbItem>
                         <Link
                             to={INTERNAL_URLS.home}
@@ -80,33 +75,11 @@ function JobDetailPage() {
 
                 <Spacer className="h-1" />
 
-                <div className="pl-5 pr-3.5">
-                    <HeroCard>
-                        <HeroCardBody className="flex flex-row gap-3">
-                            {isLoading ? (
-                                <Skeleton className="w-20 h-6 rounded-md" />
-                            ) : (
-                                <JobStatusDropdown
-                                    statusData={job?.status}
-                                    jobData={job}
-                                />
-                            )}
-                            <HeroButton size="sm" variant="bordered">
-                                Finance
-                            </HeroButton>
-                            <HeroButton size="sm" variant="bordered">
-                                Finance
-                            </HeroButton>
-                            <HeroButton size="sm" variant="bordered">
-                                Finance
-                            </HeroButton>
-                        </HeroCardBody>
-                    </HeroCard>
-                </div>
+                <JobActionToolbar />
 
-                <Spacer className="h-3" />
+                <Divider className="my-5 bg-text-disabled" />
 
-                <div className="pl-5 pr-3.5">
+                <div>
                     {/* MAIN CONTENT */}
                     <HeroCard>
                         <HeroCardHeader>
@@ -249,6 +222,6 @@ function JobDetailPage() {
                     </HeroCard>
                 </div>
             </div>
-        </>
+        </div>
     )
 }

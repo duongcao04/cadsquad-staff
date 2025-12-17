@@ -38,56 +38,61 @@ export default function NotificationDropdown() {
 
     console.log(CHANNELS.userNotificationsKey(profile.id))
 
-    useChannel(CHANNELS.userNotificationsKey(profile.id), (message) => {
-        console.log('Nhận tin:', message)
-        const noti: TUserNotification = message.data
-        addToast({
-            title: noti.title,
-            description: noti.content,
-            color: 'default',
-            classNames: {
-                base: cn([
-                    'bg-default-50 dark:bg-background shadow-sm',
-                    'border border-l-8 rounded-md rounded-l-none',
-                    'flex flex-col items-start',
-                    'border-primary-200 dark:border-primary-100 border-l-primary',
-                ]),
-                icon: 'w-6 h-6 fill-current',
-            },
-            endContent: (
-                <div className="ms-11 my-2 flex gap-x-2">
-                    <Button
-                        color={'primary'}
-                        size="sm"
-                        variant="bordered"
-                        onPress={() => {
-                            router.navigate({
-                                href: noti.redirectUrl ?? '#',
-                            })
-                        }}
-                    >
-                        View
-                    </Button>
-                    <Button
-                        className="underline-offset-2"
-                        color={'primary'}
-                        size="sm"
-                        variant="light"
-                    >
-                        Maybe Later
-                    </Button>
-                </div>
-            ),
-        })
-        if (message.name === NotificationTypeEnum.JOB_UPDATE) {
-            queryClient.invalidateQueries({
-                queryKey: [
-                    jobsListOptions().queryKey,
-                    workbenchDataOptions().queryKey,
-                ],
+    useChannel(
+        {
+            channelName: CHANNELS.userNotificationsKey(profile.id),
+        },
+        (message) => {
+            console.log('Nhận tin:', message)
+            const noti: TUserNotification = message.data
+            addToast({
+                title: noti.title,
+                description: noti.content,
+                color: 'default',
+                classNames: {
+                    base: cn([
+                        'bg-default-50 dark:bg-background shadow-sm',
+                        'border border-l-8 rounded-md rounded-l-none',
+                        'flex flex-col items-start',
+                        'border-primary-200 dark:border-primary-100 border-l-primary',
+                    ]),
+                    icon: 'w-6 h-6 fill-current',
+                },
+                endContent: (
+                    <div className="ms-11 my-2 flex gap-x-2">
+                        <Button
+                            color={'primary'}
+                            size="sm"
+                            variant="bordered"
+                            onPress={() => {
+                                router.navigate({
+                                    href: noti.redirectUrl ?? '#',
+                                })
+                            }}
+                        >
+                            View
+                        </Button>
+                        <Button
+                            className="underline-offset-2"
+                            color={'primary'}
+                            size="sm"
+                            variant="light"
+                        >
+                            Maybe Later
+                        </Button>
+                    </div>
+                ),
             })
+            if (message.name === NotificationTypeEnum.JOB_UPDATE) {
+                queryClient.invalidateQueries({
+                    queryKey: [
+                        jobsListOptions().queryKey,
+                        workbenchDataOptions().queryKey,
+                    ],
+                })
+            }
         }
-    })
+    )
 
     const hasUnseen = (data?.unseenCount ?? 0) > 0
 

@@ -54,7 +54,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
                     </NextThemesProvider>
 
                     <ReactQueryDevtools />
-                    <TanStackRouterDevtools />
+                    {/* <TanStackRouterDevtools /> */}
                 </QueryClientProvider>
             </AblyProvider>
         </div>

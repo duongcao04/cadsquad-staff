@@ -20,7 +20,6 @@ import {
     jobAssigneesOptions,
     jobByNoOptions,
     jobDetailOptions,
-    jobsByDeadlineOptions,
     jobsByStatusCodeOptions,
     jobsDueOnDateOptions,
     jobsListOptions,
@@ -63,21 +62,14 @@ export const useSearchJobs = (keywords?: string) => {
     }
 }
 
-export const useJobsByDeadline = (isoDate?: string) => {
+export const useJobsDueOnDate = (isoDate: string) => {
     const { data, isFetching, isLoading } = useQuery(
-        jobsByDeadlineOptions(isoDate)
+        jobsDueOnDateOptions(isoDate)
     )
     return {
         data,
         isLoading: isLoading || isFetching,
     }
-}
-
-export const useJobsDueOnDate = (dueAt?: string) => {
-    const { data, isLoading, isFetching } = useQuery(
-        jobsDueOnDateOptions(dueAt)
-    )
-    return { jobs: data, isLoading: isLoading || isFetching }
 }
 
 export const useCountJobByTab = (tab: ProjectCenterTabEnum) => {

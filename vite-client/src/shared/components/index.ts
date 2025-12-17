@@ -75,7 +75,6 @@ export * from './layouts/Sidebar/Sidebar';
 export * from './layouts/Sidebar/SidebarItem';
 export * from './layouts/Sidebar/TaskCalendar';
 export * from './layouts/Sidebar/TaskCalendarPopover';
-export * from './layouts/settings-header/AdminSettingsHeader';
 export * from './layouts/settings-sidebar/AdminSettingsSidebar';
 export * from './layouts/settings-sidebar/PersonalSettingsSidebar';
 export * from './layouts/settings-sidebar/SettingSidebar';
