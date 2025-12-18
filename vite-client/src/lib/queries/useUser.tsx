@@ -2,7 +2,7 @@ import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { userApi } from '@/lib/api'
-import { type ApiError } from '@/lib/axios'
+import { ApiResponse, type ApiError } from '@/lib/axios'
 import type { IUserResponse } from '@/shared/interfaces'
 import type { TUser } from '@/shared/types'
 
@@ -62,7 +62,9 @@ export const useUsers = () => {
     }
 }
 
-export const useUpdateUserMutation = () => {
+export const useUpdateUserMutation = (
+    onSuccess?: (res: ApiResponse<{ id: string; username: string }>) => void
+) => {
     return useMutation({
         mutationKey: ['updateUser'],
         mutationFn: ({
@@ -74,10 +76,15 @@ export const useUpdateUserMutation = () => {
         }) => {
             return userApi.update(userId, updateUserInput)
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['profile'],
-            })
+        onSuccess: (res) => {
+            if (onSuccess) {
+                onSuccess?.(res)
+            } else {
+                addToast({
+                    title: 'Update user successfully',
+                    color: 'success',
+                })
+            }
         },
     })
 }

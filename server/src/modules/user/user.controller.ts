@@ -112,19 +112,19 @@ export class UserController {
     return this.userService.checkUsernameValid(username)
   }
 
-  @Get(':id')
+  @Get(':username')
   @HttpCode(200)
   @ResponseMessage('Get user detail successfully')
   @UseGuards(JwtGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get a user by their ID' })
+  @ApiOperation({ summary: 'Get a user by their username' })
   @ApiResponse({
     status: 200,
     description: 'Return a single user.',
     type: UserResponseDto,
   })
-  async findOne(@Param('id') id: string) {
-    return this.userService.findById(id)
+  async findOne(@Param('username') username: string) {
+    return this.userService.findByUsername(username)
   }
 
   @Patch(':id')

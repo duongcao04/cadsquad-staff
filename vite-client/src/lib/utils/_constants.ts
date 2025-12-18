@@ -67,6 +67,7 @@ export const INTERNAL_URLS = {
     appearance: '/' + '"settings/appearance"',
     fileDocs: '/' + 'admin/mgmt/file-docs',
     staffDirectory: '/' + 'admin/mgmt/staff-directory',
+    editStaffDetails: (username: string) => '/' + 'admin/mgmt/staff-directory/' + username + '/edit',
     inviteMember: '/' + 'admin/mgmt/invite-member',
     revenueReports: '/' + 'admin/mgmt/revenue',
     teamManage: '/' + 'admin/mgmt/team',

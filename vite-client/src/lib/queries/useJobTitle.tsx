@@ -24,7 +24,7 @@ export const useJobTitles = () => {
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ['job-titles'],
         queryFn: () => jobTitleApi.findAll(),
-        select: (res) => res.data.result,
+        select: (res) => res.result,
     })
 
     const jobTitles = useMemo(() => {
@@ -53,7 +53,7 @@ export const useJobTitleById = (id: string) =>
             }
             return jobTitleApi.findOne(id)
         },
-        select: (res) => res?.data.result,
+        select: (res) => res?.result,
         enabled: !!id,
     })
 

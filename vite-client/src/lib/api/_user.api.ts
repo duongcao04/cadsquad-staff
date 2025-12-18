@@ -12,7 +12,10 @@ export const userApi = {
         return axiosClient.post<ApiResponse<IUserResponse>>('/v1/users', data)
     },
     findAll: async () => {
-        return axiosClient.get<ApiResponse<IUserResponse[]>>('/v1/users').then(res => res.data)
+        return axiosClient.get<ApiResponse<{
+            users: IUserResponse[],
+            total: number
+        }>>('/v1/users').then(res => res.data)
     },
     checkUsernameValid: (username: string) => {
         return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(
@@ -31,14 +34,14 @@ export const userApi = {
             data
         )
     },
-    findOne: async (id: string) => {
-        return axiosClient.get<ApiResponse<IUserResponse>>(`/v1/users/${id}`).then(res => res.data)
+    findOne: async (username: string) => {
+        return axiosClient.get<ApiResponse<IUserResponse>>(`/v1/users/${username}`).then(res => res.data)
     },
-    update: (id: string, data: TUpdateUserInput) => {
-        return axiosClient.patch<ApiResponse<{ id: string }>>(
+    update: async (id: string, data: TUpdateUserInput) => {
+        return axiosClient.patch<ApiResponse<{ id: string, username: string }>>(
             `/v1/users/${id}`,
             data
-        )
+        ).then(res => res.data)
     },
     remove: (id: string) => {
         return axiosClient.delete<ApiResponse<{ username: string }>>(

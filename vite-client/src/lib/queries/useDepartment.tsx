@@ -27,7 +27,7 @@ export const useDepartments = () => {
     const { data, isFetching, isLoading } = useQuery({
         queryKey: ['departments'],
         queryFn: () => departmentApi.findAll(),
-        select: (res) => res.data.result,
+        select: (res) => res.result,
     })
 
     const departments = useMemo(() => {
@@ -56,7 +56,7 @@ export const useDepartmentById = (id: string) => {
             }
             return departmentApi.findOne(id)
         },
-        select: (res) => res?.data.result,
+        select: (res) => res?.result,
         enabled: !!id,
     })
 }

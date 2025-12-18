@@ -41,9 +41,12 @@ import { Route as AdministratorAdminMgmtTeamRouteImport } from './routes/_admini
 import { Route as AdministratorAdminMgmtStaffDirectoryRouteImport } from './routes/_administrator/admin/mgmt/staff-directory'
 import { Route as AdministratorAdminMgmtRevenueRouteImport } from './routes/_administrator/admin/mgmt/revenue'
 import { Route as AdministratorAdminMgmtInviteMemberRouteImport } from './routes/_administrator/admin/mgmt/invite-member'
+import { Route as AdministratorAdminMgmtStaffDirectoryIndexRouteImport } from './routes/_administrator/admin/mgmt/staff-directory/index'
 import { Route as AdministratorAdminMgmtJobsIndexRouteImport } from './routes/_administrator/admin/mgmt/jobs/index'
 import { Route as AdministratorAdminMgmtFileDocsIndexRouteImport } from './routes/_administrator/admin/mgmt/file-docs/index'
 import { Route as AdministratorAdminMgmtJobsNoRouteImport } from './routes/_administrator/admin/mgmt/jobs/$no'
+import { Route as AdministratorAdminMgmtStaffDirectoryUsernameIndexRouteImport } from './routes/_administrator/admin/mgmt/staff-directory/$username/index'
+import { Route as AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport } from './routes/_administrator/admin/mgmt/staff-directory/$username/edit'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -214,6 +217,12 @@ const AdministratorAdminMgmtInviteMemberRoute =
     path: '/admin/mgmt/invite-member',
     getParentRoute: () => AdministratorRoute,
   } as any)
+const AdministratorAdminMgmtStaffDirectoryIndexRoute =
+  AdministratorAdminMgmtStaffDirectoryIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdministratorAdminMgmtStaffDirectoryRoute,
+  } as any)
 const AdministratorAdminMgmtJobsIndexRoute =
   AdministratorAdminMgmtJobsIndexRouteImport.update({
     id: '/admin/mgmt/jobs/',
@@ -231,6 +240,18 @@ const AdministratorAdminMgmtJobsNoRoute =
     id: '/admin/mgmt/jobs/$no',
     path: '/admin/mgmt/jobs/$no',
     getParentRoute: () => AdministratorRoute,
+  } as any)
+const AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute =
+  AdministratorAdminMgmtStaffDirectoryUsernameIndexRouteImport.update({
+    id: '/$username/',
+    path: '/$username/',
+    getParentRoute: () => AdministratorAdminMgmtStaffDirectoryRoute,
+  } as any)
+const AdministratorAdminMgmtStaffDirectoryUsernameEditRoute =
+  AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport.update({
+    id: '/$username/edit',
+    path: '/$username/edit',
+    getParentRoute: () => AdministratorAdminMgmtStaffDirectoryRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -258,12 +279,15 @@ export interface FileRoutesByFullPath {
   '/jobs/': typeof WorkspaceJobsIndexRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
-  '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRoute
+  '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
   '/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/admin/departments': typeof AdministratorAdminDepartmentsIndexRoute
   '/admin/mgmt/jobs/$no': typeof AdministratorAdminMgmtJobsNoRoute
   '/admin/mgmt/file-docs': typeof AdministratorAdminMgmtFileDocsIndexRoute
   '/admin/mgmt/jobs': typeof AdministratorAdminMgmtJobsIndexRoute
+  '/admin/mgmt/staff-directory/': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
+  '/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
+  '/admin/mgmt/staff-directory/$username': typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
@@ -288,12 +312,14 @@ export interface FileRoutesByTo {
   '/jobs': typeof WorkspaceJobsIndexRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
-  '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRoute
   '/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/admin/departments': typeof AdministratorAdminDepartmentsIndexRoute
   '/admin/mgmt/jobs/$no': typeof AdministratorAdminMgmtJobsNoRoute
   '/admin/mgmt/file-docs': typeof AdministratorAdminMgmtFileDocsIndexRoute
   '/admin/mgmt/jobs': typeof AdministratorAdminMgmtJobsIndexRoute
+  '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
+  '/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
+  '/admin/mgmt/staff-directory/$username': typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -326,12 +352,15 @@ export interface FileRoutesById {
   '/_workspace/jobs/': typeof WorkspaceJobsIndexRoute
   '/_administrator/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/_administrator/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
-  '/_administrator/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRoute
+  '/_administrator/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
   '/_administrator/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/_administrator/admin/departments/': typeof AdministratorAdminDepartmentsIndexRoute
   '/_administrator/admin/mgmt/jobs/$no': typeof AdministratorAdminMgmtJobsNoRoute
   '/_administrator/admin/mgmt/file-docs/': typeof AdministratorAdminMgmtFileDocsIndexRoute
   '/_administrator/admin/mgmt/jobs/': typeof AdministratorAdminMgmtJobsIndexRoute
+  '/_administrator/admin/mgmt/staff-directory/': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
+  '/_administrator/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
+  '/_administrator/admin/mgmt/staff-directory/$username/': typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -366,6 +395,9 @@ export interface FileRouteTypes {
     | '/admin/mgmt/jobs/$no'
     | '/admin/mgmt/file-docs'
     | '/admin/mgmt/jobs'
+    | '/admin/mgmt/staff-directory/'
+    | '/admin/mgmt/staff-directory/$username/edit'
+    | '/admin/mgmt/staff-directory/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -390,12 +422,14 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
-    | '/admin/mgmt/staff-directory'
     | '/admin/mgmt/team'
     | '/admin/departments'
     | '/admin/mgmt/jobs/$no'
     | '/admin/mgmt/file-docs'
     | '/admin/mgmt/jobs'
+    | '/admin/mgmt/staff-directory'
+    | '/admin/mgmt/staff-directory/$username/edit'
+    | '/admin/mgmt/staff-directory/$username'
   id:
     | '__root__'
     | '/_administrator'
@@ -433,6 +467,9 @@ export interface FileRouteTypes {
     | '/_administrator/admin/mgmt/jobs/$no'
     | '/_administrator/admin/mgmt/file-docs/'
     | '/_administrator/admin/mgmt/jobs/'
+    | '/_administrator/admin/mgmt/staff-directory/'
+    | '/_administrator/admin/mgmt/staff-directory/$username/edit'
+    | '/_administrator/admin/mgmt/staff-directory/$username/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -669,6 +706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministratorAdminMgmtInviteMemberRouteImport
       parentRoute: typeof AdministratorRoute
     }
+    '/_administrator/admin/mgmt/staff-directory/': {
+      id: '/_administrator/admin/mgmt/staff-directory/'
+      path: '/'
+      fullPath: '/admin/mgmt/staff-directory/'
+      preLoaderRoute: typeof AdministratorAdminMgmtStaffDirectoryIndexRouteImport
+      parentRoute: typeof AdministratorAdminMgmtStaffDirectoryRoute
+    }
     '/_administrator/admin/mgmt/jobs/': {
       id: '/_administrator/admin/mgmt/jobs/'
       path: '/admin/mgmt/jobs'
@@ -690,8 +734,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministratorAdminMgmtJobsNoRouteImport
       parentRoute: typeof AdministratorRoute
     }
+    '/_administrator/admin/mgmt/staff-directory/$username/': {
+      id: '/_administrator/admin/mgmt/staff-directory/$username/'
+      path: '/$username'
+      fullPath: '/admin/mgmt/staff-directory/$username'
+      preLoaderRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRouteImport
+      parentRoute: typeof AdministratorAdminMgmtStaffDirectoryRoute
+    }
+    '/_administrator/admin/mgmt/staff-directory/$username/edit': {
+      id: '/_administrator/admin/mgmt/staff-directory/$username/edit'
+      path: '/$username/edit'
+      fullPath: '/admin/mgmt/staff-directory/$username/edit'
+      preLoaderRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport
+      parentRoute: typeof AdministratorAdminMgmtStaffDirectoryRoute
+    }
   }
 }
+
+interface AdministratorAdminMgmtStaffDirectoryRouteChildren {
+  AdministratorAdminMgmtStaffDirectoryIndexRoute: typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
+  AdministratorAdminMgmtStaffDirectoryUsernameEditRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
+  AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
+}
+
+const AdministratorAdminMgmtStaffDirectoryRouteChildren: AdministratorAdminMgmtStaffDirectoryRouteChildren =
+  {
+    AdministratorAdminMgmtStaffDirectoryIndexRoute:
+      AdministratorAdminMgmtStaffDirectoryIndexRoute,
+    AdministratorAdminMgmtStaffDirectoryUsernameEditRoute:
+      AdministratorAdminMgmtStaffDirectoryUsernameEditRoute,
+    AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute:
+      AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute,
+  }
+
+const AdministratorAdminMgmtStaffDirectoryRouteWithChildren =
+  AdministratorAdminMgmtStaffDirectoryRoute._addFileChildren(
+    AdministratorAdminMgmtStaffDirectoryRouteChildren,
+  )
 
 interface AdministratorRouteChildren {
   AdministratorAdminInboxRoute: typeof AdministratorAdminInboxRoute
@@ -705,7 +784,7 @@ interface AdministratorRouteChildren {
   AdministratorAdminIndexRoute: typeof AdministratorAdminIndexRoute
   AdministratorAdminMgmtInviteMemberRoute: typeof AdministratorAdminMgmtInviteMemberRoute
   AdministratorAdminMgmtRevenueRoute: typeof AdministratorAdminMgmtRevenueRoute
-  AdministratorAdminMgmtStaffDirectoryRoute: typeof AdministratorAdminMgmtStaffDirectoryRoute
+  AdministratorAdminMgmtStaffDirectoryRoute: typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
   AdministratorAdminMgmtTeamRoute: typeof AdministratorAdminMgmtTeamRoute
   AdministratorAdminDepartmentsIndexRoute: typeof AdministratorAdminDepartmentsIndexRoute
   AdministratorAdminMgmtJobsNoRoute: typeof AdministratorAdminMgmtJobsNoRoute
@@ -729,7 +808,7 @@ const AdministratorRouteChildren: AdministratorRouteChildren = {
     AdministratorAdminMgmtInviteMemberRoute,
   AdministratorAdminMgmtRevenueRoute: AdministratorAdminMgmtRevenueRoute,
   AdministratorAdminMgmtStaffDirectoryRoute:
-    AdministratorAdminMgmtStaffDirectoryRoute,
+    AdministratorAdminMgmtStaffDirectoryRouteWithChildren,
   AdministratorAdminMgmtTeamRoute: AdministratorAdminMgmtTeamRoute,
   AdministratorAdminDepartmentsIndexRoute:
     AdministratorAdminDepartmentsIndexRoute,

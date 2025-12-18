@@ -26,7 +26,7 @@ export function AdminPageHeading({
             <div className="flex items-center justify-between">
                 <div className="flex items-center justify-start">
                     <div>
-                        <h1 className="align-middle font-medium text-lg">
+                        <h1 className="align-middle font-semibold text-text-8">
                             {title}
                         </h1>
                         {description && (
