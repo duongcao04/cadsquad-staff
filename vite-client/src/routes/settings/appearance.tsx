@@ -30,6 +30,7 @@ import {
 import { Link } from '@tanstack/react-router'
 import { INTERNAL_URLS } from '../../lib'
 import { HeroBreadcrumbs, HeroBreadcrumbItem } from '../../shared/components'
+import { useTheme } from 'next-themes'
 
 export const Route = createFileRoute('/settings/appearance')({
     component: AppearanceSettingsPage,
@@ -146,7 +147,7 @@ const PreviewTable = ({ density, fontSize, themeColor }: any) => {
 }
 
 function AppearanceSettingsPage() {
-    const [mode, setMode] = useState('system') // light, dark, system
+    const { theme, setTheme } = useTheme()
     const [color, setColor] = useState(THEME_COLORS[0])
     const [density, setDensity] = useState('comfortable')
     const [fontSize, setFontSize] = useState('md') // sm, md, lg
@@ -229,12 +230,12 @@ function AppearanceSettingsPage() {
                                 ].map((item) => (
                                     <div
                                         key={item.id}
-                                        onClick={() => setMode(item.id)}
+                                        onClick={() => setTheme(item.id)}
                                         className={`
                             cursor-pointer border-2 rounded-xl p-4 flex flex-col items-center gap-3 transition-all
                             ${
-                                mode === item.id
-                                    ? 'border-primary bg-primary-50 text-primary'
+                                theme === item.id
+                                    ? 'border-primary text-primary dark:border-border-default/90 bg-background-hovered dark:text-text-default'
                                     : 'border-border-default bg-background hover:bg-background-hovered hover:border-border-default/90'
                             }
                           `}

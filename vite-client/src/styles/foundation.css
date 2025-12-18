@@ -1,4 +1,16 @@
 :root {
+	--primary: var(--primary);
+	--primary-50: hsl(240 66.7% 96.5%);
+	--primary-100: hsl(242.4 67.6% 92.7%);
+	--primary-200: hsl(241.2 67.1% 85.7%);
+	--primary-300: hsl(240.8 67% 78.6%);
+	--primary-400: hsl(240 66.2% 71%);
+	--primary-500: hsl(240.5 64.5% 63.5%);
+	--primary-600: hsl(240.9 61.4% 55.3%);
+	--primary-700: hsl(240.9 60.2% 44.3%);
+	--primary-800: hsl(241.2 63.1% 30.8%);
+	--primary-900: hsl(240.9 69.6% 18%);
+	--primary-950: hsl(240 76.3% 11.6%);
 	/*
  * Thang màu 9 bước: Từ sáng (1) đến tối (9)
  * - Các bước 1-4: Dùng cho nền, viền, các trạng thái UI.
@@ -36,7 +48,7 @@
 	--background: var(--text-0);
 	/* Nền mờ, nền của khối code, v.v. */
 	--background-muted: var(--text-1);
-	--background-hovered: var(--text-3);
+	--background-hovered: var(--primary-50);
 	/* Nền trước (Foreground) - Thường dùng cho các icon đậm */
 	--foreground: var(--text-8);
 
@@ -172,17 +184,17 @@
 
 @theme inline {
 	--color-primary: var(--primary);
-	--color-primary-50: hsl(240 66.7% 96.5%);
-	--color-primary-100: hsl(242.4 67.6% 92.7%);
-	--color-primary-200: hsl(241.2 67.1% 85.7%);
-	--color-primary-300: hsl(240.8 67% 78.6%);
-	--color-primary-400: hsl(240 66.2% 71%);
-	--color-primary-500: hsl(240.5 64.5% 63.5%);
-	--color-primary-600: hsl(240.9 61.4% 55.3%);
-	--color-primary-700: hsl(240.9 60.2% 44.3%);
-	--color-primary-800: hsl(241.2 63.1% 30.8%);
-	--color-primary-900: hsl(240.9 69.6% 18%);
-	--color-primary-950: hsl(240 76.3% 11.6%);
+	--color-primary-50: var(--primary-50);
+	--color-primary-100: var(--primary-100);
+	--color-primary-200: var(--primary-200);
+	--color-primary-300: var(--primary-300);
+	--color-primary-400: var(--primary-400);
+	--color-primary-500: var(--primary-500);
+	--color-primary-600: var(--primary-600);
+	--color-primary-700: var(--primary-700);
+	--color-primary-800: var(--primary-800);
+	--color-primary-900: var(--primary-900);
+	--color-primary-950: var(--primary-950);
 }
 
 @theme inline {
