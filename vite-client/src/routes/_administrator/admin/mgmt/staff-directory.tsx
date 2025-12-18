@@ -1,35 +1,39 @@
-import { createFileRoute } from '@tanstack/react-router'
-import React, { useMemo, useState } from 'react'
 import {
+    Avatar,
+    Badge,
+    Button,
     Card,
-    CardHeader,
     CardBody,
     CardFooter,
-    Avatar,
-    Button,
-    Input,
+    CardHeader,
     Chip,
+    Divider,
     Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
     DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+    Input,
+    Pagination,
     Select,
     SelectItem,
-    Pagination,
-    Divider,
 } from '@heroui/react'
+import { createFileRoute } from '@tanstack/react-router'
 import {
-    Search,
-    Plus,
-    MoreVertical,
-    Mail,
-    Phone,
     Briefcase,
-    MapPin,
     Filter,
+    Mail,
+    MapPin,
+    MoreVertical,
+    Phone,
+    Search
 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import AdminContentContainer from '../../../../shared/components/admin/AdminContentContainer'
+import { AdminPageHeading } from '../../../../shared/components/admin/AdminPageHeading'
 
-export const Route = createFileRoute('/_administrator/admin/mgmt/staff-directory')({
+export const Route = createFileRoute(
+    '/_administrator/admin/mgmt/staff-directory'
+)({
     component: StaffDirectory,
 })
 
@@ -184,207 +188,208 @@ function StaffDirectory() {
     }
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto space-y-8">
-            {/* --- Header Section --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-foreground">
+        <>
+            <AdminPageHeading
+                title={
+                    <Badge
+                        content="5"
+                        size="md"
+                        color="danger"
+                        variant="solid"
+                        classNames={{
+                            badge: '-right-1 top-1',
+                        }}
+                    >
                         Staff Directory
-                    </h1>
-                    <p className="text-default-500 text-sm mt-1">
-                        Manage your team, view contact details, and update
-                        permissions.
-                    </p>
+                    </Badge>
+                }
+            />
+
+            <AdminContentContainer>
+                {/* --- Toolbar Section --- */}
+                <div className="flex flex-col md:flex-row gap-4 items-center bg-content1 p-4 rounded-2xl shadow-sm border border-default-100">
+                    <Input
+                        isClearable
+                        className="w-full md:max-w-md"
+                        placeholder="Search by name or email..."
+                        startContent={
+                            <Search size={18} className="text-default-400" />
+                        }
+                        value={filterValue}
+                        onClear={() => setFilterValue('')}
+                        onValueChange={setFilterValue}
+                        radius="lg"
+                    />
+
+                    <Select
+                        label="Department"
+                        placeholder="Filter by department"
+                        labelPlacement="outside-left"
+                        className="w-full md:max-w-xs"
+                        defaultSelectedKeys={['all']}
+                        onChange={(e) => setDepartmentFilter(e.target.value)}
+                        startContent={
+                            <Filter size={16} className="text-default-400" />
+                        }
+                    >
+                        {DEPARTMENTS.map((dept) => (
+                            <SelectItem key={dept.key} value={dept.key}>
+                                {dept.label}
+                            </SelectItem>
+                        ))}
+                    </Select>
+
+                    <div className="ml-auto text-default-400 text-xs font-medium">
+                        Showing {filteredItems.length} members
+                    </div>
                 </div>
-                <Button
-                    color="primary"
-                    endContent={<Plus size={16} />}
-                    className="font-semibold shadow-lg shadow-primary/20"
-                >
-                    Add Member
-                </Button>
-            </div>
 
-            {/* --- Toolbar Section --- */}
-            <div className="flex flex-col md:flex-row gap-4 items-center bg-content1 p-4 rounded-2xl shadow-sm border border-default-100">
-                <Input
-                    isClearable
-                    className="w-full md:max-w-md"
-                    placeholder="Search by name or email..."
-                    startContent={
-                        <Search size={18} className="text-default-400" />
-                    }
-                    value={filterValue}
-                    onClear={() => setFilterValue('')}
-                    onValueChange={setFilterValue}
-                    radius="lg"
-                />
-
-                <Select
-                    label="Department"
-                    placeholder="Filter by department"
-                    labelPlacement="outside-left"
-                    className="w-full md:max-w-xs"
-                    defaultSelectedKeys={['all']}
-                    onChange={(e) => setDepartmentFilter(e.target.value)}
-                    startContent={
-                        <Filter size={16} className="text-default-400" />
-                    }
-                >
-                    {DEPARTMENTS.map((dept) => (
-                        <SelectItem key={dept.key} value={dept.key}>
-                            {dept.label}
-                        </SelectItem>
-                    ))}
-                </Select>
-
-                <div className="ml-auto text-default-400 text-xs font-medium">
-                    Showing {filteredItems.length} members
-                </div>
-            </div>
-
-            {/* --- Grid Content --- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredItems.map((user) => (
-                    <Card key={user.id} className="w-full" shadow="sm">
-                        <CardHeader className="justify-between items-start pt-5 px-5">
-                            <div className="flex gap-4">
-                                <Avatar
-                                    isBordered
-                                    radius="lg"
-                                    size="lg"
-                                    src={user.avatar}
-                                    color={
-                                        user.isActive ? 'success' : 'default'
-                                    }
-                                />
-                                <div className="flex flex-col gap-1 items-start justify-center">
-                                    <h4 className="text-small font-bold leading-none text-default-900">
-                                        {user.displayName}
-                                    </h4>
-                                    <h5 className="text-small tracking-tight text-default-500">
-                                        {user.jobTitle?.displayName ||
-                                            'No Title'}
-                                    </h5>
+                {/* --- Grid Content --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredItems.map((user) => (
+                        <Card key={user.id} className="w-full" shadow="sm">
+                            <CardHeader className="justify-between items-start pt-5 px-5">
+                                <div className="flex gap-4">
+                                    <Avatar
+                                        isBordered
+                                        radius="lg"
+                                        size="lg"
+                                        src={user.avatar}
+                                        color={
+                                            user.isActive
+                                                ? 'success'
+                                                : 'default'
+                                        }
+                                    />
+                                    <div className="flex flex-col gap-1 items-start justify-center">
+                                        <h4 className="text-small font-bold leading-none text-default-900">
+                                            {user.displayName}
+                                        </h4>
+                                        <h5 className="text-small tracking-tight text-default-500">
+                                            {user.jobTitle?.displayName ||
+                                                'No Title'}
+                                        </h5>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <Dropdown>
-                                <DropdownTrigger>
+                                <Dropdown>
+                                    <DropdownTrigger>
+                                        <Button
+                                            isIconOnly
+                                            size="sm"
+                                            variant="light"
+                                            className="text-default-400"
+                                        >
+                                            <MoreVertical size={20} />
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu aria-label="User Actions">
+                                        <DropdownItem key="view">
+                                            View Profile
+                                        </DropdownItem>
+                                        <DropdownItem key="edit">
+                                            Edit Details
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            key="delete"
+                                            className="text-danger"
+                                            color="danger"
+                                        >
+                                            Deactivate User
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </CardHeader>
+
+                            <CardBody className="px-5 py-3 text-small text-default-400">
+                                <div className="space-y-3">
+                                    {/* Department & Role Chips */}
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        <Chip
+                                            size="sm"
+                                            variant="flat"
+                                            className="border-none"
+                                            // Custom style for dynamic hex colors from DB
+                                            style={{
+                                                backgroundColor: `${user.department?.hexColor}20`, // 20% opacity
+                                                color: user.department
+                                                    ?.hexColor,
+                                            }}
+                                        >
+                                            {user.department?.displayName}
+                                        </Chip>
+                                        <Chip
+                                            size="sm"
+                                            variant="dot"
+                                            color={getRoleColor(user.role)}
+                                            className="capitalize border-none"
+                                        >
+                                            {user.role.toLowerCase()}
+                                        </Chip>
+                                    </div>
+
+                                    <Divider className="my-2" />
+
+                                    {/* Contact Info */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-3">
+                                            <Mail size={16} />
+                                            <span className="truncate">
+                                                {user.email}
+                                            </span>
+                                        </div>
+                                        {user.phoneNumber && (
+                                            <div className="flex items-center gap-3">
+                                                <Phone size={16} />
+                                                <span>{user.phoneNumber}</span>
+                                            </div>
+                                        )}
+                                        {user.location && (
+                                            <div className="flex items-center gap-3">
+                                                <MapPin size={16} />
+                                                <span>{user.location}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardBody>
+
+                            <CardFooter className="gap-3 px-5 pb-5 pt-0">
+                                <div className="flex-1 flex gap-2">
+                                    <Button
+                                        className="flex-1"
+                                        variant="flat"
+                                        color="primary"
+                                        size="sm"
+                                        startContent={<Briefcase size={16} />}
+                                    >
+                                        Assign Job
+                                    </Button>
                                     <Button
                                         isIconOnly
+                                        variant="bordered"
                                         size="sm"
-                                        variant="light"
-                                        className="text-default-400"
+                                        className="border-default-200"
                                     >
-                                        <MoreVertical size={20} />
-                                    </Button>
-                                </DropdownTrigger>
-                                <DropdownMenu aria-label="User Actions">
-                                    <DropdownItem key="view">
-                                        View Profile
-                                    </DropdownItem>
-                                    <DropdownItem key="edit">
-                                        Edit Details
-                                    </DropdownItem>
-                                    <DropdownItem
-                                        key="delete"
-                                        className="text-danger"
-                                        color="danger"
-                                    >
-                                        Deactivate User
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </CardHeader>
-
-                        <CardBody className="px-5 py-3 text-small text-default-400">
-                            <div className="space-y-3">
-                                {/* Department & Role Chips */}
-                                <div className="flex flex-wrap gap-2 mb-2">
-                                    <Chip
-                                        size="sm"
-                                        variant="flat"
-                                        className="border-none"
-                                        // Custom style for dynamic hex colors from DB
-                                        style={{
-                                            backgroundColor: `${user.department?.hexColor}20`, // 20% opacity
-                                            color: user.department?.hexColor,
-                                        }}
-                                    >
-                                        {user.department?.displayName}
-                                    </Chip>
-                                    <Chip
-                                        size="sm"
-                                        variant="dot"
-                                        color={getRoleColor(user.role)}
-                                        className="capitalize border-none"
-                                    >
-                                        {user.role.toLowerCase()}
-                                    </Chip>
-                                </div>
-
-                                <Divider className="my-2" />
-
-                                {/* Contact Info */}
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-3">
                                         <Mail size={16} />
-                                        <span className="truncate">
-                                            {user.email}
-                                        </span>
-                                    </div>
-                                    {user.phoneNumber && (
-                                        <div className="flex items-center gap-3">
-                                            <Phone size={16} />
-                                            <span>{user.phoneNumber}</span>
-                                        </div>
-                                    )}
-                                    {user.location && (
-                                        <div className="flex items-center gap-3">
-                                            <MapPin size={16} />
-                                            <span>{user.location}</span>
-                                        </div>
-                                    )}
+                                    </Button>
                                 </div>
-                            </div>
-                        </CardBody>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
 
-                        <CardFooter className="gap-3 px-5 pb-5 pt-0">
-                            <div className="flex-1 flex gap-2">
-                                <Button
-                                    className="flex-1"
-                                    variant="flat"
-                                    color="primary"
-                                    size="sm"
-                                    startContent={<Briefcase size={16} />}
-                                >
-                                    Assign Job
-                                </Button>
-                                <Button
-                                    isIconOnly
-                                    variant="bordered"
-                                    size="sm"
-                                    className="border-default-200"
-                                >
-                                    <Mail size={16} />
-                                </Button>
-                            </div>
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
-
-            {/* --- Pagination --- */}
-            <div className="flex justify-center mt-8">
-                <Pagination
-                    total={10}
-                    initialPage={1}
-                    color="primary"
-                    variant="flat"
-                    showControls
-                />
-            </div>
-        </div>
+                {/* --- Pagination --- */}
+                <div className="flex justify-center mt-8">
+                    <Pagination
+                        total={10}
+                        initialPage={1}
+                        color="primary"
+                        variant="flat"
+                        showControls
+                    />
+                </div>
+            </AdminContentContainer>
+        </>
     )
 }

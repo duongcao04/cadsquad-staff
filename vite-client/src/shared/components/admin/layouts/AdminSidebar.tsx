@@ -22,6 +22,8 @@ import React, { useState } from 'react'
 import { ActionButton } from '../../app/ActionButton'
 import { HeroButton } from '../../ui/hero-button'
 import { HeroTooltip } from '../../ui/hero-tooltip'
+import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
+import { toggleAdminLeftSidebar } from '../../../stores'
 
 // --- Types ---
 interface SidebarItemProps {
@@ -113,9 +115,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 }
 
 // --- Main Component ---
-export const AdminSidebar = () => {
-    const [isCollapsed, setIsCollapsed] = useState(false)
-
+export const AdminSidebar = ({
+    isCollapsed = false,
+}: {
+    isCollapsed?: boolean
+}) => {
     return (
         <aside
             className={`flex flex-col h-full justify-between transition-all duration-300 ease-in-out
@@ -128,166 +132,170 @@ export const AdminSidebar = () => {
                     forceStatus={isCollapsed ? 'collapse' : 'expand'}
                 />
             </div>
-            <div className="flex-1 px-3 space-y-6 overflow-y-auto overflow-x-hidden">
-                {/* Main Menu */}
-                <div>
-                    {!isCollapsed && (
-                        <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
-                            Main Menu
-                        </p>
-                    )}
-                    <div className="space-y-1">
-                        <SidebarItem
-                            icon={LayoutDashboard}
-                            label="Dashboard"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.admin}
-                        />
-                        <SidebarItem
-                            icon={CheckSquare}
-                            label="All Jobs"
-                            badge={12}
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.jobManage}
-                        />
-                        <SidebarItem
-                            icon={FileText}
-                            label="Files & Docs"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.fileDocs}
-                        />
-                        <SidebarItem
-                            icon={Mail}
-                            label="Inbox"
-                            badge={5}
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.admin + '/inbox'}
-                        />
-                        <SidebarItem
-                            icon={Calendar}
-                            label="Schedule"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.schedule}
-                        />
-                    </div>
-                </div>
-
-                {/* Management */}
-                <div>
-                    {!isCollapsed && (
-                        <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
-                            Management
-                        </p>
-                    )}
-                    <div className="space-y-1">
-                        <SidebarItem
-                            icon={PieChart}
-                            label="Revenue Reports"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.revenueReports}
-                        />
-                        <SidebarItem
-                            icon={Users}
-                            label="Staff Directory"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.staffDirectory}
-                        />
-                        <SidebarItem
-                            icon={UserPlus}
-                            label="Invite Member"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.inviteMember}
-                        />
-                    </div>
-                </div>
-
-                {/* Financial */}
-                <div>
-                    {!isCollapsed && (
-                        <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
-                            Financial
-                        </p>
-                    )}
-                    <div className="space-y-1">
-                        <SidebarItem
-                            icon={DiamondPercent}
-                            label="Overview"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.profitLoss}
-                        />
-                        <SidebarItem
-                            icon={BadgeDollarSign}
-                            label="Transaction Reports"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.payment}
-                        />
-                        <SidebarItem
-                            icon={Dock}
-                            label="Tax Declaration"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.payroll}
-                        />
-                        <SidebarItem
-                            icon={Group}
-                            label="Reimbursements"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.reimbursements}
-                        />
-                        <SidebarItem
-                            icon={Settings2}
-                            label="Financial Settings"
-                            isCollapsed={isCollapsed}
-                            url={INTERNAL_URLS.financialSettings}
-                        />
-                    </div>
-                </div>
-
-                {/* Departments */}
-                <div>
-                    {!isCollapsed ? (
-                        <div className="flex items-center justify-between px-2 mb-2">
+            <ScrollArea className="h-200">
+                <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="vertical" />
+                <div className="flex-1 px-3 space-y-6">
+                    {/* Main Menu */}
+                    <div>
+                        {!isCollapsed && (
                             <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
-                                Departments
+                                Main Menu
                             </p>
-                            <Settings className="w-3 h-3 cursor-pointer" />
-                        </div>
-                    ) : (
-                        // Centered Settings icon when collapsed
-                        <div className="flex justify-center mb-2">
-                            <Settings className="w-4 h-4 text-slate-300" />
-                        </div>
-                    )}
-
-                    <div className="space-y-1">
-                        {['Design Team', 'Development', 'Marketing'].map(
-                            (dept, idx) => (
-                                <div
-                                    key={idx}
-                                    title={isCollapsed ? dept : undefined}
-                                    className={`flex items-center cursor-pointer text-slate-500 hover:text-emerald-700 hover:bg-slate-50 rounded-xl transition-all duration-200
-                   ${isCollapsed ? 'justify-center py-3' : 'gap-3 px-4 py-2 text-sm'}
-                `}
-                                >
-                                    <span
-                                        className={`rounded-full shrink-0 ${
-                                            idx === 0
-                                                ? 'bg-purple-500'
-                                                : idx === 1
-                                                  ? 'bg-blue-500'
-                                                  : 'bg-orange-500'
-                                        } ${isCollapsed ? 'w-3 h-3' : 'w-2 h-2'}`}
-                                    ></span>
-                                    {!isCollapsed && (
-                                        <span className="whitespace-nowrap">
-                                            {dept}
-                                        </span>
-                                    )}
-                                </div>
-                            )
                         )}
+                        <div className="space-y-1">
+                            <SidebarItem
+                                icon={LayoutDashboard}
+                                label="Dashboard"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.admin}
+                            />
+                            <SidebarItem
+                                icon={CheckSquare}
+                                label="All Jobs"
+                                badge={12}
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.jobManage}
+                            />
+                            <SidebarItem
+                                icon={FileText}
+                                label="Files & Docs"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.fileDocs}
+                            />
+                            <SidebarItem
+                                icon={Mail}
+                                label="Inbox"
+                                badge={5}
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.admin + '/inbox'}
+                            />
+                            <SidebarItem
+                                icon={Calendar}
+                                label="Schedule"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.schedule}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Management */}
+                    <div>
+                        {!isCollapsed && (
+                            <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                                Management
+                            </p>
+                        )}
+                        <div className="space-y-1">
+                            <SidebarItem
+                                icon={PieChart}
+                                label="Revenue Reports"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.revenueReports}
+                            />
+                            <SidebarItem
+                                icon={Users}
+                                label="Staff Directory"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.staffDirectory}
+                            />
+                            <SidebarItem
+                                icon={UserPlus}
+                                label="Invite Member"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.inviteMember}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Financial */}
+                    <div>
+                        {!isCollapsed && (
+                            <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                                Financial
+                            </p>
+                        )}
+                        <div className="space-y-1">
+                            <SidebarItem
+                                icon={DiamondPercent}
+                                label="Overview"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.profitLoss}
+                            />
+                            <SidebarItem
+                                icon={BadgeDollarSign}
+                                label="Transaction Reports"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.payment}
+                            />
+                            <SidebarItem
+                                icon={Dock}
+                                label="Tax Declaration"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.payroll}
+                            />
+                            <SidebarItem
+                                icon={Group}
+                                label="Reimbursements"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.reimbursements}
+                            />
+                            <SidebarItem
+                                icon={Settings2}
+                                label="Financial Settings"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.financialSettings}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Departments */}
+                    <div>
+                        {!isCollapsed ? (
+                            <div className="flex items-center justify-between px-2 mb-2">
+                                <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                                    Departments
+                                </p>
+                                <Settings className="w-3 h-3 cursor-pointer" />
+                            </div>
+                        ) : (
+                            // Centered Settings icon when collapsed
+                            <div className="flex justify-center mb-2">
+                                <Settings className="w-4 h-4 text-slate-300" />
+                            </div>
+                        )}
+
+                        <div className="space-y-1">
+                            {['Design Team', 'Development', 'Marketing'].map(
+                                (dept, idx) => (
+                                    <div
+                                        key={idx}
+                                        title={isCollapsed ? dept : undefined}
+                                        className={`flex items-center cursor-pointer text-slate-500 hover:text-emerald-700 hover:bg-slate-50 rounded-xl transition-all duration-200
+                       ${isCollapsed ? 'justify-center py-3' : 'gap-3 px-4 py-2 text-sm'}
+                    `}
+                                    >
+                                        <span
+                                            className={`rounded-full shrink-0 ${
+                                                idx === 0
+                                                    ? 'bg-purple-500'
+                                                    : idx === 1
+                                                      ? 'bg-blue-500'
+                                                      : 'bg-orange-500'
+                                            } ${isCollapsed ? 'w-3 h-3' : 'w-2 h-2'}`}
+                                        ></span>
+                                        {!isCollapsed && (
+                                            <span className="whitespace-nowrap">
+                                                {dept}
+                                            </span>
+                                        )}
+                                    </div>
+                                )
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            </ScrollArea>
 
             <div className="h-30 px-3 w-full overflow-x-hidden">
                 <HeroButton
@@ -302,7 +310,7 @@ export const AdminSidebar = () => {
                     color="default"
                     className="w-full"
                     isIconOnly={isCollapsed}
-                    onPress={() => setIsCollapsed(!isCollapsed)}
+                    onPress={toggleAdminLeftSidebar}
                 >
                     {!isCollapsed && 'Collapse'}
                 </HeroButton>

@@ -137,6 +137,8 @@ export const STORAGE_KEYS = {
     currencyDigits: 'app-runtime:currency-digits',
     projectCenterFinishItems: 'project-center-finish-items',
     sidebarStatus: 'csd-side',
+    adminRightSidebar: 'csd_admin-right-sidebar',
+    adminLeftSidebar: 'csd_admin-left-sidebar',
     jobColumns: 'csd-job_columns',
 } as const
 

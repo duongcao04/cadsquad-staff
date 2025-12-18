@@ -11,14 +11,13 @@ import {
 import { ChevronLeft, ChevronRight } from 'lucide-react' // Icons
 import { useState } from 'react'
 import { HeroButton } from '../ui/hero-button'
+import { toggleAdminRightSidebar } from '../../stores'
 
 export default function WeekCalendar({
     onChangeDate,
-    onClickMenuButton,
     isCollapsed,
 }: {
     onChangeDate: (date: Date) => void
-    onClickMenuButton: () => void
     isCollapsed: boolean
 }) {
     const [currentDate, setCurrentDate] = useState(new Date())
@@ -50,7 +49,7 @@ export default function WeekCalendar({
                     {format(currentDate, 'MMMM yyyy')}
                 </h2>
                 <HeroButton
-                    onPress={onClickMenuButton}
+                    onPress={toggleAdminRightSidebar}
                     isIconOnly
                     size="sm"
                     variant="bordered"

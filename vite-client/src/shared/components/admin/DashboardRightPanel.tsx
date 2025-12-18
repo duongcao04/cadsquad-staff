@@ -18,9 +18,13 @@ import { useState } from 'react'
 import { HeroButton } from '../ui/hero-button'
 import { Avatar, AvatarGroup } from '@heroui/react'
 import WeekCalendar from './WeekCalendar'
+import { toggleAdminRightSidebar } from '../../stores'
 
-export const DashboardRightPanel = () => {
-    const [isCollapsed, setIsCollapsed] = useState(false)
+export const DashboardRightPanel = ({
+    isCollapsed = false,
+}: {
+    isCollapsed?: boolean
+}) => {
     const [selectedDate, setSelectedDate] = useState(
         new Date().toISOString().split('T')[0]
     )
@@ -37,8 +41,8 @@ export const DashboardRightPanel = () => {
     return (
         <div
             className={`
-                bg-white border-l border-slate-100 h-screen hidden xl:flex flex-col transition-all duration-300 ease-in-out sticky top-0 right-0
-                ${isCollapsed ? 'w-20 p-4' : 'w-80 p-6'}
+                hidden xl:flex flex-col transition-all duration-300 ease-in-out sticky top-0 right-0
+                ${isCollapsed ? 'w-20 py-4 px-2' : 'w-80 p-6'}
             `}
         >
             {/* Calendar Section */}
@@ -49,7 +53,6 @@ export const DashboardRightPanel = () => {
                         onChangeDate={(date) =>
                             setSelectedDate(date.toISOString().split('T')[0])
                         }
-                        onClickMenuButton={() => setIsCollapsed(!isCollapsed)}
                         isCollapsed={isCollapsed}
                     />
                 </div>
@@ -57,7 +60,7 @@ export const DashboardRightPanel = () => {
                 // COLLAPSED: Simple Icon
                 <div className="flex flex-col items-center mb-8 gap-2">
                     <HeroButton
-                        onPress={() => setIsCollapsed(false)}
+                        onPress={toggleAdminRightSidebar}
                         isIconOnly
                         size="sm"
                         variant="bordered"
