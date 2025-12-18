@@ -72,6 +72,8 @@ export const INTERNAL_URLS = {
     revenueReports: '/' + 'admin/mgmt/revenue',
     teamManage: '/' + 'admin/mgmt/team',
     jobManage: '/' + 'admin/mgmt/jobs',
+    departmentsManage: '/' + 'admin/departments',
+    departmentItemManage: (departmentCode: string) => '/' + 'admin/departments/' + departmentCode,
     editJob: (jobNo: string) => '/' + 'admin/mgmt/jobs/' + jobNo,
     paymentManage: '/' + 'admin/mgmt/payments',
     /**

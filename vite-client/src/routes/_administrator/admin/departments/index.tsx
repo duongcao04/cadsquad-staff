@@ -1,243 +1,335 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_administrator/admin/departments/')({
-  component: DepartmentPage,
+  component: DepartmentsSettingsPage,
 })
-
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Card,
   CardBody,
   Button,
-  Avatar,
-  AvatarGroup,
-  Tabs,
-  Tab,
-  Progress,
-  Chip,
+  Input,
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
-  User,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Textarea,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
 } from "@heroui/react";
 import {
-  Briefcase,
-  Users,
-  DollarSign,
-  Calendar,
-  MoreHorizontal,
+  Search,
   Plus,
-  Clock,
-  CheckCircle2,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Palette,
+  Users,
+  Hash,
 } from "lucide-react";
 
-// --- Mock Data (Replace with API calls) ---
-const DEPT_INFO = {
-  id: "d1",
-  displayName: "Design Team",
-  hexColor: "#8B5CF6", // Violet
-  manager: { name: "Sarah Wilson", avatar: "https://i.pravatar.cc/150?u=sarah" },
-  description: "Responsible for UI/UX, branding, and graphic design assets.",
-  stats: {
-    members: 8,
-    activeJobs: 12,
-    revenueThisMonth: 15400,
-    capacity: 75, // 75% busy
-  },
-};
+// --- Types based on Prisma Schema ---
+interface Department {
+  id: string;
+  displayName: string; // e.g. "Design Team"
+  code: string;        // e.g. "DES"
+  hexColor: string;    // e.g. "#8B5CF6"
+  notes?: string;
+  memberCount: number; // Aggregated from Users
+}
 
-const MEMBERS = [
-  { id: 1, name: "Sarah Wilson", role: "Manager", status: "Busy", avatar: "https://i.pravatar.cc/150?u=sarah" },
-  { id: 2, name: "John Doe", role: "Senior Designer", status: "Available", avatar: "https://i.pravatar.cc/150?u=john" },
-  { id: 3, name: "Jane Smith", role: "UI Designer", status: "On Leave", avatar: "https://i.pravatar.cc/150?u=jane" },
+// --- Mock Data ---
+const MOCK_DEPARTMENTS: Department[] = [
+  { id: "d1", displayName: "Design Team", code: "DES", hexColor: "#8B5CF6", memberCount: 8, notes: "UI/UX and Graphic Design" },
+  { id: "d2", displayName: "Development", code: "DEV", hexColor: "#3B82F6", memberCount: 12, notes: "Frontend, Backend, and DevOps" },
+  { id: "d3", displayName: "Marketing", code: "MKT", hexColor: "#F59E0B", memberCount: 5, notes: "SEO, Content, and Ads" },
+  { id: "d4", displayName: "Finance", code: "FIN", hexColor: "#10B981", memberCount: 3, notes: "Accounting and Payroll" },
 ];
 
-const TEAM_JOBS = [
-  { id: 101, title: "Website Redesign", client: "TechCorp", due: "2 Days", status: "In Progress", progress: 60 },
-  { id: 102, title: "Mobile App Assets", client: "Startup Inc", due: "Today", status: "Urgent", progress: 90 },
-  { id: 103, title: "Branding Kit", client: "Coffee Shop", due: "1 Week", status: "Pending", progress: 0 },
+// --- Color Palette Options ---
+const PRESET_COLORS = [
+  "#3B82F6", // Blue
+  "#8B5CF6", // Violet
+  "#10B981", // Emerald
+  "#F59E0B", // Amber
+  "#EF4444", // Red
+  "#EC4899", // Pink
+  "#6366F1", // Indigo
+  "#14B8A6", // Teal
+  "#F97316", // Orange
+  "#64748B", // Slate
 ];
 
-// --- Sub-Component: Stat Card ---
-const StatCard = ({ icon: Icon, label, value, color }: any) => (
-  <Card shadow="sm" className="w-full">
-    <CardBody className="flex items-center gap-4 p-4">
-      <div className={`p-3 rounded-xl ${color} bg-opacity-20`}>
-        <Icon size={24} className={color.replace("bg-", "text-")} />
-      </div>
-      <div>
-        <p className="text-small text-default-500">{label}</p>
-        <h4 className="text-xl font-bold text-default-900">{value}</h4>
-      </div>
-    </CardBody>
-  </Card>
-);
+function DepartmentsSettingsPage(){
+  const [departments, setDepartments] = useState(MOCK_DEPARTMENTS);
+  const [searchQuery, setSearchQuery] = useState("");
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [editingDept, setEditingDept] = useState<Department | null>(null);
 
-function DepartmentPage() {
-  const [selectedTab, setSelectedTab] = useState<string>("overview");
+  // Form State
+  const [formData, setFormData] = useState<Partial<Department>>({
+    displayName: "",
+    code: "",
+    hexColor: "#3B82F6",
+    notes: "",
+  });
+
+  // --- Filtering ---
+  const filteredDepts = useMemo(() => {
+    return departments.filter(d => 
+      d.displayName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      d.code.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [departments, searchQuery]);
+
+  // --- Handlers ---
+  const handleOpenAdd = () => {
+    setEditingDept(null);
+    setFormData({ displayName: "", code: "", hexColor: "#3B82F6", notes: "" });
+    onOpen();
+  };
+
+  const handleOpenEdit = (dept: Department) => {
+    setEditingDept(dept);
+    setFormData({ ...dept });
+    onOpen();
+  };
+
+  const handleSave = () => {
+    if (editingDept) {
+      // Edit Logic
+      setDepartments(departments.map(d => d.id === editingDept.id ? { ...d, ...formData } as Department : d));
+    } else {
+      // Create Logic
+      const newDept = {
+        ...formData,
+        id: Math.random().toString(36).substr(2, 9),
+        memberCount: 0,
+      } as Department;
+      setDepartments([...departments, newDept]);
+    }
+    onOpenChange();
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Are you sure? This will remove the department tag from all users.")) {
+      setDepartments(departments.filter(d => d.id !== id));
+    }
+  };
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto min-h-screen bg-slate-50 space-y-8">
+    <div className="p-8 max-w-[1200px] mx-auto min-h-screen bg-slate-50 space-y-8">
       
       {/* --- Header --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex items-center gap-4">
-          {/* Department Icon/Logo */}
-          <div 
-            className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg"
-            style={{ backgroundColor: DEPT_INFO.hexColor }}
-          >
-            {DEPT_INFO.displayName.charAt(0)}
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">{DEPT_INFO.displayName}</h1>
-            <p className="text-slate-500 text-sm mt-1 max-w-md line-clamp-1">
-              {DEPT_INFO.description}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Departments</h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Manage your teams. These appear in the main sidebar for quick filtering.
+          </p>
         </div>
-
-        <div className="flex items-center gap-2">
-            <div className="text-right mr-4 hidden md:block">
-                <p className="text-xs text-slate-400 font-bold uppercase">Team Lead</p>
-                <p className="text-sm font-semibold text-slate-700">{DEPT_INFO.manager.name}</p>
-            </div>
-            <Avatar src={DEPT_INFO.manager.avatar} isBordered color="primary" />
-            <Button color="primary" className="ml-4 font-semibold" endContent={<Plus size={16} />}>
-                Assign Job
-            </Button>
-        </div>
+        <Button 
+          color="primary" 
+          startContent={<Plus size={18} />} 
+          onPress={handleOpenAdd}
+          className="font-semibold shadow-md shadow-blue-500/20"
+        >
+          Add Department
+        </Button>
       </div>
 
-      {/* --- Main Content Tabs --- */}
-      <Tabs 
-        aria-label="Department Sections" 
-        color="primary" 
-        variant="underlined"
-        classNames={{
-            tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
-            cursor: "w-full bg-primary",
-            tab: "max-w-fit px-0 h-12",
-            tabContent: "group-data-[selected=true]:text-primary font-medium"
-        }}
-        selectedKey={selectedTab}
-        onSelectionChange={(key) => setSelectedTab(key.toString())}
-      >
-        
-        {/* === TAB 1: OVERVIEW === */}
-        <Tab key="overview" title="Overview">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-                <StatCard icon={Users} label="Total Members" value={DEPT_INFO.stats.members} color="bg-blue-500 text-blue-500" />
-                <StatCard icon={Briefcase} label="Active Jobs" value={DEPT_INFO.stats.activeJobs} color="bg-purple-500 text-purple-500" />
-                <StatCard icon={DollarSign} label="Monthly Revenue" value={"$${DEPT_INFO.stats.revenueThisMonth.toLocaleString()}"} color="bg-emerald-500 text-emerald-500" />
-                
-                {/* Capacity Card */}
-                <Card shadow="sm" className="w-full">
-                    <CardBody className="p-4">
-                        <div className="flex justify-between mb-2">
-                            <span className="text-small text-default-500">Team Capacity</span>
-                            <span className="text-small font-bold">{DEPT_INFO.stats.capacity}%</span>
-                        </div>
-                        <Progress 
-                            value={DEPT_INFO.stats.capacity} 
-                            color={DEPT_INFO.stats.capacity > 80 ? "danger" : "success"} 
-                            className="max-w-md"
+      {/* --- Content Card --- */}
+      <Card className="shadow-sm border border-slate-200">
+        <CardBody className="p-0">
+          
+          {/* Toolbar */}
+          <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
+             <Input 
+                placeholder="Search departments..." 
+                startContent={<Search size={16} className="text-slate-400" />}
+                className="max-w-xs"
+                size="sm"
+                variant="bordered"
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+                isClearable
+                onClear={() => setSearchQuery("")}
+             />
+             <span className="text-xs text-slate-400 font-medium">
+                {filteredDepts.length} Groups
+             </span>
+          </div>
+
+          {/* Table */}
+          <Table aria-label="Departments List" shadow="none" removeWrapper className="min-w-full">
+            <TableHeader>
+              <TableColumn>DEPARTMENT NAME</TableColumn>
+              <TableColumn>CODE</TableColumn>
+              <TableColumn>COLOR TAG</TableColumn>
+              <TableColumn>MEMBERS</TableColumn>
+              <TableColumn align="end">ACTIONS</TableColumn>
+            </TableHeader>
+            <TableBody emptyContent="No departments found.">
+              {filteredDepts.map((dept) => (
+                <TableRow key={dept.id} className="hover:bg-slate-50 border-b border-slate-50 last:border-none group">
+                  <TableCell>
+                    <div>
+                        <p className="font-bold text-slate-700">{dept.displayName}</p>
+                        <p className="text-xs text-slate-400 truncate max-w-[200px]">{dept.notes || "No description"}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-mono text-xs font-bold bg-slate-100 px-2 py-1 rounded text-slate-600">
+                        {dept.code}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                        <div 
+                            className="w-6 h-6 rounded-full border-2 border-white shadow-sm" 
+                            style={{ backgroundColor: dept.hexColor }}
+                        ></div>
+                        <span className="text-xs text-slate-500 font-mono">{dept.hexColor}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2 text-slate-600 text-sm">
+                        <Users size={16} className="text-slate-400" />
+                        {dept.memberCount}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button isIconOnly size="sm" variant="light" onPress={() => handleOpenEdit(dept)}>
+                            <Edit size={16} />
+                        </Button>
+                        <Button isIconOnly size="sm" variant="light" color="danger" onPress={() => handleDelete(dept.id)}>
+                            <Trash2 size={16} />
+                        </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
+
+      {/* --- Add/Edit Modal --- */}
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="center">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                {editingDept ? "Edit Department" : "New Department"}
+              </ModalHeader>
+              <ModalBody>
+                <div className="space-y-4">
+                    
+                    {/* Name & Code Row */}
+                    <div className="flex gap-4">
+                        <Input 
+                            label="Name" 
+                            placeholder="e.g. Design Team" 
+                            labelPlacement="outside" 
+                            variant="bordered"
+                            className="flex-1"
+                            value={formData.displayName}
+                            onValueChange={(v) => setFormData({...formData, displayName: v})}
                         />
-                         <p className="text-[10px] text-default-400 mt-2">High load. Consider delaying new tasks.</p>
-                    </CardBody>
-                </Card>
-            </div>
+                        <Input 
+                            label="Code" 
+                            placeholder="e.g. DES" 
+                            labelPlacement="outside" 
+                            variant="bordered"
+                            className="w-24"
+                            startContent={<Hash size={14} className="text-slate-400" />}
+                            value={formData.code}
+                            onValueChange={(v) => setFormData({...formData, code: v.toUpperCase()})}
+                        />
+                    </div>
 
-            {/* Recent Activity / Jobs */}
-            <div className="mt-8">
-                <h3 className="text-lg font-bold text-slate-800 mb-4">Active Projects</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {TEAM_JOBS.map((job) => (
-                        <Card key={job.id} shadow="sm" className="hover:shadow-md transition-shadow cursor-pointer">
-                            <CardBody className="p-5">
-                                <div className="flex justify-between items-start mb-4">
-                                    <Chip size="sm" variant="flat" color={job.status === "Urgent" ? "danger" : "primary"}>{job.status}</Chip>
-                                    <Button isIconOnly size="sm" variant="light"><MoreHorizontal size={16} /></Button>
-                                </div>
-                                <h4 className="text-lg font-bold text-slate-800">{job.title}</h4>
-                                <p className="text-sm text-slate-500 mb-4">{job.client}</p>
-                                
-                                <div className="space-y-2">
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-slate-400">Progress</span>
-                                        <span className="font-bold text-slate-700">{job.progress}%</span>
+                    {/* Description */}
+                    <Textarea 
+                        label="Description" 
+                        placeholder="What does this team do?" 
+                        labelPlacement="outside" 
+                        variant="bordered"
+                        minRows={2}
+                        value={formData.notes}
+                        onValueChange={(v) => setFormData({...formData, notes: v})}
+                    />
+
+                    {/* Color Picker */}
+                    <div>
+                        <label className="text-small font-medium text-foreground mb-2 block">Theme Color</label>
+                        <Popover placement="bottom" showArrow={true}>
+                            <PopoverTrigger>
+                                <Button 
+                                    variant="bordered" 
+                                    className="w-full justify-start"
+                                    startContent={
+                                        <div 
+                                            className="w-5 h-5 rounded-full border border-slate-200" 
+                                            style={{ backgroundColor: formData.hexColor }}
+                                        ></div>
+                                    }
+                                >
+                                    {formData.hexColor}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64">
+                                <div className="px-1 py-2 w-full">
+                                    <p className="text-small font-bold text-foreground mb-2">Select Color</p>
+                                    <div className="grid grid-cols-5 gap-2">
+                                        {PRESET_COLORS.map((color) => (
+                                            <button
+                                                key={color}
+                                                className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${formData.hexColor === color ? 'border-slate-800' : 'border-transparent'}`}
+                                                style={{ backgroundColor: color }}
+                                                onClick={() => setFormData({...formData, hexColor: color})}
+                                            />
+                                        ))}
                                     </div>
-                                    <Progress size="sm" value={job.progress} color="primary" />
-                                </div>
-                                
-                                <div className="flex items-center gap-2 mt-4 text-xs text-slate-500 font-medium bg-slate-50 p-2 rounded-lg">
-                                    <Clock size={14} /> Due: {job.due}
-                                </div>
-                            </CardBody>
-                        </Card>
-                    ))}
-                </div>
-            </div>
-        </Tab>
-
-        {/* === TAB 2: MEMBERS === */}
-        <Tab key="members" title="Members">
-            <Card className="mt-6">
-                <CardBody>
-                    <Table aria-label="Department Members" shadow="none" removeWrapper>
-                        <TableHeader>
-                            <TableColumn>MEMBER</TableColumn>
-                            <TableColumn>ROLE</TableColumn>
-                            <TableColumn>STATUS</TableColumn>
-                            <TableColumn>ACTIONS</TableColumn>
-                        </TableHeader>
-                        <TableBody>
-                            {MEMBERS.map((member) => (
-                                <TableRow key={member.id}>
-                                    <TableCell>
-                                        <User 
-                                            name={member.name} 
-                                            description={member.role} 
-                                            avatarProps={{src: member.avatar, radius: "lg"}} 
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="text-slate-500 text-sm">{member.role}</span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip 
+                                    <div className="mt-3 pt-3 border-t border-slate-100">
+                                        <Input 
                                             size="sm" 
-                                            variant="dot" 
-                                            color={member.status === 'Available' ? 'success' : member.status === 'Busy' ? 'warning' : 'default'}
-                                        >
-                                            {member.status}
-                                        </Chip>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button size="sm" variant="light">Details</Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardBody>
-            </Card>
-        </Tab>
+                                            label="Custom Hex" 
+                                            variant="flat" 
+                                            value={formData.hexColor}
+                                            onValueChange={(v) => setFormData({...formData, hexColor: v})}
+                                            startContent={<Palette size={14} />}
+                                        />
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
 
-        {/* === TAB 3: SCHEDULE === */}
-        <Tab key="schedule" title="Schedule">
-             <div className="mt-6 flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-dashed border-slate-300">
-                <Calendar size={48} className="text-slate-300 mb-4" />
-                <h3 className="text-lg font-bold text-slate-700">Team Calendar</h3>
-                <p className="text-slate-400 text-sm">View deadlines and time-off requests for the {DEPT_INFO.displayName}.</p>
-                <Button variant="flat" className="mt-4">View Full Calendar</Button>
-             </div>
-        </Tab>
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Cancel
+                </Button>
+                <Button color="primary" onPress={handleSave}>
+                  Save Department
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
-      </Tabs>
     </div>
   );
 };

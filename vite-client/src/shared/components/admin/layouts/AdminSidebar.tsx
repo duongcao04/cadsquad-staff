@@ -24,6 +24,7 @@ import { HeroButton } from '../../ui/hero-button'
 import { HeroTooltip } from '../../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
 import { toggleAdminLeftSidebar } from '../../../stores'
+import { Button } from '@heroui/react'
 
 // --- Types ---
 interface SidebarItemProps {
@@ -256,7 +257,17 @@ export const AdminSidebar = ({
                                 <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
                                     Departments
                                 </p>
-                                <Settings className="w-3 h-3 cursor-pointer" />
+                                <Link to={INTERNAL_URLS.departmentsManage}>
+                                    <HeroButton
+                                        isIconOnly
+                                        size="xs"
+                                        className="p-1!"
+                                        variant="light"
+                                        color="default"
+                                    >
+                                        <Settings size={14} />
+                                    </HeroButton>
+                                </Link>
                             </div>
                         ) : (
                             // Centered Settings icon when collapsed
@@ -268,9 +279,12 @@ export const AdminSidebar = ({
                         <div className="space-y-1">
                             {['Design Team', 'Development', 'Marketing'].map(
                                 (dept, idx) => (
-                                    <div
+                                    <Link
                                         key={idx}
                                         title={isCollapsed ? dept : undefined}
+                                        to={INTERNAL_URLS.departmentItemManage(
+                                            dept
+                                        )}
                                         className={`flex items-center cursor-pointer text-slate-500 hover:text-emerald-700 hover:bg-slate-50 rounded-xl transition-all duration-200
                        ${isCollapsed ? 'justify-center py-3' : 'gap-3 px-4 py-2 text-sm'}
                     `}
@@ -289,7 +303,7 @@ export const AdminSidebar = ({
                                                 {dept}
                                             </span>
                                         )}
-                                    </div>
+                                    </Link>
                                 )
                             )}
                         </div>
