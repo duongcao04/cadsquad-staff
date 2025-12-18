@@ -30,7 +30,7 @@ const performers = [
 
 export const TopPerformers = () => {
     return (
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-border-default shadow-sm">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="font-bold text-slate-800">Top Performers</h3>
                 <div className="flex bg-slate-100 rounded-lg p-1">

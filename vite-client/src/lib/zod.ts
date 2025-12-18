@@ -16,3 +16,20 @@ export const optionalIsoDate = z
     .datetime({ message: 'Invalid ISO 8601 date' })
     .optional()
     .or(z.literal(''))
+
+
+// --- Helper for Zod Validation (Same as before) ---
+export const toFormikValidate = <T extends z.ZodType<any, any>>(schema: T) => {
+    return (values: any) => {
+        const result = schema.safeParse(values)
+        if (!result.success) {
+            const errors: Record<string, string> = {}
+            result.error.issues.forEach((issue) => {
+                const path = issue.path[0]
+                if (path) errors[path.toString()] = issue.message
+            })
+            return errors
+        }
+        return {}
+    }
+}

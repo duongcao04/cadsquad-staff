@@ -1,5 +1,4 @@
 import { ApiResponse, axiosClient } from "../axios"
-import { envConfig } from "../config"
 
 interface IAblyResponse {
 	keyName: string

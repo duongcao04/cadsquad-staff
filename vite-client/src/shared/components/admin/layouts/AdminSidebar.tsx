@@ -1,5 +1,5 @@
 import { INTERNAL_URLS } from '@/lib'
-import { Link, useMatchRoute } from '@tanstack/react-router'
+import { Link, useMatchRoute, useRouterState } from '@tanstack/react-router'
 import {
     BadgeDollarSign,
     Calendar,
@@ -18,13 +18,12 @@ import {
     UserPlus,
     Users,
 } from 'lucide-react'
-import React, { useState } from 'react'
+import React from 'react'
+import { toggleAdminLeftSidebar } from '../../../stores'
 import { ActionButton } from '../../app/ActionButton'
 import { HeroButton } from '../../ui/hero-button'
 import { HeroTooltip } from '../../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
-import { toggleAdminLeftSidebar } from '../../../stores'
-import { Button } from '@heroui/react'
 
 // --- Types ---
 interface SidebarItemProps {
@@ -45,15 +44,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     isCollapsed,
     url,
 }) => {
-    const matchRoute = useMatchRoute()
-
-    // Returns false if not matched, or the params object if matched
-    const isActiveLink = matchRoute({
-        to: url,
-        fuzzy: false, // matches /admin, /admin/users, etc.
+    const pathname = useRouterState({
+        select: (state) => state.location.pathname,
     })
 
-    const isActive = defaultActive || isActiveLink
+    const isActive = defaultActive || pathname === url
 
     return (
         <HeroTooltip

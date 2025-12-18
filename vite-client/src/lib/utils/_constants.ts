@@ -56,7 +56,8 @@ export const INTERNAL_URLS = {
      * SETTINGS ROUTES
     */
     settings: '/' + 'settings',
-    accountSettings: '/' + 'settings/personal_details',
+    accountSettings: '/' + 'settings/my-profile',
+    loginAndSecurity: '/' + 'settings/login-and-security',
     notificationsSettings: '/' + 'settings/notifications',
     /**
      * ADMIN ROUTES
@@ -64,7 +65,7 @@ export const INTERNAL_URLS = {
     admin: '/' + 'admin',
     schedule: '/' + 'admin/schedule',
     // MANAGEMENT
-    appearance: '/' + '"settings/appearance"',
+    appearance: '/' + 'settings/appearance',
     fileDocs: '/' + 'admin/mgmt/file-docs',
     staffDirectory: '/' + 'admin/mgmt/staff-directory',
     editStaffDetails: (username: string) => '/' + 'admin/mgmt/staff-directory/' + username + '/edit',

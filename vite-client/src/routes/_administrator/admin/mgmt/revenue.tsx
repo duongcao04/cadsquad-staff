@@ -247,7 +247,7 @@ function RevenueReports(){
       {/* --- Detailed Transactions Table --- */}
       <Card className="w-full" shadow="sm">
         <CardBody className="p-0 overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+            <div className="p-4 border-b border-border-default flex justify-between items-center">
                 <h3 className="text-lg font-bold text-slate-800">Recent Completed Jobs</h3>
                 <Button size="sm" variant="light" color="primary">View All</Button>
             </div>

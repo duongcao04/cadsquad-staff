@@ -134,7 +134,7 @@ function ProfitLossPage() {
         {/* Breakdown Table */}
         <Card className="shadow-sm border border-slate-200">
             <CardBody className="p-0">
-                <div className="p-6 border-b border-slate-100">
+                <div className="p-6 border-b border-border-default">
                     <h3 className="font-bold text-slate-800">Statement Summary</h3>
                 </div>
                 <Table aria-label="P&L Breakdown" shadow="none" removeWrapper className="h-full">

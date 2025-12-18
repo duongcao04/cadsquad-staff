@@ -150,7 +150,7 @@ function UserJobDetailPage() {
                 {/* --- LEFT: MAIN CONTENT --- */}
                 <div className="lg:col-span-2 space-y-6">
                     <Card className="w-full shadow-sm border border-slate-200 min-h-[500px]">
-                        <CardHeader className="p-0 border-b border-slate-100">
+                        <CardHeader className="p-0 border-b border-border-default">
                             <Tabs
                                 aria-label="Job Tabs"
                                 variant="underlined"
@@ -345,7 +345,7 @@ function UserJobDetailPage() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 pt-4 border-t border-slate-100">
+                                    <div className="mt-4 pt-4 border-t border-border-default">
                                         <Textarea
                                             placeholder="Type your message..."
                                             minRows={2}
@@ -379,7 +379,7 @@ function UserJobDetailPage() {
                 <div className="lg:col-span-1 space-y-6">
                     {/* Team Members */}
                     <Card className="shadow-sm border border-slate-200">
-                        <CardHeader className="px-4 py-3 bg-slate-50 border-b border-slate-100">
+                        <CardHeader className="px-4 py-3 bg-slate-50 border-b border-border-default">
                             <h4 className="font-bold text-slate-700 text-sm">
                                 Team Members
                             </h4>

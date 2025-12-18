@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { IUserResponse } from "../../../shared/interfaces";
 import { TDepartment, TUser } from "../../../shared/types";
 import { IMAGES } from "../../utils";
-import { userApi } from "../../api";
+import { authApi, userApi } from "../../api";
 
 export const mapUser: (item?: IUserResponse) => TUser = (item) => ({
 	id: item?.id ?? "",
@@ -58,6 +58,16 @@ export const userOptions = (username: string) => {
 		queryFn: () => userApi.findOne(username),
 		select: (res) => {
 			const userData = res?.result
+			return mapUser(userData)
+		},
+	})
+}
+export const profileOptions = () => {
+	return queryOptions({
+		queryKey: ['profile'],
+		queryFn: () => authApi.getProfile(),
+		select: (res) => {
+			const userData = res?.data.result
 			return mapUser(userData)
 		},
 	})

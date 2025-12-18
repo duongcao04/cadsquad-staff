@@ -179,7 +179,7 @@ function InboxPage() {
             <div className="w-[400px] border-r border-slate-200 flex flex-col bg-white">
               
               {/* Search & Tabs */}
-              <div className="p-4 border-b border-slate-100 space-y-4">
+              <div className="p-4 border-b border-border-default space-y-4">
                 <Input
                   placeholder="Search inbox..."
                   startContent={<Search size={16} className="text-slate-400" />}

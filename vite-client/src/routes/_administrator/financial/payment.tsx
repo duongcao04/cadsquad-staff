@@ -154,7 +154,7 @@ function PaymentChannelFlowPage() {
         <div className="lg:col-span-3 space-y-6">
             {/* Quick Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="shadow-sm border border-slate-100">
+                <Card className="shadow-sm border border-border-default">
                     <CardBody className="flex items-center gap-4 p-4">
                         <div className="p-3 rounded-full bg-emerald-50 text-emerald-600">
                             <ArrowDownLeft size={24} />
@@ -165,7 +165,7 @@ function PaymentChannelFlowPage() {
                         </div>
                     </CardBody>
                 </Card>
-                <Card className="shadow-sm border border-slate-100">
+                <Card className="shadow-sm border border-border-default">
                     <CardBody className="flex items-center gap-4 p-4">
                         <div className="p-3 rounded-full bg-red-50 text-red-600">
                             <ArrowUpRight size={24} />
@@ -176,7 +176,7 @@ function PaymentChannelFlowPage() {
                         </div>
                     </CardBody>
                 </Card>
-                <Card className="shadow-sm border border-slate-100">
+                <Card className="shadow-sm border border-border-default">
                     <CardBody className="flex items-center gap-4 p-4">
                         <div className="p-3 rounded-full bg-blue-50 text-blue-600">
                             <TrendingUp size={24} />
@@ -190,7 +190,7 @@ function PaymentChannelFlowPage() {
             </div>
 
             {/* Flow Chart */}
-            <Card className="shadow-sm border border-slate-100">
+            <Card className="shadow-sm border border-border-default">
                 <CardBody className="p-6">
                     <h3 className="font-bold text-slate-800 mb-4">Cash Flow History</h3>
                     <div className="h-[250px] w-full">
@@ -217,7 +217,7 @@ function PaymentChannelFlowPage() {
 
       {/* --- Detailed Transaction Table --- */}
       <Card className="w-full shadow-sm border border-slate-200">
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+        <div className="p-6 border-b border-border-default flex justify-between items-center">
             <h3 className="font-bold text-lg text-slate-800">Transaction Ledger</h3>
             <div className="flex gap-2">
                  <Button size="sm" variant="bordered" startContent={<Filter size={14} />}>Filter Date</Button>

@@ -93,7 +93,7 @@ function SettingsPage () {
           >
              <Card className="shadow-sm border border-slate-200">
               <CardBody className="p-6 gap-6">
-                 <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
+                 <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-border-default">
                     <div>
                         <h4 className="font-bold text-slate-800">Enable VAT/Tax Calculation</h4>
                         <p className="text-xs text-slate-500">Apply tax to all generated invoices automatically.</p>

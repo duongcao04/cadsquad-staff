@@ -152,7 +152,7 @@ function DepartmentsSettingsPage(){
         <CardBody className="p-0">
           
           {/* Toolbar */}
-          <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-xl">
+          <div className="p-4 border-b border-border-default flex justify-between items-center bg-white rounded-t-xl">
              <Input 
                 placeholder="Search departments..." 
                 startContent={<Search size={16} className="text-slate-400" />}
@@ -300,7 +300,7 @@ function DepartmentsSettingsPage(){
                                             />
                                         ))}
                                     </div>
-                                    <div className="mt-3 pt-3 border-t border-slate-100">
+                                    <div className="mt-3 pt-3 border-t border-border-default">
                                         <Input 
                                             size="sm" 
                                             label="Custom Hex" 

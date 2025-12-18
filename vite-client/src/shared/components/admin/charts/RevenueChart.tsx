@@ -20,7 +20,7 @@ const data = [
 
 export const RevenueChart = () => {
     return (
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mb-8">
+        <div className="bg-white p-6 rounded-2xl border border-border-default shadow-sm mb-8">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="font-bold text-slate-800">Financial Overview</h3>
                 <button className="text-xs border border-slate-200 rounded-lg px-3 py-1 text-slate-500 hover:bg-slate-50">

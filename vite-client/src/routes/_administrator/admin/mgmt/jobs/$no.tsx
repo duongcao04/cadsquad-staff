@@ -200,7 +200,7 @@ function JobEditPage() {
 
             {/* Main Tabs Form */}
             <Card className="w-full shadow-sm border border-slate-200 min-h-[600px]">
-                <CardHeader className="p-0 border-b border-slate-100">
+                <CardHeader className="p-0 border-b border-border-default">
                     <Tabs 
                         aria-label="Job Edit Sections" 
                         variant="underlined"
@@ -465,7 +465,7 @@ function JobEditPage() {
             
             {/* Meta Info Card */}
             <Card className="w-full shadow-sm border border-slate-200">
-                <CardHeader className="bg-slate-50 border-b border-slate-100 px-4 py-3">
+                <CardHeader className="bg-slate-50 border-b border-border-default px-4 py-3">
                     <h3 className="text-sm font-bold text-slate-700">Job Information</h3>
                 </CardHeader>
                 <CardBody className="p-4 space-y-4">

@@ -5,7 +5,9 @@ import {
     INTERNAL_URLS,
     optimizeCloudinary,
     ROLES_LIST,
+    useUpdateAvatarMutation,
     useUpdateUserMutation,
+    useUploadImageMutation,
 } from '@/lib'
 import { departmentsListOptions } from '@/lib/queries/options/department-queries'
 import { jobTitlesListOptions } from '@/lib/queries/options/job-title-queries'
@@ -18,6 +20,7 @@ import {
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
 import {
+    addToast,
     Avatar,
     Button,
     Card,
@@ -57,6 +60,7 @@ import {
 import { useState } from 'react'
 import { z } from 'zod'
 import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
+import { UploadAvatarModal } from '../../../../../../shared/components/modals/UploadAvatarModal'
 
 // --- Helper to connect Zod to Formik without extra deps ---
 const toFormikValidate = <T extends z.ZodType<any, any>>(schema: T) => {
@@ -90,6 +94,8 @@ export const Route = createFileRoute(
 function EditStaffPage() {
     const { username } = Route.useParams()
 
+    const uploadImageMutation = useUploadImageMutation()
+    const updateAvatarMutation = useUpdateAvatarMutation()
     // 1. Fetch Data
     const options = userOptions(username)
     const { data: user } = useSuspenseQuery(options)
@@ -111,6 +117,13 @@ function EditStaffPage() {
         onClose: onCloseResetPasswordModal,
     } = useDisclosure({
         id: 'ResetPasswordModal',
+    })
+    const {
+        isOpen: isOpenUploadAvatarModal,
+        onOpen: onOpenUploadAvatarModal,
+        onClose: onCloseUploadAvatarModal,
+    } = useDisclosure({
+        id: 'UploadAvatarModal',
     })
 
     // 2. Initialize Formik
@@ -144,6 +157,30 @@ function EditStaffPage() {
         },
     })
 
+    const handleAvatarSave = async (imageFile: File) => {
+        try {
+            // Step 1: Upload the file to get the URL
+            console.log('Uploading image...')
+            const newAvatarUrl =
+                await uploadImageMutation.mutateAsync(imageFile)
+
+            if (!newAvatarUrl) throw new Error('Failed to get image URL')
+
+            // Step 2: Update the user record with this URL
+            console.log('Updating user profile...', newAvatarUrl)
+            await updateAvatarMutation.mutateAsync({
+                username: user.username,
+                avatarUrl: newAvatarUrl,
+            })
+        } catch (error) {
+            console.error(error)
+            addToast({
+                title: 'Failed to update avatar',
+                color: 'danger',
+            })
+        }
+    }
+
     return (
         <>
             {isOpenResetPasswordModal && user && (
@@ -151,6 +188,17 @@ function EditStaffPage() {
                     isOpen={isOpenResetPasswordModal}
                     onClose={onCloseResetPasswordModal}
                     data={user}
+                />
+            )}
+            {isOpenUploadAvatarModal && (
+                <UploadAvatarModal
+                    isOpen={isOpenUploadAvatarModal}
+                    onClose={onCloseUploadAvatarModal}
+                    onSave={handleAvatarSave}
+                    currentAvatarUrl={optimizeCloudinary(user.avatar, {
+                        width: 256,
+                        height: 256,
+                    })}
                 />
             )}
             <HeroBreadcrumbs className="pt-3 px-7 text-xs">
@@ -226,7 +274,10 @@ function EditStaffPage() {
                                         className="w-32 h-32 text-large border-4 border-slate-50 shadow-md"
                                     />
                                     {/* Upload Logic would go here */}
-                                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                    <div
+                                        className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                        onClick={onOpenUploadAvatarModal}
+                                    >
                                         <Upload
                                             className="text-white"
                                             size={24}
@@ -330,7 +381,7 @@ function EditStaffPage() {
                     {/* --- RIGHT COLUMN: Edit Form with Formik --- */}
                     <div className="lg:col-span-2">
                         <Card className="shadow-sm border border-slate-200 min-h-150">
-                            <CardHeader className="p-0 border-b border-slate-100">
+                            <CardHeader className="p-0 border-b border-border-default">
                                 <Tabs
                                     aria-label="User Edit Tabs"
                                     variant="underlined"
@@ -493,7 +544,7 @@ function EditStaffPage() {
                                                 onBlur={formik.handleBlur}
                                             />
                                             {/* --- SOCIAL PROFILES (Mapped to UserConfig) --- */}
-                                            <div className="md:col-span-2 pt-4 border-t border-slate-100 mt-2">
+                                            <div className="md:col-span-2 pt-4 border-t border-border-default mt-2">
                                                 <p className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
                                                     Social Profiles{' '}
                                                     <span className="text-xs font-normal text-slate-400">

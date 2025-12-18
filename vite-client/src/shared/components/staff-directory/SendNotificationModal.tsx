@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Modal,
     ModalContent,
@@ -13,7 +13,6 @@ import {
     Avatar,
     Card,
     CardBody,
-    Chip,
 } from '@heroui/react'
 import {
     Bell,
@@ -118,8 +117,8 @@ export const SendNotificationModal = ({
             size="xl"
             backdrop="blur"
             classNames={{
-                header: 'border-b border-slate-100',
-                footer: 'border-t border-slate-100',
+                header: 'border-b border-border-default',
+                footer: 'border-t border-border-default',
             }}
         >
             <ModalContent>
@@ -170,7 +169,6 @@ export const SendNotificationModal = ({
                                         {NOTIFICATION_TYPES.map((t) => (
                                             <SelectItem
                                                 key={t.key}
-                                                value={t.key}
                                                 textValue={t.label}
                                             >
                                                 <div className="flex items-center gap-2">
@@ -229,7 +227,7 @@ export const SendNotificationModal = ({
                                     <Smartphone size={14} /> Preview
                                 </p>
                                 {/* Notification Card Preview */}
-                                <Card className="shadow-sm border border-slate-100 bg-white max-w-sm">
+                                <Card className="shadow-sm border border-border-default bg-white max-w-sm">
                                     <CardBody className="p-3 flex items-start gap-3">
                                         <div
                                             className={`p-2 rounded-lg shrink-0 ${selectedType.bg} ${selectedType.color}`}

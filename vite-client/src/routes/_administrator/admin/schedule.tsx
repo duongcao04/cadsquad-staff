@@ -379,7 +379,7 @@ function SchedulePage() {
                                     </span>
                                 </div>
 
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
+                                <div className="bg-slate-50 p-4 rounded-xl border border-border-default mb-4">
                                     <p className="text-sm font-semibold text-slate-700 mb-2">
                                         Assignees
                                     </p>

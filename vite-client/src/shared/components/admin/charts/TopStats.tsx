@@ -12,7 +12,7 @@ export const TopStats = ({
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
             {/* Active Jobs Card */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div className="bg-white p-5 rounded-2xl border border-border-default shadow-sm flex items-center justify-between">
                 <div>
                     <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-3">
                         <Briefcase className="w-5 h-5" />
@@ -32,7 +32,7 @@ export const TopStats = ({
             </div>
 
             {/* Overdue Jobs Card */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div className="bg-white p-5 rounded-2xl border border-border-default shadow-sm flex items-center justify-between">
                 <div>
                     <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-3">
                         <AlertCircle className="w-5 h-5" />
@@ -52,7 +52,7 @@ export const TopStats = ({
             </div>
 
             {/* Pending Review Card */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div className="bg-white p-5 rounded-2xl border border-border-default shadow-sm flex items-center justify-between">
                 <div>
                     <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 mb-3">
                         <Clock className="w-5 h-5" />
@@ -72,7 +72,7 @@ export const TopStats = ({
             </div>
 
             {/* Waiting for Payment Card */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+            <div className="bg-white p-5 rounded-2xl border border-border-default shadow-sm flex items-center justify-between">
                 <div>
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mb-3">
                         <BanknoteArrowDown className="w-5 h-5" />

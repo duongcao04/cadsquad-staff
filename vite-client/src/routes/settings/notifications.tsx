@@ -1,9 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/settings/notifications')({
-    component: NotificationSettingsPage,
-})
-
+import { createFileRoute, Link } from '@tanstack/react-router'
 import React, { useState } from 'react'
 import {
     Card,
@@ -33,7 +28,14 @@ import {
     Zap,
     MessageSquare,
     Briefcase,
+    House,
 } from 'lucide-react'
+import { HeroBreadcrumbItem, HeroBreadcrumbs } from '../../shared/components'
+import { INTERNAL_URLS } from '../../lib'
+
+export const Route = createFileRoute('/settings/notifications')({
+    component: NotificationSettingsPage,
+})
 
 // --- Mock Data: User Preferences (Stored in UserConfig JSON) ---
 const INITIAL_PREFS = {
@@ -155,298 +157,329 @@ function NotificationSettingsPage() {
     }
 
     return (
-        <div className="p-8 max-w-[1200px] mx-auto min-h-screen bg-slate-50 space-y-8">
-            {/* --- Header --- */}
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900">
-                        Notification Preferences
-                    </h1>
-                    <p className="text-slate-500 text-sm mt-1">
-                        Manage how and when you receive alerts.
-                    </p>
+        <>
+            <HeroBreadcrumbs className="text-xs">
+                <HeroBreadcrumbItem>
+                    <Link
+                        to={INTERNAL_URLS.home}
+                        className="text-text-subdued!"
+                    >
+                        <House size={16} />
+                    </Link>
+                </HeroBreadcrumbItem>
+                <HeroBreadcrumbItem>
+                    <Link
+                        to={INTERNAL_URLS.settings}
+                        className="text-text-subdued!"
+                    >
+                        Settings
+                    </Link>
+                </HeroBreadcrumbItem>
+                <HeroBreadcrumbItem>Notifications</HeroBreadcrumbItem>
+            </HeroBreadcrumbs>
+
+            <div className="mt-5">
+                {/* --- Header --- */}
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-xl font-bold text-text-default mb-1">
+                            Notification Preferences
+                        </h1>
+                        <p className="text-sm text-text-subdued">
+                            Manage how and when you receive alerts.
+                        </p>
+                    </div>
+                    <Button
+                        color="primary"
+                        startContent={isSaving ? null : <Save size={18} />}
+                        isLoading={isSaving}
+                        onPress={handleSave}
+                    >
+                        {isSaving ? 'Saving...' : 'Save Changes'}
+                    </Button>
                 </div>
-                <Button
-                    color="primary"
-                    startContent={isSaving ? null : <Save size={18} />}
-                    isLoading={isSaving}
-                    onPress={handleSave}
-                >
-                    {isSaving ? 'Saving...' : 'Save Changes'}
-                </Button>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* --- LEFT COLUMN: General Settings --- */}
-                <div className="lg:col-span-1 space-y-6">
-                    {/* Master Channels */}
-                    <Card className="shadow-sm border border-slate-200">
-                        <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
-                            <h4 className="font-bold text-large">
-                                Enable Channels
-                            </h4>
-                            <p className="text-tiny text-default-500">
-                                Global master switches
-                            </p>
-                        </CardHeader>
-                        <CardBody className="py-4 gap-4">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                                        <Mail size={18} />
-                                    </div>
-                                    <span className="text-sm font-medium">
-                                        Email Notifications
-                                    </span>
-                                </div>
-                                <Switch
-                                    isSelected={prefs.channels.email}
-                                    onValueChange={(v) =>
-                                        setPrefs({
-                                            ...prefs,
-                                            channels: {
-                                                ...prefs.channels,
-                                                email: v,
-                                            },
-                                        })
-                                    }
-                                />
-                            </div>
-                            <Divider />
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                        <Bell size={18} />
-                                    </div>
-                                    <span className="text-sm font-medium">
-                                        Push / Browser
-                                    </span>
-                                </div>
-                                <Switch
-                                    isSelected={prefs.channels.browser}
-                                    onValueChange={(v) =>
-                                        setPrefs({
-                                            ...prefs,
-                                            channels: {
-                                                ...prefs.channels,
-                                                browser: v,
-                                            },
-                                        })
-                                    }
-                                />
-                            </div>
-                        </CardBody>
-                    </Card>
-
-                    {/* Do Not Disturb */}
-                    <Card className="shadow-sm border border-slate-200">
-                        <CardHeader className="pb-0 pt-4 px-4 flex justify-between items-start">
-                            <div>
-                                <h4 className="font-bold text-large">
-                                    Quiet Hours
+                <div className="mt-7 grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* --- LEFT COLUMN: General Settings --- */}
+                    <div className="lg:col-span-1 space-y-6">
+                        {/* Master Channels */}
+                        <Card className="shadow-sm border border-border-default">
+                            <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
+                                <h4 className="font-bold text-base">
+                                    Enable Channels
                                 </h4>
                                 <p className="text-tiny text-default-500">
-                                    Pause notifications automatically
+                                    Global master switches
                                 </p>
-                            </div>
-                            <Switch
-                                size="sm"
-                                isSelected={prefs.dnd.enabled}
-                                onValueChange={(v) =>
-                                    setPrefs({
-                                        ...prefs,
-                                        dnd: { ...prefs.dnd, enabled: v },
-                                    })
-                                }
-                            />
-                        </CardHeader>
-                        <CardBody
-                            className={`py-4 gap-4 ${!prefs.dnd.enabled ? 'opacity-50 pointer-events-none' : ''}`}
-                        >
-                            <div className="grid grid-cols-2 gap-4">
-                                <Select
-                                    label="Start Time"
-                                    size="sm"
-                                    defaultSelectedKeys={[prefs.dnd.start]}
-                                >
-                                    <SelectItem key="21:00">
-                                        09:00 PM
-                                    </SelectItem>
-                                    <SelectItem key="22:00">
-                                        10:00 PM
-                                    </SelectItem>
-                                    <SelectItem key="23:00">
-                                        11:00 PM
-                                    </SelectItem>
-                                </Select>
-                                <Select
-                                    label="End Time"
-                                    size="sm"
-                                    defaultSelectedKeys={[prefs.dnd.end]}
-                                >
-                                    <SelectItem key="07:00">
-                                        07:00 AM
-                                    </SelectItem>
-                                    <SelectItem key="08:00">
-                                        08:00 AM
-                                    </SelectItem>
-                                    <SelectItem key="09:00">
-                                        09:00 AM
-                                    </SelectItem>
-                                </Select>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 p-2 rounded-lg">
-                                <Moon size={14} />
-                                <span>
-                                    Based on:{' '}
-                                    <strong>{prefs.dnd.timezone}</strong>
-                                </span>
-                            </div>
-                        </CardBody>
-                    </Card>
-                </div>
-
-                {/* --- RIGHT COLUMN: Granular Matrix --- */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Notification Matrix */}
-                    <Card className="shadow-sm border border-slate-200">
-                        <CardHeader className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <div className="flex-1">
-                                <h4 className="font-bold text-lg text-slate-800">
-                                    Trigger Rules
-                                </h4>
-                                <p className="text-sm text-slate-500">
-                                    Fine-tune what you receive per channel.
-                                </p>
-                            </div>
-
-                            {/* Column Headers */}
-                            <div className="hidden md:flex gap-8 pr-4">
-                                <div className="w-12 text-center text-xs font-bold text-slate-400 uppercase flex flex-col items-center gap-1">
-                                    <Bell size={16} /> In-App
-                                </div>
-                                <div className="w-12 text-center text-xs font-bold text-slate-400 uppercase flex flex-col items-center gap-1">
-                                    <Mail size={16} /> Email
-                                </div>
-                                <div className="w-12 text-center text-xs font-bold text-slate-400 uppercase flex flex-col items-center gap-1">
-                                    <Smartphone size={16} /> Push
-                                </div>
-                            </div>
-                        </CardHeader>
-
-                        <CardBody className="p-0">
-                            {prefs.triggers.map((trigger, idx) => (
-                                <div
-                                    key={trigger.id}
-                                    className="flex flex-col md:flex-row items-center justify-between p-4 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-4 w-full md:w-auto mb-4 md:mb-0">
-                                        <div
-                                            className={`p-2.5 rounded-xl ${trigger.inApp ? 'bg-primary-50 text-primary' : 'bg-slate-100 text-slate-400'}`}
-                                        >
-                                            <trigger.icon size={20} />
+                            </CardHeader>
+                            <CardBody className="py-4 gap-4">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                            <Mail size={18} />
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-slate-700">
-                                                {trigger.label}
-                                            </p>
-                                            <p className="text-xs text-slate-400">
-                                                {trigger.desc}
-                                            </p>
-                                        </div>
+                                        <span className="text-sm font-medium">
+                                            Email Notifications
+                                        </span>
                                     </div>
-
-                                    <div className="flex gap-8 pr-2">
-                                        <Tooltip content="Toggle In-App">
-                                            <Switch
-                                                size="sm"
-                                                isSelected={trigger.inApp}
-                                                onValueChange={() =>
-                                                    toggleTrigger(idx, 'inApp')
-                                                }
-                                            />
-                                        </Tooltip>
-                                        <Tooltip content="Toggle Email">
-                                            <Switch
-                                                size="sm"
-                                                isSelected={trigger.email}
-                                                onValueChange={() =>
-                                                    toggleTrigger(idx, 'email')
-                                                }
-                                                color="warning"
-                                            />
-                                        </Tooltip>
-                                        <Tooltip content="Toggle Mobile Push">
-                                            <Switch
-                                                size="sm"
-                                                isSelected={trigger.push}
-                                                onValueChange={() =>
-                                                    toggleTrigger(idx, 'push')
-                                                }
-                                                color="success"
-                                            />
-                                        </Tooltip>
-                                    </div>
+                                    <Switch
+                                        isSelected={prefs.channels.email}
+                                        onValueChange={(v) =>
+                                            setPrefs({
+                                                ...prefs,
+                                                channels: {
+                                                    ...prefs.channels,
+                                                    email: v,
+                                                },
+                                            })
+                                        }
+                                    />
                                 </div>
-                            ))}
-                        </CardBody>
-                    </Card>
+                                <Divider />
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                            <Bell size={18} />
+                                        </div>
+                                        <span className="text-sm font-medium">
+                                            Push / Browser
+                                        </span>
+                                    </div>
+                                    <Switch
+                                        isSelected={prefs.channels.browser}
+                                        onValueChange={(v) =>
+                                            setPrefs({
+                                                ...prefs,
+                                                channels: {
+                                                    ...prefs.channels,
+                                                    browser: v,
+                                                },
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </CardBody>
+                        </Card>
 
-                    {/* Active Devices */}
-                    <Card className="shadow-sm border border-slate-200">
-                        <CardHeader className="px-6 pt-6 pb-2">
-                            <h4 className="font-bold text-lg text-slate-800">
-                                Active Devices
-                            </h4>
-                        </CardHeader>
-                        <CardBody className="px-6 pb-6">
-                            <div className="space-y-4">
-                                {DEVICES.map((device) => (
-                                    <div
-                                        key={device.id}
-                                        className="flex items-center justify-between p-3 border border-slate-200 rounded-xl"
+                        {/* Do Not Disturb */}
+                        <Card className="shadow-sm border border-border-default">
+                            <CardHeader className="pb-0 pt-4 px-4 flex justify-between items-start">
+                                <div>
+                                    <h4 className="font-bold text-base">
+                                        Quiet Hours
+                                    </h4>
+                                    <p className="text-tiny text-default-500">
+                                        Pause notifications automatically
+                                    </p>
+                                </div>
+                                <Switch
+                                    size="sm"
+                                    isSelected={prefs.dnd.enabled}
+                                    onValueChange={(v) =>
+                                        setPrefs({
+                                            ...prefs,
+                                            dnd: { ...prefs.dnd, enabled: v },
+                                        })
+                                    }
+                                />
+                            </CardHeader>
+                            <CardBody
+                                className={`py-4 gap-4 ${!prefs.dnd.enabled ? 'opacity-50 pointer-events-none' : ''}`}
+                            >
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Select
+                                        label="Start Time"
+                                        size="sm"
+                                        defaultSelectedKeys={[prefs.dnd.start]}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">
-                                                <device.icon size={20} />
+                                        <SelectItem key="21:00">
+                                            09:00 PM
+                                        </SelectItem>
+                                        <SelectItem key="22:00">
+                                            10:00 PM
+                                        </SelectItem>
+                                        <SelectItem key="23:00">
+                                            11:00 PM
+                                        </SelectItem>
+                                    </Select>
+                                    <Select
+                                        label="End Time"
+                                        size="sm"
+                                        defaultSelectedKeys={[prefs.dnd.end]}
+                                    >
+                                        <SelectItem key="07:00">
+                                            07:00 AM
+                                        </SelectItem>
+                                        <SelectItem key="08:00">
+                                            08:00 AM
+                                        </SelectItem>
+                                        <SelectItem key="09:00">
+                                            09:00 AM
+                                        </SelectItem>
+                                    </Select>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-text-subdued bg-slate-100 p-2 rounded-lg">
+                                    <Moon size={14} />
+                                    <span>
+                                        Based on:{' '}
+                                        <strong>{prefs.dnd.timezone}</strong>
+                                    </span>
+                                </div>
+                            </CardBody>
+                        </Card>
+                    </div>
+
+                    {/* --- RIGHT COLUMN: Granular Matrix --- */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Notification Matrix */}
+                        <Card className="shadow-sm border border-border-default">
+                            <CardHeader className="px-6 py-4 border-b border-border-default bg-background-muted">
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-base text-text-default">
+                                        Trigger Rules
+                                    </h4>
+                                    <p className="text-sm text-text-subdued">
+                                        Fine-tune what you receive per channel.
+                                    </p>
+                                </div>
+
+                                {/* Column Headers */}
+                                <div className="hidden md:flex gap-8 justify-end">
+                                    <div className="w-12 text-center text-xs font-bold text-slate-400 uppercase flex flex-col items-center gap-1">
+                                        <Bell size={16} /> In-App
+                                    </div>
+                                    <div className="w-12 text-center text-xs font-bold text-slate-400 uppercase flex flex-col items-center gap-1">
+                                        <Mail size={16} /> Email
+                                    </div>
+                                    <div className="w-12 text-center text-xs font-bold text-slate-400 uppercase flex flex-col items-center gap-1">
+                                        <Smartphone size={16} /> Push
+                                    </div>
+                                </div>
+                            </CardHeader>
+
+                            <CardBody className="p-0">
+                                {prefs.triggers.map((trigger, idx) => (
+                                    <div
+                                        key={trigger.id}
+                                        className="flex flex-col md:flex-row items-center justify-between p-4 border-b border-border-default last:border-0 hover:bg-background-hovered transition-colors"
+                                    >
+                                        <div className="flex items-center gap-4 w-full md:w-auto mb-4 md:mb-0">
+                                            <div
+                                                className={`p-2.5 rounded-xl ${trigger.inApp ? 'bg-primary-50 text-primary' : 'bg-slate-100 text-slate-400'}`}
+                                            >
+                                                <trigger.icon size={20} />
                                             </div>
                                             <div>
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-bold text-sm text-slate-700">
-                                                        {device.name}
-                                                    </p>
-                                                    {device.current && (
-                                                        <Chip
-                                                            size="sm"
-                                                            color="success"
-                                                            variant="flat"
-                                                            className="h-5 text-[10px]"
-                                                        >
-                                                            This Device
-                                                        </Chip>
-                                                    )}
-                                                </div>
-                                                <p className="text-xs text-slate-400">
-                                                    Last active:{' '}
-                                                    {device.lastActive}
+                                                <p className="font-semibold text-text-default text-sm">
+                                                    {trigger.label}
+                                                </p>
+                                                <p className="text-xs text-text-subdued">
+                                                    {trigger.desc}
                                                 </p>
                                             </div>
                                         </div>
-                                        <Button
-                                            isIconOnly
-                                            size="sm"
-                                            variant="light"
-                                            color="danger"
-                                        >
-                                            <Trash2 size={16} />
-                                        </Button>
+
+                                        <div className="flex gap-8 pr-2">
+                                            <Tooltip content="Toggle In-App">
+                                                <Switch
+                                                    size="sm"
+                                                    isSelected={trigger.inApp}
+                                                    onValueChange={() =>
+                                                        toggleTrigger(
+                                                            idx,
+                                                            'inApp'
+                                                        )
+                                                    }
+                                                />
+                                            </Tooltip>
+                                            <Tooltip content="Toggle Email">
+                                                <Switch
+                                                    size="sm"
+                                                    isSelected={trigger.email}
+                                                    onValueChange={() =>
+                                                        toggleTrigger(
+                                                            idx,
+                                                            'email'
+                                                        )
+                                                    }
+                                                    color="warning"
+                                                />
+                                            </Tooltip>
+                                            <Tooltip content="Toggle Mobile Push">
+                                                <Switch
+                                                    size="sm"
+                                                    isSelected={trigger.push}
+                                                    onValueChange={() =>
+                                                        toggleTrigger(
+                                                            idx,
+                                                            'push'
+                                                        )
+                                                    }
+                                                    color="success"
+                                                />
+                                            </Tooltip>
+                                        </div>
                                     </div>
                                 ))}
-                            </div>
-                        </CardBody>
-                    </Card>
+                            </CardBody>
+                        </Card>
+
+                        {/* Active Devices */}
+                        <Card className="shadow-sm border border-border-default">
+                            <CardHeader className="px-6 pt-6 pb-2">
+                                <h4 className="font-bold text-base text-text-default">
+                                    Active Devices
+                                </h4>
+                            </CardHeader>
+                            <CardBody className="px-6 pb-6">
+                                <div className="space-y-4">
+                                    {DEVICES.map((device) => (
+                                        <div
+                                            key={device.id}
+                                            className="flex items-center justify-between p-3 border border-border-default rounded-xl"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-text-subdued">
+                                                    <device.icon size={20} />
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-bold text-sm text-text-default">
+                                                            {device.name}
+                                                        </p>
+                                                        {device.current && (
+                                                            <Chip
+                                                                size="sm"
+                                                                color="success"
+                                                                variant="flat"
+                                                                className="h-5 text-[10px]"
+                                                            >
+                                                                This Device
+                                                            </Chip>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-text-subdued">
+                                                        Last active:{' '}
+                                                        {device.lastActive}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                isIconOnly
+                                                size="sm"
+                                                variant="light"
+                                                color="danger"
+                                            >
+                                                <Trash2 size={16} />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardBody>
+                        </Card>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     )
 }

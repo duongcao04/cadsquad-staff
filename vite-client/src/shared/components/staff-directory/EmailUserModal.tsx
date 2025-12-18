@@ -109,8 +109,8 @@ export const EmailUserModal = ({
             scrollBehavior="inside"
             backdrop="blur"
             classNames={{
-                header: 'border-b border-slate-100',
-                footer: 'border-t border-slate-100',
+                header: 'border-b border-border-default',
+                footer: 'border-t border-border-default',
             }}
         >
             <ModalContent>

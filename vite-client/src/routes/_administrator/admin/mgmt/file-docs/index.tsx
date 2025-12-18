@@ -232,7 +232,7 @@ function FileManagerPage() {
                     </Button>
                 </div>
 
-                <div className="mt-auto bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div className="mt-auto bg-slate-50 p-4 rounded-xl border border-border-default">
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-bold text-slate-700">
                             Storage Used
@@ -340,7 +340,7 @@ function FileManagerPage() {
                                     key={folder.id}
                                     isPressable
                                     shadow="sm"
-                                    className="border border-slate-100 hover:border-blue-200 bg-white"
+                                    className="border border-border-default hover:border-blue-200 bg-white"
                                 >
                                     <CardBody className="flex flex-row items-center justify-between p-4">
                                         <div className="flex items-center gap-3">

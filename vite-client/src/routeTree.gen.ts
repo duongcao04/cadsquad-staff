@@ -15,8 +15,9 @@ import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AdministratorRouteImport } from './routes/_administrator'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
-import { Route as SettingsPassword_securityRouteImport } from './routes/settings/password_security'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
+import { Route as SettingsMyProfileRouteImport } from './routes/settings/my-profile'
+import { Route as SettingsLoginAndSecurityRouteImport } from './routes/settings/login-and-security'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
 import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
 import { Route as WorkspaceProfileRouteImport } from './routes/_workspace/profile'
@@ -75,17 +76,22 @@ const SettingsIndexRoute = SettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SettingsRoute,
 } as any)
-const SettingsPassword_securityRoute =
-  SettingsPassword_securityRouteImport.update({
-    id: '/password_security',
-    path: '/password_security',
-    getParentRoute: () => SettingsRoute,
-  } as any)
 const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
   getParentRoute: () => SettingsRoute,
 } as any)
+const SettingsMyProfileRoute = SettingsMyProfileRouteImport.update({
+  id: '/my-profile',
+  path: '/my-profile',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsLoginAndSecurityRoute =
+  SettingsLoginAndSecurityRouteImport.update({
+    id: '/login-and-security',
+    path: '/login-and-security',
+    getParentRoute: () => SettingsRoute,
+  } as any)
 const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
   id: '/appearance',
   path: '/appearance',
@@ -269,8 +275,9 @@ export interface FileRoutesByFullPath {
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
+  '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
-  '/settings/password_security': typeof SettingsPassword_securityRoute
   '/settings/': typeof SettingsIndexRoute
   '/admin/inbox': typeof AdministratorAdminInboxRoute
   '/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -303,8 +310,9 @@ export interface FileRoutesByTo {
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
+  '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
-  '/settings/password_security': typeof SettingsPassword_securityRoute
   '/settings': typeof SettingsIndexRoute
   '/admin/inbox': typeof AdministratorAdminInboxRoute
   '/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -344,8 +352,9 @@ export interface FileRoutesById {
   '/_workspace/profile': typeof WorkspaceProfileRoute
   '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
+  '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
-  '/settings/password_security': typeof SettingsPassword_securityRoute
   '/settings/': typeof SettingsIndexRoute
   '/_administrator/admin/inbox': typeof AdministratorAdminInboxRoute
   '/_administrator/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -382,8 +391,9 @@ export interface FileRouteTypes {
     | '/profile'
     | '/project-center'
     | '/settings/appearance'
+    | '/settings/login-and-security'
+    | '/settings/my-profile'
     | '/settings/notifications'
-    | '/settings/password_security'
     | '/settings/'
     | '/admin/inbox'
     | '/admin/schedule'
@@ -416,8 +426,9 @@ export interface FileRouteTypes {
     | '/profile'
     | '/project-center'
     | '/settings/appearance'
+    | '/settings/login-and-security'
+    | '/settings/my-profile'
     | '/settings/notifications'
-    | '/settings/password_security'
     | '/settings'
     | '/admin/inbox'
     | '/admin/schedule'
@@ -456,8 +467,9 @@ export interface FileRouteTypes {
     | '/_workspace/profile'
     | '/_workspace/project-center'
     | '/settings/appearance'
+    | '/settings/login-and-security'
+    | '/settings/my-profile'
     | '/settings/notifications'
-    | '/settings/password_security'
     | '/settings/'
     | '/_administrator/admin/inbox'
     | '/_administrator/admin/schedule'
@@ -537,18 +549,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof SettingsRoute
     }
-    '/settings/password_security': {
-      id: '/settings/password_security'
-      path: '/password_security'
-      fullPath: '/settings/password_security'
-      preLoaderRoute: typeof SettingsPassword_securityRouteImport
-      parentRoute: typeof SettingsRoute
-    }
     '/settings/notifications': {
       id: '/settings/notifications'
       path: '/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof SettingsNotificationsRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/my-profile': {
+      id: '/settings/my-profile'
+      path: '/my-profile'
+      fullPath: '/settings/my-profile'
+      preLoaderRoute: typeof SettingsMyProfileRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/login-and-security': {
+      id: '/settings/login-and-security'
+      path: '/login-and-security'
+      fullPath: '/settings/login-and-security'
+      preLoaderRoute: typeof SettingsLoginAndSecurityRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/appearance': {
@@ -914,15 +933,17 @@ const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
 
 interface SettingsRouteChildren {
   SettingsAppearanceRoute: typeof SettingsAppearanceRoute
+  SettingsLoginAndSecurityRoute: typeof SettingsLoginAndSecurityRoute
+  SettingsMyProfileRoute: typeof SettingsMyProfileRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
-  SettingsPassword_securityRoute: typeof SettingsPassword_securityRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
 const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsAppearanceRoute: SettingsAppearanceRoute,
+  SettingsLoginAndSecurityRoute: SettingsLoginAndSecurityRoute,
+  SettingsMyProfileRoute: SettingsMyProfileRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
-  SettingsPassword_securityRoute: SettingsPassword_securityRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }
 

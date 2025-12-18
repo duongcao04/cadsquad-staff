@@ -14,7 +14,7 @@ import type {
     TUpdatePasswordInput,
     TUpdateUserInput,
 } from '../validationSchemas'
-import { usersListOptions } from './options/user-queries'
+import { userOptions, usersListOptions } from './options/user-queries'
 
 export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     id: item.id,
@@ -89,6 +89,41 @@ export const useUpdateUserMutation = (
     })
 }
 
+export const useUpdateAvatarMutation = (
+    onSuccess?: (res: ApiResponse<{ id: string; username: string }>) => void
+) => {
+    return useMutation({
+        mutationKey: ['updateUser', 'avatar'],
+        mutationFn: ({
+            username,
+            avatarUrl,
+        }: {
+            username: string
+            avatarUrl: string
+        }) => {
+            return userApi.update(username, {
+                avatar: avatarUrl,
+            })
+        },
+        onSuccess: async (res) => {
+            const { username } = res.result!
+            if (onSuccess) {
+                onSuccess?.(res)
+            } else {
+                addToast({
+                    title: 'Upload avatar successfully',
+                    color: 'success',
+                })
+            }
+            if (username) {
+                await queryClient.invalidateQueries({
+                    queryKey: userOptions(username).queryKey,
+                })
+            }
+        },
+    })
+}
+
 export const useUpdatePasswordMutation = () => {
     return useMutation({
         mutationKey: ['updatePassword'],
@@ -99,8 +134,8 @@ export const useUpdatePasswordMutation = () => {
         }) => {
             return userApi.updatePassword(updatePasswordInput)
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
                 queryKey: ['profile'],
             })
         },

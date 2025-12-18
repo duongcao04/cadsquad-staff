@@ -127,7 +127,7 @@ export class UserController {
     return this.userService.findByUsername(username)
   }
 
-  @Patch(':id')
+  @Patch(':username')
   @HttpCode(200)
   @ResponseMessage('Update user successfully')
   @UseGuards(JwtGuard, AdminGuard)
@@ -139,10 +139,10 @@ export class UserController {
     type: UserResponseDto,
   })
   async update(
-    @Param('id') id: string,
+    @Param('username') username: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.userService.update(id, updateUserDto)
+    return this.userService.update(username, updateUserDto)
   }
 
   @Delete(':id')
