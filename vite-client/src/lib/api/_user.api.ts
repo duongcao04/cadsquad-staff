@@ -37,9 +37,9 @@ export const userApi = {
     findOne: async (username: string) => {
         return axiosClient.get<ApiResponse<IUserResponse>>(`/v1/users/${username}`).then(res => res.data)
     },
-    update: async (id: string, data: TUpdateUserInput) => {
+    update: async (username: string, data: TUpdateUserInput) => {
         return axiosClient.patch<ApiResponse<{ id: string, username: string }>>(
-            `/v1/users/${id}`,
+            `/v1/users/${username}`,
             data
         ).then(res => res.data)
     },

@@ -223,14 +223,14 @@ export const UploadAvatarModal = ({
                                     </div>
 
                                     <div
-                                        className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors hover:bg-slate-50 hover:border-primary group"
+                                        className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-colors hover:bg-background-hovered hover:border-primary group"
                                         onClick={() =>
                                             fileInputRef.current?.click()
                                         }
                                         onDragOver={(e) => e.preventDefault()}
                                         onDrop={handleDrop}
                                     >
-                                        <div className="p-3 bg-slate-100 text-slate-500 rounded-full mb-3 group-hover:bg-primary-50 group-hover:text-primary transition-colors">
+                                        <div className="p-3 bg-slate-100 text-text-subdued rounded-full mb-3 group-hover:bg-primary-50 group-hover:text-primary transition-colors">
                                             <UploadCloud size={24} />
                                         </div>
                                         <p className="text-sm font-semibold text-slate-700">

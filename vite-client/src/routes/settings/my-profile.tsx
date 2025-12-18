@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-
 import {
     Card,
     CardBody,
@@ -10,7 +9,7 @@ import {
     Divider,
     useDisclosure,
     Chip,
-    toast,
+    addToast,
 } from '@heroui/react'
 import {
     Save,
@@ -26,22 +25,22 @@ import {
     House,
 } from 'lucide-react'
 import { useFormik } from 'formik'
-import {
-    useMutation,
-    useQueryClient,
-    useSuspenseQuery,
-} from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import {
     dateFormatter,
-    editUserSchema,
-    imageApi,
     INTERNAL_URLS,
     optimizeCloudinary,
-    toFormikValidate,
-} from '../../lib'
-import UploadAvatarModal from '../../shared/components/personal-settings/UploadAvatarModal'
-import { HeroBreadcrumbs, HeroBreadcrumbItem } from '../../shared/components'
-import { profileOptions } from '../../lib/queries/options/user-queries'
+    UpdateUserSchema,
+    useUpdateAvatarMutation,
+    useUpdateUserMutation,
+    useUploadImageMutation,
+} from '@/lib'
+import {
+    HeroBreadcrumbs,
+    HeroBreadcrumbItem,
+    UploadAvatarModal,
+} from '@/shared/components'
+import { profileOptions } from '@/lib/queries/options/user-queries'
 
 export const Route = createFileRoute('/settings/my-profile')({
     loader: ({ context }) => {
@@ -51,54 +50,44 @@ export const Route = createFileRoute('/settings/my-profile')({
 })
 
 function SettingsProfilePage() {
-    const queryClient = useQueryClient()
     const { data: user, isLoading } = useSuspenseQuery({
         ...profileOptions(),
     })
 
+    const uploadImageMutation = useUploadImageMutation()
+    const updateAvatarMutation = useUpdateAvatarMutation()
+    const updateUserMutation = useUpdateUserMutation()
+
     // Avatar Modal State
     const {
-        isOpen: isAvatarOpen,
-        onOpen: onAvatarOpen,
-        onOpenChange: onAvatarChange,
+        isOpen: isOpenUploadAvatarModal,
+        onOpen: onOpenUploadAvatarModal,
+        onOpenChange: onCloseUploadAvatarModal,
     } = useDisclosure()
 
-    // Mutation for updating profile info
-    const updateProfileMutation = useMutation({
-        mutationFn: async (data: any) => {
-            console.log('Updating profile:', data)
-            // await axiosClient.patch('/users/me', data);
-            await new Promise((r) => setTimeout(r, 1000)) // Mock delay
-        },
-        onSuccess: () => {
-            toast.success('Profile updated successfully')
-            queryClient.invalidateQueries({ queryKey: ['me'] })
-        },
-    })
+    const handleAvatarSave = async (imageFile: File) => {
+        try {
+            // Step 1: Upload the file to get the URL
+            console.log('Uploading image...')
+            const newAvatarUrl =
+                await uploadImageMutation.mutateAsync(imageFile)
 
-    // Mutation specifically for Avatar
-    const updateAvatarMutation = useMutation({
-        mutationFn: async (formData: FormData) => {
-            // 1. Upload Image
-            const file = formData.get('avatar') as File
-            const secureUrl = await imageApi.upload(file)
+            if (!newAvatarUrl) throw new Error('Failed to get image URL')
 
-            if (!secureUrl) throw new Error('Upload failed')
-
-            // 2. Update User Profile with new URL
-            // await axiosClient.patch('/users/me', { avatar: secureUrl });
-            console.log('New Avatar URL:', secureUrl)
-
-            return secureUrl
-        },
-        onSuccess: () => {
-            toast.success('Avatar updated!')
-            queryClient.invalidateQueries({ queryKey: ['me'] })
-        },
-        onError: () => {
-            toast.error('Failed to update avatar.')
-        },
-    })
+            // Step 2: Update the user record with this URL
+            console.log('Updating user profile...', newAvatarUrl)
+            await updateAvatarMutation.mutateAsync({
+                username: user.username,
+                avatarUrl: newAvatarUrl,
+            })
+        } catch (error) {
+            console.error(error)
+            addToast({
+                title: 'Failed to update avatar',
+                color: 'danger',
+            })
+        }
+    }
 
     // Prepare Social Links from Config
     const socialConfig = user?.configs?.find(
@@ -121,23 +110,18 @@ function SettingsProfilePage() {
             isActive: true,
         },
         // We reuse the schema but might want to omit role/active checks for self-update
-        validate: toFormikValidate(editUserSchema.partial()),
+        validationSchema: UpdateUserSchema,
         onSubmit: (values) => {
-            updateProfileMutation.mutate({
-                ...values,
-                // Re-construct config object for backend
-                configs: [
-                    {
-                        code: 'USER_PROFILE_LINKS',
-                        value: {
-                            linkedin: values.linkedin,
-                            github: values.github,
-                        },
-                    },
-                ],
+            updateUserMutation.mutateAsync({
+                username: user.username,
+                data: {
+                    displayName: values.displayName,
+                    phoneNumber: user.phoneNumber ?? '',
+                },
             })
         },
     })
+    console.log(formik.errors)
 
     if (isLoading) return <div className="p-8">Loading profile...</div>
 
@@ -189,7 +173,7 @@ function SettingsProfilePage() {
                                         className="w-32 h-32 text-large ring-4 ring-offset-2 ring-slate-50 shadow-lg"
                                     />
                                     <button
-                                        onClick={onAvatarOpen}
+                                        onClick={onOpenUploadAvatarModal}
                                         className="absolute inset-0 bg-white/20 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-[2px]"
                                     >
                                         <Camera
@@ -326,6 +310,7 @@ function SettingsProfilePage() {
                                             />
                                         }
                                         value={formik.values.username}
+                                        description="Contact admin to change username"
                                         className="opacity-70"
                                     />
                                 </div>
@@ -392,11 +377,9 @@ function SettingsProfilePage() {
                                     <Button
                                         color="primary"
                                         onPress={() => formik.handleSubmit()}
-                                        isLoading={
-                                            updateProfileMutation.isPending
-                                        }
+                                        isLoading={updateUserMutation.isPending}
                                         startContent={
-                                            !updateProfileMutation.isPending && (
+                                            !updateUserMutation.isPending && (
                                                 <Save size={18} />
                                             )
                                         }
@@ -410,13 +393,17 @@ function SettingsProfilePage() {
                 </div>
 
                 {/* --- AVATAR UPLOAD MODAL --- */}
-                <UploadAvatarModal
-                    isOpen={isAvatarOpen}
-                    onClose={() => onAvatarChange(false)}
-                    onSave={(formData) => updateAvatarMutation.mutate(formData)}
-                    currentAvatarUrl={user?.avatar}
-                    userName={user?.displayName}
-                />
+                {isOpenUploadAvatarModal && (
+                    <UploadAvatarModal
+                        isOpen={isOpenUploadAvatarModal}
+                        onClose={onCloseUploadAvatarModal}
+                        onSave={handleAvatarSave}
+                        currentAvatarUrl={optimizeCloudinary(user.avatar, {
+                            width: 256,
+                            height: 256,
+                        })}
+                    />
+                )}
             </div>
         </>
     )

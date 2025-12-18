@@ -68,13 +68,13 @@ export const useUpdateUserMutation = (
     return useMutation({
         mutationKey: ['updateUser'],
         mutationFn: ({
-            userId,
-            updateUserInput,
+            username,
+            data,
         }: {
-            userId: string
-            updateUserInput: TUpdateUserInput
+            username: string
+            data: TUpdateUserInput
         }) => {
-            return userApi.update(userId, updateUserInput)
+            return userApi.update(username, data)
         },
         onSuccess: (res) => {
             if (onSuccess) {
