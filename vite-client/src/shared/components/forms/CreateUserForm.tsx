@@ -79,7 +79,7 @@ export default function CreateUserForm({
             {isSuccess ? (
                 <HeroCard className="py-5 shadow-none border-none">
                     <HeroCardBody className="text-center px-10">
-                        <p className="font-bold text-text-8">
+                        <p className="font-bold text-text-default">
                             {formik.values.displayName}
                         </p>
                         <div className="flex items-center justify-center gap-2">

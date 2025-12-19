@@ -1,488 +1,689 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/_administrator/admin/mgmt/jobs/')({
-    component: JobsPage,
-})
-
-import React, { useState, useMemo, useCallback } from "react";
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { z } from 'zod'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
-  Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
-  Chip,
-  User,
-  Pagination,
-  Selection,
-  ChipProps,
-  SortDescriptor,
-  Tooltip,
-  useDisclosure,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Card,
-} from "@heroui/react";
+    Table,
+    TableHeader,
+    TableColumn,
+    TableBody,
+    TableRow,
+    TableCell,
+    Input,
+    Button,
+    DropdownTrigger,
+    Dropdown,
+    DropdownMenu,
+    DropdownItem,
+    Chip,
+    User,
+    Pagination,
+    Selection,
+    SortDescriptor,
+    useDisclosure,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter,
+    ChipProps,
+    Badge,
+} from '@heroui/react'
 import {
-  Search,
-  Plus,
-  Filter,
-  MoreVertical,
-  ChevronDown,
-  Trash2,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  Briefcase,
-  ArrowUpDown,
-  Calendar,
-  DollarSign,
-  Edit,
-  Eye,
-} from "lucide-react";
-import { INTERNAL_URLS } from '../../../../../lib';
+    Search,
+    MoreVertical,
+    ChevronDown,
+    Trash2,
+    CheckCircle2,
+    Calendar,
+    Edit,
+    Eye,
+    House,
+} from 'lucide-react'
+import { INTERNAL_URLS } from '@/lib'
+import { jobsListOptions } from '@/lib/queries'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import {
+    AdminPageHeading,
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroTable,
+    JobStatusChip,
+} from '../../../../../shared/components'
+import { TJob } from '../../../../../shared/types'
+import AdminContentContainer from '../../../../../shared/components/admin/AdminContentContainer'
 
-// --- Types based on Prisma Schema ---
-type JobStatus = "TODO" | "IN_PROGRESS" | "REVIEW" | "DONE" | "CANCELLED";
-type JobPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
+// --- Mock / Missing Definitions (Move these to your types/constants files) ---
+type JobStatus = 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'COMPLETED' | 'CANCELLED'
+type JobPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 
-interface Job {
-  id: string;
-  no: string;
-  title: string;
-  client: string;
-  type: string;
-  status: JobStatus;
-  priority: JobPriority;
-  income: number;
-  dueAt: string; // ISO Date
-  assignees: { name: string; avatar: string }[];
+export interface Job {
+    id: string
+    no: string
+    title: string // mapped from displayName
+    displayName: string
+    type: string
+    client: string // mapped from clientName
+    clientName: string
+    status: JobStatus
+    priority: JobPriority
+    dueAt: string
+    income: number
+    assignees: Array<{ name: string; avatar: string }>
 }
 
-// --- Mock Data ---
-const JOBS_DATA: Job[] = [
-  { id: "1", no: "FV-2024", title: "Website Redesign", client: "TechCorp", type: "Web Dev", status: "IN_PROGRESS", priority: "HIGH", income: 4500, dueAt: "2024-03-10", assignees: [{ name: "Sarah", avatar: "https://i.pravatar.cc/150?u=sarah" }] },
-  { id: "2", no: "FV-2025", title: "Mobile App Assets", client: "Startup Inc", type: "Design", status: "URGENT", priority: "URGENT", income: 2800, dueAt: "2024-03-01", assignees: [{ name: "David", avatar: "https://i.pravatar.cc/150?u=david" }] },
-  { id: "3", no: "FV-2026", title: "SEO Audit", client: "RetailChain", type: "Marketing", status: "DONE", priority: "MEDIUM", income: 1200, dueAt: "2024-02-28", assignees: [{ name: "Alex", avatar: "https://i.pravatar.cc/150?u=alex" }] },
-  { id: "4", no: "FV-2027", title: "Server Migration", client: "Logistics Co", type: "DevOps", status: "TODO", priority: "LOW", income: 3100, dueAt: "2024-03-20", assignees: [] },
-  { id: "5", no: "FV-2028", title: "Branding Kit", client: "CoffeeShop", type: "Design", status: "REVIEW", priority: "HIGH", income: 1500, dueAt: "2024-03-05", assignees: [{ name: "Sarah", avatar: "https://i.pravatar.cc/150?u=sarah" }] },
-  { id: "6", no: "FV-2029", title: "API Integration", client: "FinTech", type: "Backend", status: "IN_PROGRESS", priority: "MEDIUM", income: 5000, dueAt: "2024-03-15", assignees: [{ name: "David", avatar: "https://i.pravatar.cc/150?u=david" }] },
-];
+const statusColorMap: Record<string, ChipProps['color']> = {
+    TODO: 'default',
+    IN_PROGRESS: 'primary',
+    REVIEW: 'warning',
+    COMPLETED: 'success',
+    CANCELLED: 'danger',
+}
 
-// --- Options ---
+const priorityColorMap: Record<string, ChipProps['color']> = {
+    LOW: 'default',
+    MEDIUM: 'primary',
+    HIGH: 'warning',
+    URGENT: 'danger',
+}
+
 const STATUS_OPTIONS = [
-  { name: "To Do", uid: "TODO" },
-  { name: "In Progress", uid: "IN_PROGRESS" },
-  { name: "Review", uid: "REVIEW" },
-  { name: "Done", uid: "DONE" },
-];
+    { name: 'To Do', uid: 'TODO' },
+    { name: 'In Progress', uid: 'IN_PROGRESS' },
+    { name: 'Review', uid: 'REVIEW' },
+    { name: 'Completed', uid: 'COMPLETED' },
+]
 
 const PRIORITY_OPTIONS = [
-  { name: "Low", uid: "LOW" },
-  { name: "Medium", uid: "MEDIUM" },
-  { name: "High", uid: "HIGH" },
-  { name: "Urgent", uid: "URGENT" },
-];
+    { name: 'Low', uid: 'LOW' },
+    { name: 'Medium', uid: 'MEDIUM' },
+    { name: 'High', uid: 'HIGH' },
+    { name: 'Urgent', uid: 'URGENT' },
+]
+// --------------------------------------------------------------------------
 
-// --- Helper: Status Colors ---
-const statusColorMap: Record<string, ChipProps["color"]> = {
-  TODO: "default",
-  IN_PROGRESS: "primary",
-  REVIEW: "warning",
-  DONE: "success",
-  CANCELLED: "danger",
-};
+const DEFAULT_SORT = 'displayName:asc'
 
-const priorityColorMap: Record<string, ChipProps["color"]> = {
-  LOW: "default",
-  MEDIUM: "primary",
-  HIGH: "warning",
-  URGENT: "danger",
-};
+export const manageJobsParamsSchema = z.object({
+    sort: z.string().optional().catch(DEFAULT_SORT),
+    search: z.string().trim().optional(),
+    limit: z.coerce.number().int().min(1).max(100).optional().catch(10),
+    page: z.coerce.number().int().min(1).optional().catch(1),
+})
+
+export type TManageJobsParams = z.infer<typeof manageJobsParamsSchema>
+
+export const Route = createFileRoute('/_administrator/admin/mgmt/jobs/')({
+    validateSearch: (search) => manageJobsParamsSchema.parse(search),
+    loaderDeps: ({ search }) => ({ search }),
+    loader: ({ context, deps }) => {
+        const {
+            limit = 10,
+            page = 1,
+            search,
+            sort = DEFAULT_SORT,
+        } = deps.search
+
+        return context.queryClient.ensureQueryData(
+            jobsListOptions({
+                limit,
+                page,
+                search,
+                sort: [sort],
+                tab: 'active',
+                hideFinishItems: '0',
+            })
+        )
+    },
+    component: ManageJobsPage,
+})
 
 const columns = [
-  { name: "JOB INFO", uid: "info", sortable: true },
-  { name: "CLIENT", uid: "client", sortable: true },
-  { name: "ASSIGNEES", uid: "assignees" },
-  { name: "STATUS", uid: "status", sortable: true },
-  { name: "PRIORITY", uid: "priority", sortable: true },
-  { name: "DUE DATE", uid: "dueAt", sortable: true },
-  { name: "INCOME", uid: "income", sortable: true },
-  { name: "ACTIONS", uid: "actions" },
-];
+    { name: 'JOB INFO', uid: 'info', sortable: true },
+    { name: 'CLIENT', uid: 'client', sortable: true },
+    { name: 'ASSIGNEES', uid: 'assignees' },
+    { name: 'STATUS', uid: 'status', sortable: true },
+    { name: 'PRIORITY', uid: 'priority', sortable: true },
+    { name: 'DUE DATE', uid: 'dueAt', sortable: true },
+    { name: 'INCOME', uid: 'income', sortable: true },
+    { name: 'ACTIONS', uid: 'actions' },
+]
 
-function JobsPage() {
-  const [filterValue, setFilterValue] = useState("");
-  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]));
-  const [statusFilter, setStatusFilter] = useState<Selection>("all");
-  const [priorityFilter, setPriorityFilter] = useState<Selection>("all");
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-    column: "dueAt",
-    direction: "ascending",
-  });
-  const [page, setPage] = useState(1);
-  
-  // Modal State for Bulk Actions
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [bulkActionType, setBulkActionType] = useState<"DELETE" | "STATUS" | null>(null);
+function ManageJobsPage() {
+    const navigate = useNavigate({ from: Route.fullPath })
+    const searchParams = Route.useSearch()
 
-  const hasSearchFilter = Boolean(filterValue);
+    // Server state
+    const options = jobsListOptions({
+        ...searchParams,
+        tab: 'active',
+        hideFinishItems: '0',
+        sort: [searchParams.sort || DEFAULT_SORT], // Ensure sort is an array if your API expects it
+    })
+    const { data, isFetching } = useSuspenseQuery(options)
 
-  // --- Filtering Logic ---
-  const filteredItems = useMemo(() => {
-    let filteredJobs = [...JOBS_DATA];
+    // Local UI state
+    const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set([]))
+    const [statusFilter, setStatusFilter] = useState<Selection>('all')
+    const [priorityFilter, setPriorityFilter] = useState<Selection>('all')
 
-    if (hasSearchFilter) {
-      filteredJobs = filteredJobs.filter((job) =>
-        job.title.toLowerCase().includes(filterValue.toLowerCase()) ||
-        job.no.toLowerCase().includes(filterValue.toLowerCase()) ||
-        job.client.toLowerCase().includes(filterValue.toLowerCase())
-      );
+    // Search State (Debounce Buffer)
+    const [searchValue, setSearchValue] = useState(searchParams.search || '')
+
+    // Sync local search input with URL if URL changes externally
+    useEffect(() => {
+        setSearchValue(searchParams.search || '')
+    }, [searchParams.search])
+
+    // Modal State
+    const { isOpen, onOpen, onOpenChange } = useDisclosure()
+    const [bulkActionType, setBulkActionType] = useState<
+        'DELETE' | 'STATUS' | null
+    >(null)
+
+    // --- Helpers for Sort Descriptor <-> URL Param ---
+    const sortDescriptor = useMemo<SortDescriptor>(() => {
+        const [column, direction] = (searchParams.sort || DEFAULT_SORT).split(
+            ':'
+        )
+        return {
+            column: column === 'displayName' ? 'info' : column, // map UI column keys to API keys
+            direction: direction === 'desc' ? 'descending' : 'ascending',
+        }
+    }, [searchParams.sort])
+
+    // --- Handlers ---
+
+    // 1. Search Debounce
+    const handleSearchChange = (value: string) => {
+        setSearchValue(value)
+        const timeoutId = setTimeout(() => {
+            navigate({
+                search: (prev) => ({
+                    ...prev,
+                    search: value || undefined,
+                    page: 1,
+                }),
+            })
+        }, 500) // 500ms debounce
+        return () => clearTimeout(timeoutId)
     }
 
-    if (statusFilter !== "all" && Array.from(statusFilter).length !== STATUS_OPTIONS.length) {
-      filteredJobs = filteredJobs.filter((job) =>
-        Array.from(statusFilter).includes(job.status)
-      );
-    }
-    
-    if (priorityFilter !== "all" && Array.from(priorityFilter).length !== PRIORITY_OPTIONS.length) {
-      filteredJobs = filteredJobs.filter((job) =>
-        Array.from(priorityFilter).includes(job.priority)
-      );
+    const handleClearSearch = () => {
+        setSearchValue('')
+        navigate({
+            search: (prev) => ({ ...prev, search: undefined, page: 1 }),
+        })
     }
 
-    return filteredJobs;
-  }, [JOBS_DATA, filterValue, statusFilter, priorityFilter]);
+    // 2. Sorting
+    const handleSortChange = (descriptor: SortDescriptor) => {
+        const dir = descriptor.direction === 'descending' ? 'desc' : 'asc'
+        let col = descriptor.column
 
-  // --- Sorting Logic ---
-  const sortedItems = useMemo(() => {
-    return [...filteredItems].sort((a: Job, b: Job) => {
-      const first = a[sortDescriptor.column as keyof Job] as number | string;
-      const second = b[sortDescriptor.column as keyof Job] as number | string;
-      const cmp = first < second ? -1 : first > second ? 1 : 0;
+        // Map UI columns back to API fields if necessary
+        if (col === 'info') col = 'displayName'
+        if (col === 'client') col = 'clientName'
 
-      return sortDescriptor.direction === "descending" ? -cmp : cmp;
-    });
-  }, [sortDescriptor, filteredItems]);
+        navigate({
+            search: (prev) => ({ ...prev, sort: `${col}:${dir}` }),
+        })
+    }
 
-  // --- Pagination Logic ---
-  const items = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
+    // 3. Pagination
+    const handlePageChange = (newPage: number) => {
+        navigate({
+            search: (prev) => ({ ...prev, page: newPage }),
+        })
+    }
 
-    return sortedItems.slice(start, end);
-  }, [page, sortedItems, rowsPerPage]);
+    // 4. Bulk Actions
+    const onBulkAction = (type: 'DELETE' | 'STATUS') => {
+        setBulkActionType(type)
+        onOpen()
+    }
 
+    const handleBulkConfirm = () => {
+        const selectedIds =
+            selectedKeys === 'all'
+                ? data.jobs.map((j: TJob) => j.id) // Assuming 'all' means all on current page
+                : Array.from(selectedKeys)
 
-  // --- Render Cell ---
-  const renderCell = useCallback((job: Job, columnKey: React.Key) => {
-    const cellValue = job[columnKey as keyof Job];
+        console.log(`Performing ${bulkActionType} on IDs:`, selectedIds)
 
-    switch (columnKey) {
-      case "info":
+        setSelectedKeys(new Set([]))
+        onOpenChange()
+    }
+
+    // --- Render Cell ---
+    const renderCell = useCallback((job: TJob, columnKey: React.Key) => {
+        switch (columnKey) {
+            case 'info':
+                return (
+                    <div>
+                        <p className="font-bold text-slate-800">
+                            {job.displayName}
+                        </p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs font-mono bg-slate-100 text-slate-500 px-1 py-0.5 rounded">
+                                {job.no}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                                {job.type.displayName}
+                            </span>
+                        </div>
+                    </div>
+                )
+            case 'client':
+                return (
+                    <div className="flex flex-col">
+                        <p className="text-bold text-small capitalize">
+                            {job.clientName}
+                        </p>
+                    </div>
+                )
+            case 'assignees':
+                return (
+                    <div className="flex -space-x-2">
+                        {job.assignee?.length > 0 ? (
+                            job.assignee.map((a, i) => (
+                                <User
+                                    key={i}
+                                    name={a.displayName}
+                                    avatarProps={{ src: a.avatar, size: 'sm' }}
+                                    classNames={{ name: 'hidden' }}
+                                />
+                            ))
+                        ) : (
+                            <span className="text-xs text-slate-400 italic">
+                                Unassigned
+                            </span>
+                        )}
+                    </div>
+                )
+            case 'status':
+                return <JobStatusChip data={job.status} />
+            case 'priority':
+                return (
+                    <Chip
+                        className="capitalize border-none"
+                        color={priorityColorMap[job.priority] || 'default'}
+                        size="sm"
+                        variant="dot"
+                    >
+                        {job.priority}
+                    </Chip>
+                )
+            case 'dueAt':
+                return (
+                    <div className="flex items-center gap-1 text-slate-500 text-sm">
+                        <Calendar size={14} />
+                        {new Date(job.dueAt).toLocaleDateString()}
+                    </div>
+                )
+            case 'income':
+                return (
+                    <span className="font-bold text-slate-700">
+                        ${job.incomeCost.toLocaleString()}
+                    </span>
+                )
+            case 'actions':
+                return (
+                    <div className="relative flex justify-end items-center gap-2">
+                        <Dropdown>
+                            <DropdownTrigger>
+                                <Button isIconOnly size="sm" variant="light">
+                                    <MoreVertical className="text-default-300" />
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu>
+                                <DropdownItem startContent={<Eye size={16} />}>
+                                    View Details
+                                </DropdownItem>
+                                <DropdownItem startContent={<Edit size={16} />}>
+                                    <Link to={INTERNAL_URLS.editJob(job.id)}>
+                                        Edit Job
+                                    </Link>
+                                </DropdownItem>
+                                <DropdownItem
+                                    startContent={<CheckCircle2 size={16} />}
+                                    className="text-success"
+                                    color="success"
+                                >
+                                    Mark Done
+                                </DropdownItem>
+                                <DropdownItem
+                                    startContent={<Trash2 size={16} />}
+                                    className="text-danger"
+                                    color="danger"
+                                >
+                                    Delete
+                                </DropdownItem>
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
+                )
+            default:
+                // @ts-ignore
+                return job[columnKey]
+        }
+    }, [])
+
+    // --- Top Content ---
+    const topContent = useMemo(() => {
+        const selectedCount =
+            selectedKeys === 'all' ? data.jobs.length : selectedKeys.size
+
         return (
-          <div>
-            <p className="font-bold text-slate-800">{job.title}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-               <span className="text-xs font-mono bg-slate-100 text-slate-500 px-1 py-0.5 rounded">{job.no}</span>
-               <span className="text-xs text-slate-400">{job.type}</span>
+            <div className="flex flex-col gap-4">
+                {/* Filters & Search */}
+                <div className="flex justify-between gap-3 items-end">
+                    <Input
+                        isClearable
+                        className="w-full sm:max-w-[44%]"
+                        placeholder="Search by job name, ID, or client..."
+                        startContent={<Search className="text-default-300" />}
+                        value={searchValue}
+                        onClear={handleClearSearch}
+                        onValueChange={handleSearchChange}
+                        size="sm"
+                        variant="bordered"
+                    />
+                    <div className="flex gap-3">
+                        {/* Status Dropdown */}
+                        <Dropdown>
+                            <DropdownTrigger className="hidden sm:flex">
+                                <Button
+                                    endContent={
+                                        <ChevronDown className="text-small" />
+                                    }
+                                    variant="flat"
+                                    size="sm"
+                                >
+                                    Status
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                                disallowEmptySelection
+                                aria-label="Status Filter"
+                                closeOnSelect={false}
+                                selectedKeys={statusFilter}
+                                selectionMode="multiple"
+                                onSelectionChange={setStatusFilter}
+                            >
+                                {STATUS_OPTIONS.map((status) => (
+                                    <DropdownItem
+                                        key={status.uid}
+                                        className="capitalize"
+                                    >
+                                        {status.name}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
+
+                        {/* Priority Dropdown */}
+                        <Dropdown>
+                            <DropdownTrigger className="hidden sm:flex">
+                                <Button
+                                    endContent={
+                                        <ChevronDown className="text-small" />
+                                    }
+                                    variant="flat"
+                                    size="sm"
+                                >
+                                    Priority
+                                </Button>
+                            </DropdownTrigger>
+                            <DropdownMenu
+                                disallowEmptySelection
+                                aria-label="Priority Filter"
+                                closeOnSelect={false}
+                                selectedKeys={priorityFilter}
+                                selectionMode="multiple"
+                                onSelectionChange={setPriorityFilter}
+                            >
+                                {PRIORITY_OPTIONS.map((p) => (
+                                    <DropdownItem
+                                        key={p.uid}
+                                        className="capitalize"
+                                    >
+                                        {p.name}
+                                    </DropdownItem>
+                                ))}
+                            </DropdownMenu>
+                        </Dropdown>
+                    </div>
+                </div>
+
+                {/* Bulk Action Bar */}
+                {selectedCount > 0 && (
+                    <div className="bg-primary-50 px-4 py-2 rounded-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                        <span className="text-sm text-primary-700 font-semibold">
+                            {selectedCount} jobs selected
+                        </span>
+                        <div className="flex gap-2">
+                            <Button
+                                size="sm"
+                                color="primary"
+                                variant="flat"
+                                onPress={() => onBulkAction('STATUS')}
+                            >
+                                Update Status
+                            </Button>
+                            <Button
+                                size="sm"
+                                color="danger"
+                                variant="flat"
+                                startContent={<Trash2 size={16} />}
+                                onPress={() => onBulkAction('DELETE')}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
-          </div>
-        );
-      case "client":
+        )
+    }, [
+        searchValue,
+        statusFilter,
+        priorityFilter,
+        selectedKeys,
+        data.jobs.length,
+    ])
+
+    // --- Bottom Content ---
+    const bottomContent = useMemo(() => {
+        // Assuming API returns meta: { total: number }
+        const totalPages = Math.ceil(
+            (data.meta?.total || data.jobs.length) / (searchParams.limit || 10)
+        )
+
         return (
-          <div className="flex flex-col">
-            <p className="text-bold text-small capitalize">{job.client}</p>
-          </div>
-        );
-      case "assignees":
-         return (
-             <div className="flex -space-x-2">
-                 {job.assignees.length > 0 ? job.assignees.map((a, i) => (
-                     <User 
-                        key={i} 
-                        name={a.name} 
-                        avatarProps={{src: a.avatar, size: "sm"}} 
-                        classNames={{ name: "hidden" }} // Hide name to stack avatars
-                     />
-                 )) : <span className="text-xs text-slate-400 italic">Unassigned</span>}
-             </div>
-         );
-      case "status":
-        return (
-          <Chip
-            className="capitalize"
-            color={statusColorMap[job.status]}
-            size="sm"
-            variant="flat"
-          >
-            {job.status.replace("_", " ")}
-          </Chip>
-        );
-      case "priority":
-        return (
-            <Chip
-                className="capitalize border-none"
-                color={priorityColorMap[job.priority]}
-                size="sm"
-                variant="dot"
-            >
-                {job.priority}
-            </Chip>
-        );
-      case "dueAt":
-        return (
-            <div className="flex items-center gap-1 text-slate-500 text-sm">
-                <Calendar size={14} />
-                {job.dueAt}
+            <div className="py-2 px-2 flex justify-between items-center">
+                <span className="w-[30%] text-small text-default-400">
+                    {selectedKeys === 'all'
+                        ? 'All items selected'
+                        : `${selectedKeys.size} of ${data.jobs.length} selected`}
+                </span>
+                <Pagination
+                    isCompact
+                    showControls
+                    showShadow
+                    color="primary"
+                    page={searchParams.page || 1}
+                    total={totalPages}
+                    onChange={handlePageChange}
+                />
+                <div className="hidden sm:flex w-[30%] justify-end gap-2">
+                    <Button
+                        isDisabled={(searchParams.page || 1) === 1}
+                        size="sm"
+                        variant="flat"
+                        onPress={() =>
+                            handlePageChange((searchParams.page || 1) - 1)
+                        }
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        isDisabled={(searchParams.page || 1) === totalPages}
+                        size="sm"
+                        variant="flat"
+                        onPress={() =>
+                            handlePageChange((searchParams.page || 1) + 1)
+                        }
+                    >
+                        Next
+                    </Button>
+                </div>
             </div>
-        );
-      case "income":
-        return (
-            <span className="font-bold text-slate-700">${job.income.toLocaleString()}</span>
-        );
-      case "actions":
-        return (
-          <div className="relative flex justify-end items-center gap-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <MoreVertical className="text-default-300" />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem startContent={<Eye size={16}/>}>View Details</DropdownItem>
-                <DropdownItem startContent={<Edit size={16}/>}><Link to={INTERNAL_URLS.editJob('a')}>Edit Job</Link></DropdownItem>
-                <DropdownItem startContent={<CheckCircle2 size={16}/>} className="text-success" color="success">Mark Done</DropdownItem>
-                <DropdownItem startContent={<Trash2 size={16}/>} className="text-danger" color="danger">Delete</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-        );
-      default:
-        return cellValue;
-    }
-  }, []);
-
-  // --- Handlers ---
-  const onBulkAction = (type: "DELETE" | "STATUS") => {
-      setBulkActionType(type);
-      onOpen();
-  };
-
-  const handleBulkConfirm = () => {
-      // Logic to call API for bulk delete/update
-      const selectedIds = Array.from(selectedKeys);
-      console.log(`Performing ${bulkActionType} on IDs:`, selectedIds);
-      // Clean up
-      setSelectedKeys(new Set([]));
-      onOpenChange(); // Close modal
-  };
-
-  // --- Top Content Toolbar ---
-  const topContent = useMemo(() => {
-    const selectedCount = selectedKeys === "all" ? filteredItems.length : selectedKeys.size;
+        )
+    }, [
+        selectedKeys,
+        data.jobs.length,
+        data.paginate?.total,
+        searchParams.page,
+        searchParams.limit,
+    ])
 
     return (
-      <div className="flex flex-col gap-4">
-        {/* Header Title */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">All Jobs</h1>
-            <p className="text-slate-500 text-sm">Manage, track and update all ongoing projects.</p>
-          </div>
-          <div className="flex gap-3">
-             <Button color="primary" endContent={<Plus size={16} />}>
-                Create New Job
-             </Button>
-          </div>
-        </div>
+        <div>
+            <AdminPageHeading
+                title={
+                    <Badge
+                        content={data.paginate?.total}
+                        size="sm"
+                        color="danger"
+                        variant="solid"
+                        classNames={{
+                            badge: '-right-1 top-1 text-[10px]! font-bold!',
+                        }}
+                    >
+                        All Jobs
+                    </Badge>
+                }
+            />
 
-        {/* Filters & Search */}
-        <div className="flex justify-between gap-3 items-end">
-          <Input
-            isClearable
-            className="w-full sm:max-w-[44%]"
-            placeholder="Search by job name, ID, or client..."
-            startContent={<Search className="text-default-300" />}
-            value={filterValue}
-            onClear={() => setFilterValue("")}
-            onValueChange={setFilterValue}
-            size="sm"
-            variant="bordered"
-          />
-          <div className="flex gap-3">
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button endContent={<ChevronDown className="text-small" />} variant="flat" size="sm">
-                  Status
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Status Filter"
-                closeOnSelect={false}
-                selectedKeys={statusFilter}
-                selectionMode="multiple"
-                onSelectionChange={setStatusFilter}
-              >
-                {STATUS_OPTIONS.map((status) => (
-                  <DropdownItem key={status.uid} className="capitalize">
-                    {status.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button endContent={<ChevronDown className="text-small" />} variant="flat" size="sm">
-                  Priority
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                disallowEmptySelection
-                aria-label="Priority Filter"
-                closeOnSelect={false}
-                selectedKeys={priorityFilter}
-                selectionMode="multiple"
-                onSelectionChange={setPriorityFilter}
-              >
-                {PRIORITY_OPTIONS.map((p) => (
-                  <DropdownItem key={p.uid} className="capitalize">
-                    {p.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
+            <HeroBreadcrumbs className="pt-3 px-7 text-xs">
+                <HeroBreadcrumbItem>
+                    <Link
+                        to={INTERNAL_URLS.home}
+                        className="text-text-subdued!"
+                    >
+                        <House size={16} />
+                    </Link>
+                </HeroBreadcrumbItem>
+                <HeroBreadcrumbItem>
+                    <Link
+                        to={INTERNAL_URLS.admin}
+                        className="text-text-subdued!"
+                    >
+                        Admin
+                    </Link>
+                </HeroBreadcrumbItem>
+                <HeroBreadcrumbItem>All Jobs</HeroBreadcrumbItem>
+            </HeroBreadcrumbs>
 
-            <Button variant="flat" isIconOnly size="sm">
-                <Filter size={16} />
-            </Button>
-          </div>
-        </div>
-        
-        {/* Bulk Action Bar (Visible only when items selected) */}
-        {selectedCount > 0 && (
-             <div className="bg-primary-50 px-4 py-2 rounded-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2">
-                 <span className="text-sm text-primary-700 font-semibold">{selectedCount} jobs selected</span>
-                 <div className="flex gap-2">
-                     <Button size="sm" color="primary" variant="flat" onPress={() => onBulkAction("STATUS")}>Update Status</Button>
-                     <Button size="sm" color="danger" variant="flat" startContent={<Trash2 size={16} />} onPress={() => onBulkAction("DELETE")}>Delete</Button>
-                 </div>
-             </div>
-        )}
-      </div>
-    );
-  }, [filterValue, statusFilter, priorityFilter, selectedKeys, filteredItems.length]);
-
-  // --- Bottom Pagination ---
-  const bottomContent = useMemo(() => {
-    return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
-          {selectedKeys === "all"
-            ? "All items selected"
-            : `${selectedKeys.size} of ${filteredItems.length} selected`}
-        </span>
-        <Pagination
-          isCompact
-          showControls
-          showShadow
-          color="primary"
-          page={page}
-          total={Math.ceil(filteredItems.length / rowsPerPage)}
-          onChange={setPage}
-        />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          <Button isDisabled={page === 1} size="sm" variant="flat" onPress={() => setPage((prev) => (prev > 1 ? prev - 1 : prev))}>
-            Previous
-          </Button>
-          <Button isDisabled={page === Math.ceil(filteredItems.length / rowsPerPage)} size="sm" variant="flat" onPress={() => setPage((prev) => (prev < Math.ceil(filteredItems.length / rowsPerPage) ? prev + 1 : prev))}>
-            Next
-          </Button>
-        </div>
-      </div>
-    );
-  }, [selectedKeys, items.length, page, filteredItems.length]);
-
-  return (
-    <div className="p-8 max-w-[1600px] mx-auto min-h-screen bg-slate-50">
-      <Card className="shadow-sm border border-slate-200">
-         <Table
-            aria-label="Jobs Table"
-            isHeaderSticky
-            bottomContent={bottomContent}
-            bottomContentPlacement="outside"
-            classNames={{
-                wrapper: "max-h-[700px]",
-            }}
-            selectedKeys={selectedKeys}
-            selectionMode="multiple"
-            sortDescriptor={sortDescriptor}
-            topContent={topContent}
-            topContentPlacement="outside"
-            onSelectionChange={setSelectedKeys}
-            onSortChange={setSortDescriptor}
-            >
-            <TableHeader columns={columns}>
-                {(column) => (
-                <TableColumn
-                    key={column.uid}
-                    align={column.uid === "actions" ? "center" : "start"}
-                    allowsSorting={column.sortable}
+            <AdminContentContainer className="mt-1">
+                <HeroTable
+                    aria-label="Jobs Table"
+                    isHeaderSticky
+                    bottomContent={bottomContent}
+                    bottomContentPlacement="outside"
+                    classNames={{
+                        wrapper: 'max-h-[700px]',
+                    }}
+                    selectedKeys={selectedKeys}
+                    selectionMode="multiple"
+                    sortDescriptor={sortDescriptor}
+                    topContent={topContent}
+                    topContentPlacement="outside"
+                    onSelectionChange={setSelectedKeys}
+                    onSortChange={handleSortChange}
                 >
-                    {column.name}
-                </TableColumn>
-                )}
-            </TableHeader>
-            <TableBody emptyContent={"No jobs found"} items={items}>
-                {(item) => (
-                <TableRow key={item.id}>
-                    {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
-                </TableRow>
-                )}
-            </TableBody>
-        </Table>
-      </Card>
+                    <TableHeader columns={columns}>
+                        {(column) => (
+                            <TableColumn
+                                key={column.uid}
+                                align={
+                                    column.uid === 'actions'
+                                        ? 'center'
+                                        : 'start'
+                                }
+                                allowsSorting={column.sortable}
+                            >
+                                {column.name}
+                            </TableColumn>
+                        )}
+                    </TableHeader>
+                    <TableBody
+                        emptyContent={'No jobs found'}
+                        items={data.jobs} // Use Server Data
+                        isLoading={isFetching} // Show loading state
+                    >
+                        {(item: Job) => (
+                            <TableRow key={item.id}>
+                                {(columnKey) => (
+                                    <TableCell>
+                                        {renderCell(item, columnKey)}
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </HeroTable>
 
-      {/* Confirmation Modal for Bulk Actions */}
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">Confirm {bulkActionType === 'DELETE' ? 'Deletion' : 'Update'}</ModalHeader>
-              <ModalBody>
-                <p className="text-slate-600">
-                    Are you sure you want to {bulkActionType === 'DELETE' ? 'permanently delete' : 'update'} the <strong>{selectedKeys === 'all' ? filteredItems.length : selectedKeys.size}</strong> selected jobs?
-                    {bulkActionType === 'DELETE' && <span className="block mt-2 text-red-500 font-bold">This action cannot be undone.</span>}
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="default" variant="light" onPress={onClose}>
-                  Cancel
-                </Button>
-                <Button color={bulkActionType === 'DELETE' ? "danger" : "primary"} onPress={handleBulkConfirm}>
-                  Confirm
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
-    </div>
-  );
-};
+                {/* Modal */}
+                <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">
+                                    Confirm{' '}
+                                    {bulkActionType === 'DELETE'
+                                        ? 'Deletion'
+                                        : 'Update'}
+                                </ModalHeader>
+                                <ModalBody>
+                                    <p className="text-slate-600">
+                                        Are you sure you want to{' '}
+                                        {bulkActionType === 'DELETE'
+                                            ? 'permanently delete'
+                                            : 'update'}{' '}
+                                        the{' '}
+                                        <strong>
+                                            {selectedKeys === 'all'
+                                                ? data.jobs.length
+                                                : selectedKeys.size}
+                                        </strong>{' '}
+                                        selected jobs?
+                                    </p>
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button
+                                        color="default"
+                                        variant="light"
+                                        onPress={onClose}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        color={
+                                            bulkActionType === 'DELETE'
+                                                ? 'danger'
+                                                : 'primary'
+                                        }
+                                        onPress={handleBulkConfirm}
+                                    >
+                                        Confirm
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+            </AdminContentContainer>
+        </div>
+    )
+}

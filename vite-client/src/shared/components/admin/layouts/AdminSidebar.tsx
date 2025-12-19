@@ -64,8 +64,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           ${isCollapsed ? 'px-2' : 'justify-between pl-1 pr-4'}
           ${
               isActive
-                  ? 'bg-primary-50 text-primary rounded-lg'
-                  : 'text-slate-500 hover:bg-text-disabled hover:text-slate-900 rounded-lg'
+                  ? 'bg-background-hovered text-text-default rounded-lg'
+                  : 'text-text-subdued hover:bg-background-hovered hover:text-text-default rounded-lg'
           }
         `}
                 >
@@ -76,8 +76,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                             <Icon
                                 className={`transition-colors size-4.5! ${
                                     isActive
-                                        ? 'text-primary'
-                                        : 'text-text-subdued group-hover:text-text-7'
+                                        ? 'text-text-default'
+                                        : 'text-text-subdued group-hover:text-text-default'
                                 }`}
                             />
                         </div>
@@ -280,7 +280,7 @@ export const AdminSidebar = ({
                                         to={INTERNAL_URLS.departmentItemManage(
                                             dept
                                         )}
-                                        className={`flex items-center cursor-pointer text-slate-500 hover:text-emerald-700 hover:bg-slate-50 rounded-xl transition-all duration-200
+                                        className={`flex items-center cursor-pointer text-text-subdued hover:text-emerald-700 hover:bg-background-hovered rounded-xl transition-all duration-200
                        ${isCollapsed ? 'justify-center py-3' : 'gap-3 px-4 py-2 text-sm'}
                     `}
                                     >

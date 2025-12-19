@@ -31,7 +31,7 @@ function AdminLayout() {
                 {/* Height for header */}
                 <div className="h-14" />
                 <div className="relative w-full h-full flex items-start justify-start">
-                    <div className="fixed left-0 top-14.25 z-50 space-y-6 border-r border-text-disabled h-full bg-[#fafafa]! dark:bg-[#171717]!">
+                    <div className="fixed left-0 top-14.25 z-50 space-y-6 border-r border-border-default h-full bg-background">
                         <AdminSidebar
                             isCollapsed={
                                 adminLeftSidebar === ESidebarStatus.COLLAPSE
@@ -53,13 +53,13 @@ function AdminLayout() {
                                 'margin 300ms cubic-bezier(0.4, 0, 0.2, 1)',
                         }}
                     >
-                        <ScrollArea className="size-full h-[calc(100vh-57px)]">
+                        <ScrollArea className="size-full h-[calc(100vh-57px)] bg-background-muted">
                             <ScrollBar orientation="horizontal" />
                             <ScrollBar orientation="vertical" />
                             <Outlet />
                         </ScrollArea>
                     </div>
-                    <div className="fixed right-0 top-14.25 z-50 border-l border-text-disabled h-full space-y-6 bg-[#fafafa]! dark:bg-[#171717]!">
+                    <div className="fixed right-0 top-14.25 z-50 border-l border-border-default h-full space-y-6 bg-background">
                         <DashboardRightPanel
                             isCollapsed={
                                 adminRightSidebar === ESidebarStatus.COLLAPSE

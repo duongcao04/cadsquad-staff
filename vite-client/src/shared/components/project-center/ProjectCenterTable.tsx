@@ -276,7 +276,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <SquareChartGantt
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -287,7 +287,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <SquareKanban
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -298,7 +298,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <Sheet
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -341,7 +341,7 @@ export default function ProjectCenterTable({
                                             startContent={
                                                 <EyeClosed
                                                     size={16}
-                                                    className="text-text-8"
+                                                    className="text-text-default"
                                                 />
                                             }
                                         >
@@ -371,7 +371,7 @@ export default function ProjectCenterTable({
                                             startContent={
                                                 <Columns3Cog
                                                     size={16}
-                                                    className="text-text-8"
+                                                    className="text-text-default"
                                                 />
                                             }
                                             onPress={openViewColDrawer}

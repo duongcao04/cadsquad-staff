@@ -73,7 +73,7 @@ export default function WeekCalendar({
                     <ChevronLeft size={20} />
                 </Button>
                 <Button size="sm" variant="light" onPress={handleToday}>
-                    <span className="tracking-wider text-text-8">Today</span>
+                    <span className="tracking-wider text-text-default">Today</span>
                 </Button>
                 <Button
                     isIconOnly

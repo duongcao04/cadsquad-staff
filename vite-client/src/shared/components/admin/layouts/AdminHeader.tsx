@@ -52,7 +52,7 @@ export const AdminHeader = () => {
                         }}
                         canRedirect={false}
                     />
-                    <p className="pl-1 font-quicksand text-xl text-text-8 group-hover:underline">
+                    <p className="pl-1 font-quicksand text-xl text-text-default group-hover:underline">
                         Admin
                     </p>
                 </Link>

@@ -294,15 +294,23 @@ function StaffDirectoryPage() {
                 />
             )}
             <HeroBreadcrumbs className="pt-3 px-7 text-xs">
-                <HeroBreadcrumbItem>Management</HeroBreadcrumbItem>
                 <HeroBreadcrumbItem>
                     <Link
-                        to={INTERNAL_URLS.staffDirectory}
+                        to={INTERNAL_URLS.home}
                         className="text-text-subdued!"
                     >
-                        Staff Directory
+                        <House size={16} />
                     </Link>
                 </HeroBreadcrumbItem>
+                <HeroBreadcrumbItem>
+                    <Link
+                        to={INTERNAL_URLS.admin}
+                        className="text-text-subdued!"
+                    >
+                        Admin
+                    </Link>
+                </HeroBreadcrumbItem>
+                <HeroBreadcrumbItem>Staff Directory</HeroBreadcrumbItem>
             </HeroBreadcrumbs>
 
             <AdminContentContainer className="mt-1">
@@ -414,7 +422,7 @@ function StaffDirectoryPage() {
                                                 startContent={
                                                     <RotateCcw
                                                         size={14}
-                                                        className="text-text-8"
+                                                        className="text-text-default"
                                                     />
                                                 }
                                                 // onPress={onOpenResetPWModal}
@@ -426,7 +434,7 @@ function StaffDirectoryPage() {
                                                 startContent={
                                                     <UserPen
                                                         size={14}
-                                                        className="text-text-8"
+                                                        className="text-text-default"
                                                     />
                                                 }
                                                 // onPress={onOpenUpdateUsernameModal}

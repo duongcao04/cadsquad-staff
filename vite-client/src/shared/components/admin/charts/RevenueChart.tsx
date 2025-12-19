@@ -1,29 +1,25 @@
+import { AnalyticsOverview } from '@/lib/api'
 import {
-    AreaChart,
     Area,
+    AreaChart,
+    CartesianGrid,
+    ResponsiveContainer,
+    Tooltip,
     XAxis,
     YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
 } from 'recharts'
 
-const data = [
-    { name: 'Aug 01', income: 4000 },
-    { name: 'Aug 05', income: 3000 },
-    { name: 'Aug 10', income: 2000 },
-    { name: 'Aug 15', income: 2780 },
-    { name: 'Aug 20', income: 1890 },
-    { name: 'Aug 25', income: 2390 },
-    { name: 'Aug 30', income: 3490 },
-]
-
-export const RevenueChart = () => {
+type RevenueChartProps = {
+    data: AnalyticsOverview['financialChart']['data']
+}
+export const RevenueChart = ({ data }: RevenueChartProps) => {
     return (
-        <div className="bg-white p-6 rounded-2xl border border-border-default shadow-sm mb-8">
+        <div className="bg-background-muted p-6 rounded-2xl border border-border-default shadow-xs mb-8">
             <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-slate-800">Financial Overview</h3>
-                <button className="text-xs border border-slate-200 rounded-lg px-3 py-1 text-slate-500 hover:bg-slate-50">
+                <h3 className="font-bold text-text-default">
+                    Financial Overview
+                </h3>
+                <button className="text-xs border border-border-default rounded-lg px-3 py-1 text-text-subdued hover:bg-background-hovered">
                     1 Nov - 7 Nov 2024
                 </button>
             </div>

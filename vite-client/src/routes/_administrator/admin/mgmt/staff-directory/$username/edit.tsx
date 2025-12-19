@@ -328,7 +328,7 @@ function EditStaffPage() {
                                         <span className="text-text-subdued flex items-center gap-2">
                                             <Calendar size={14} /> Joined
                                         </span>
-                                        <span className="font-semibold text-text-8">
+                                        <span className="font-semibold text-text-default">
                                             {dateFormatter(user.createdAt, {
                                                 format: 'longDate',
                                             })}
@@ -338,7 +338,7 @@ function EditStaffPage() {
                                         <span className="text-text-subdued flex items-center gap-2">
                                             <Shield size={14} /> Role
                                         </span>
-                                        <span className="font-semibold text-text-8">
+                                        <span className="font-semibold text-text-default">
                                             {formik.values.role}
                                         </span>
                                     </div>

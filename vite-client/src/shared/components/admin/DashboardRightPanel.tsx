@@ -72,7 +72,7 @@ export const DashboardRightPanel = ({
                     <div className="mt-2 w-10 h-10 rounded-xl bg-primary-50 text-primary-800 flex items-center justify-center">
                         <CalendarIcon size={20} />
                     </div>
-                    <span className="text-[10px] font-bold text-text-8">
+                    <span className="text-[10px] font-bold text-text-default">
                         {dateFormatter(selectedDate, {
                             format: 'dateMonth',
                         })}

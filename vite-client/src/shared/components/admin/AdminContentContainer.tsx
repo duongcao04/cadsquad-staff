@@ -12,7 +12,7 @@ export default function AdminContentContainer({
     ...props
 }: Props) {
     return (
-        <div className={`size-full py-3 px-4 ${className || ''}`} {...props}>
+        <div className={`size-full py-3 px-6 ${className || ''}`} {...props}>
             {children}
         </div>
     )

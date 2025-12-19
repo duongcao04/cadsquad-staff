@@ -1,4 +1,5 @@
 export * from './_ably.api';
+export * from './_analytics.api';
 export * from './_auth.api';
 export * from './_comment.api';
 export * from './_department.api';
