@@ -20,17 +20,6 @@ export const COOKIES = {
     authentication: 'csd-authTk',
 }
 
-export const APP_THEME_COLORS = [
-    'var(--color-primary)',
-    '#e11d48',
-    '#ea580c',
-    '#f59e0b',
-    '#16a34a',
-    '#0284c7',
-    '#4f46e5',
-    '#3f3f46',
-]
-
 export const EXTERNAL_URLS = {
     getJobDetailUrl: (jobNo: string, locale?: string) => {
         if (!locale) return envConfig.APP_URL + '/' + 'jobs' + '/' + jobNo
@@ -61,6 +50,7 @@ export const INTERNAL_URLS = {
     accountSettings: '/' + 'settings/my-profile',
     loginAndSecurity: '/' + 'settings/login-and-security',
     notificationsSettings: '/' + 'settings/notifications',
+    languageAndRegionSettings: '/' + 'settings/language-and-region',
     /**
      * ADMIN ROUTES
      */

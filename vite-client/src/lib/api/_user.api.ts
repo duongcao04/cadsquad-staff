@@ -22,11 +22,11 @@ export const userApi = {
             `/v1/users/username/${username}`
         )
     },
-    updatePassword: (data: TUpdatePasswordInput) => {
-        return axiosClient.patch<ApiResponse<{ id: string }>>(
+    updatePassword: async (data: TUpdatePasswordInput) => {
+        return axiosClient.patch<ApiResponse<{ username: string }>>(
             '/v1/users/update-password',
             data
-        )
+        ).then(res => res.data)
     },
     resetPassword: (userId: string, data: TResetPasswordInput) => {
         return axiosClient.patch<ApiResponse<{ username: string }>>(

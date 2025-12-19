@@ -7,13 +7,11 @@ export const Route = createFileRoute('/_public')({
 
 function PublicLayout() {
     return (
-        <div>
-            <div className="fixed top-0 w-full z-10">
-                <Header />
-            </div>
+        <div className="size-full">
+            <Header />
             {/* Height for header */}
             <div className="h-14" />
-            <main className="size-full">
+            <main className="size-full bg-background-muted">
                 <Outlet />
             </main>
         </div>

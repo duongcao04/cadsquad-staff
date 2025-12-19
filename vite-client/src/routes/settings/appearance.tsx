@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-
 import { useState } from 'react'
 import {
     Card,
@@ -13,7 +12,6 @@ import {
     Chip,
     Avatar,
     Divider,
-    Tooltip,
 } from '@heroui/react'
 import {
     Moon,
@@ -29,16 +27,20 @@ import {
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { INTERNAL_URLS } from '../../lib'
-import { HeroBreadcrumbs, HeroBreadcrumbItem } from '../../shared/components'
+import {
+    HeroBreadcrumbs,
+    HeroBreadcrumbItem,
+    HeroTooltip,
+} from '../../shared/components'
 import { useTheme } from 'next-themes'
+import { useThemeColor } from '../../shared/contexts/ThemeColorContext'
 
 export const Route = createFileRoute('/settings/appearance')({
     component: AppearanceSettingsPage,
 })
 
-// --- Mock Themes ---
 const THEME_COLORS = [
-    { key: 'blue', hex: '#3B82F6', label: 'Ocean Blue' },
+    { key: 'blue', hex: '#1f1d80', label: 'Ocean Blue' },
     { key: 'violet', hex: '#8B5CF6', label: 'Royal Violet' },
     { key: 'emerald', hex: '#10B981', label: 'Emerald Green' },
     { key: 'orange', hex: '#F97316', label: 'Sunset Orange' },
@@ -147,11 +149,19 @@ const PreviewTable = ({ density, fontSize, themeColor }: any) => {
 }
 
 function AppearanceSettingsPage() {
+    const { themeColor, setThemeColor } = useThemeColor()
+
     const { theme, setTheme } = useTheme()
-    const [color, setColor] = useState(THEME_COLORS[0])
+    const [color, setColor] = useState(
+        THEME_COLORS.find((c) => c.key === themeColor) || THEME_COLORS[0]
+    )
     const [density, setDensity] = useState('comfortable')
     const [fontSize, setFontSize] = useState('md') // sm, md, lg
     const [reducedMotion, setReducedMotion] = useState(false)
+
+    const handleSaveChanges = () => {
+        setThemeColor(color.key as never)
+    }
 
     return (
         <>
@@ -196,6 +206,7 @@ function AppearanceSettingsPage() {
                         <Button
                             color="primary"
                             startContent={<Save size={18} />}
+                            onPress={handleSaveChanges}
                         >
                             Save Changes
                         </Button>
@@ -236,7 +247,7 @@ function AppearanceSettingsPage() {
                             ${
                                 theme === item.id
                                     ? 'border-primary text-primary dark:border-border-default/90 bg-background-hovered dark:text-text-default'
-                                    : 'border-border-default bg-background hover:bg-background-hovered hover:border-border-default/90'
+                                    : 'dark:text-text-subdued border-border-default bg-background hover:bg-background-hovered hover:border-border-default/90'
                             }
                           `}
                                     >
@@ -257,23 +268,30 @@ function AppearanceSettingsPage() {
                                 <Palette size={20} /> Accent Color
                             </h3>
                             <div className="flex flex-wrap gap-4">
-                                {THEME_COLORS.map((c) => (
-                                    <Tooltip key={c.key} content={c.label}>
-                                        <button
-                                            onClick={() => setColor(c)}
-                                            className={`cursor-pointer w-12 h-12 rounded-full flex items-center justify-center transition-all border-2 ${color.key === c.key ? 'border-slate-800 scale-110 shadow-md' : 'border-transparent hover:scale-105'}
-                            `}
-                                            style={{ backgroundColor: c.hex }}
+                                {THEME_COLORS.map((c) => {
+                                    return (
+                                        <HeroTooltip
+                                            key={c.key}
+                                            content={c.label}
                                         >
-                                            {color.key === c.key && (
-                                                <Check
-                                                    className="text-white"
-                                                    size={20}
-                                                />
-                                            )}
-                                        </button>
-                                    </Tooltip>
-                                ))}
+                                            <button
+                                                onClick={() => setColor(c)}
+                                                className={`cursor-pointer w-12 h-12 rounded-full flex items-center justify-center transition-all border-2 ${color.key === c.key ? 'border-slate-800 scale-110 shadow-md' : 'border-transparent hover:scale-105'}
+                            `}
+                                                style={{
+                                                    backgroundColor: c.hex,
+                                                }}
+                                            >
+                                                {color.key === c.key && (
+                                                    <Check
+                                                        className="text-white"
+                                                        size={20}
+                                                    />
+                                                )}
+                                            </button>
+                                        </HeroTooltip>
+                                    )
+                                })}
                             </div>
                         </section>
 

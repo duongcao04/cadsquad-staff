@@ -1,5 +1,7 @@
 :root {
 	--primary: var(--primary);
+	--primary-dark: var(--primary-dark);
+
 	--primary-50: hsl(240 66.7% 96.5%);
 	--primary-100: hsl(242.4 67.6% 92.7%);
 	--primary-200: hsl(241.2 67.1% 85.7%);
@@ -41,13 +43,13 @@
    * Chúng chỉ tham chiếu đến Thang màu 9 bước.
    */
 
-	--primary: var(--color-primary-800);
+	--primary: var(--primary);
 	--secondary: var(--color-secondary-800);
 
 	/* Nền (Background) */
-	--background: var(--text-0);
+	--background: var(--text-1);
 	/* Nền mờ, nền của khối code, v.v. */
-	--background-muted: var(--text-1);
+	--background-muted: var(--text-2);
 	--background-hovered: var(--primary-50);
 	/* Nền trước (Foreground) - Thường dùng cho các icon đậm */
 	--foreground: var(--text-8);
@@ -84,7 +86,7 @@
 		--highlight: oklch(0.852 0.199 91.936);
 		--brand: oklch(0.707 0.165 254.624);
 
-		--primary: var(--color-primary-500);
+		--primary: var(--primary-dark) !important;
 		--secondary: var(--color-secondary-500);
 		/* Nền (Background) */
 		/* 5% - Nền tối */

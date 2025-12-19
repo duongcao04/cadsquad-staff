@@ -17,8 +17,8 @@ function SettingsLayout() {
             {/* Height for header */}
             <div className="h-14 bg-background" />
 
-            <div className="bg-background-muted">
-                <div className="py-6 max-w-7xl mx-auto">
+            <div className="size-full bg-background-muted">
+                <div className="size-full py-6 max-w-7xl mx-auto">
                     <div className="fixed top-20 px-3">
                         <h2 className="text-2xl font-bold text-text-default">
                             Settings
@@ -35,7 +35,7 @@ function SettingsLayout() {
                         <div />
 
                         {/* Main Content Area */}
-                        <main className="py-6 px-1 flex-1 min-w-0">
+                        <main className="size-full py-6 px-1 flex-1 min-w-0 bg-background-muted min-h-[calc(100vh-124px)]">
                             <Outlet />
                         </main>
                     </div>

@@ -18,6 +18,7 @@ import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
 import { Route as SettingsMyProfileRouteImport } from './routes/settings/my-profile'
 import { Route as SettingsLoginAndSecurityRouteImport } from './routes/settings/login-and-security'
+import { Route as SettingsLanguageAndRegionRouteImport } from './routes/settings/language-and-region'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
 import { Route as WorkspaceTaskSummaryRouteImport } from './routes/_workspace/task-summary'
 import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
@@ -92,6 +93,12 @@ const SettingsLoginAndSecurityRoute =
   SettingsLoginAndSecurityRouteImport.update({
     id: '/login-and-security',
     path: '/login-and-security',
+    getParentRoute: () => SettingsRoute,
+  } as any)
+const SettingsLanguageAndRegionRoute =
+  SettingsLanguageAndRegionRouteImport.update({
+    id: '/language-and-region',
+    path: '/language-and-region',
     getParentRoute: () => SettingsRoute,
   } as any)
 const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
@@ -289,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -326,6 +334,7 @@ export interface FileRoutesByTo {
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -370,6 +379,7 @@ export interface FileRoutesById {
   '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/_workspace/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
+  '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -411,6 +421,7 @@ export interface FileRouteTypes {
     | '/project-center'
     | '/task-summary'
     | '/settings/appearance'
+    | '/settings/language-and-region'
     | '/settings/login-and-security'
     | '/settings/my-profile'
     | '/settings/notifications'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/project-center'
     | '/task-summary'
     | '/settings/appearance'
+    | '/settings/language-and-region'
     | '/settings/login-and-security'
     | '/settings/my-profile'
     | '/settings/notifications'
@@ -491,6 +503,7 @@ export interface FileRouteTypes {
     | '/_workspace/project-center'
     | '/_workspace/task-summary'
     | '/settings/appearance'
+    | '/settings/language-and-region'
     | '/settings/login-and-security'
     | '/settings/my-profile'
     | '/settings/notifications'
@@ -592,6 +605,13 @@ declare module '@tanstack/react-router' {
       path: '/login-and-security'
       fullPath: '/settings/login-and-security'
       preLoaderRoute: typeof SettingsLoginAndSecurityRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/language-and-region': {
+      id: '/settings/language-and-region'
+      path: '/language-and-region'
+      fullPath: '/settings/language-and-region'
+      preLoaderRoute: typeof SettingsLanguageAndRegionRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/appearance': {
@@ -975,6 +995,7 @@ const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
 
 interface SettingsRouteChildren {
   SettingsAppearanceRoute: typeof SettingsAppearanceRoute
+  SettingsLanguageAndRegionRoute: typeof SettingsLanguageAndRegionRoute
   SettingsLoginAndSecurityRoute: typeof SettingsLoginAndSecurityRoute
   SettingsMyProfileRoute: typeof SettingsMyProfileRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -983,6 +1004,7 @@ interface SettingsRouteChildren {
 
 const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsAppearanceRoute: SettingsAppearanceRoute,
+  SettingsLanguageAndRegionRoute: SettingsLanguageAndRegionRoute,
   SettingsLoginAndSecurityRoute: SettingsLoginAndSecurityRoute,
   SettingsMyProfileRoute: SettingsMyProfileRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,

@@ -13,11 +13,7 @@ import {
     User,
 } from 'lucide-react'
 import { envConfig, INTERNAL_URLS } from '@/lib'
-import {
-    useMatchRoute,
-    useRouter,
-    useRouterState,
-} from '@tanstack/react-router'
+import { useRouter, useRouterState } from '@tanstack/react-router'
 
 // Define the structure of the settings menu
 const SETTINGS_MENU = [
@@ -69,7 +65,7 @@ const SETTINGS_MENU = [
                 key: 'language',
                 label: 'Language & Region',
                 icon: Globe,
-                href: '/settings/language',
+                href: INTERNAL_URLS.languageAndRegionSettings,
             },
         ],
     },
@@ -161,7 +157,14 @@ export default function SettingsSidebar() {
 
                 {/* Bottom Actions */}
                 <div className="mt-2 pt-2 px-4 border-t border-border-default space-y-1 pb-1">
-                    <button className="mt-1 flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-text-subdued hover:text-text-default hover:bg-background-hovered rounded-xl transition-colors cursor-pointer">
+                    <button
+                        className="mt-1 flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-text-subdued hover:text-text-default hover:bg-background-hovered rounded-xl transition-colors cursor-pointer"
+                        onClick={() =>
+                            router.navigate({
+                                href: INTERNAL_URLS.helpCenter,
+                            })
+                        }
+                    >
                         <HelpCircle size={18} className="text-text-subdued" />
                         Help & Support
                     </button>

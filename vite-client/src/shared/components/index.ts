@@ -94,7 +94,6 @@ export * from './modals/ReScheduleModal';
 export * from './modals/ResetPasswordModal';
 export * from './modals/UploadAvatarModal';
 export * from './personal-settings/ChangePasswordForm';
-export * from './personal-settings/EditAppearanceForm';
 export * from './personal-settings/UpdateAccountForm';
 export * from './personal-settings/UploadAvatarModal';
 export * from './profile/JobCard';

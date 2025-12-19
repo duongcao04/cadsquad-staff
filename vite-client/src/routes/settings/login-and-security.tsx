@@ -1,51 +1,59 @@
+import {
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
+    Chip,
+    Divider,
+    Input,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Switch,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+    Tooltip,
+    useDisclosure,
+} from '@heroui/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useFormik } from 'formik'
+import {
+    AlertTriangle,
+    CheckCircle2,
+    Clock,
+    Eye,
+    EyeOff,
+    Globe,
+    House,
+    KeyRound,
+    Laptop,
+    LogOut,
+    MapPin,
+    Shield,
+    Smartphone,
+} from 'lucide-react'
+import { useState } from 'react'
+import {
+    INTERNAL_URLS,
+    TUpdatePasswordInput,
+    UpdatePasswordInputSchema,
+    useUpdatePasswordMutation,
+} from '../../lib'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroPasswordInput,
+} from '../../shared/components'
 
 export const Route = createFileRoute('/settings/login-and-security')({
     component: SecuritySettingsPage,
 })
-
-import React, { useState } from 'react'
-import {
-    Card,
-    CardBody,
-    CardHeader,
-    Input,
-    Button,
-    Switch,
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    Chip,
-    Tooltip,
-    Divider,
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    useDisclosure,
-} from '@heroui/react'
-import {
-    Lock,
-    Shield,
-    Smartphone,
-    LogOut,
-    MapPin,
-    AlertTriangle,
-    CheckCircle2,
-    KeyRound,
-    Eye,
-    EyeOff,
-    Globe,
-    Clock,
-    Laptop,
-    House,
-} from 'lucide-react'
-import { INTERNAL_URLS } from '../../lib'
-import { HeroBreadcrumbs, HeroBreadcrumbItem } from '../../shared/components'
 
 // --- Mock Data ---
 const ACTIVE_SESSIONS = [
@@ -111,10 +119,7 @@ const LOGIN_HISTORY = [
 
 function SecuritySettingsPage() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure() // For 2FA Modal
-    const [isVisible, setIsVisible] = useState(false) // Password visibility
     const [is2FAEnabled, setIs2FAEnabled] = useState(true)
-
-    const toggleVisibility = () => setIsVisible(!isVisible)
 
     return (
         <>
@@ -151,64 +156,7 @@ function SecuritySettingsPage() {
 
                 <div className="mt-7 grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* --- LEFT COLUMN: Credentials --- */}
-                    <div className="size-full lg:col-span-1 space-y-6">
-                        {/* Change Password */}
-                        <Card className="shadow-sm border border-border-default">
-                            <CardHeader className="px-6 pt-6 pb-2">
-                                <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
-                                    <KeyRound
-                                        size={20}
-                                        className="text-primary"
-                                    />{' '}
-                                    Password
-                                </h4>
-                            </CardHeader>
-                            <CardBody className="px-6 pb-6 gap-4">
-                                <Input
-                                    label="Current Password"
-                                    placeholder="Enter current password"
-                                    endContent={
-                                        <button
-                                            className="focus:outline-none"
-                                            type="button"
-                                            onClick={toggleVisibility}
-                                        >
-                                            {isVisible ? (
-                                                <EyeOff className="text-2xl text-default-400 pointer-events-none" />
-                                            ) : (
-                                                <Eye className="text-2xl text-default-400 pointer-events-none" />
-                                            )}
-                                        </button>
-                                    }
-                                    type={isVisible ? 'text' : 'password'}
-                                    variant="bordered"
-                                />
-                                <Divider />
-                                <Input
-                                    label="New Password"
-                                    placeholder="Minimum 8 characters"
-                                    type="password"
-                                    variant="bordered"
-                                />
-                                <Input
-                                    label="Confirm New Password"
-                                    placeholder="Re-enter new password"
-                                    type="password"
-                                    variant="bordered"
-                                />
-                                <div className="flex justify-end pt-2">
-                                    <Button
-                                        color="primary"
-                                        isDisabled
-                                        size="sm"
-                                    >
-                                        Update Password
-                                    </Button>
-                                </div>
-                            </CardBody>
-                        </Card>
-                    </div>
-
+                    <UpdatePasswordForm />
                     {/* --- RIGHT COLUMN: Activity & Sessions --- */}
                     <div className="size-full lg:col-span-1 space-y-6">
                         {/* 2FA Settings */}
@@ -479,5 +427,119 @@ function SecuritySettingsPage() {
                 </Modal>
             </div>
         </>
+    )
+}
+
+function UpdatePasswordForm() {
+    const [isVisible, setIsVisible] = useState(false) // Password visibility
+    const toggleVisibility = () => setIsVisible(!isVisible)
+
+    const updatePasswordMutation = useUpdatePasswordMutation()
+
+    const formik = useFormik<TUpdatePasswordInput>({
+        initialValues: {
+            oldPassword: '',
+            newPassword: '',
+            newConfirmPassword: '',
+        },
+        validationSchema: UpdatePasswordInputSchema,
+        onSubmit: (values) => {
+            updatePasswordMutation.mutateAsync(
+                {
+                    updatePasswordInput: values,
+                },
+                {
+                    onSuccess: () => {
+                        formik.resetForm()
+                    },
+                }
+            )
+        },
+    })
+
+    return (
+        <form
+            onSubmit={formik.handleSubmit}
+            className="size-full lg:col-span-1 space-y-6"
+        >
+            {/* Change Password */}
+            <Card className="shadow-sm border border-border-default">
+                <CardHeader className="px-6 pt-6 pb-2">
+                    <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
+                        <KeyRound size={20} className="text-primary" /> Password
+                    </h4>
+                </CardHeader>
+                <CardBody className="px-6 pb-6 gap-4">
+                    <HeroPasswordInput
+                        id="oldPassword"
+                        name="oldPassword"
+                        value={formik.values.oldPassword}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        isInvalid={
+                            Boolean(formik.touched.oldPassword) &&
+                            Boolean(formik.errors.oldPassword)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.oldPassword) &&
+                            formik.errors.oldPassword
+                        }
+                        label="Current Password"
+                        placeholder="Enter current password"
+                        variant="bordered"
+                    />
+                    <Divider />
+                    <HeroPasswordInput
+                        id="newPassword"
+                        name="newPassword"
+                        label="New Password"
+                        placeholder="Minimum 8 characters"
+                        type="password"
+                        variant="bordered"
+                        value={formik.values.newPassword}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        isInvalid={
+                            Boolean(formik.touched.newPassword) &&
+                            Boolean(formik.errors.newPassword)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.newPassword) &&
+                            formik.errors.newPassword
+                        }
+                    />
+                    <HeroPasswordInput
+                        id="newConfirmPassword"
+                        name="newConfirmPassword"
+                        label="Confirm New Password"
+                        placeholder="Re-enter new password"
+                        type="password"
+                        variant="bordered"
+                        value={formik.values.newConfirmPassword}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        isInvalid={
+                            Boolean(formik.touched.newConfirmPassword) &&
+                            Boolean(formik.errors.newConfirmPassword)
+                        }
+                        errorMessage={
+                            Boolean(formik.touched.newConfirmPassword) &&
+                            formik.errors.newConfirmPassword
+                        }
+                    />
+                    <div className="flex justify-end pt-2">
+                        <Button
+                            type="submit"
+                            color="primary"
+                            size="sm"
+                            isLoading={updatePasswordMutation.isPending}
+                            isDisabled={updatePasswordMutation.isPending}
+                        >
+                            Update Password
+                        </Button>
+                    </div>
+                </CardBody>
+            </Card>
+        </form>
     )
 }

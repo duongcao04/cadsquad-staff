@@ -15,6 +15,7 @@ import type {
     TUpdateUserInput,
 } from '../validationSchemas'
 import { userOptions, usersListOptions } from './options/user-queries'
+import { onErrorToast } from './helper'
 
 export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     id: item.id,
@@ -124,7 +125,9 @@ export const useUpdateAvatarMutation = (
     })
 }
 
-export const useUpdatePasswordMutation = () => {
+export const useUpdatePasswordMutation = (
+    onSuccess?: (res: ApiResponse<{ username: string }>) => void
+) => {
     return useMutation({
         mutationKey: ['updatePassword'],
         mutationFn: ({
@@ -134,11 +137,20 @@ export const useUpdatePasswordMutation = () => {
         }) => {
             return userApi.updatePassword(updatePasswordInput)
         },
-        onSuccess: async () => {
+        onSuccess: async (res) => {
             await queryClient.invalidateQueries({
                 queryKey: ['profile'],
             })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Update password successfully',
+                    color: 'success',
+                })
+            }
         },
+        onError: (error) => onErrorToast(error, 'Update password failed'),
     })
 }
 

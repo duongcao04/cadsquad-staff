@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/settings/')({
     component: SettingsIndexPage,
@@ -89,7 +89,7 @@ const SETTINGS_SECTIONS = [
                 label: 'Language & Region',
                 desc: 'System language & currency',
                 icon: Globe,
-                href: '/settings/language',
+                href: INTERNAL_URLS.languageAndRegionSettings,
                 color: 'text-indigo-500',
                 bg: 'bg-indigo-50',
             },
@@ -203,12 +203,23 @@ function SettingsIndexPage() {
                         variant="solid"
                         color="primary"
                         className="bg-blue-600"
+                        onPress={() => {
+                            router.navigate({
+                                href: INTERNAL_URLS.helpCenter,
+                            })
+                        }}
                     >
                         Documentation
                     </Button>
-                    <Button variant="light" className="text-blue-700">
-                        Contact Support
-                    </Button>
+                    <a
+                        href="mailto:ch.duong@cadsquad.vn"
+                        target="_blank"
+                        className="block"
+                    >
+                        <Button variant="light" className="text-blue-700">
+                            Contact Support
+                        </Button>
+                    </a>
                 </div>
             </div>
         </div>
