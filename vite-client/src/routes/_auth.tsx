@@ -26,7 +26,6 @@ function AuthLayout() {
                 classNames={{
                     logo: 'w-32 lg:w-64',
                 }}
-                logoTheme="default"
             />
             <Outlet />
         </div>

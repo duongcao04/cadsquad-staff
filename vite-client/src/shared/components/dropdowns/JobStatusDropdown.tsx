@@ -74,7 +74,7 @@ export default function JobStatusDropdown({
     const { data: jobStatuses } = useJobStatuses()
 
     const canClickable =
-        statusData.systemType !== JobStatusSystemTypeEnum.TERMINATED
+        isAdmin && statusData.systemType !== JobStatusSystemTypeEnum.TERMINATED
 
     const handleChangeStatus = async (nextStatus: TJobStatus) => {
         await changeStatusMutation.mutateAsync(

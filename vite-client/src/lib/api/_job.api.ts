@@ -52,6 +52,13 @@ export const jobApi = {
             >(`/v1/jobs?${queryStringFormatter}`)
             .then((res) => res.data)
     },
+    pendingDeliver: async () => {
+        return axiosClient
+            .get<
+                ApiResponse<IJobResponse[]>
+            >(`/v1/jobs/pending-deliver`)
+            .then((res) => res.data)
+    },
     getJobsDueOnDate: async (isoDate: string) => {
         return axiosClient
             .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/due-at/${isoDate}`)

@@ -39,7 +39,7 @@ export const Header = () => {
                 overflow: 'hidden',
                 height: '56px',
             }}
-            className="shadow-borderSM"
+            className="border-b border-border-muted"
         >
             {/* Logo */}
             <div className="h-full container grid grid-cols-[130px_1fr_220px] gap-5 items-center">
@@ -47,13 +47,12 @@ export const Header = () => {
                     classNames={{
                         logo: 'h-8',
                     }}
-                    logoTheme="default"
                 />
                 <div className="w-full">
                     <div className="w-full flex items-center justify-center">
                         <HeroButton
                             variant="bordered"
-                            className="rounded-full! border-text-4 border-1"
+                            className="rounded-full! border-border-default border-1 placeholder-text-subdued"
                             color="default"
                             onPress={onOpen}
                             startContent={

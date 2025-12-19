@@ -108,7 +108,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <History size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         All
                                         {jobs && webPageResult && (
                                             <span className="pl-1 text-sm text-text-subdued">
@@ -225,7 +225,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <BriefcaseBusiness size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         Jobs
                                         {jobs && (
                                             <span className="pl-1 text-sm text-text-subdued">
@@ -291,7 +291,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <FileText size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         Documents
                                     </p>
                                 </div>
@@ -304,7 +304,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <CodeXml size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         Others
                                         {webPageResult && (
                                             <span className="pl-1 text-sm text-text-subdued">

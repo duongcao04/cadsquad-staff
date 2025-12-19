@@ -5,6 +5,7 @@ import { type SVGProps, useState } from 'react'
 
 import { MotionAside } from '@/lib/motion'
 import {
+    ActionButton,
     IconCalendarOutline,
     IconCollapse,
     IconCollapseOutline,
@@ -90,9 +91,12 @@ export function Sidebar() {
             animate={
                 sidebarStatus === ESidebarStatus.EXPAND ? 'expand' : 'collapse'
             }
-            className="size-full my-3 flex flex-col justify-between"
+            className="bg-background size-full border-r border-border-muted py-3 flex flex-col justify-between"
         >
             <div id="sidebar-actions">
+                <div className="my-4 pl-4">
+                    <ActionButton />
+                </div>
                 <div className="w-full pl-4 pr-1.5">
                     <div
                         className="flex items-center justify-between cursor-pointer"

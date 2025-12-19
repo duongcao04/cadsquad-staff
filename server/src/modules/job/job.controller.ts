@@ -178,6 +178,12 @@ export class JobController {
         )
     }
 
+    @Get('pending-deliver')
+    async getPendingDeliver(@Req() request: Request) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.getPendingDeliverJobs(userPayload.sub, userPayload.role);
+    }
+
     @Get('no/:jobNo')
     @HttpCode(200)
     @ResponseMessage('Get job by no successfully')

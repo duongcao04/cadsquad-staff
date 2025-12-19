@@ -19,8 +19,10 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as SettingsMyProfileRouteImport } from './routes/settings/my-profile'
 import { Route as SettingsLoginAndSecurityRouteImport } from './routes/settings/login-and-security'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
+import { Route as WorkspaceTaskSummaryRouteImport } from './routes/_workspace/task-summary'
 import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
 import { Route as WorkspaceProfileRouteImport } from './routes/_workspace/profile'
+import { Route as WorkspaceOverviewRouteImport } from './routes/_workspace/overview'
 import { Route as WorkspaceJobsRouteImport } from './routes/_workspace/jobs'
 import { Route as WorkspaceWorkbenchRouteImport } from './routes/_workspace/_workbench'
 import { Route as PublicHelpCenterRouteImport } from './routes/_public/help-center'
@@ -97,6 +99,11 @@ const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
   path: '/appearance',
   getParentRoute: () => SettingsRoute,
 } as any)
+const WorkspaceTaskSummaryRoute = WorkspaceTaskSummaryRouteImport.update({
+  id: '/task-summary',
+  path: '/task-summary',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
 const WorkspaceProjectCenterRoute = WorkspaceProjectCenterRouteImport.update({
   id: '/project-center',
   path: '/project-center',
@@ -105,6 +112,11 @@ const WorkspaceProjectCenterRoute = WorkspaceProjectCenterRouteImport.update({
 const WorkspaceProfileRoute = WorkspaceProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceOverviewRoute = WorkspaceOverviewRouteImport.update({
+  id: '/overview',
+  path: '/overview',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceJobsRoute = WorkspaceJobsRouteImport.update({
@@ -272,8 +284,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof AuthLoginRoute
   '/help-center': typeof PublicHelpCenterRoute
   '/jobs': typeof WorkspaceJobsRouteWithChildren
+  '/overview': typeof WorkspaceOverviewRoute
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
+  '/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
@@ -307,8 +321,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof AuthLoginRoute
   '/help-center': typeof PublicHelpCenterRoute
+  '/overview': typeof WorkspaceOverviewRoute
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
+  '/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
@@ -349,8 +365,10 @@ export interface FileRoutesById {
   '/_public/help-center': typeof PublicHelpCenterRoute
   '/_workspace/_workbench': typeof WorkspaceWorkbenchRoute
   '/_workspace/jobs': typeof WorkspaceJobsRouteWithChildren
+  '/_workspace/overview': typeof WorkspaceOverviewRoute
   '/_workspace/profile': typeof WorkspaceProfileRoute
   '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
+  '/_workspace/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
@@ -388,8 +406,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/help-center'
     | '/jobs'
+    | '/overview'
     | '/profile'
     | '/project-center'
+    | '/task-summary'
     | '/settings/appearance'
     | '/settings/login-and-security'
     | '/settings/my-profile'
@@ -423,8 +443,10 @@ export interface FileRouteTypes {
   to:
     | '/login'
     | '/help-center'
+    | '/overview'
     | '/profile'
     | '/project-center'
+    | '/task-summary'
     | '/settings/appearance'
     | '/settings/login-and-security'
     | '/settings/my-profile'
@@ -464,8 +486,10 @@ export interface FileRouteTypes {
     | '/_public/help-center'
     | '/_workspace/_workbench'
     | '/_workspace/jobs'
+    | '/_workspace/overview'
     | '/_workspace/profile'
     | '/_workspace/project-center'
+    | '/_workspace/task-summary'
     | '/settings/appearance'
     | '/settings/login-and-security'
     | '/settings/my-profile'
@@ -577,6 +601,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAppearanceRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/_workspace/task-summary': {
+      id: '/_workspace/task-summary'
+      path: '/task-summary'
+      fullPath: '/task-summary'
+      preLoaderRoute: typeof WorkspaceTaskSummaryRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
     '/_workspace/project-center': {
       id: '/_workspace/project-center'
       path: '/project-center'
@@ -589,6 +620,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof WorkspaceProfileRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/_workspace/overview': {
+      id: '/_workspace/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof WorkspaceOverviewRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/_workspace/jobs': {
@@ -916,15 +954,19 @@ const WorkspaceProjectCenterRouteWithChildren =
 interface WorkspaceRouteChildren {
   WorkspaceWorkbenchRoute: typeof WorkspaceWorkbenchRoute
   WorkspaceJobsRoute: typeof WorkspaceJobsRouteWithChildren
+  WorkspaceOverviewRoute: typeof WorkspaceOverviewRoute
   WorkspaceProfileRoute: typeof WorkspaceProfileRoute
   WorkspaceProjectCenterRoute: typeof WorkspaceProjectCenterRouteWithChildren
+  WorkspaceTaskSummaryRoute: typeof WorkspaceTaskSummaryRoute
 }
 
 const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceWorkbenchRoute: WorkspaceWorkbenchRoute,
   WorkspaceJobsRoute: WorkspaceJobsRouteWithChildren,
+  WorkspaceOverviewRoute: WorkspaceOverviewRoute,
   WorkspaceProfileRoute: WorkspaceProfileRoute,
   WorkspaceProjectCenterRoute: WorkspaceProjectCenterRouteWithChildren,
+  WorkspaceTaskSummaryRoute: WorkspaceTaskSummaryRoute,
 }
 
 const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(

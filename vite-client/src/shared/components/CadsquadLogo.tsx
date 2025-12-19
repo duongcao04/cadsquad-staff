@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { memo } from 'react'
 import CSDWhiteLogo from '../../assets/logo-white.webp'
 import CSDLogo from '../../assets/logo.webp'
+import { useTheme } from 'next-themes'
 
 type Props = {
     canRedirect?: boolean
@@ -11,15 +12,16 @@ type Props = {
         root?: string
         logo?: string
     }
-    logoTheme?: 'white' | 'default'
+    logoTheme?: 'light' | 'dark'
 }
 
 function CadsquadLogo({
-    logoTheme = 'default',
+    logoTheme: forceTheme,
     canRedirect = true,
     href = '/',
     classNames,
 }: Props) {
+    const { resolvedTheme } = useTheme()
     const Wrapper = ({ children }: { children: React.ReactNode }) => {
         const wrapperClassName = cn('block w-fit', classNames?.root)
         return canRedirect ? (
@@ -31,10 +33,12 @@ function CadsquadLogo({
         )
     }
 
+    const logoTheme = forceTheme ?? resolvedTheme
+
     return (
         <Wrapper>
             <img
-                src={logoTheme === 'default' ? CSDLogo : CSDWhiteLogo}
+                src={logoTheme === 'light' ? CSDLogo : CSDWhiteLogo}
                 alt="CSD Logo"
                 className={cn('object-contain w-fit', classNames?.logo)}
             />

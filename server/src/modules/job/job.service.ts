@@ -35,6 +35,7 @@ import { UpdateJobDto } from './dto/update-job.dto'
 import { JobTabEnum } from './enums/job-tab.enum'
 import { renderTemplate } from '../../utils/_string'
 import { IMAGES, NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
+import { DeliverJobDto } from './dto/deliver-job.dto'
 
 @Injectable()
 export class JobService {
@@ -632,6 +633,160 @@ export class JobService {
         } catch (error) {
             throw new InternalServerErrorException('Get job by no failed')
         }
+    }
+
+    async getPendingDeliverJobs(userId: string,
+        userRole: RoleEnum) {
+        return this.prisma.job.findMany({
+            where: {
+                AND: [
+                    this.buildPermission(userRole, userId),
+                    {
+                        status: {
+                            code: {
+                                // Filters for jobs where the status code is EITHER 'in-progress' OR 'revision'
+                                in: ['in-progress', 'revision'],
+                            },
+                        }
+                    },
+                    // Optional: Exclude deleted jobs if you use soft delete logic manually,
+                    // though your schema has deletedAt, usually you'd filter it out:
+                    { deletedAt: null },
+                ]
+            },
+            orderBy: {
+                // Sort by due date (closest deadline first) or priority
+                dueAt: 'asc',
+            },
+            include: {
+                status: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        code: true,
+                        hexColor: true,
+                    },
+                },
+                type: {
+                    select: {
+                        displayName: true,
+                        code: true,
+                    },
+                },
+                assignee: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        avatar: true,
+                        username: true,
+                    },
+                },
+            },
+        });
+    }
+
+    async deliverJob(userId: string, jobId: string, dto: DeliverJobDto) {
+        return this.prisma.$transaction(async (tx) => {
+            // 1. Find the ID of the 'WAIT_REVIEW' status
+            const reviewStatus = await tx.jobStatus.findUnique({
+                where: { code: 'revision' }
+            });
+
+            if (!reviewStatus) throw new Error("System Status 'WAIT_REVIEW' missing");
+
+            // 2. Create the Delivery Record
+            const delivery = await tx.jobDelivery.create({
+                data: {
+                    jobId,
+                    userId,
+                    note: dto.note,
+                    link: dto.link,
+                    files: dto.files,
+                    status: 'PENDING',
+                },
+            });
+
+            // 3. Update the Job Status
+            await tx.job.update({
+                where: { id: jobId },
+                data: {
+                    statusId: reviewStatus.id, // Move job to Review column
+                },
+            });
+
+            // 4. Create Notification for Admins (or PMs)
+            // Find admins to notify
+            const admins = await tx.user.findMany({ where: { role: 'ADMIN' } });
+
+            // Batch insert notifications
+            if (admins.length > 0) {
+                await tx.notification.createMany({
+                    data: admins.map(admin => ({
+                        userId: admin.id,
+                        senderId: userId,
+                        title: "New Job Delivery",
+                        content: `Staff member has delivered job. Check delivery #${delivery.id}`,
+                        type: 'JOB_UPDATE',
+                        redirectUrl: `/jobs/${jobId}?tab=deliveries`,
+                    }))
+                });
+            }
+
+            return delivery;
+        });
+    }
+
+    // TODO: REVIEW this code
+    async reviewDelivery(adminId: string, deliveryId: string, isApproved: boolean, feedback?: string) {
+        return this.prisma.$transaction(async (tx) => {
+
+            // 1. Update Delivery Status
+            const delivery = await tx.jobDelivery.update({
+                where: { id: deliveryId },
+                data: {
+                    status: isApproved ? 'APPROVED' : 'REJECTED',
+                    adminFeedback: feedback,
+                },
+                include: { job: true } // Need job info
+            });
+
+            // 2. Determine Next Job Status
+            let nextStatusCode = '';
+
+            if (isApproved) {
+                nextStatusCode = 'COMPLETED'; // Or 'PAYMENT_PENDING'
+            } else {
+                nextStatusCode = 'REVISION'; // Or back to 'IN_PROGRESS'
+            }
+
+            const nextStatus = await tx.jobStatus.findUnique({ where: { code: nextStatusCode } });
+
+            // 3. Update Job Status
+            await tx.job.update({
+                where: { id: delivery.jobId },
+                data: {
+                    statusId: nextStatus?.id,
+                    // If approved, mark finished time
+                    finishedAt: isApproved ? new Date() : undefined,
+                }
+            });
+
+            // 4. Notify the Staff Member
+            await tx.notification.create({
+                data: {
+                    userId: delivery.userId, // The staff who delivered
+                    senderId: adminId,
+                    title: isApproved ? "Delivery Approved" : "Delivery Rejected",
+                    content: isApproved
+                        ? `Great job! Your delivery for ${delivery.job.displayName} was approved.`
+                        : `Delivery rejected. Feedback: ${feedback}`,
+                    type: isApproved ? 'SUCCESS' : 'WARNING',
+                    redirectUrl: `/jobs/${delivery.jobId}`,
+                }
+            });
+
+            return delivery;
+        });
     }
 
     /**

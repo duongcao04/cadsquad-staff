@@ -32,9 +32,7 @@ function JobDueModal({ isOpen, onClose, currentDate }: Props) {
             classNames={{
                 base: 'max-w-[90%] sm:max-w-[80%] md:max-w-[80%] xl:max-w-[60%]',
             }}
-            style={{
-                bottom: '200px',
-            }}
+            placement="top"
         >
             <HeroModalContent>
                 <HeroModalHeader>

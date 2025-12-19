@@ -1,5 +1,3 @@
-
-
 import { cn } from '@/lib/utils'
 
 import Timmer from './Timmer'
@@ -23,7 +21,7 @@ export function PageHeading({
             <div className="flex items-center justify-between">
                 <div className="flex items-center justify-start">
                     <div>
-                        <h1 className="align-middle font-semibold text-text-8">
+                        <h1 className="align-middle font-semibold text-text-default">
                             {title}
                         </h1>
                         {description && (

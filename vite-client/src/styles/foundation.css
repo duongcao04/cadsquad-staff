@@ -57,7 +57,7 @@
 	/* Viền (Border) */
 	--border: var(--text-4);
 	/* Viền mờ, ít thấy hơn */
-	--border-muted: var(--text-2);
+	--border-muted: var(--text-3);
 
 	/* Văn bản (Text) */
 	/* Chữ mặc định, mạnh nhất (thay cho --text-primary) */

@@ -36,7 +36,6 @@ export function NotificationCard({ data }: { data: TUserNotification }) {
                             classNames={{
                                 logo: 'p-1.5',
                             }}
-                            logoTheme="white"
                         />
                     </div>
                 )}

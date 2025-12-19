@@ -135,7 +135,7 @@ export function WorkbenchPage() {
 
 function WorkbenchLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="bg-background h-full flex flex-col">
+        <div className="size-full flex flex-col">
             <div className="border-b border-border-default">
                 <PageHeading
                     title="Workbench"

@@ -25,9 +25,9 @@ export function SettingsDropdown() {
 
     // Helper classes for consistent styling
     const iconWrapperClasses = 'size-8 grid place-items-center'
-    const iconClasses = 'text-text-7'
+    const iconClasses = 'text-text-default'
     const linkClasses = 'block size-full'
-    const titleClasses = 'font-medium text-text-7'
+    const titleClasses = 'font-medium text-text-default'
     const descClasses = 'text-xs text-text-subdued'
 
     return (

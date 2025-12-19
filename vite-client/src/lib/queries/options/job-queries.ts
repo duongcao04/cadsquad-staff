@@ -141,6 +141,14 @@ export const jobsSearchOptions = (keywords?: string) =>
         select: (res) => res?.result,
     })
 
+
+export const jobsPendingDeliverOptions = () =>
+    queryOptions({
+        queryKey: ['jobs', 'pending-deliver'],
+        queryFn: () => jobApi.pendingDeliver(),
+        select: (res) => res?.result,
+    })
+
 // 3. Jobs theo Deadline
 export const jobsDueOnDateOptions = (isoDate: string) =>
     queryOptions({

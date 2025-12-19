@@ -13,6 +13,7 @@ import {
 import { useRouter } from '@tanstack/react-router'
 import {
     ChartArea,
+    ListTodo,
     LogOut,
     SunMoon,
     User,
@@ -96,17 +97,30 @@ export function UserDropdown() {
                         key="overview"
                         startContent={<ChartArea size={16} />}
                         onClick={() => {
-                            router.navigate({ href: '/overview' })
+                            router.navigate({
+                                href: INTERNAL_URLS.userOverview,
+                            })
                         }}
                     >
                         Overview
+                    </DropdownItem>
+                    <DropdownItem
+                        key="taskSummary"
+                        startContent={<ListTodo size={16} />}
+                        onClick={() => {
+                            router.navigate({
+                                href: INTERNAL_URLS.userTaskSummary,
+                            })
+                        }}
+                    >
+                        Task Summary
                     </DropdownItem>
                     <DropdownItem
                         key="settings"
                         startContent={<UserCog size={16} />}
                         onClick={() => {
                             router.navigate({
-                                href: '/setting',
+                                href: INTERNAL_URLS.settings,
                             })
                         }}
                     >
@@ -146,7 +160,7 @@ export function UserDropdown() {
                         key="helpCenter"
                         startContent={<UserCircle size={16} />}
                         onClick={() => {
-                            router.navigate({ href: '/help-center' })
+                            router.navigate({ href: INTERNAL_URLS.helpCenter })
                         }}
                     >
                         Help center

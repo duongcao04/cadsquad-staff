@@ -31,21 +31,19 @@ export default function DayButton({
                 setSelectedDate(calendarDay.date)
                 openModal()
             }}
-            className="size-full flex flex-col items-center justify-center gap-1 rounded-full cursor-pointer hover:bg-primary-100 transition-colors duration-100"
+            className="size-full flex flex-col items-center justify-center gap-1 rounded-full cursor-pointer hover:bg-background-hovered transition-colors duration-100"
             style={{
                 border: '1px solid',
                 borderColor: isToday ? '--background' : 'transparent',
-                backgroundColor: isSelected
-                    ? 'var(--primary)'
-                    : isToday
-                      ? 'var(--color-primary-100)'
-                      : 'transparent',
+                backgroundColor: isSelected ? 'var(--background-hovered)' : '',
             }}
         >
             <p
                 className="text-xs"
                 style={{
-                    color: isSelected ? 'white' : 'black',
+                    color: isSelected
+                        ? '--text-default'
+                        : 'var(--text-default-subdued)',
                 }}
             >
                 {calendarDay.date.getDate().toString()}
