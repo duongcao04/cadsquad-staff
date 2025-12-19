@@ -61,6 +61,7 @@ import { useState } from 'react'
 import { z } from 'zod'
 import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
 import { UploadAvatarModal } from '../../../../../../shared/components/modals/UploadAvatarModal'
+import { DeleteUserPermanentlyModal } from '../../../../../../shared/components/modals/DeleteUserPermanentlyModal'
 
 // --- Helper to connect Zod to Formik without extra deps ---
 const toFormikValidate = <T extends z.ZodType<any, any>>(schema: T) => {
@@ -125,6 +126,13 @@ function EditStaffPage() {
     } = useDisclosure({
         id: 'UploadAvatarModal',
     })
+    const {
+        isOpen: isOpenDeleteUserPermanentlyModal,
+        onOpen: onOpenDeleteUserPermanentlyModal,
+        onClose: onCloseDeleteUserPermanentlyModal,
+    } = useDisclosure({
+        id: 'DeleteUserPermanentlyModal',
+    })
 
     // 2. Initialize Formik
     const formik = useFormik<EditUserValues>({
@@ -188,6 +196,14 @@ function EditStaffPage() {
                     isOpen={isOpenResetPasswordModal}
                     onClose={onCloseResetPasswordModal}
                     data={user}
+                />
+            )}
+            {isOpenDeleteUserPermanentlyModal && (
+                <DeleteUserPermanentlyModal
+                    isOpen={isOpenDeleteUserPermanentlyModal}
+                    onClose={onCloseDeleteUserPermanentlyModal}
+                    user={user}
+                    onConfirm={()=>{}}
                 />
             )}
             {isOpenUploadAvatarModal && (
@@ -371,6 +387,7 @@ function EditStaffPage() {
                                     className="w-full mt-4 bg-white border border-red-200 text-red-600 hover:bg-red-50"
                                     variant="flat"
                                     startContent={<Trash2 size={16} />}
+                                    onPress={onOpenDeleteUserPermanentlyModal}
                                 >
                                     Delete User Permanently
                                 </Button>
