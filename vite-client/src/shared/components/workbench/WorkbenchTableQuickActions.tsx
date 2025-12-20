@@ -1,7 +1,8 @@
 import {
     useDeleteJobMutation,
+    useMarkPaidMutation,
     useProfile,
-    useUpdateJobMutation,
+    useTogglePinJobMutation,
 } from '@/lib/queries'
 import type { TJob } from '@/shared/types'
 import {
@@ -26,7 +27,6 @@ import {
     UserPlus,
 } from 'lucide-react'
 import { INTERNAL_URLS } from '../../../lib'
-import { queryClient } from '../../../main'
 import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'
@@ -42,40 +42,9 @@ export function WorkbenchTableQuickActions({
 
     const jobPinned = data.isPinned
 
-    const markAsPaidMutation = useUpdateJobMutation((res) => {
-        addToast({
-            title: 'Mark as paid successfully',
-            description: `#${res.result?.no ?? data?.no} has been marked as paid`,
-            color: 'success',
-        })
-        queryClient.invalidateQueries({
-            queryKey: ['jobs'],
-        })
-    })
+    const markAsPaidMutation = useMarkPaidMutation()
 
-    const pinJobMutation = useUpdateJobMutation((res) => {
-        addToast({
-            title: 'Pin job successfully',
-            description: `#${res.result?.no ?? data?.no} has been pinned`,
-            color: 'success',
-            icon: <PinIcon />,
-        })
-        queryClient.invalidateQueries({
-            queryKey: ['jobs'],
-        })
-    })
-
-    const unpinJobMutation = useUpdateJobMutation((res) => {
-        addToast({
-            title: 'Unpinned job successfully',
-            description: `#${res.result?.no ?? data?.no} has been unpinned`,
-            color: 'success',
-            icon: <PinOff />,
-        })
-        queryClient.invalidateQueries({
-            queryKey: ['jobs'],
-        })
-    })
+    const togglePinJobMutation = useTogglePinJobMutation()
 
     const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
         useDeleteJobMutation()
@@ -139,52 +108,20 @@ export function WorkbenchTableQuickActions({
 
     const handleMarkAsPaid = async () => {
         if (data?.id) {
-            await markAsPaidMutation.mutateAsync(
-                {
-                    jobId: data?.id,
-                    data: {
-                        isPaid: true,
-                    },
+            await markAsPaidMutation.mutateAsync(data.id, {
+                onSuccess: () => {
+                    onCloseMAPModal()
                 },
-                {
-                    onSuccess: () => {
-                        onCloseMAPModal()
-                    },
-                }
-            )
+            })
         }
     }
 
-    const handlePinJob = async () => {
-        if (data.isPinned) {
-            await unpinJobMutation.mutateAsync(
-                {
-                    jobId: data.id,
-                    data: {
-                        isPinned: false,
-                    },
-                },
-                {
-                    onSuccess: () => {
-                        onCloseModal()
-                    },
-                }
-            )
-        } else {
-            await pinJobMutation.mutateAsync(
-                {
-                    jobId: data?.id,
-                    data: {
-                        isPinned: true,
-                    },
-                },
-                {
-                    onSuccess: () => {
-                        onCloseModal()
-                    },
-                }
-            )
-        }
+    const handleTogglePin = async () => {
+        togglePinJobMutation.mutateAsync(data.id, {
+            onSuccess: () => {
+                onCloseModal()
+            },
+        })
     }
 
     return (
@@ -269,16 +206,16 @@ export function WorkbenchTableQuickActions({
                                 jobPinned ? (
                                     <PinOff
                                         size={14}
-                                        className="text-text-subdued rotate-45"
+                                        className="text-text-subdued"
                                     />
                                 ) : (
                                     <PinIcon
                                         size={14}
-                                        className="text-text-subdued rotate-45"
+                                        className="text-text-subdued"
                                     />
                                 )
                             }
-                            onPress={handlePinJob}
+                            onPress={handleTogglePin}
                         >
                             {jobPinned ? 'Unpin' : 'Pin'}
                         </DropdownItem>

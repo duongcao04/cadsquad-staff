@@ -30,7 +30,7 @@ type Props = {
     onClose: () => void
 }
 export function CreateNotificationModal({ isOpen, onClose }: Props) {
-    const { users, isLoading: loadingUsers } = useUsers()
+    const { data: users, isLoading: loadingUsers } = useUsers()
     const { profile } = useProfile()
 
     const { isPending: isSendingNotification } = useSendNotificationMutation()

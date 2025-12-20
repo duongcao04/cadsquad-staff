@@ -20,11 +20,14 @@ import { BrowserSubscribesModule } from './modules/browser-subscribes/browser-su
 import { UploadModule } from './modules/upload/upload.module'
 import { HealthModule } from './modules/health/health.module'
 import { ExcelModule } from './modules/excel/excel.module'
+import { AblyModule } from './modules/ably/ably.module'
+import { AnalyticsModule } from './modules/analytics/analytics.module'
 
 @Module({
     imports: [
         PrismaModule,
         CloudinaryModule,
+        AblyModule,
         UserModule,
         AuthModule,
         JobModule,
@@ -41,8 +44,9 @@ import { ExcelModule } from './modules/excel/excel.module'
         UploadModule,
         HealthModule,
         ExcelModule,
+        AnalyticsModule
     ],
     controllers: [AppController],
     providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

@@ -1,9 +1,7 @@
 import { addToast } from '@heroui/react'
 import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-
 import { authApi } from '@/lib/api'
-
 import { cookie } from '../../lib/cookie'
 import { COOKIES, INTERNAL_URLS } from '../../lib/utils'
 import { RoleEnum } from '../enums'
@@ -97,10 +95,10 @@ export default function RoleGuard({
 // Simple internal loading component
 function LoadingScreen() {
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-2">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                <p className="text-sm text-gray-500">Verifying access...</p>
+                <p className="text-sm text-text-default">Verifying access...</p>
             </div>
         </div>
     )

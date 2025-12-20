@@ -12,7 +12,6 @@ import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
 import { type Variants } from 'motion/react'
 import { useEffect } from 'react'
-
 import { MotionDiv } from '@/lib/motion'
 import { useProfile } from '@/lib/queries'
 import {
@@ -21,34 +20,23 @@ import {
     CreateUserModal,
     IconAlertColorful,
     IconPeopleColorful,
-    IconWorkColorful,
 } from '@/shared/components'
 import { appStore, ESidebarStatus } from '@/shared/stores'
+import { FluentColorBriefcase20 } from '../icons/FluentColorBriefcase20'
+import { FluentColorApprovalsApp20 } from '../icons/FluentColorApprovalsApp20'
+import { DeliverJobModal } from '../modals/DeliverJobModal'
+import { IssueReportModal } from '../modals/IssueReportModal'
+import { FluentColorErrorCircle20 } from '../icons/FluentColorErrorCircle20'
 
-export function ActionButton() {
-    const { isAdmin, isAccounting, isStaff } = useProfile()
-
-    if (isAdmin) {
-        return <AdminCreateButton />
-    }
-    if (isAccounting) {
-        return <AccountingButton />
-    }
-    if (isStaff) {
-        return <StaffButton />
-    }
-}
-
-export function StaffButton() {
-    return <div></div>
-}
-
-export function AccountingButton() {
-    return <div></div>
-}
-
-export function AdminCreateButton() {
-    const sidebarStatus = useStore(appStore, (state) => state.sidebarStatus)
+export function ActionButton({
+    forceStatus,
+}: {
+    forceStatus?: 'collapse' | 'expand'
+}) {
+    const { isAdmin } = useProfile()
+    const sidebarStatus = forceStatus
+        ? forceStatus
+        : useStore(appStore, (state) => state.sidebarStatus)
 
     const {
         isOpen: isOpenJM,
@@ -71,6 +59,16 @@ export function AdminCreateButton() {
     } = useDisclosure({
         id: 'NotificationModal',
     })
+    const {
+        isOpen: isOpenDeliverJobModal,
+        onOpen: onOpenDeliverJobModal,
+        onClose: onCloseDeliverJobModal,
+    } = useDisclosure({ id: 'DeliverJobModal' })
+    const {
+        isOpen: isOpenIssueReportModal,
+        onOpen: onOpenIssueReportModal,
+        onClose: onCloseIssueReportModal,
+    } = useDisclosure({ id: 'IssueReportModal' })
 
     useEffect(() => {
         hotkeys('alt+n,alt+u,alt+m', function (event, handler) {
@@ -111,18 +109,32 @@ export function AdminCreateButton() {
             whileHover="hover"
             className="w-fit"
         >
-            {isOpenJM && (
+            {isAdmin && isOpenJM && (
                 <CreateJobModal isOpen={isOpenJM} onClose={onCloseJM} />
             )}
-            {isOpenUM && (
+            {isAdmin && isOpenUM && (
                 <CreateUserModal isOpen={isOpenUM} onClose={onCloseUm} />
             )}
-            {isOpenNM && (
+            {isAdmin && isOpenNM && (
                 <CreateNotificationModal
                     isOpen={isOpenNM}
                     onClose={onCloseNM}
                 />
             )}
+            {isOpenDeliverJobModal && (
+                <DeliverJobModal
+                    isOpen={isOpenDeliverJobModal}
+                    onClose={onCloseDeliverJobModal}
+                    onConfirm={() => {}}
+                />
+            )}
+            {isOpenIssueReportModal && (
+                <IssueReportModal
+                    isOpen={isOpenIssueReportModal}
+                    onClose={onCloseIssueReportModal}
+                />
+            )}
+
             <Dropdown>
                 <DropdownTrigger className="w-fit">
                     <Button
@@ -153,55 +165,61 @@ export function AdminCreateButton() {
                                         : 'none',
                             }}
                         >
-                            Create
+                            Actions
                         </p>
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Admin actions" variant="flat">
-                    <DropdownSection showDivider>
+                    <DropdownSection showDivider title="Job Operations">
+                        {isAdmin ? (
+                            <DropdownItem
+                                key="createJob"
+                                shortcut="Alt + N"
+                                startContent={<FluentColorBriefcase20 />}
+                                onPress={() => onOpenJM()}
+                            >
+                                Create
+                            </DropdownItem>
+                        ) : null}
                         <DropdownItem
-                            key="createJob"
-                            shortcut="Alt + N"
-                            startContent={<IconWorkColorful />}
-                            onPress={() => onOpenJM()}
+                            key="deliverJob"
+                            shortcut="Alt + D"
+                            startContent={<FluentColorApprovalsApp20 />}
+                            onPress={() => onOpenDeliverJobModal()}
                         >
-                            Job
+                            Deliver
                         </DropdownItem>
                     </DropdownSection>
-                    {/* <DropdownSection showDivider>
+                    <DropdownSection showDivider={isAdmin} title="Support">
                         <DropdownItem
-                            key="createFolder"
-                            shortcut="Ctrl + ⇧ + F"
-                            startContent={<IconFolderColorful />}
+                            key="issueReport"
+                            shortcut="Alt + I"
+                            startContent={<FluentColorErrorCircle20 />}
+                            onPress={() => onOpenIssueReportModal()}
                         >
-                            {t('folder')}
-                        </DropdownItem>
-                        <DropdownItem
-                            key="createFile"
-                            shortcut="Ctrl + ⇧ + G"
-                            startContent={<IconFileColorful />}
-                        >
-                            {t('file')}
-                        </DropdownItem>
-                    </DropdownSection> */}
-                    <DropdownSection>
-                        <DropdownItem
-                            key="createUser"
-                            shortcut="Alt + U"
-                            startContent={<IconPeopleColorful />}
-                            onPress={() => onOpenUM()}
-                        >
-                            User
-                        </DropdownItem>
-                        <DropdownItem
-                            key="sendNotification"
-                            shortcut="Alt + M"
-                            startContent={<IconAlertColorful />}
-                            onPress={() => onOpenNM()}
-                        >
-                            Notifications
+                            Issue Report
                         </DropdownItem>
                     </DropdownSection>
+                    {isAdmin ? (
+                        <DropdownSection title="Team">
+                            <DropdownItem
+                                key="createUser"
+                                shortcut="Alt + U"
+                                startContent={<IconPeopleColorful />}
+                                onPress={() => onOpenUM()}
+                            >
+                                User
+                            </DropdownItem>
+                            <DropdownItem
+                                key="sendNotification"
+                                shortcut="Alt + M"
+                                startContent={<IconAlertColorful />}
+                                onPress={() => onOpenNM()}
+                            >
+                                Notifications
+                            </DropdownItem>
+                        </DropdownSection>
+                    ) : null}
                 </DropdownMenu>
             </Dropdown>
         </MotionDiv>

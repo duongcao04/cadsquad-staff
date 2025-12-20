@@ -1,4 +1,4 @@
-import { type ApiResponse,axiosClient } from '@/lib/axios'
+import { type ApiResponse, axiosClient } from '@/lib/axios'
 import type {
     TCreateDepartmentInput,
     TUpdateDepartmentInput,
@@ -13,16 +13,16 @@ export const departmentApi = {
         )
     },
 
-    findAll: () => {
+    findAll: async () => {
         return axiosClient.get<ApiResponse<IDepartmentResponse[]>>(
             '/v1/departments'
-        )
+        ).then(res => res.data)
     },
 
-    findOne: (id: string) => {
+    findOne: async (id: string) => {
         return axiosClient.get<ApiResponse<IDepartmentResponse>>(
             `/v1/departments/${id}`
-        )
+        ).then(res => res.data)
     },
 
     update: (id: string, data: TUpdateDepartmentInput) => {

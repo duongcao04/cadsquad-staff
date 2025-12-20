@@ -26,12 +26,12 @@ import { NotificationService } from './notification.service'
 
 @ApiTags('Notifications')
 @Controller('notifications')
+@UseGuards(JwtGuard)
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) { }
 
   @Post('/send')
   @HttpCode(201)
-  @UseGuards(JwtGuard)
   @ApiBearerAuth()
   @ResponseMessage('Create notification successfully')
   @ApiOperation({ summary: 'Create and send a new notification' })
@@ -53,7 +53,6 @@ export class NotificationController {
   @Get()
   @HttpCode(200)
   @ResponseMessage('Get list of notifications successfully')
-  @UseGuards(JwtGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all notifications for the current user' })
   @ApiResponse({
@@ -81,7 +80,6 @@ export class NotificationController {
 
   @Patch(':id')
   @HttpCode(200)
-  @UseGuards(JwtGuard)
   @ApiBearerAuth()
   @ResponseMessage('Update notification successfully')
   @ApiOperation({ summary: 'Update a notification' })
@@ -99,7 +97,6 @@ export class NotificationController {
 
   @Delete(':id')
   @HttpCode(200)
-  @UseGuards(JwtGuard)
   @ApiBearerAuth()
   @ResponseMessage('Delete notification successfully')
   @ApiOperation({ summary: 'Delete a notification' })

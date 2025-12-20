@@ -9,27 +9,23 @@ import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { darkenHexColor, lightenHexColor, PAID_STATUS_COLOR } from '@/lib/utils'
 import type { TJob } from '@/shared/types'
-import { useProfile, useUpdateJobMutation } from '@/lib'
+import { useMarkPaidMutation, useProfile } from '@/lib'
 import { PaidChip } from '../chips/PaidChip'
-import { queryClient } from '../../../main'
+import { useState } from 'react'
 
 type Props = {
     jobData: TJob
+    afterChangeStatus?: () => void
 }
-export default function PaymentStatusDropdown({ jobData }: Props) {
+export default function PaymentStatusDropdown({
+    jobData,
+    afterChangeStatus,
+}: Props) {
+    const [isOpen, setOpen] = useState(false)
     const { isAdmin, isAccounting } = useProfile()
     const { resolvedTheme } = useTheme()
 
-    const updateJobMutation = useUpdateJobMutation((res) => {
-        queryClient.invalidateQueries({
-            queryKey: ['jobs'],
-        })
-        addToast({
-            title: 'Mark as paid successfully',
-            description: `#${res.result?.no} is paid successfully`,
-            color: 'success',
-        })
-    })
+    const markAsPaidMutation = useMarkPaidMutation()
 
     const getBackgroundColor = (statusTitle: 'paid' | 'unpaid') => {
         return resolvedTheme === 'light'
@@ -49,10 +45,10 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
 
     const handleMarkAsPaid = async () => {
         if (jobData?.id) {
-            await updateJobMutation.mutateAsync({
-                jobId: jobData?.id,
-                data: {
-                    isPaid: true,
+            await markAsPaidMutation.mutateAsync(jobData.id, {
+                onSuccess() {
+                    setOpen(false)
+                    afterChangeStatus?.()
                 },
             })
         }
@@ -75,6 +71,8 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
                 trigger: '!z-0',
             }}
             showArrow={true}
+            isOpen={isOpen}
+            onOpenChange={setOpen}
         >
             <PopoverTrigger className="opacity-100">
                 {canChangeStatus ? (

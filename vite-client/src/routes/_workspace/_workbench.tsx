@@ -3,18 +3,19 @@ import WorkbenchTableView from '@/shared/components/workbench/WorkbenchTableView
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { jobsListOptions } from '../../lib/queries'
+import { workbenchDataOptions } from '../../lib/queries'
 import AppLoading from '../../shared/components/app/AppLoading'
 
 const DEFAULT_SORT = 'displayName:asc'
+
 export const workbenchParamsSchema = z.object({
-    sort: z.string().optional().catch(DEFAULT_SORT).default(DEFAULT_SORT),
+    sort: z.string().optional().catch(DEFAULT_SORT),
 
     search: z.string().trim().optional(),
 
-    limit: z.coerce.number().int().min(1).max(100).catch(10).default(10),
+    limit: z.coerce.number().int().min(1).max(100).optional().catch(10),
 
-    page: z.coerce.number().int().min(1).catch(1).default(1),
+    page: z.coerce.number().int().min(1).optional().catch(1),
 })
 
 export type TWorkbenchSearch = z.infer<typeof workbenchParamsSchema>
@@ -24,10 +25,18 @@ export const Route = createFileRoute('/_workspace/_workbench')({
     loaderDeps: ({ search }) => ({ search }),
     pendingComponent: () => <AppLoading />,
     loader: ({ context, deps }) => {
+        const {
+            limit = 10,
+            page = 1,
+            search,
+            sort = DEFAULT_SORT,
+        } = deps.search
         return context.queryClient.ensureQueryData(
-            jobsListOptions({
-                ...deps.search,
-                hideFinishItems: '1',
+            workbenchDataOptions({
+                limit,
+                page,
+                search,
+                sort: [sort],
             })
         )
     },
@@ -36,12 +45,19 @@ export const Route = createFileRoute('/_workspace/_workbench')({
 })
 
 export function WorkbenchPage() {
-    const search = Route.useSearch()
+    const {
+        limit = 10,
+        page = 1,
+        search,
+        sort = DEFAULT_SORT,
+    } = Route.useSearch()
     const navigate = Route.useNavigate()
 
-    const options = jobsListOptions({
-        ...search,
-        hideFinishItems: '1',
+    const options = workbenchDataOptions({
+        limit,
+        page,
+        search,
+        sort: [sort],
     })
 
     const { data, refetch, isPending } = useSuspenseQuery(options)
@@ -82,21 +98,36 @@ export function WorkbenchPage() {
             replace: true,
         })
     }
+    const handleSearchChange = (newSearch?: string) => {
+        navigate({
+            search: (old: TWorkbenchSearch) => {
+                return {
+                    ...old,
+                    search: newSearch,
+                    page: 1, // Reset về trang 1
+                } as never
+            },
+            replace: true,
+        })
+    }
 
     return (
         <WorkbenchLayout>
             <WorkbenchTableView
                 data={data.jobs}
-                onRefresh={refetch}
-                onSortChange={handleSortChange}
                 isDataLoading={isPending}
+                onRefresh={refetch}
+                sort={sort}
+                onSortChange={handleSortChange}
                 onPageChange={handlePageChange}
                 onLimitChange={handleLimitChange}
                 pagination={{
-                    limit: search.limit,
-                    page: search.page,
+                    limit: limit,
+                    page: page,
                     totalPages: data.paginate?.totalPages ?? 1,
                 }}
+                search={search}
+                onSearchChange={handleSearchChange}
             />
         </WorkbenchLayout>
     )
@@ -104,7 +135,7 @@ export function WorkbenchPage() {
 
 function WorkbenchLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="bg-background h-full flex flex-col">
+        <div className="size-full flex flex-col">
             <div className="border-b border-border-default">
                 <PageHeading
                     title="Workbench"

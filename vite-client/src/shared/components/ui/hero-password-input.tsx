@@ -101,6 +101,7 @@ export const HeroPasswordInput: React.FC<HeroPasswordInputProps> = ({
                     type="button"
                     className="focus:outline-none outline-transparent cursor-pointer"
                     onClick={toggleVisibility}
+                    tabIndex={-1}
                 >
                     {isVisible ? (
                         <EyeSlashFilledIcon className="text-2xl text-default-400 pointer-events-none" />

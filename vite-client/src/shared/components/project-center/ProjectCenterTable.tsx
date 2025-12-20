@@ -27,6 +27,7 @@ import {
     EyeIcon,
     FilePlus,
     Filter,
+    RefreshCw,
     RotateCcw,
     SearchIcon,
     Sheet,
@@ -70,6 +71,7 @@ import { HeroTooltip } from '../ui/hero-tooltip'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
 import { ProjectCenterTableViewProps } from './ProjectCenterTableView'
+import { HeroButton } from '../ui/hero-button'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
@@ -120,21 +122,21 @@ type ProjectCenterTableProps = ProjectCenterTableViewProps & {
     openViewColDrawer: () => void
     openJobDetailDrawer: () => void
     onAssignMember: (jobNo: string) => void
+    onAddAttachments: (jobNo: string) => void
 }
 export default function ProjectCenterTable({
     data,
     isLoadingData = false,
     visibleColumns,
-    onRefresh,
     sort,
-    onSortChange,
     searchKeywords,
     pagination,
-    onSearchKeywordsChange,
     filters,
-    onFiltersChange,
-    options = { fillContainerHeight: false },
     showFinishItems,
+    onRefresh,
+    onSearchKeywordsChange,
+    onFiltersChange,
+    onSortChange,
     onDownloadCsv,
     onShowFinishItemsChange,
     openFilterDrawer,
@@ -143,6 +145,8 @@ export default function ProjectCenterTable({
     onAssignMember,
     onLimitChange,
     onPageChange,
+    onAddAttachments,
+    options = { fillContainerHeight: false },
 }: ProjectCenterTableProps) {
     const { data: jobStatuses } = useJobStatuses()
 
@@ -210,9 +214,13 @@ export default function ProjectCenterTable({
                         <div className="flex gap-3">
                             <Button
                                 startContent={
-                                    <RotateCcw
-                                        className="text-small"
+                                    <RefreshCw
                                         size={14}
+                                        className={`text-small ${
+                                            isLoadingData
+                                                ? 'animate-spin-smooth'
+                                                : ''
+                                        }`}
                                     />
                                 }
                                 variant="bordered"
@@ -268,7 +276,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <SquareChartGantt
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -279,7 +287,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <SquareKanban
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -290,7 +298,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <Sheet
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -333,7 +341,7 @@ export default function ProjectCenterTable({
                                             startContent={
                                                 <EyeClosed
                                                     size={16}
-                                                    className="text-text-8"
+                                                    className="text-text-default"
                                                 />
                                             }
                                         >
@@ -363,7 +371,7 @@ export default function ProjectCenterTable({
                                             startContent={
                                                 <Columns3Cog
                                                     size={16}
-                                                    className="text-text-8"
+                                                    className="text-text-default"
                                                 />
                                             }
                                             onPress={openViewColDrawer}
@@ -506,10 +514,9 @@ export default function ProjectCenterTable({
         searchKeywords,
     ])
 
-    // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const bottomContent = useMemo(() => {
         return (
-            <div className="py-2 px-2 flex justify-between items-center">
+            <div className="py-2 px-2 grid grid-cols-3 gap-5">
                 <Select
                     className="w-40"
                     label="Rows per page"
@@ -530,33 +537,18 @@ export default function ProjectCenterTable({
                         </SelectItem>
                     ))}
                 </Select>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={pagination.page}
-                    total={pagination.totalPages}
-                    onChange={onPageChange}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    <Button
-                        isDisabled={pagination.totalPages === 1}
-                        size="sm"
-                        variant="flat"
-                        // onPress={onPreviousPage}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        isDisabled={pagination.totalPages === 1}
-                        size="sm"
-                        variant="flat"
-                        // onPress={onNextPage}
-                    >
-                        Next
-                    </Button>
+                <div className="flex items-center justify-center">
+                    <Pagination
+                        isCompact
+                        showControls
+                        showShadow
+                        color="primary"
+                        page={pagination.page}
+                        total={pagination.totalPages}
+                        onChange={onPageChange}
+                    />
                 </div>
+                <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
             </div>
         )
     }, [selectedKeys, data?.length, pagination, hasSearchFilter])
@@ -664,11 +656,13 @@ export default function ProjectCenterTable({
                     return !data.attachmentUrls?.length ? (
                         <div className="size-full flex items-center justify-center">
                             <HeroTooltip content={'Add attachment'}>
-                                <Button
+                                <HeroButton
                                     isIconOnly
                                     variant="light"
                                     size="sm"
                                     className="size-8! flex items-center justify-center"
+                                    onPress={() => onAddAttachments(data.no)}
+                                    color="default"
                                 >
                                     <p className="inline-flex items-center leading-none">
                                         <FilePlus
@@ -676,7 +670,7 @@ export default function ProjectCenterTable({
                                             className="opacity-60"
                                         />
                                     </p>
-                                </Button>
+                                </HeroButton>
                             </HeroTooltip>
                         </div>
                     ) : (

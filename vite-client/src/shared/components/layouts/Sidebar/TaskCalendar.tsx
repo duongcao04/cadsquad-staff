@@ -26,7 +26,7 @@ export default function TaskCalendar() {
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-lg size-full md:[--cell-size:--spacing(4)]"
+                className="rounded-lg size-full md:[--cell-size:--spacing(4)] text-text-default!"
                 buttonVariant="ghost"
                 animate={false}
                 components={{

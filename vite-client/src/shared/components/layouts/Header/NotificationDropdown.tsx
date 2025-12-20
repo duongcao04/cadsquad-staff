@@ -1,138 +1,243 @@
-import { useNotifications } from '@/lib/queries/useNotification'
-import { NotificationStatusEnum } from '@/shared/enums'
+import { cn } from '@/lib'
+import { CHANNELS } from '@/lib/ably'
+import { notificationsListOptions } from '@/lib/queries/options/notification-queries'
+import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
 import {
+    addToast,
+    Badge,
     Button,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownSection,
-    DropdownTrigger,
+    Chip,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    ScrollShadow,
     Spinner,
 } from '@heroui/react'
-import { Bell, RefreshCcw } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
+import { useChannel } from 'ably/react'
+import { CheckCheck, Inbox, RefreshCcw } from 'lucide-react'
+import { use, useState } from 'react'
+import { TUserNotification } from '../../../types'
 import { BellIcon } from '../../icons/animate/BellIcon'
-import { NotificationCard } from './NotificationCard'
 import { HeroButton } from '../../ui/hero-button'
+import { NotificationCard } from './NotificationCard'
+import { queryClient } from '../../../../main'
+import { jobsListOptions, useProfile } from '../../../../lib/queries'
+import { workbenchDataOptions } from '../../../../lib/queries/options/job-queries'
 
-export function NotificationDropdown() {
-    const { notifications, isLoading, unseenCount } = useNotifications()
+export default function NotificationDropdown() {
+    const { profile } = useProfile()
+    const router = useRouter()
+    const [isOpen, setOpen] = useState(false)
+
+    const { data, isLoading, refetch } = useQuery({
+        ...notificationsListOptions(),
+        retry: isOpen,
+    })
+
+    console.log(CHANNELS.userNotificationsKey(profile.id))
+
+    useChannel(
+        {
+            channelName: CHANNELS.userNotificationsKey(profile.id),
+        },
+        (message) => {
+            console.log('Nhận tin:', message)
+            const noti: TUserNotification = message.data
+            addToast({
+                title: noti.title,
+                description: noti.content,
+                color: 'default',
+                classNames: {
+                    base: cn([
+                        'bg-default-50 dark:bg-background shadow-sm',
+                        'border border-l-8 rounded-md rounded-l-none',
+                        'flex flex-col items-start',
+                        'border-primary-200 dark:border-primary-100 border-l-primary',
+                    ]),
+                    icon: 'w-6 h-6 fill-current',
+                },
+                endContent: (
+                    <div className="ms-11 my-2 flex gap-x-2">
+                        <Button
+                            color={'primary'}
+                            size="sm"
+                            variant="bordered"
+                            onPress={() => {
+                                router.navigate({
+                                    href: noti.redirectUrl ?? '#',
+                                })
+                            }}
+                        >
+                            View
+                        </Button>
+                        <Button
+                            className="underline-offset-2"
+                            color={'primary'}
+                            size="sm"
+                            variant="light"
+                        >
+                            Maybe Later
+                        </Button>
+                    </div>
+                ),
+            })
+            if (message.name === NotificationTypeEnum.JOB_UPDATE) {
+                queryClient.invalidateQueries({
+                    queryKey: [
+                        jobsListOptions().queryKey,
+                        workbenchDataOptions().queryKey,
+                    ],
+                })
+            }
+        }
+    )
+
+    const hasUnseen = (data?.unseenCount ?? 0) > 0
 
     return (
-        <Dropdown placement="bottom-end">
-            <DropdownTrigger>
+        <Popover
+            placement="bottom-end"
+            isOpen={isOpen}
+            onOpenChange={setOpen}
+            offset={10}
+        >
+            <PopoverTrigger>
                 <Button
                     variant="light"
-                    startContent={
-                        <div className="relative">
-                            <div className="absolute -top-1 right-0">
-                                <span
-                                    className="relative flex size-2"
-                                    style={{
-                                        display: unseenCount > 0 ? '' : 'none',
-                                    }}
-                                >
-                                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-danger-300 opacity-75"></span>
-                                    <span className="relative inline-flex size-2 rounded-full bg-danger"></span>
-                                </span>
-                            </div>
-                            <BellIcon size={18} />
-                        </div>
-                    }
                     size="sm"
                     isIconOnly
-                />
-            </DropdownTrigger>
-            <DropdownMenu
-                aria-label="User notification"
-                classNames={{
-                    base: 'w-100 left-0',
-                }}
-            >
-                <DropdownSection
-                    showDivider
-                    aria-label="Title"
-                    className="hover:bg-none!"
-                    classNames={{
-                        group: 'hover:bg-transparent!',
-                        heading: 'hover:bg-transparent!',
-                        base: 'hover:bg-transparent! cursor-default py-0!',
-                    }}
+                    aria-label="Notifications"
+                    className="overflow-visible"
                 >
-                    <DropdownItem
-                        key="title"
-                        isReadOnly
-                        className=" gap-2 opacity-100"
-                        startContent={<Bell size={18} />}
-                        endContent={
-                            <HeroButton
-                                variant="light"
-                                color="default"
-                                size="xs"
-                                className="size-7! p-0 text-text-7"
-                            >
-                                <RefreshCcw size={14} />
-                            </HeroButton>
-                        }
+                    {/* Modern Badge Implementation */}
+                    <Badge
+                        content=""
+                        color="danger"
+                        shape="circle"
+                        isInvisible={!hasUnseen}
+                        placement="top-right"
+                        className="p-1 border-2 border-background" // Adds a nice cutout effect
                     >
-                        <p className="font-semibold">
+                        <BellIcon size={20} className="text-default-600" />
+                    </Badge>
+                </Button>
+            </PopoverTrigger>
+
+            <PopoverContent className="w-112.5 p-0 border border-default-100 shadow-medium">
+                {/* Header - Sticky & Clean */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-default-100 bg-content1/50 backdrop-blur-md sticky top-0 z-10 rounded-t-medium">
+                    <div className="flex items-center gap-2">
+                        <span className="font-semibold text-medium">
                             Notifications
-                            <span className="pl-1 tracking-wider text-text-subdued">
-                                ({unseenCount})
-                            </span>
-                        </p>
-                    </DropdownItem>
-                </DropdownSection>
-                {isLoading ? (
-                    <DropdownSection aria-label="Loading Notifications">
-                        <DropdownItem key="Loading">
-                            <div className="w-full h-full grid place-items-center">
-                                <Spinner />
-                            </div>
-                        </DropdownItem>
-                    </DropdownSection>
-                ) : (
-                    <DropdownSection
-                        aria-label="Notifications"
-                        classNames={{
-                            base: 'max-h-[700px] overflow-y-auto',
-                        }}
-                    >
-                        {notifications && notifications.length > 0 ? (
-                            notifications.map((data, index) => {
+                        </span>
+                        {hasUnseen && (
+                            <Chip
+                                size="sm"
+                                color="danger"
+                                variant="flat"
+                                className="h-5 px-1"
+                            >
+                                {data?.unseenCount} new
+                            </Chip>
+                        )}
+                    </div>
+                    <div className="flex gap-1">
+                        <HeroButton
+                            size="sm"
+                            isIconOnly
+                            variant="light"
+                            onPress={() => refetch()}
+                            className="text-default-500"
+                            tooltip="Refresh"
+                        >
+                            <RefreshCcw
+                                size={16}
+                                className={isLoading ? 'animate-spin' : ''}
+                            />
+                        </HeroButton>
+                        <HeroButton
+                            size="sm"
+                            isIconOnly
+                            variant="light"
+                            className="text-default-500"
+                            tooltip="Mark all as read"
+                        >
+                            <CheckCheck size={18} />
+                        </HeroButton>
+                    </div>
+                </div>
+
+                {/* Content Area */}
+                <ScrollShadow className="w-full h-150 flex flex-col">
+                    {isLoading && !data ? (
+                        <div className="flex-1 flex flex-col items-center justify-center gap-2 text-default-400">
+                            <Spinner size="lg" color="current" />
+                            <p className="text-small">Loading updates...</p>
+                        </div>
+                    ) : data?.notifications && data.notifications.length > 0 ? (
+                        <div className="flex flex-col">
+                            {data.notifications.map((notification, index) => {
                                 const isUnseen =
-                                    data.status ===
+                                    notification.status ===
                                     NotificationStatusEnum.UNSEEN
+
                                 return (
-                                    <DropdownItem
-                                        key={data.id ?? index}
-                                        classNames={{
-                                            base: `${
-                                                isUnseen
-                                                    ? 'bg-gray-200'
-                                                    : 'transparent'
-                                            } py-2 my-2`,
-                                        }}
-                                        onPress={() => {
-                                            // router.push(
-                                            //     data.redirectUrl ??
-                                            //         'notifications'
-                                            // )
+                                    <div
+                                        key={notification.id ?? index}
+                                        role="button"
+                                        tabIndex={0}
+                                        className={`
+                                                group relative flex w-full cursor-pointer items-start gap-3 p-4 transition-all duration-200 border-b border-divider/50 last:border-none outline-none
+                                                hover:bg-default-100 active:scale-[0.99]
+                                                ${isUnseen ? 'bg-primary-50/50 dark:bg-primary-50/10' : 'bg-transparent'}
+                                            `}
+                                        onClick={() => {
+                                            router.navigate({
+                                                href:
+                                                    notification.redirectUrl ??
+                                                    '#',
+                                            })
+                                            setOpen(false)
                                         }}
                                     >
-                                        <NotificationCard data={data} />
-                                    </DropdownItem>
+                                        {/* Unseen Indicator Dot */}
+                                        {isUnseen && (
+                                            <span className="absolute left-2 top-1/2 -translate-y-1/2 size-2 rounded-full bg-primary shadow-sm" />
+                                        )}
+
+                                        <div className={isUnseen ? 'pl-2' : ''}>
+                                            <NotificationCard
+                                                data={notification}
+                                            />
+                                        </div>
+                                    </div>
                                 )
-                            })
-                        ) : (
-                            <DropdownItem key="title">
-                                <p className="text-center">
-                                    No have notification.
-                                </p>
-                            </DropdownItem>
-                        )}
-                    </DropdownSection>
-                )}
-            </DropdownMenu>
-        </Dropdown>
+                            })}
+                        </div>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-default-400 gap-3">
+                            <div className="p-4 rounded-full bg-default-100">
+                                <Inbox size={32} />
+                            </div>
+                            <p className="text-small">No new notifications</p>
+                        </div>
+                    )}
+                </ScrollShadow>
+
+                {/* Footer (Optional) */}
+                <div className="w-full p-2 border-t border-default-100 bg-default-50 rounded-b-medium">
+                    <Button
+                        size="sm"
+                        variant="light"
+                        fullWidth
+                        className="text-default-500 h-8 font-medium"
+                    >
+                        View all history
+                    </Button>
+                </div>
+            </PopoverContent>
+        </Popover>
     )
 }

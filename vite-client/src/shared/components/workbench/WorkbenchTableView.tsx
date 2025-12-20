@@ -2,10 +2,11 @@ import type { TJob } from '@/shared/types'
 import { useDisclosure } from '@heroui/react'
 import lodash from 'lodash'
 import { useState } from 'react'
-import { Route } from '../../../routes/_workspace/_workbench'
 import JobDetailDrawer from '../job-detail/JobDetailDrawer'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import WorkbenchTable from './WorkbenchTable'
+import { DeliverJobModal } from '../modals/DeliverJobModal'
+import { AccountingFinishModal } from '../modals/AccoutingFinishModal'
 
 type Pagination = {
     page: number
@@ -17,22 +18,15 @@ export type WorkbenchTableViewProps = {
     isDataLoading?: boolean
     onRefresh: () => void
     pagination: Pagination
+    sort: string
+    search?: string
+    onSearchChange: (newSearch?: string) => void
     onPageChange: (newPage: number) => void
     onSortChange: (newSort: string) => void
     onLimitChange: (newLimit: number) => void
 }
 
-export default function WorkbenchTableView({
-    data,
-    isDataLoading = false,
-    onRefresh,
-    pagination,
-    onPageChange,
-    onSortChange,
-    onLimitChange,
-}: WorkbenchTableViewProps) {
-    const search = Route.useSearch()
-
+export default function WorkbenchTableView(props: WorkbenchTableViewProps) {
     const [viewDetailNo, setViewDetailNo] = useState<string | null>(null)
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
 
@@ -41,7 +35,6 @@ export default function WorkbenchTableView({
         onOpen: onOpenJobDetailDrawer,
         onClose: onCloseJobDetailDrawer,
     } = useDisclosure({ id: 'JobDetailDrawer' })
-
     const {
         isOpen: isOpenAssignMemberModal,
         onOpen: onOpenAssignMemberModal,
@@ -60,6 +53,12 @@ export default function WorkbenchTableView({
 
     return (
         <>
+            <WorkbenchTable
+                onViewDetail={onViewDetail}
+                onAssignMember={onAssignMember}
+                {...props}
+            />
+
             {isOpenJobDetailDrawer && viewDetailNo && (
                 <JobDetailDrawer
                     jobNo={viewDetailNo}
@@ -81,19 +80,6 @@ export default function WorkbenchTableView({
                     }}
                 />
             )}
-
-            <WorkbenchTable
-                data={data}
-                onViewDetail={onViewDetail}
-                onAssignMember={onAssignMember}
-                isDataLoading={isDataLoading}
-                sort={search.sort}
-                onPageChange={onPageChange}
-                onSortChange={onSortChange}
-                pagination={pagination}
-                onRefresh={onRefresh}
-                onLimitChange={onLimitChange}
-            />
         </>
     )
 }

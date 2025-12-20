@@ -3,7 +3,10 @@ import lodash from 'lodash'
 import { useMemo } from 'react'
 
 import { jobStatusApi } from '@/lib/api'
-import { mapJobStatus } from './options/job-status-queries'
+import {
+    mapJobStatus,
+    statusByOrderOptions,
+} from './options/job-status-queries'
 export const useJobStatuses = () => {
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ['job-statuses'],
@@ -59,31 +62,15 @@ export const useJobStatusDetail = (statusId?: string) => {
     }
 }
 
-export const useJobStatusByOrder = (orderNumber?: number | null) => {
+export const useJobStatusByOrder = (order: number, enable?: boolean) => {
     const { data, refetch, error, isLoading } = useQuery({
-        queryKey: orderNumber ? ['job-statuses', 'order', orderNumber] : [],
-        queryFn: () => {
-            if (!orderNumber) {
-                return
-            }
-            return jobStatusApi.findByOrder(orderNumber)
-        },
-        enabled: !!orderNumber,
-        select: (res) => res?.data.result,
+        ...statusByOrderOptions(order),
+        enabled: enable ?? true,
     })
-    const jobStatus = useMemo(() => {
-        const jobData = data
-
-        if (lodash.isEmpty(jobData)) {
-            return undefined
-        }
-
-        return mapJobStatus(jobData)
-    }, [data])
     return {
         refetch,
-        jobStatus: jobStatus,
-        data: jobStatus,
+        data,
+        status: data, // data đã được map trong select
         error,
         isLoading,
     }

@@ -3,7 +3,6 @@ import lodash from 'lodash'
 import queryString from 'query-string'
 
 import { jobApi, jobStatusApi } from '@/lib/api'
-import { axiosClient } from '@/lib/axios'
 import { USER_CONFIG_KEYS } from '@/lib/utils'
 import { TJobQueryInput } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
@@ -59,6 +58,8 @@ export const jobsListOptions = (
         page: 1,
         limit: 10,
         tab: ProjectCenterTabEnum.ACTIVE,
+        isAll: '0',
+        sort: ['displayName:asc'],
     }
 ) => {
     const { hideFinishItems, page, limit, search, tab, sort, ...filters } =
@@ -89,6 +90,45 @@ export const jobsListOptions = (
     })
 }
 
+
+// 1. Danh sách Jobs
+export const workbenchDataOptions = (
+    params: Omit<TJobQueryInput, 'tab' | 'isAll' | 'hideFinishItems'> = {
+        page: 1,
+        limit: 10,
+        sort: ['displayName:asc'],
+    }
+) => {
+    const { page, limit, search, sort, ...filters } =
+        params
+
+    return queryOptions({
+        queryKey: [
+            'workbench-data',
+            `limit=${limit}`,
+            `page=${page}`,
+            `keywords=${search}`,
+            `sort=${sort}`,
+            `filters=${queryString.stringify(filters)}`,
+        ],
+        queryFn: () => {
+            const newParams = lodash.omitBy(params, lodash.isUndefined)
+            return jobApi.workbenchData({
+                ...newParams,
+                hideFinishItems: '1'
+            })
+        },
+        // ✅ Select & Map data ngay tại đây
+        select: (res) => ({
+            jobs: Array.isArray(res.result?.data)
+                ? res.result.data.map(mapJob)
+                : [],
+            paginate: res.result?.paginate,
+        }),
+    })
+}
+
+
 // 2. Tìm kiếm Jobs
 export const jobsSearchOptions = (keywords?: string) =>
     queryOptions({
@@ -101,13 +141,25 @@ export const jobsSearchOptions = (keywords?: string) =>
         select: (res) => res?.result,
     })
 
-// 3. Jobs theo Deadline
-export const jobsByDeadlineOptions = (isoDate?: string) =>
+
+export const jobsPendingDeliverOptions = () =>
     queryOptions({
-        queryKey: ['jobs', `deadline=${isoDate}`],
-        queryFn: () => (isoDate ? jobApi.findByDeadline(isoDate) : null),
-        enabled: !!isoDate,
+        queryKey: ['jobs', 'pending-deliver'],
+        queryFn: () => jobApi.pendingDeliver(),
         select: (res) => res?.result,
+    })
+
+// 3. Jobs theo Deadline
+export const jobsDueOnDateOptions = (isoDate: string) =>
+    queryOptions({
+        queryKey: ['jobs', 'due-on', isoDate],
+        queryFn: () => jobApi.getJobsDueOnDate(isoDate),
+        enabled: !!isoDate,
+        select: (res) => {
+            return Array.isArray(res.result)
+                ? res.result.map(mapJob)
+                : []
+        },
     })
 
 // 4. Job Columns Config
@@ -116,15 +168,6 @@ export const jobColumnsOptions = () =>
         queryKey: ['configs', 'code', USER_CONFIG_KEYS.jobShowColumns],
         queryFn: () => jobApi.columns(),
         select: (res) => res?.result ?? [],
-    })
-
-// 5. Jobs Due On Date
-export const jobsDueOnDateOptions = (dueAt?: string) =>
-    queryOptions({
-        queryKey: ['jobs', 'dueOn', dueAt ?? ''],
-        queryFn: () => (dueAt ? jobApi.getJobsDueOnDate(dueAt) : null),
-        enabled: !!dueAt,
-        select: (res) => res?.result,
     })
 
 // 6. Count Jobs By Tab
@@ -181,10 +224,12 @@ export const jobDetailOptions = (id?: string) =>
     })
 
 // 11. Activity Logs
-export const jobActivityLogsOptions = (jobId?: string) =>
+export const jobActivityLogsOptions = (jobId: string) =>
     queryOptions({
-        queryKey: jobId ? ['jobActivityLog', jobId] : ['jobActivityLog'],
-        queryFn: () => axiosClient.get(`jobs/${jobId}/activity-log`),
-        enabled: !!jobId,
-        select: (res: any) => res.result,
+        queryKey: jobId ? ['job-activity-log', 'id', jobId] : ['jobActivityLog'],
+        queryFn: () => jobApi.getJobActivityLog(jobId),
+        select: (res) => {
+            const logs = res?.result
+            return lodash.isEmpty(logs) ? [] : logs
+        },
     })

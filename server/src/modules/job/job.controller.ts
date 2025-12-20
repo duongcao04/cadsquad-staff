@@ -46,7 +46,14 @@ export class JobController {
         private readonly jobService: JobService,
         private readonly jobTypeService: JobTypeService,
         private readonly activityLogService: ActivityLogService
-    ) {}
+    ) { }
+
+
+    @Post(':id/toggle-pin')
+    async togglePin(@Req() request: Request, @Param('id') jobId: string) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.togglePin(userPayload.sub, jobId);
+    }
 
     @Post()
     @ApiBearerAuth()
@@ -102,6 +109,24 @@ export class JobController {
         return this.jobService.findAll(userPayload.sub, userPayload.role, query)
     }
 
+    @Get('workbench')
+    @HttpCode(200)
+    @ResponseMessage('Get workbench data page')
+    @UseGuards(JwtGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Get a list of jobs with pagination, filtering, and sorting, pinned job',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Return a list of jobs.',
+        type: [JobResponseDto],
+    })
+    async getWorkbenchData(@Req() request: Request, @Query() query: JobQueryDto) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.getWorkbenchData(userPayload.sub, userPayload.role, query)
+    }
+
     @Get('search')
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Search for jobs by keywords without pagination' })
@@ -125,7 +150,7 @@ export class JobController {
         )
     }
 
-    @Get('deadline/:isoDate')
+    @Get('due-at/:isoDate')
     @HttpCode(200)
     @UseGuards(JwtGuard)
     @ResponseMessage('Get jobs by deadline successfully')
@@ -141,16 +166,22 @@ export class JobController {
         description: 'Return a list of jobs.',
         type: [JobResponseDto],
     })
-    async findJobDeadline(
+    async findJobsDueAt(
         @Req() request: Request,
         @Param('isoDate') isoDate: string
     ) {
         const userPayload: TokenPayload = await request['user']
-        return this.jobService.findJobDeadline(
+        return this.jobService.findJobsDueAt(
             userPayload.sub,
             userPayload.role,
             isoDate
         )
+    }
+
+    @Get('pending-deliver')
+    async getPendingDeliver(@Req() request: Request) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.getPendingDeliverJobs(userPayload.sub, userPayload.role);
     }
 
     @Get('no/:jobNo')
@@ -171,42 +202,6 @@ export class JobController {
             userPayload.sub,
             userPayload.role,
             jobNo
-        )
-    }
-
-    @Get('columns')
-    @HttpCode(200)
-    @ResponseMessage('Get columns successfully')
-    @UseGuards(JwtGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get job columns for a user' })
-    @ApiResponse({ status: 200, description: 'Return a list of columns.' })
-    async getColumns(@Req() request: Request) {
-        const userPayload: TokenPayload = await request['user']
-        return this.jobService.getColumns(userPayload.sub)
-    }
-
-    @Get('dueOn/:inputDate')
-    @HttpCode(200)
-    @ResponseMessage('Get job due on today successfully')
-    @UseGuards(JwtGuard)
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get jobs due on a specific date' })
-    @ApiResponse({
-        status: 200,
-        description: 'Return a list of jobs.',
-        type: [JobResponseDto],
-    })
-    async getJobsDueOnDate(
-        @Req() request: Request,
-        @Param() params: GetJobsDueDto
-    ) {
-        const userPayload: TokenPayload = request['user']
-        const { inputDate } = params
-        return this.jobService.getJobsDueOnDate(
-            userPayload.sub,
-            userPayload.role,
-            inputDate
         )
     }
 
@@ -309,7 +304,7 @@ export class JobController {
         return this.jobService.rescheduleJob(id, userPayload.sub, data)
     }
 
-    @Patch(':id/mark-paid')
+    @Post(':id/mark-paid')
     @HttpCode(200)
     @ResponseMessage('Mark as paid job successfully')
     @UseGuards(AdminGuard, JwtGuard)

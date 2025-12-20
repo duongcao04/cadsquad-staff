@@ -31,6 +31,12 @@ export interface IConfigResponse {
     displayName: string
 
     /**
+     * A human-readable description for the configuration setting.
+     * @type {string | undefined}
+     */
+    description?: string
+
+    /**
      * A unique key or code for identifying the configuration setting programmatically.
      * @type {string}
      */

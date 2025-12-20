@@ -1,50 +1,101 @@
-# Use Bun official image (includes bun runtime & compatible toolchain)
-FROM oven/bun:latest AS builder
+# -----------------------------------------------------------------------------
+# Stage 0: base (shared OS libs)
+# -----------------------------------------------------------------------------
+FROM oven/bun:1-alpine AS base
+WORKDIR /app
+# Cài đặt các thư viện hệ thống cần thiết cho cả Dev và Prod
+RUN apk add --no-cache openssl libc6-compat postgresql16-client
+
+# -----------------------------------------------------------------------------
+# Stage 1: deps (Install dependencies & Generate Prisma)
+# -----------------------------------------------------------------------------
+FROM base AS deps
 WORKDIR /app
 
-# Copy lockfile & package manifest first for caching
-# If you use package-lock.json/yarn.lock/bun.lockb adjust accordingly
-COPY package.json ./
-COPY bun.lockb* ./
 
-# Install dependencies with bun
-RUN bun install
+# Copy database scripts (nếu có)
+COPY database ./database
+# Copy entrypoint script
+COPY --chown=nodejs:nodejs ./entrypoint.sh ./
 
-# Copy app source
+# Copy package files
+COPY package.json bun.lockb* ./
+COPY nest-cli.json tsconfig*.json ./
+
+# Copy Prisma schema
+COPY ./src/providers/prisma/schema.prisma ./prisma/schema.prisma
+COPY ./src/providers/prisma/migrations ./prisma/migrations
+
+# Install ALL dependencies (bao gồm devDependencies cho NestJS build và Dev mode)
+RUN bun install --frozen-lockfile
+
+# Generate Prisma client
+RUN bunx prisma generate
+
+# -----------------------------------------------------------------------------
+# Stage 2: development (TARGET CHO MÔI TRƯỜNG DEV)
+# -----------------------------------------------------------------------------
+FROM deps AS development
+WORKDIR /app
+
+# Copy toàn bộ source code vào (để container có thể chạy độc lập nếu cần)
+# Tuy nhiên khi chạy docker-compose, volume sẽ ghi đè lên phần này
 COPY . .
 
-# Build Next.js (expects "build" script in package.json -> "next build")
-RUN bun run build
+# Thiết lập biến môi trường
+ENV NODE_ENV development
 
-# ----- Runtime image (using same bun base for compatibility) -----
-FROM oven/bun:latest AS runner
+# Mở port
+EXPOSE 8080
+
+# Lệnh mặc định chạy dev (Watch mode)
+CMD ["bun", "run", "start:dev"]
+
+# -----------------------------------------------------------------------------
+# Stage 3: builder (Build TypeScript for Production)
+# -----------------------------------------------------------------------------
+FROM deps AS builder
 WORKDIR /app
 
-# Create non-root user
+# Copy source code
+COPY src ./src
+COPY --from=deps /app/node_modules ./node_modules
+
+# Run build (tạo thư mục dist)
+RUN bun run build
+
+# Tối ưu: Xóa devDependencies để giảm nhẹ node_modules trước khi copy sang runner
+# (Lưu ý: Bun hiện tại xử lý cái này hơi khác npm, ta có thể cài lại prod deps hoặc giữ nguyên)
+# Ở đây mình giữ nguyên flow của bạn để an toàn, hoặc chạy lệnh này nếu muốn clean:
+# RUN rm -rf node_modules && bun install --frozen-lockfile --production
+
+# -----------------------------------------------------------------------------
+# Stage 4: runner (Production Image)
+# -----------------------------------------------------------------------------
+FROM base AS runner
+WORKDIR /app
+
+# Tạo user non-root
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nodejs
 
-# Copy only what's needed for runtime from builder
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
-# bun's installed deps are in /root/.bun (but bun also supports node_modules)
-# Copy bun's install cache (optional, preserves installed deps)
-COPY --from=builder /root/.bun /root/.bun
+# Copy các file cần thiết từ Builder và Deps
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/prisma ./prisma
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
 
-# If you have environment-dependent next.config.js or other files, copy them
-COPY --from=builder /app/next.config.js ./next.config.js
+# Change ownership
+RUN chown -R nodejs:nodejs /app
 
 USER nodejs
 
-ENV NODE_ENV=production
-ENV PORT=3000
+EXPOSE 8080
 
-EXPOSE 3000
+ENV NODE_ENV production
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD wget -qO- --tries=1 --timeout=2 http://127.0.0.1:${PORT}/_next/static || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD bun -e "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
 
-# Start the Next.js server using bun
-# package.json should have: "start": "next start -p $PORT"
-CMD ["bun", "run", "start"]
+ENTRYPOINT ["sh", "./entrypoint.sh"]
+CMD ["bun", "dist/main.js"]

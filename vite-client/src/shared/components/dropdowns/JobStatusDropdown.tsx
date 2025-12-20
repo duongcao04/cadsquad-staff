@@ -1,4 +1,12 @@
 import {
+    useChangeStatusMutation,
+    useJobStatuses,
+    useProfile,
+} from '@/lib/queries'
+import { statusByOrderOptions } from '@/lib/queries/options/job-status-queries'
+import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
+import type { TJob, TJobStatus } from '@/shared/types'
+import {
     addToast,
     Button,
     Divider,
@@ -8,29 +16,25 @@ import {
     Tab,
     Tabs,
 } from '@heroui/react'
+import { useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
-
-import {
-    useChangeStatusMutation,
-    useJobStatusByOrder,
-    useJobStatuses,
-    useProfile,
-} from '@/lib/queries'
-import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
-import type { TJob, TJobStatus } from '@/shared/types'
-
-import { JobStatusChip } from '../chips/JobStatusChip'
+import { useState } from 'react'
 import { JobStatusSystemTypeEnum } from '../../enums'
+import { JobStatusChip } from '../chips/JobStatusChip'
 
 type JobStatusDropdownProps = {
     jobData: TJob
     statusData: TJobStatus
+    afterChangeStatus?: () => void
 }
 export default function JobStatusDropdown({
     jobData,
     statusData,
+    afterChangeStatus,
 }: JobStatusDropdownProps) {
+    const [isOpen, setIsOpen] = useState(false)
+
     const { resolvedTheme } = useTheme()
 
     const { isAdmin } = useProfile()
@@ -39,28 +43,55 @@ export default function JobStatusDropdown({
         addToast({
             title: 'Job status updated',
             description: `Job ${res.result?.no} has been successfully updated`,
+            color: 'success',
         })
     })
 
-    const { jobStatus: nextStatus } = useJobStatusByOrder(
-        statusData.nextStatusOrder
-    )
-    const { jobStatus: prevStatus } = useJobStatusByOrder(
-        statusData.prevStatusOrder
-    )
+    const { data: nextStatus } = useQuery({
+        // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+        // The query won't run because of 'enabled' below.
+        ...statusByOrderOptions(statusData.nextStatusOrder ?? -1),
+
+        // Only fetch if nextStatusOrder exists
+        enabled:
+            isOpen &&
+            !!statusData.nextStatusOrder &&
+            statusData.nextStatusOrder !== null,
+    })
+
+    const { data: prevStatus } = useQuery({
+        // If prevStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+        // The query won't run because of 'enabled' below.
+        ...statusByOrderOptions(statusData.prevStatusOrder ?? -1),
+
+        // Only fetch if prevStatusOrder exists
+        enabled:
+            isOpen &&
+            !!statusData.prevStatusOrder &&
+            statusData.prevStatusOrder !== null,
+    })
+
     const { data: jobStatuses } = useJobStatuses()
 
     const canClickable =
-        statusData.systemType !== JobStatusSystemTypeEnum.TERMINATED
+        isAdmin && statusData.systemType !== JobStatusSystemTypeEnum.TERMINATED
 
     const handleChangeStatus = async (nextStatus: TJobStatus) => {
-        await changeStatusMutation.mutateAsync({
-            jobId: jobData.id?.toString(),
-            data: {
-                fromStatusId: jobData?.status.id?.toString(),
-                toStatusId: nextStatus.id?.toString(),
+        await changeStatusMutation.mutateAsync(
+            {
+                jobId: jobData.id,
+                data: {
+                    currentStatus: statusData.code,
+                    newStatus: nextStatus.code,
+                },
             },
-        })
+            {
+                onSuccess() {
+                    afterChangeStatus?.()
+                    setIsOpen(false)
+                },
+            }
+        )
     }
 
     const actions: { key: string; data?: TJobStatus; action: () => void }[] = [
@@ -114,7 +145,9 @@ export default function JobStatusDropdown({
                 backdrop: '!z-0',
                 trigger: '!z-0',
             }}
+            isOpen={isOpen}
             showArrow={true}
+            onOpenChange={setIsOpen}
         >
             <PopoverTrigger className="opacity-100">
                 {canClickable ? (
@@ -231,6 +264,10 @@ export default function JobStatusDropdown({
                                                 onPress={() => {
                                                     handleChangeStatus(item)
                                                 }}
+                                                isDisabled={
+                                                    item.code ===
+                                                    statusData.code
+                                                }
                                             >
                                                 {item && (
                                                     <div className="flex items-center justify-start gap-2">

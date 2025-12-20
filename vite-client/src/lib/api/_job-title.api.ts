@@ -11,10 +11,10 @@ export const jobTitleApi = {
             '/v1/job-titles',
             data
         ),
-    findAll: () =>
-        axiosClient.get<ApiResponse<IJobTitleResponse[]>>('/v1/job-titles'),
-    findOne: (id: string) =>
-        axiosClient.get<ApiResponse<IJobTitleResponse>>(`/v1/job-titles/${id}`),
+    findAll: async () =>
+        axiosClient.get<ApiResponse<IJobTitleResponse[]>>('/v1/job-titles').then(res => res.data),
+    findOne: async (id: string) =>
+        axiosClient.get<ApiResponse<IJobTitleResponse>>(`/v1/job-titles/${id}`).then(res => res.data),
     update: (id: string, data: TUpdateJobTitleInput) =>
         axiosClient.patch<ApiResponse<{ id: string }>>(
             `/v1/job-titles/${id}`,

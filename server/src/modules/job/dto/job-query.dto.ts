@@ -1,7 +1,15 @@
 import { ApiPropertyOptional, IntersectionType } from '@nestjs/swagger'
 import { JobStatusSystemType, Prisma } from '@prisma/client'
-import { Type } from 'class-transformer'
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
+import { Transform, Type } from 'class-transformer'
+import {
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsOptional,
+    IsString,
+    Max,
+    Min,
+} from 'class-validator'
 import dayjs from 'dayjs'
 import { JobTabEnum } from '../enums/job-tab.enum'
 import { JobFiltersDto } from './job-filters.dto'
@@ -28,11 +36,17 @@ export class JobQueryDto extends FiltersAndSorts {
 
     @ApiPropertyOptional({
         description: 'Hide finished items (1 for true, 0 for false)',
-        default: '0',
+        default: 0,
+        type: Number, // Shows as a number in Swagger UI
+        example: 1,
     })
     @IsOptional()
-    @IsString()
-    hideFinishItems?: string = '0'
+    @Transform(({ value }) => {
+        // Convert '1', 1, 'true', or true to Boolean TRUE
+        return [true, 'true', 1, '1'].indexOf(value) > -1
+    })
+    @IsBoolean()
+    hideFinishItems?: boolean = false // Default to boolean false
 
     // --- Pagination ---
 
@@ -53,6 +67,19 @@ export class JobQueryDto extends FiltersAndSorts {
     @IsInt()
     @Min(1)
     page?: number = 1
+
+    @ApiPropertyOptional({
+        description:
+            'If 1 or true, ignores limit and page to return all records',
+        example: 1,
+    })
+    @IsOptional()
+    @Transform(({ value }) => {
+        // Treat '1', 1, 'true', or true as TRUE
+        return [true, 'true', 1, '1'].indexOf(value) > -1
+    })
+    @IsBoolean()
+    isAll?: boolean
 }
 
 export class JobQueryBuilder {

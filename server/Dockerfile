@@ -1,92 +1,83 @@
 # -----------------------------------------------------------------------------
-# Stage 0: base (shared)
+# Stage 0: base (shared OS libs)
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS base
+FROM oven/bun:1-alpine AS base
 WORKDIR /app
-RUN apk add --no-cache openssl libc6-compat
-
-# Copy package files first (for better caching)
-COPY package*.json ./
-# copy lock file if exists
-COPY pnpm-lock.yaml* yarn.lock* package-lock.json* bun.lock* ./
+# Cài đặt các thư viện hệ thống cần thiết cho cả Dev và Prod
+RUN apk add --no-cache openssl libc6-compat postgresql16-client
 
 # -----------------------------------------------------------------------------
-# Stage 1: deps - install dependencies and generate Prisma client
+# Stage 1: deps (Install dependencies & Generate Prisma)
 # -----------------------------------------------------------------------------
 FROM base AS deps
+WORKDIR /app
 
-# install deps
-RUN npm ci --only=production=false || npm install
+# Copy package files
+COPY package.json bun.lockb* ./
+COPY nest-cli.json tsconfig*.json ./
 
-# Copy Prisma schema & migrations explicitly so prisma generate works
+# Copy Prisma schema
 COPY ./src/providers/prisma/schema.prisma ./prisma/schema.prisma
 COPY ./src/providers/prisma/migrations ./prisma/migrations
 
-# If you use prisma client generation
-RUN npx prisma generate
+# Install ALL dependencies (bao gồm devDependencies cho NestJS build và Dev mode)
+RUN bun install --frozen-lockfile
+
+# Generate Prisma client
+RUN bunx prisma generate
 
 # -----------------------------------------------------------------------------
-# Stage 2: builder - build TypeScript (nest build)
+# Stage 3: builder (Build TypeScript for Production)
 # -----------------------------------------------------------------------------
-FROM base AS builder
+FROM deps AS builder
 WORKDIR /app
 
-# Copy node_modules from deps
-COPY --from=deps /app/node_modules ./node_modules
-# Copy prisma generated client (so build can reference it if needed)
-COPY --from=deps /app/prisma ./prisma
-
-# Copy source files needed for build
-COPY tsconfig*.json ./
-COPY nest-cli.json ./
+# Copy source code
 COPY src ./src
-COPY package*.json ./
-# Copy Prisma schema + migrations
-COPY src/providers/prisma/schema.prisma ./prisma/
-COPY src/providers/prisma/migrations ./prisma/migrations
+COPY --from=deps /app/node_modules ./node_modules
 
-# Run build (nest build => outputs to dist/)
-RUN npm run build
+# Run build (tạo thư mục dist)
+RUN bun run build
+
+# Tối ưu: Xóa devDependencies để giảm nhẹ node_modules trước khi copy sang runner
+# (Lưu ý: Bun hiện tại xử lý cái này hơi khác npm, ta có thể cài lại prod deps hoặc giữ nguyên)
+# Ở đây mình giữ nguyên flow của bạn để an toàn, hoặc chạy lệnh này nếu muốn clean:
+# RUN rm -rf node_modules && bun install --frozen-lockfile --production
 
 # -----------------------------------------------------------------------------
-# Stage 3: runner - minimal runtime image
+# Stage 4: runner (Production Image)
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS runner
+FROM base AS runner
 WORKDIR /app
 
-# Install OpenSSL for Prisma AND postgresql-client for psql command
-RUN apk update && apk add --no-cache \
-    openssl \
-    libc6-compat \
-    postgresql16-client
-
-# Create non-root user
+# Tạo user non-root
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nodejs
 
-# copy node_modules for production only
+# Copy các file cần thiết từ Builder và Deps
 COPY --from=deps /app/node_modules ./node_modules
-# copy prisma client & migrations if runtime needs them
 COPY --from=deps /app/prisma ./prisma
-# copy built dist
 COPY --from=builder /app/dist ./dist
-# copy package.json to allow running npm scripts if necessary
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package.json ./
 
+# Copy database scripts (nếu có)
 COPY database ./database
 
-# Copy entrypoint script and make it executable
+# Copy entrypoint script
 COPY --chown=nodejs:nodejs ./entrypoint.sh ./
 RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
-# Change ownership AFTER copying all files
+# Change ownership
 RUN chown -R nodejs:nodejs /app
+
+USER nodejs
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
+ENV NODE_ENV production
 
-ENTRYPOINT ["sh","./entrypoint.sh"]
-# The entrypoint will handle migrations and seeding, then exec this CMD
-CMD ["node", "dist/main.js"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD bun -e "require('http').get('http://localhost:8080/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"
+
+ENTRYPOINT ["sh", "./entrypoint.sh"]
+CMD ["bun", "dist/main.js"]

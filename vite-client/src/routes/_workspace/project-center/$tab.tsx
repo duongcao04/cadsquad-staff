@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from '@/lib'
-import { jobsListOptions, useProfile } from '@/lib/queries'
+import { jobColumnsOptions, jobsListOptions, useProfile } from '@/lib/queries'
 import ProjectCenterTableView from '@/shared/components/project-center/ProjectCenterTableView'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { Tab, Tabs } from '@heroui/react'
@@ -17,12 +17,12 @@ import { useLocalStorage } from 'usehooks-ts'
 import { z } from 'zod'
 
 const DEFAULT_SORT = 'displayName:asc'
-// 1. Schema Definition
+
 export const projectCenterParamsSchema = z.object({
-    sort: z.string().optional().catch(DEFAULT_SORT).default(DEFAULT_SORT),
+    sort: z.string().optional().catch(DEFAULT_SORT),
     search: z.string().trim().optional(),
-    limit: z.coerce.number().int().min(1).max(100).catch(10).default(10),
-    page: z.coerce.number().int().min(1).catch(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).optional().catch(10),
+    page: z.coerce.number().int().min(1).optional().catch(1),
 })
 
 export type TProjectCenterSearch = z.infer<typeof projectCenterParamsSchema>
@@ -63,9 +63,22 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
             )
             hideFinishItems = storageValue === 'true' ? '1' : '0'
         }
+
+        const {
+            limit = 10,
+            page = 1,
+            search,
+            sort = DEFAULT_SORT,
+        } = deps.search
+
+        context.queryClient.ensureQueryData(jobColumnsOptions())
+
         return context.queryClient.ensureQueryData(
             jobsListOptions({
-                ...deps.search,
+                limit,
+                page,
+                search,
+                sort: [sort],
                 tab: params.tab,
                 hideFinishItems: hideFinishItems,
             })

@@ -129,19 +129,29 @@ export class UserService {
     }
     return user.role
   }
-  async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.prismaService.user.findMany({
-      include: {
-        department: {},
-        jobTitle: {}
-      },
-      orderBy: {
-        displayName: 'asc'
-      }
-    })
-    return plainToInstance(UserResponseDto, users, {
-      excludeExtraneousValues: true,
-    })
+  async findAll(): Promise<{ users: UserResponseDto[]; total: number }> {
+    const [users, total] = await this.prismaService.$transaction([
+      // 1. Fetch Users
+      this.prismaService.user.findMany({
+        include: {
+          department: true, // simplified from {}
+          jobTitle: true,
+        },
+        orderBy: {
+          role: 'desc',
+        },
+      }),
+
+      // 2. Count Total
+      this.prismaService.user.count(),
+    ]);
+
+    return {
+      users: plainToInstance(UserResponseDto, users, {
+        excludeExtraneousValues: true,
+      }),
+      total,
+    };
   }
 
   async resetPassword(userId: string, data: ResetPasswordDto) {
@@ -156,15 +166,15 @@ export class UserService {
   /**
    * Find a user by their unique ID.
    *
-   * @param {number} userId - The ID of the user to retrieve.
+   * @param {number} username - The ID of the user to retrieve.
    * @returns {Promise<User | null>} The user object retrieved from the database, or null if not found.
    *
    * @throws {NotFoundException} If no user is found with the provided ID.
    */
-  async findById(userId: string): Promise<User | null> {
+  async findByUsername(username: string): Promise<User | null> {
     try {
       const userData = await this.prismaService.user.findUnique({
-        where: { id: userId }
+        where: { username: username }
       })
       const userRes = plainToInstance(UserResponseDto, userData, {
         excludeExtraneousValues: true,
@@ -175,14 +185,12 @@ export class UserService {
     }
   }
 
-  async update(id: string, data: UpdateUserDto): Promise<UserResponseDto> {
+  async update(username: string, data: UpdateUserDto): Promise<{ id: string, username: string }> {
     const user = await this.prismaService.user.update({
-      where: { id },
+      where: { username },
       data,
     })
-    return plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: true,
-    })
+    return { id: user.id, username: user.username }
   }
 
   async delete(id: string) {

@@ -12,7 +12,6 @@ import {
     CircleCheck,
     CircleDollarSign,
     EllipsisVerticalIcon,
-    PinIcon,
     SquareArrowOutUpRight,
     Trash,
     UserPlus,
@@ -43,17 +42,6 @@ export function ProjectCenterTableQuickActions({
         addToast({
             title: 'Mark as paid successfully',
             description: `#${res.result?.no ?? data?.no} has been marked as paid`,
-            color: 'success',
-        })
-        queryClient.invalidateQueries({
-            queryKey: ['jobs'],
-        })
-    })
-
-    const pinJobMutation = useUpdateJobMutation((res) => {
-        addToast({
-            title: 'Pin job successfully',
-            description: `#${res.result?.no ?? data?.no} has been pinned`,
             color: 'success',
         })
         queryClient.invalidateQueries({
@@ -132,31 +120,6 @@ export function ProjectCenterTableQuickActions({
         }
     }
 
-    const handlePinJob = async () => {
-        if (data.isPinned) {
-            addToast({
-                title: `Job ${data.no} already pinned`,
-                color: 'danger',
-            })
-        } else {
-            if (data?.id) {
-                await pinJobMutation.mutateAsync(
-                    {
-                        jobId: data?.id,
-                        data: {
-                            isPinned: true,
-                        },
-                    },
-                    {
-                        onSuccess: () => {
-                            onCloseModal()
-                        },
-                    }
-                )
-            }
-        }
-    }
-
     return (
         <>
             {isOpenModal && (
@@ -228,18 +191,6 @@ export function ProjectCenterTableQuickActions({
                         </DropdownItem>
                     </DropdownSection>
                     <DropdownSection key="job_actions" title="Job">
-                        <DropdownItem
-                            key="pin"
-                            startContent={
-                                <PinIcon
-                                    size={14}
-                                    className="text-text-subdued rotate-45"
-                                />
-                            }
-                            onPress={handlePinJob}
-                        >
-                            Pin Job
-                        </DropdownItem>
                         <DropdownItem
                             key="assignReassign"
                             style={{

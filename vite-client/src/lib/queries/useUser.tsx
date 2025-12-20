@@ -2,7 +2,7 @@ import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { userApi } from '@/lib/api'
-import { type ApiError } from '@/lib/axios'
+import { ApiResponse, type ApiError } from '@/lib/axios'
 import type { IUserResponse } from '@/shared/interfaces'
 import type { TUser } from '@/shared/types'
 
@@ -14,6 +14,8 @@ import type {
     TUpdatePasswordInput,
     TUpdateUserInput,
 } from '../validationSchemas'
+import { userOptions, usersListOptions } from './options/user-queries'
+import { onErrorToast } from './helper'
 
 export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     id: item.id,
@@ -45,49 +47,87 @@ export const mapUser: (item: IUserResponse) => TUser = (item) => ({
     createdAt: new Date(item.createdAt),
     updatedAt: new Date(item.updatedAt),
 })
-export const useUsers = () => {
-    const { data, isLoading, isFetching, refetch } = useQuery({
-        queryKey: ['users'],
-        queryFn: () => userApi.findAll(),
-        select: (res) => {
-            // Giả sử API trả về cấu trúc: { data: { result: User[] } }
-            // Nếu API trả về mảng trực tiếp thì bỏ .result
-            const rawUsers = res.data?.result || []
-            return rawUsers.map(mapUser)
-        },
 
-        // Giữ data cũ trong khi fetch mới để UI không bị nháy
-        placeholderData: (previousData) => previousData,
-    })
+export const useUsers = () => {
+    // Gọi Options
+    const options = usersListOptions()
+
+    const { data, refetch, error, isFetching, isLoading } = useQuery(options)
+
+    // Data đã được map sẵn trong options.select
     return {
-        data: data ?? [],
-        users: data ?? [],
         refetch,
         isLoading: isLoading || isFetching,
+        error,
+        data: data?.users ?? [],
     }
 }
 
-export const useUpdateUserMutation = () => {
+export const useUpdateUserMutation = (
+    onSuccess?: (res: ApiResponse<{ id: string; username: string }>) => void
+) => {
     return useMutation({
         mutationKey: ['updateUser'],
         mutationFn: ({
-            userId,
-            updateUserInput,
+            username,
+            data,
         }: {
-            userId: string
-            updateUserInput: TUpdateUserInput
+            username: string
+            data: TUpdateUserInput
         }) => {
-            return userApi.update(userId, updateUserInput)
+            return userApi.update(username, data)
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ['profile'],
-            })
+        onSuccess: (res) => {
+            if (onSuccess) {
+                onSuccess?.(res)
+            } else {
+                addToast({
+                    title: 'Update user successfully',
+                    color: 'success',
+                })
+            }
         },
     })
 }
 
-export const useUpdatePasswordMutation = () => {
+export const useUpdateAvatarMutation = (
+    onSuccess?: (res: ApiResponse<{ id: string; username: string }>) => void
+) => {
+    return useMutation({
+        mutationKey: ['updateUser', 'avatar'],
+        mutationFn: ({
+            username,
+            avatarUrl,
+        }: {
+            username: string
+            avatarUrl: string
+        }) => {
+            return userApi.update(username, {
+                avatar: avatarUrl,
+            })
+        },
+        onSuccess: async (res) => {
+            const { username } = res.result!
+            if (onSuccess) {
+                onSuccess?.(res)
+            } else {
+                addToast({
+                    title: 'Upload avatar successfully',
+                    color: 'success',
+                })
+            }
+            if (username) {
+                await queryClient.invalidateQueries({
+                    queryKey: userOptions(username).queryKey,
+                })
+            }
+        },
+    })
+}
+
+export const useUpdatePasswordMutation = (
+    onSuccess?: (res: ApiResponse<{ username: string }>) => void
+) => {
     return useMutation({
         mutationKey: ['updatePassword'],
         mutationFn: ({
@@ -97,11 +137,20 @@ export const useUpdatePasswordMutation = () => {
         }) => {
             return userApi.updatePassword(updatePasswordInput)
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
+        onSuccess: async (res) => {
+            await queryClient.invalidateQueries({
                 queryKey: ['profile'],
             })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Update password successfully',
+                    color: 'success',
+                })
+            }
         },
+        onError: (error) => onErrorToast(error, 'Update password failed'),
     })
 }
 

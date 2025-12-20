@@ -18,6 +18,9 @@ import queryString from 'query-string'
 import { ProjectCenterTabEnum } from '../../shared/enums'
 
 export const jobApi = {
+    togglePin: async (jobId: string) => {
+        return axiosClient.post<ApiResponse<{ isPinned: boolean, message: string }>>(`/v1/jobs/${jobId}/toggle-pin`).then(res => res.data)
+    },
     create: async (data: TCreateJobInput) => {
         return axiosClient
             .post('/v1/jobs', {
@@ -27,6 +30,16 @@ export const jobApi = {
                 incomeCost: data.incomeCost.toString(),
                 staffCost: data.staffCost.toString(),
             })
+            .then((res) => res.data)
+    },
+    workbenchData: async (query: TJobQueryInput) => {
+        const queryStringFormatter = queryString.stringify(query, {
+            arrayFormat: 'comma',
+        })
+        return axiosClient
+            .get<
+                ApiResponse<{ data: IJobResponse[]; paginate: IPaginate }>
+            >(`/v1/jobs/workbench?${queryStringFormatter}`)
             .then((res) => res.data)
     },
     findAll: async (query: TJobQueryInput) => {
@@ -39,9 +52,16 @@ export const jobApi = {
             >(`/v1/jobs?${queryStringFormatter}`)
             .then((res) => res.data)
     },
-    findByDeadline: async (isoDate: string) => {
+    pendingDeliver: async () => {
         return axiosClient
-            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/deadline/${isoDate}`)
+            .get<
+                ApiResponse<IJobResponse[]>
+            >(`/v1/jobs/pending-deliver`)
+            .then((res) => res.data)
+    },
+    getJobsDueOnDate: async (isoDate: string) => {
+        return axiosClient
+            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/due-at/${isoDate}`)
             .then((res) => res.data)
     },
     searchJobs: async (keywords: string) => {
@@ -63,9 +83,9 @@ export const jobApi = {
             })
             .then((res) => res.data)
     },
-    getJobsDueOnDate: async (inputDate: string) => {
+    markPaid: async (jobId: string) => {
         return axiosClient
-            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/dueOn/${inputDate}`)
+            .post<ApiResponse<{ id: string, no: string }>>(`/v1/jobs/${jobId}/mark-paid`)
             .then((res) => res.data)
     },
     columns: async () => {

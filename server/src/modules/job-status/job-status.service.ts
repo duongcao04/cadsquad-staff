@@ -25,7 +25,13 @@ export class JobStatusService {
    * Retrieve all job statuses.
    */
   async findAll(): Promise<JobStatus[]> {
+    // NOT Response WAIT Status -> it is temp
     const jobStatuses = await this.prismaService.jobStatus.findMany({
+      where: {
+        NOT: {
+          systemType: 'WAIT_REVIEW'
+        }
+      },
       orderBy: { order: 'asc' },
     })
     return jobStatuses.map((js) =>

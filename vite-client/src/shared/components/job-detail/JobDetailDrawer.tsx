@@ -14,13 +14,8 @@ import {
     SquareArrowOutUpRight,
     UserRound,
 } from 'lucide-react'
-
 import { dateFormatter } from '@/lib/dayjs'
-import {
-    useChangeStatusMutation,
-    useJobByNo,
-    useJobStatusByOrder,
-} from '@/lib/queries'
+import { jobByNoOptions, useChangeStatusMutation } from '@/lib/queries'
 import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
 import type { TJobStatus } from '../../types'
 import { JobStatusChip } from '../chips/JobStatusChip'
@@ -37,6 +32,8 @@ import {
 } from '../ui/hero-drawer'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { JobDetailView } from './JobDetailView'
+import { useQuery } from '@tanstack/react-query'
+import { statusByOrderOptions } from '../../../lib/queries/options/job-status-queries'
 
 type JobDetailDrawerProps = {
     isOpen: boolean
@@ -48,7 +45,10 @@ export default function JobDetailDrawer({
     isOpen,
     onClose,
 }: JobDetailDrawerProps) {
-    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
+    const { data: job, isLoading: loadingJob } = useQuery({
+        ...jobByNoOptions(jobNo),
+        enabled: !!jobNo && isOpen,
+    })
 
     const changeStatusMutation = useChangeStatusMutation()
 
@@ -61,8 +61,8 @@ export default function JobDetailDrawer({
             await changeStatusMutation.mutateAsync({
                 jobId: String(job.id),
                 data: {
-                    fromStatusId: String(job?.status.id),
-                    toStatusId: String(nextStatus.id),
+                    currentStatus: job.status.code,
+                    newStatus: nextStatus.code,
                 },
             })
         } else {
@@ -291,12 +291,16 @@ function ChangeStatusButton({
     onChangeStatus,
     toStatusOrder,
 }: ChangeStatusButtonProps) {
-    /**
-     * Fetch data
-     */
-    const { jobStatus } = useJobStatusByOrder(toStatusOrder)
+    const { data: targetStatus } = useQuery({
+        // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+        // The query won't run because of 'enabled' below.
+        ...statusByOrderOptions(toStatusOrder ?? -1),
 
-    if (!jobStatus) {
+        // Only fetch if nextStatusOrder exists
+        enabled: !!toStatusOrder && toStatusOrder !== null,
+    })
+
+    if (!targetStatus) {
         return <Spinner></Spinner>
     }
 
@@ -305,14 +309,14 @@ function ChangeStatusButton({
             color="danger"
             className="w-full font-semibold font-saira"
             style={{
-                color: jobStatus?.hexColor,
-                backgroundColor: lightenHexColor(jobStatus?.hexColor, 90),
+                color: targetStatus?.hexColor,
+                backgroundColor: lightenHexColor(targetStatus?.hexColor, 90),
             }}
             onPress={() => {
-                onChangeStatus(jobStatus)
+                onChangeStatus(targetStatus)
             }}
         >
-            Mark as {jobStatus.displayName}
+            Mark as {targetStatus.displayName}
         </Button>
     )
 }
