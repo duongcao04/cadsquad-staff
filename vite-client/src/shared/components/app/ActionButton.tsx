@@ -125,7 +125,6 @@ export function ActionButton({
                 <DeliverJobModal
                     isOpen={isOpenDeliverJobModal}
                     onClose={onCloseDeliverJobModal}
-                    onConfirm={() => {}}
                 />
             )}
             {isOpenIssueReportModal && (

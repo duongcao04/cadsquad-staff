@@ -167,3 +167,29 @@ export const RescheduleJobSchema = yup.object({
     toDate: yup.string().required(),
 })
 export type TRescheduleJob = yup.InferType<typeof RescheduleJobSchema>
+
+export const DeliverJobInputSchema = yup.object({
+    jobId: yup.string().required('Please select a job to deliver'),
+
+    note: yup
+        .string()
+        .max(1000, 'Note is too long (max 1000 characters)')
+        .optional(),
+
+    link: yup
+        .string()
+        .url('Link must be a valid URL (e.g., https://figma.com/...)')
+        .optional()
+        .nullable(), // Handle cases where form value might be null
+
+    files: yup
+        .array()
+        .of(yup.string().required()) // Ensures every item in the array is a string
+        // Uncomment the line below to strictly validate URLs for files, matching your commented decorator:
+        // .of(yup.string().url('Each attachment must be a valid URL').required())
+        .optional()
+        .default([]),
+})
+
+// Type inference for usage in React Hook Form / Formik
+export type TDeliverJobInput = yup.InferType<typeof DeliverJobInputSchema>

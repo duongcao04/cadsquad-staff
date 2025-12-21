@@ -8,7 +8,7 @@ import { TJobQueryInput } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { IJobResponse } from '@/shared/interfaces'
 import { TJob } from '@/shared/types'
-import { mapUser } from '../useUser' // Giữ đường dẫn import cũ của bạn
+import { mapUser } from './user-queries'
 
 // --- Mappers (Chuyển đổi dữ liệu) ---
 export const mapJob = (item: IJobResponse): TJob => ({
@@ -22,6 +22,7 @@ export const mapJob = (item: IJobResponse): TJob => ({
     files: item.files,
     id: item.id,
     comments: item.comments ?? [],
+    jobDeliveries: item.jobDeliveries ?? [],
     incomeCost:
         typeof item.incomeCost === 'number'
             ? item.incomeCost

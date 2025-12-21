@@ -12,10 +12,10 @@ export const jobStatusApi = {
             data
         )
     },
-    findAll: () => {
+    findAll: async () => {
         return axiosClient.get<ApiResponse<IJobStatusResponse[]>>(
             '/v1/job-statuses'
-        )
+        ).then(res => res.data)
     },
     findJobsByStatusCode: async (statusCode: string) => {
         return axiosClient

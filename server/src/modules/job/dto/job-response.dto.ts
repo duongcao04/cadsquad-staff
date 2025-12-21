@@ -101,6 +101,9 @@ export class JobResponseDto {
 	@Type(() => UserResponseDto)
 	createdBy: UserResponseDto
 
+	@Expose()
+	jobDeliveries: unknown
+
 	@ApiProperty({ type: () => CommentResponseDto })
 	@Expose()
 	@Type(() => CommentResponseDto)

@@ -1,24 +1,11 @@
+import { jobTitleApi } from '@/lib/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useMemo } from 'react'
-
-import { jobTitleApi } from '@/lib/api'
-
-import type { IJobTitleResponse } from '../../shared/interfaces'
-import type { TJobTitle } from '../../shared/types'
 import {
     type TCreateJobTitleInput,
     type TUpdateJobTitleInput,
 } from '../validationSchemas'
-
-export const mapJobTitle: (item: IJobTitleResponse) => TJobTitle = (item) => ({
-    id: item.id ?? '',
-    code: item.code ?? '',
-    users: item.users ?? [],
-    notes: item.notes ?? '',
-    displayName: item.displayName ?? '',
-    createdAt: new Date(item.createdAt),
-    updatedAt: new Date(item.updatedAt),
-})
+import { mapJobTitle } from './options/job-title-queries'
 
 export const useJobTitles = () => {
     const { data, isLoading, isFetching } = useQuery({

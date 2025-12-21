@@ -28,7 +28,6 @@ import {
     FilePlus,
     Filter,
     RefreshCw,
-    RotateCcw,
     SearchIcon,
     Sheet,
     SquareChartGantt,

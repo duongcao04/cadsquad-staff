@@ -1,13 +1,8 @@
 import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-
 import { userApi } from '@/lib/api'
 import { ApiResponse, type ApiError } from '@/lib/axios'
-import type { IUserResponse } from '@/shared/interfaces'
-import type { TUser } from '@/shared/types'
-
 import { queryClient } from '../../main'
-import { IMAGES } from '../utils'
 import type {
     TCreateUserInput,
     TResetPasswordInput,
@@ -16,37 +11,6 @@ import type {
 } from '../validationSchemas'
 import { userOptions, usersListOptions } from './options/user-queries'
 import { onErrorToast } from './helper'
-
-export const mapUser: (item: IUserResponse) => TUser = (item) => ({
-    id: item.id,
-
-    displayName: item.displayName ?? 'Unknown User',
-    avatar: item.avatar ?? IMAGES.emptyAvatar,
-    email: item.email,
-    username: item.username,
-    phoneNumber: item.phoneNumber,
-
-    department: item.department,
-    jobTitle: item.jobTitle,
-
-    isActive: Boolean(item.isActive),
-
-    role: item.role,
-
-    files: item.files ?? [],
-    accounts: item.accounts ?? [],
-    notifications: item.notifications ?? [],
-    configs: item.configs ?? [],
-    filesCreated: item.filesCreated ?? [],
-    jobActivityLog: item.jobActivityLog ?? [],
-    jobsAssigned: item.jobsAssigned ?? [],
-    jobsCreated: item.jobsCreated ?? [],
-    sendedNotifications: item.sendedNotifications ?? [],
-
-    lastLoginAt: item.lastLoginAt ? new Date(item.lastLoginAt) : null,
-    createdAt: new Date(item.createdAt),
-    updatedAt: new Date(item.updatedAt),
-})
 
 export const useUsers = () => {
     // Gọi Options

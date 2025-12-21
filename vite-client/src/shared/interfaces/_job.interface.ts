@@ -70,6 +70,11 @@ export interface IJobResponse {
     incomeCost: number
 
     /**
+    * @type {IJobDelivery}
+    */
+    jobDeliveries: IJobDelivery[]
+
+    /**
      * A list of comments.
      * @type {TComment[]}
      */
@@ -216,4 +221,26 @@ export interface IJobResponse {
      * @type {Date | null | undefined}
      */
     deletedAt?: Date | null
+}
+
+// 1. Define the Enum (matches your Prisma enum)
+export enum DeliveryStatus {
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+}
+
+// 2. Define the Interface
+export interface IJobDelivery {
+    id: string;
+    jobId: string;
+    userId: string;
+    note: string | null;
+    link: string | null;
+    files: string[];
+    status: DeliveryStatus;
+    adminFeedback: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    user?: TUser;
 }

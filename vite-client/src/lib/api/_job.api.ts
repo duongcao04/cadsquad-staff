@@ -1,5 +1,6 @@
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import {
+    TDeliverJobInput,
     type TBulkChangeStatusInput,
     type TChangeStatusInput,
     type TCreateJobInput,
@@ -19,7 +20,11 @@ import { ProjectCenterTabEnum } from '../../shared/enums'
 
 export const jobApi = {
     togglePin: async (jobId: string) => {
-        return axiosClient.post<ApiResponse<{ isPinned: boolean, message: string }>>(`/v1/jobs/${jobId}/toggle-pin`).then(res => res.data)
+        return axiosClient
+            .post<
+                ApiResponse<{ isPinned: boolean; message: string }>
+            >(`/v1/jobs/${jobId}/toggle-pin`)
+            .then((res) => res.data)
     },
     create: async (data: TCreateJobInput) => {
         return axiosClient
@@ -54,9 +59,15 @@ export const jobApi = {
     },
     pendingDeliver: async () => {
         return axiosClient
-            .get<
-                ApiResponse<IJobResponse[]>
-            >(`/v1/jobs/pending-deliver`)
+            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/pending-deliver`)
+            .then((res) => res.data)
+    },
+    deliverJob: async (
+        jobId: string,
+        data: Omit<TDeliverJobInput, 'jobId'>
+    ) => {
+        return axiosClient
+            .post<ApiResponse>(`/v1/jobs/${jobId}/deliver`, data)
             .then((res) => res.data)
     },
     getJobsDueOnDate: async (isoDate: string) => {
@@ -85,7 +96,9 @@ export const jobApi = {
     },
     markPaid: async (jobId: string) => {
         return axiosClient
-            .post<ApiResponse<{ id: string, no: string }>>(`/v1/jobs/${jobId}/mark-paid`)
+            .post<
+                ApiResponse<{ id: string; no: string }>
+            >(`/v1/jobs/${jobId}/mark-paid`)
             .then((res) => res.data)
     },
     columns: async () => {

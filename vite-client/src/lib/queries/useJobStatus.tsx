@@ -11,7 +11,7 @@ export const useJobStatuses = () => {
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ['job-statuses'],
         queryFn: () => jobStatusApi.findAll(),
-        select: (res) => res.data.result,
+        select: (res) => res.result,
     })
     const jobStatuses = useMemo(() => {
         const jobStatusesData = data

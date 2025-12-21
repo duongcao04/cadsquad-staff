@@ -1,5 +1,6 @@
 import { jobApi } from '@/lib/api'
 import {
+    TDeliverJobInput,
     type TBulkChangeStatusInput,
     type TChangeStatusInput,
     type TCreateJobInput,
@@ -212,6 +213,30 @@ export const useRescheduleMutation = (
             })
         },
         onError: (err) => onErrorToast(err, 'Reschedule Failed'),
+    })
+}
+
+export const useDeliverJobMutation = (
+    onSuccess?: (res: ApiResponse) => void
+) => {
+    return useMutation({
+        mutationKey: ['deliver', 'job'],
+        mutationFn: ({
+            jobId,
+            data,
+        }: {
+            jobId: string
+            data: Omit<TDeliverJobInput, 'jobId'>
+        }) => jobApi.deliverJob(jobId, data),
+        onSuccess: (res) => {
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({ title: res.message, color: 'success' })
+            }
+            queryClient.refetchQueries({ queryKey: ['jobs'] })
+        },
+        onError: (err) => onErrorToast(err, 'Deliver Job Failed'),
     })
 }
 

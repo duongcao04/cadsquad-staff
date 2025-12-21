@@ -1,20 +1,24 @@
-import { IsArray, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import {
+    IsString,
+    IsOptional,
+    IsUrl,
+    MaxLength,
+    IsArray,
+    IsNotEmpty,
+} from 'class-validator'
 
 export class DeliverJobDto {
-	@IsOptional()
-	@IsString()
-	@MaxLength(1000, { message: 'Note is too long (max 1000 characters)' })
-	note?: string;
+    @IsString()
+    @MaxLength(1000, { message: 'Note is too long (max 1000 chars)' })
+    @IsNotEmpty({ message: 'A delivery note is required' })
+    note: string
 
-	@IsOptional()
-	@IsString()
-	@IsUrl({}, { message: 'Link must be a valid URL (e.g., https://figma.com/...)' })
-	link?: string;
+    @IsOptional()
+    @IsUrl({}, { message: 'Link must be a valid URL' })
+    link?: string
 
-	@IsOptional()
-	@IsArray()
-	@IsString({ each: true })
-	// If you want to strictly validate that every item is a URL:
-	// @IsUrl({}, { each: true, message: 'Each attachment must be a valid URL' })
-	files?: string[];
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    files?: string[]
 }

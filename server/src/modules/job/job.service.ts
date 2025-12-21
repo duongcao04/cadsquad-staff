@@ -530,6 +530,9 @@ export class JobService {
                     createdBy: true,
                     paymentChannel: true,
                     status: true,
+                    jobDeliveries:{
+                        include:{user:true}
+                    },
                     comments: {
                         include: {
                             user: {
@@ -688,8 +691,8 @@ export class JobService {
     async deliverJob(userId: string, jobId: string, dto: DeliverJobDto) {
         return this.prisma.$transaction(async (tx) => {
             // 1. Find the ID of the 'WAIT_REVIEW' status
-            const reviewStatus = await tx.jobStatus.findUnique({
-                where: { code: 'revision' }
+            const reviewStatus = await tx.jobStatus.findFirst({
+                where: { systemType: 'WAIT_REVIEW' }
             });
 
             if (!reviewStatus) throw new Error("System Status 'WAIT_REVIEW' missing");

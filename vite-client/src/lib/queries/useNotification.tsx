@@ -6,30 +6,8 @@ import {
     type TCreateNotificationInput,
     type TUpdateNotificationInput,
 } from '@/lib/validationSchemas'
-import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
-import type { IUserNotificationResponse } from '@/shared/interfaces'
-import type { TUserNotification } from '@/shared/types'
-
 import { queryClient } from '../../main'
 import { notificationsListOptions } from './options/notification-queries'
-
-export const mapUserNotification = (
-    item: IUserNotificationResponse
-): TUserNotification => {
-    return {
-        id: item.id,
-        title: item.title ?? '',
-        content: item.content ?? '',
-        status: item.status ?? NotificationStatusEnum.UNSEEN,
-        type: item.type ?? NotificationTypeEnum.INFO,
-        user: item.user,
-        imageUrl: item.imageUrl ?? null,
-        redirectUrl: item.redirectUrl ?? null,
-        sender: item.sender ?? null,
-        updatedAt: new Date(item.updatedAt),
-        createdAt: new Date(item.createdAt),
-    }
-}
 
 export const useNotifications = () => {
     const options = notificationsListOptions()

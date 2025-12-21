@@ -37,6 +37,7 @@ import { JobService } from './job.service'
 import { RolesGuard } from '../auth/roles.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { JobTypeService } from '../job-type/job-type.service'
+import { DeliverJobDto } from './dto/deliver-job.dto'
 
 @ApiTags('Jobs')
 @Controller('jobs')
@@ -46,13 +47,12 @@ export class JobController {
         private readonly jobService: JobService,
         private readonly jobTypeService: JobTypeService,
         private readonly activityLogService: ActivityLogService
-    ) { }
-
+    ) {}
 
     @Post(':id/toggle-pin')
     async togglePin(@Req() request: Request, @Param('id') jobId: string) {
         const userPayload: TokenPayload = await request['user']
-        return this.jobService.togglePin(userPayload.sub, jobId);
+        return this.jobService.togglePin(userPayload.sub, jobId)
     }
 
     @Post()
@@ -115,16 +115,24 @@ export class JobController {
     @UseGuards(JwtGuard)
     @ApiBearerAuth()
     @ApiOperation({
-        summary: 'Get a list of jobs with pagination, filtering, and sorting, pinned job',
+        summary:
+            'Get a list of jobs with pagination, filtering, and sorting, pinned job',
     })
     @ApiResponse({
         status: 200,
         description: 'Return a list of jobs.',
         type: [JobResponseDto],
     })
-    async getWorkbenchData(@Req() request: Request, @Query() query: JobQueryDto) {
+    async getWorkbenchData(
+        @Req() request: Request,
+        @Query() query: JobQueryDto
+    ) {
         const userPayload: TokenPayload = await request['user']
-        return this.jobService.getWorkbenchData(userPayload.sub, userPayload.role, query)
+        return this.jobService.getWorkbenchData(
+            userPayload.sub,
+            userPayload.role,
+            query
+        )
     }
 
     @Get('search')
@@ -181,7 +189,20 @@ export class JobController {
     @Get('pending-deliver')
     async getPendingDeliver(@Req() request: Request) {
         const userPayload: TokenPayload = await request['user']
-        return this.jobService.getPendingDeliverJobs(userPayload.sub, userPayload.role);
+        return this.jobService.getPendingDeliverJobs(
+            userPayload.sub,
+            userPayload.role
+        )
+    }
+
+    @Post(':id/deliver')
+    async deliverJob(
+        @Req() request: Request,
+        @Param('id') id: string,
+        @Body() data: DeliverJobDto
+    ) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.deliverJob(userPayload.sub, id, data)
     }
 
     @Get('no/:jobNo')

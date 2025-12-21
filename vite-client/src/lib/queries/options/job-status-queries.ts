@@ -23,6 +23,22 @@ export const mapJobStatus: (item: IJobStatusResponse) => TJobStatus = (
     thumbnailUrl: item.thumbnailUrl ?? '',
 })
 
+
+export const jobStatusesListOptions = () => {
+    return queryOptions({
+        queryKey: ['job-statuses'],
+        queryFn: () => jobStatusApi.findAll(),
+        select: (res) => {
+            const jobStatusesData = res?.result
+            return {
+                jobStatuses: Array.isArray(jobStatusesData)
+                    ? jobStatusesData.map(mapJobStatus)
+                    : []
+            }
+        },
+    })
+}
+
 export const statusByOrderOptions = (order: number) =>
     queryOptions({
         queryKey: ['job-statuses', 'order', order],

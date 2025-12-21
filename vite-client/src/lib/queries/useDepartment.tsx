@@ -6,22 +6,7 @@ import {
     type TCreateDepartmentInput,
     type TUpdateDepartmentInput,
 } from '@/lib/validationSchemas'
-
-import type { IDepartmentResponse } from '../../shared/interfaces'
-import type { TDepartment } from '../../shared/types'
-
-export const mapDepartment: (item: IDepartmentResponse) => TDepartment = (
-    item
-) => ({
-    id: item.id ?? '',
-    code: item.code ?? '',
-    users: item.users ?? [],
-    hexColor: item.hexColor ?? '#ffffff',
-    notes: item.notes ?? '',
-    displayName: item.displayName ?? '',
-    createdAt: new Date(item.createdAt),
-    updatedAt: new Date(item.updatedAt),
-})
+import { mapDepartment } from './options/department-queries'
 
 export const useDepartments = () => {
     const { data, isFetching, isLoading } = useQuery({
