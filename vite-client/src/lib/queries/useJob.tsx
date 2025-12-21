@@ -240,6 +240,32 @@ export const useDeliverJobMutation = (
     })
 }
 
+export const useAdminDeliverJobMutation = (
+    onSuccess?: (res: ApiResponse) => void
+) => {
+    return useMutation({
+        mutationKey: ['deliver', 'job', 'admin-action'],
+        mutationFn: ({
+            deliveryId,
+            action,
+            feedback,
+        }: {
+            deliveryId: string
+            action: 'approve' | 'reject'
+            feedback?: string
+        }) => jobApi.adminDeliverJobAction(deliveryId, action, feedback),
+        onSuccess: (res) => {
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({ title: res.message, color: 'success' })
+            }
+            queryClient.refetchQueries({ queryKey: ['jobs'] })
+        },
+        onError: (err) => onErrorToast(err, 'Approve or Reject Job Failed'),
+    })
+}
+
 export const useTogglePinJobMutation = () => {
     return useMutation({
         mutationKey: ['togglePin', 'job'],

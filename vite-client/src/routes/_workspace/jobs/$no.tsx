@@ -19,7 +19,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { CalendarDays, House, LibraryBig, UserRound } from 'lucide-react'
-import { JobActionToolbar } from '../../../shared/components/job-detail/JobActionToolbar'
+import { JobActionToolbar } from '@/shared/components/job-detail/JobActionToolbar'
 
 export const Route = createFileRoute('/_workspace/jobs/$no')({
     component: JobDetailPage,

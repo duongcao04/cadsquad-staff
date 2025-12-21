@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -205,6 +206,43 @@ export class JobController {
         return this.jobService.deliverJob(userPayload.sub, id, data)
     }
 
+    @Post('deliver/:deliveryId/:action')
+    @UseGuards(RolesGuard)
+    @Roles('ADMIN')
+    async reviewDeliver(
+        @Req() request: Request,
+        @Param('deliveryId') deliveryId: string,
+        @Param('action') action: 'approve' | 'reject',
+        @Body()
+        data: {
+            feedback?: string
+        }
+    ) {
+        const userPayload: TokenPayload = await request['user']
+        if (action !== 'approve' && action !== 'reject') {
+            throw new BadRequestException(
+                'Review delivery action must be `approve` or `reject`'
+            )
+        }
+        const isApprove = action === 'approve' ? true : false
+        return this.jobService.reviewDeliveryActions(
+            userPayload.sub,
+            deliveryId,
+            isApprove,
+            data.feedback
+        )
+    }
+
+    @Get(':jobId/deliveries')
+    @UseGuards(RolesGuard)
+    @Roles('ADMIN')
+    async adminGetDeliveries(
+        @Req() request: Request,
+        @Param('jobId') jobId: string
+    ) {
+        return this.jobService.getJobDeliver(jobId)
+    }
+
     @Get('no/:jobNo')
     @HttpCode(200)
     @ResponseMessage('Get job by no successfully')
@@ -409,7 +447,8 @@ export class JobController {
         status: 200,
         description: 'The job has been successfully deleted.',
     })
-    async remove(@Param('id') id: string) {
-        return this.jobService.delete(id)
+    async remove(@Req() request: Request, @Param('id') id: string) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.delete(id, userPayload.sub)
     }
 }

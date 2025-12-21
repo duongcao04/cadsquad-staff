@@ -142,6 +142,12 @@ export const jobsSearchOptions = (keywords?: string) =>
         select: (res) => res?.result,
     })
 
+export const jobDeliveriesListOptions = (jobId: string) =>
+    queryOptions({
+        queryKey: ['jobs', 'deliveries', jobId],
+        queryFn: () => jobApi.jobDeliveries(jobId),
+        select: (res) => res?.result ?? [],
+    })
 
 export const jobsPendingDeliverOptions = () =>
     queryOptions({

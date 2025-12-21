@@ -66,7 +66,7 @@ export * from './icons/solar/IconDueSoon';
 export * from './icons/solar/IconMoneyIncome';
 export * from './icons/solar/index';
 export * from './job-detail/JobActionToolbar';
-export * from './job-detail/JobActivityLog';
+export * from './job-detail/JobActivityHistory';
 export * from './job-detail/JobAssigneesView';
 export * from './job-detail/JobCommentsView';
 export * from './job-detail/JobDescriptionView';

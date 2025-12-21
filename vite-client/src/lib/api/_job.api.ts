@@ -10,6 +10,7 @@ import {
     type TUpdateJobMembersInput,
 } from '@/lib/validationSchemas'
 import type {
+    IJobDelivery,
     IJobResponse,
     IPaginate,
     IUserResponse,
@@ -62,12 +63,28 @@ export const jobApi = {
             .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/pending-deliver`)
             .then((res) => res.data)
     },
+    jobDeliveries: async (jobId: string) => {
+        return axiosClient
+            .get<
+                ApiResponse<IJobDelivery[]>
+            >(`/v1/jobs/${jobId}/deliveries`)
+            .then((res) => res.data)
+    },
     deliverJob: async (
         jobId: string,
         data: Omit<TDeliverJobInput, 'jobId'>
     ) => {
         return axiosClient
             .post<ApiResponse>(`/v1/jobs/${jobId}/deliver`, data)
+            .then((res) => res.data)
+    },
+    adminDeliverJobAction: async (
+        deliveryId: string,
+        action: 'approve' | 'reject',
+        feedback?: string
+    ) => {
+        return axiosClient
+            .post<ApiResponse>(`/v1/jobs/deliver/${deliveryId}/${action}`, { feedback })
             .then((res) => res.data)
     },
     getJobsDueOnDate: async (isoDate: string) => {

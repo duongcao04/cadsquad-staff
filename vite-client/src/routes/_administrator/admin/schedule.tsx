@@ -32,6 +32,7 @@ import {
 import AdminContentContainer from '../../../shared/components/admin/AdminContentContainer'
 import JobScheduleModal from '../../../shared/components/admin-schedule/JobScheduleModal'
 import { TJob } from '../../../shared/types'
+import { queryClient } from '../../../main'
 
 export const Route = createFileRoute('/_administrator/admin/schedule')({
     component: SchedulePage,
@@ -124,7 +125,7 @@ const TEAM_MEMBERS = [
 function SchedulePage() {
     const [currentDate, setCurrentDate] = useState(new Date(2024, 1, 1)) // Start Feb 2024 for demo
     const [selectedMember, setSelectedMember] = useState<string>('all')
-    const [selectedJob, setSelectedJob] = useState<JobEvent | null>(null)
+    const [selectedJob, setSelectedJob] = useState<TJob | null>(null)
 
     const {
         isOpen: isOpenJobScheduleModal,

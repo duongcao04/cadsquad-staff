@@ -1,6 +1,23 @@
+import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
+import { usersListOptions } from '@/lib/queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroButton,
+    HeroCard,
+    HeroCardBody,
+    HeroCardFooter,
+    HeroCardHeader,
+    HeroTooltip,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
+import { DeactivateUserModal } from '@/shared/components/staff-directory/DeactiveUserModal'
+import { EmailUserModal } from '@/shared/components/staff-directory/EmailUserModal'
+import { SendNotificationModal } from '@/shared/components/staff-directory/SendNotificationModal'
+import { TUser } from '@/shared/types'
 import {
     Avatar,
-    Badge,
     Button,
     Chip,
     Divider,
@@ -15,6 +32,7 @@ import {
     SelectItem,
     useDisclosure,
 } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
     Briefcase,
@@ -29,26 +47,6 @@ import {
     UserPen,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import { AdminPageHeading } from '@/shared/components/admin/AdminPageHeading'
-import { usersListOptions } from '@/lib/queries/options/user-queries'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
-import {
-    HeroBreadcrumbs,
-    HeroBreadcrumbItem,
-    HeroTooltip,
-    HeroButton,
-    HeroCard,
-    HeroCardHeader,
-    HeroCardBody,
-    HeroCardFooter,
-} from '@/shared/components'
-import { AssignJobModal } from '../../../../../shared/components/staff-directory/AssignJobModal'
-import { TUser } from '../../../../../shared/types'
-import { EmailUserModal } from '../../../../../shared/components/staff-directory/EmailUserModal'
-import { SendNotificationModal } from '../../../../../shared/components/staff-directory/SendNotificationModal'
-import { DeactivateUserModal } from '../../../../../shared/components/staff-directory/DeactiveUserModal'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/'
@@ -373,9 +371,15 @@ function StaffDirectoryPage() {
                                         }
                                     />
                                     <div className="flex flex-col gap-1 items-start justify-center">
-                                        <h4 className="text-sm font-semibold text-text-default">
-                                            {user.displayName}
-                                        </h4>
+                                        <Link
+                                            to={INTERNAL_URLS.editStaffDetails(
+                                                user.username
+                                            )}
+                                        >
+                                            <h4 className="text-sm font-semibold text-text-default">
+                                                {user.displayName}
+                                            </h4>
+                                        </Link>
                                         <h5 className="text-xs tracking-tight font-medium text-text-subdued">
                                             {user.jobTitle?.displayName ||
                                                 'No Title'}

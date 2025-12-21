@@ -437,6 +437,8 @@ enum ActivityType {
   ChangePaymentChannel
   UpdateInformation
   DeleteJob
+  DeliverJob
+  MarkPaid
 }
 
 model Notification {

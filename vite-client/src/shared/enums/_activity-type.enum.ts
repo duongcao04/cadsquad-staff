@@ -6,6 +6,9 @@ export const ActivityTypeEnum = {
     ChangePaymentChannel: 'ChangePaymentChannel',
     UpdateInformation: 'UpdateInformation',
     DeleteJob: 'DeleteJob',
+    MarkPaid: 'MarkPaid',
+    DeliverJob: 'DeliverJob',
+    RescheduleJob: 'RescheduleJob',
 } as const
 export type ActivityTypeEnum =
     (typeof ActivityTypeEnum)[keyof typeof ActivityTypeEnum]
