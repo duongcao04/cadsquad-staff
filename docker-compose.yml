@@ -9,7 +9,7 @@ services:
       - '${REDIS_PORT:-6379}:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes:
-      - "D:/07_Backups/.database/redis:/data"
+      - "${DATA_PATH:-./.data}/redis:/data"
     networks:
       - app-network
 
@@ -26,7 +26,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - "D:/07_Backups/.database/postgres:/var/lib/postgresql/data"
+      - "${DATA_PATH:-./.data}/postgres:/var/lib/postgresql/data"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cadsquaddb}"]
       interval: 5s
@@ -35,7 +35,28 @@ services:
     networks:
       - app-network
 
+  pgadmin:
+    profiles: ["tools"]
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-root}
+      # Optional: To persist pgadmin configs/servers
+      # PGADMIN_CONFIG_SERVER_MODE: "False" 
+    volumes:
+      - "${DATA_PATH:-./.data}/pgadmin:/var/lib/pgadmin"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+
   ngrok:
+    profiles: ["tools"]
     image: ngrok/ngrok:3
     container_name: ngrok
     restart: unless-stopped
@@ -55,6 +76,7 @@ services:
       - app-network
 
   prisma-studio:
+    profiles: ["tools"]
     build:
       context: ./server
       target: deps
