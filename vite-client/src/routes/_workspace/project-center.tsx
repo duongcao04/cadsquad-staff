@@ -7,7 +7,7 @@ export const Route = createFileRoute('/_workspace/project-center')({
 
 function ProjectCenterLayout() {
     return (
-        <div className="bg-background h-full flex flex-col">
+        <>
             <div className="border-b border-border-default">
                 <PageHeading
                     title="Project center"
@@ -19,6 +19,6 @@ function ProjectCenterLayout() {
             <div className="pl-5 pr-3.5 pt-3">
                 <Outlet />
             </div>
-        </div>
+        </>
     )
 }

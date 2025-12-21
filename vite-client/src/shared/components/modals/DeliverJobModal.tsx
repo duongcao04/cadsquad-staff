@@ -7,13 +7,12 @@ import {
     ModalFooter,
     Button,
     Textarea,
-    Input,
     Select,
     SelectItem,
 } from '@heroui/react'
-import { Send, Link as LinkIcon, Paperclip, CheckCircle2 } from 'lucide-react'
+import { Send, Paperclip, CheckCircle2 } from 'lucide-react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { jobsPendingDeliverOptions } from '../../../lib/queries'
+import { jobsPendingDeliverOptions } from '@/lib/queries'
 import { JobStatusChip } from '../chips/JobStatusChip'
 
 interface DeliverJobModalProps {
@@ -142,6 +141,7 @@ export const DeliverJobModal = ({
                                     </Button>
                                     <Button
                                         color="primary"
+                                        variant="solid"
                                         onPress={handleSubmit}
                                         isLoading={isLoading}
                                         startContent={

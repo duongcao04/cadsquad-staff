@@ -3,12 +3,12 @@ import type { JobColumnKey, TJob } from '../types'
 import { JOB_COLUMNS, STORAGE_KEYS } from '../../lib'
 
 const getInitJobColumns = (): JobColumnKey[] | 'all' => {
-    if (typeof window === 'undefined') return 'all'
+    if (typeof window === 'undefined') return ['no','displayName','staffCost','status','dueAt','assignee','isPaid','action']
 
     const stored = localStorage.getItem(STORAGE_KEYS.jobColumns)
 
     if (!stored) {
-        return 'all'
+        return ['no','displayName','staffCost','status','dueAt','assignee','isPaid','action']
     } else {
         return JSON.parse(stored) as JobColumnKey[]
     }

@@ -1,4 +1,4 @@
-import { INTERNAL_URLS } from '@/lib'
+import { EXTERNAL_URLS } from '@/lib'
 import { useProfile, useUsers } from '@/lib/queries'
 import {
     useAssignMemberMutation,
@@ -112,7 +112,7 @@ export default function AssignMemberModal({
                                                 setMemberSelected(null)
                                             }
                                         }}
-                                        color="primary"
+                                        // color="primary"
                                     >
                                         Assign
                                     </Button>
@@ -166,12 +166,12 @@ export default function AssignMemberModal({
                                 Copy link
                             </p>
                             <Input
-                                value={INTERNAL_URLS.getJobDetailUrl(jobNo)}
+                                value={EXTERNAL_URLS.getJobDetailUrl(jobNo)}
                                 className="opacity-70!"
                                 endContent={
                                     <HeroTooltip content="Copy">
                                         <HeroCopyButton
-                                            textValue={INTERNAL_URLS.getJobDetailUrl(
+                                            textValue={EXTERNAL_URLS.getJobDetailUrl(
                                                 jobNo
                                             )}
                                         />

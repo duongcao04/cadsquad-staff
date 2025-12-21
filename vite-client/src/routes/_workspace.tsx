@@ -10,12 +10,10 @@ export const Route = createFileRoute('/_workspace')({
 function WorkspaceLayout() {
     return (
         <AuthGuard>
-            <div className="fixed top-0 w-full z-50">
-                <Header />
-            </div>
+            <Header />
             {/* Height for header */}
             <div className="h-14" />
-            <main className="relative h-[calc(100vh-56px)] flex items-start justify-start w-screen overflow-x-hidden">
+            <main className="size-full relative h-[calc(100vh-56px)] flex items-start justify-start overflow-x-hidden">
                 <div className="sticky top-0 h-full">
                     <Sidebar />
                 </div>
