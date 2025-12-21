@@ -1,5 +1,5 @@
 import { INTERNAL_URLS } from '@/lib'
-import { Link, useMatchRoute, useRouterState } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import {
     BadgeDollarSign,
     Calendar,
@@ -24,6 +24,8 @@ import { ActionButton } from '../../app/ActionButton'
 import { HeroButton } from '../../ui/hero-button'
 import { HeroTooltip } from '../../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
+import { departmentsListOptions } from '../../../../lib/queries'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 // --- Types ---
 interface SidebarItemProps {
@@ -116,6 +118,10 @@ export const AdminSidebar = ({
 }: {
     isCollapsed?: boolean
 }) => {
+    const { data: departments } = useSuspenseQuery({
+        ...departmentsListOptions(),
+    })
+
     return (
         <aside
             className={`flex flex-col h-full justify-between transition-all duration-300 ease-in-out
@@ -246,39 +252,43 @@ export const AdminSidebar = ({
                     </div>
 
                     {/* Departments */}
-                    <div>
-                        {!isCollapsed ? (
-                            <div className="flex items-center justify-between px-2 mb-2">
-                                <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
-                                    Departments
-                                </p>
-                                <Link to={INTERNAL_URLS.departmentsManage}>
-                                    <HeroButton
-                                        isIconOnly
-                                        size="xs"
-                                        className="p-1!"
-                                        variant="light"
-                                        color="default"
-                                    >
-                                        <Settings size={14} />
-                                    </HeroButton>
-                                </Link>
-                            </div>
-                        ) : (
-                            // Centered Settings icon when collapsed
-                            <div className="flex justify-center mb-2">
-                                <Settings className="w-4 h-4 text-slate-300" />
-                            </div>
-                        )}
+                    {departments && (
+                        <div>
+                            {!isCollapsed ? (
+                                <div className="flex items-center justify-between px-2 mb-2">
+                                    <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                                        Departments
+                                    </p>
+                                    <Link to={INTERNAL_URLS.departmentsManage}>
+                                        <HeroButton
+                                            isIconOnly
+                                            size="xs"
+                                            className="p-1!"
+                                            variant="light"
+                                            color="default"
+                                        >
+                                            <Settings size={14} />
+                                        </HeroButton>
+                                    </Link>
+                                </div>
+                            ) : (
+                                // Centered Settings icon when collapsed
+                                <div className="flex justify-center mb-2">
+                                    <Settings className="w-4 h-4 text-slate-300" />
+                                </div>
+                            )}
 
-                        <div className="space-y-1">
-                            {['Design Team', 'Development', 'Marketing'].map(
-                                (dept, idx) => (
+                            <div className="space-y-1">
+                                {departments.map((dept, idx) => (
                                     <Link
                                         key={idx}
-                                        title={isCollapsed ? dept : undefined}
+                                        title={
+                                            isCollapsed
+                                                ? dept.displayName
+                                                : undefined
+                                        }
                                         to={INTERNAL_URLS.departmentItemManage(
-                                            dept
+                                            dept.code
                                         )}
                                         className={`flex items-center cursor-pointer text-text-subdued hover:text-emerald-700 hover:bg-background-hovered rounded-xl transition-all duration-200
                        ${isCollapsed ? 'justify-center py-3' : 'gap-3 px-4 py-2 text-sm'}
@@ -295,14 +305,14 @@ export const AdminSidebar = ({
                                         ></span>
                                         {!isCollapsed && (
                                             <span className="whitespace-nowrap">
-                                                {dept}
+                                                {dept.displayName}
                                             </span>
                                         )}
                                     </Link>
-                                )
-                            )}
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </ScrollArea>
 

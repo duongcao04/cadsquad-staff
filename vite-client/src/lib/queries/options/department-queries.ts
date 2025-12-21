@@ -30,10 +30,10 @@ export const departmentsListOptions = () => {
 	})
 }
 
-export const departmentOptions = (id: string) => {
+export const departmentOptions = (identify: string) => {
 	return queryOptions({
-		queryKey: ['departments', 'id', id],
-		queryFn: () => departmentApi.findOne(id),
+		queryKey: ['departments', 'identify', identify],
+		queryFn: () => departmentApi.findOne(identify),
 		select: (res) => {
 			const departmentData = res?.result
 			return mapDepartment(departmentData)

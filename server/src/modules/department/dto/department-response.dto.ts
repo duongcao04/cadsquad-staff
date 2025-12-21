@@ -1,32 +1,42 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger'
 import { Expose } from 'class-transformer'
+import { UserResponseDto } from '../../user/dto/user-response.dto'
 
 export class DepartmentResponseDto {
-	@ApiProperty({ description: 'Department ID' })
-	@Expose()
-	id: string
+    @ApiProperty({ description: 'Department ID' })
+    @Expose()
+    id: string
 
-	@ApiProperty({ description: 'Display name of the department' })
-	@Expose()
-	displayName: string
+    @ApiProperty({ description: 'Display name of the department' })
+    @Expose()
+    displayName: string
 
-	@ApiProperty({ description: 'Optional notes for the department', required: false })
 	@Expose()
-	notes?: string
+    users: UserResponseDto
 
-	@ApiProperty({ description: 'Unique code for the department' })
-	@Expose()
-	code: string
+    @ApiProperty({
+        description: 'Optional notes for the department',
+        required: false,
+    })
+    @Expose()
+    notes?: string
 
-	@ApiProperty({ description: 'Hex color code for the department', required: false })
-	@Expose()
-	hexColor?: string
+    @ApiProperty({ description: 'Unique code for the department' })
+    @Expose()
+    code: string
 
-	@ApiProperty({ description: 'Creation timestamp' })
-	@Expose()
-	createdAt: Date
+    @ApiProperty({
+        description: 'Hex color code for the department',
+        required: false,
+    })
+    @Expose()
+    hexColor?: string
 
-	@ApiProperty({ description: 'Last update timestamp' })
-	@Expose()
-	updatedAt: Date
+    @ApiProperty({ description: 'Creation timestamp' })
+    @Expose()
+    createdAt: Date
+
+    @ApiProperty({ description: 'Last update timestamp' })
+    @Expose()
+    updatedAt: Date
 }
