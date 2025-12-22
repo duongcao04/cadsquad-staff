@@ -55,6 +55,7 @@ export const INTERNAL_URLS = {
      * ADMIN ROUTES
      */
     admin: '/' + 'admin',
+    systemConfiguration: '/' + 'admin/settings',
     schedule: '/' + 'admin/schedule',
     // MANAGEMENT
     appearance: '/' + 'settings/appearance',
@@ -74,6 +75,7 @@ export const INTERNAL_URLS = {
     */
     payment: '/' + 'financial/payment',
     invoiceTemplates: '/' + 'financial/invoice-templates',
+    pendingPayouts: '/' + 'financial/pending-payouts',
     payroll: '/' + 'financial/payroll',
     profitLoss: '/' + 'financial/profit-loss',
     reimbursements: '/' + 'financial/reimbursements',

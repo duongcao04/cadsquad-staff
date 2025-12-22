@@ -156,6 +156,19 @@ export const jobsPendingDeliverOptions = () =>
         select: (res) => res?.result,
     })
 
+export const jobsPendingPayoutsOptions = () =>
+    queryOptions({
+        queryKey: ['jobs', 'pending-payouts'],
+        queryFn: () => jobApi.pendingPayouts(),
+        select: (res) => res?.result ?? [],
+    })
+export const jobScheduleOptions = (month: number, year: number) =>
+    queryOptions({
+        queryKey: ['jobs', 'schedule', `${month}/${year}`],
+        queryFn: () => jobApi.jobsDueInMonth(month, year),
+        select: (res) => res?.result ?? [],
+    })
+
 // 3. Jobs theo Deadline
 export const jobsDueOnDateOptions = (isoDate: string) =>
     queryOptions({

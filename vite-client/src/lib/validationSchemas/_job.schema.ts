@@ -139,7 +139,7 @@ export const JobQuerySchema = JobFiltersSchema.merge(JobSortSchema).extend({
 })
 
 // Types inferred from Schemas (Optional, but useful for frontend type safety)
-export type TJobFiltersInput = z.input<typeof JobFiltersSchema>
+export type TJobFilters = z.input<typeof JobFiltersSchema>
 export type TJobQueryInput = z.input<typeof JobQuerySchema> // Raw input (e.g. from URLSearchParams)
 export type TJobQueryOutput = z.output<typeof JobQuerySchema> // Transformed output (e.g. ready for API call)
 

@@ -49,7 +49,7 @@ import {
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
 import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import { ReactNode, useCallback, useMemo } from 'react'
-import { optimizeCloudinary } from '../../../lib'
+import { optimizeCloudinary, useProfile } from '../../../lib'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore } from '../../stores'
 import JobFinishChip from '../chips/JobFinishChip'
@@ -147,6 +147,7 @@ export default function ProjectCenterTable({
     onAddAttachments,
     options = { fillContainerHeight: false },
 }: ProjectCenterTableProps) {
+    const { isAdmin } = useProfile()
     const { data: jobStatuses } = useJobStatuses()
 
     const hasSearchFilter = Boolean(searchKeywords)
@@ -170,9 +171,12 @@ export default function ProjectCenterTable({
     }
 
     const headerColumns = useMemo(() => {
-        if (visibleColumns === 'all') return JOB_COLUMNS
+        const allColumns = isAdmin
+            ? JOB_COLUMNS
+            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
+        if (visibleColumns === 'all') return allColumns
 
-        return JOB_COLUMNS.filter((column) =>
+        return allColumns.filter((column) =>
             Array.from(visibleColumns ?? []).includes(column.uid)
         )
     }, [visibleColumns])
@@ -189,7 +193,7 @@ export default function ProjectCenterTable({
                                 base: 'w-[450px]',
                                 mainWrapper: 'w-[450px]',
                                 inputWrapper:
-                                    'hover:shadow-SM bg-background border-border-default border-1',
+                                    'hover:shadow-SM bg-background border-border-default border',
                             }}
                             variant="bordered"
                             size="sm"
@@ -224,7 +228,7 @@ export default function ProjectCenterTable({
                                 }
                                 variant="bordered"
                                 size="sm"
-                                className="hover:shadow-SM border-border-default border-1"
+                                className="hover:shadow-SM border-border-default border"
                                 onPress={onRefresh}
                             >
                                 <span className="font-medium">Refresh</span>
@@ -236,7 +240,7 @@ export default function ProjectCenterTable({
                                 }
                                 variant="bordered"
                                 size="sm"
-                                className="hover:shadow-SM border-border-default border-1"
+                                className="hover:shadow-SM border-border-default border"
                                 onPress={openFilterDrawer}
                             >
                                 <span className="font-medium">Filter</span>
@@ -253,7 +257,7 @@ export default function ProjectCenterTable({
                                         }
                                         variant="bordered"
                                         size="sm"
-                                        className="hover:shadow-SM border-border-default border-1"
+                                        className="hover:shadow-SM border-border-default border"
                                     >
                                         <span className="font-medium">
                                             View
@@ -317,7 +321,7 @@ export default function ProjectCenterTable({
                                     <Button
                                         variant="bordered"
                                         size="sm"
-                                        className="hover:shadow-SM border-border-default border-1"
+                                        className="hover:shadow-SM border-border-default border"
                                         isIconOnly
                                     >
                                         <EllipsisVertical
@@ -390,7 +394,7 @@ export default function ProjectCenterTable({
                                 className="min-w-32.5"
                                 classNames={{
                                     trigger:
-                                        'hover:shadow-SM border-border-default border-1 cursor-pointer',
+                                        'hover:shadow-SM border-border-default border cursor-pointer',
                                     popoverContent: 'w-[200px]!',
                                 }}
                                 placeholder="Status"
@@ -438,7 +442,7 @@ export default function ProjectCenterTable({
                                 className="min-w-32.5"
                                 classNames={{
                                     trigger:
-                                        'hover:shadow-SM border-border-default border-1 cursor-pointer',
+                                        'hover:shadow-SM border-border-default border cursor-pointer',
                                     popoverContent: 'w-[200px]!',
                                 }}
                                 placeholder="Due in"
@@ -809,7 +813,7 @@ export default function ProjectCenterTable({
             onSortStringChange={onSortChange}
             BaseComponent={(found) => {
                 return (
-                    <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
+                    <ScrollArea className="size-full h-full! border border-border p-2 rounded-md min-h-[calc(100%-150px)]">
                         <ScrollBar orientation="horizontal" />
                         <ScrollBar orientation="vertical" />
                         {found.children}

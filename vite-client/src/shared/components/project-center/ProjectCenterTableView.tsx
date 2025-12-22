@@ -11,9 +11,13 @@ import { JobColumnKey, TJob } from '../../types'
 import JobDetailDrawer from '../job-detail/JobDetailDrawer'
 import AddAttachmentsModal from './AddAttachmentsModal'
 import AssignMemberModal from './AssignMemberModal'
-import { FilterDrawer } from './FilterDrawer'
 import ProjectCenterTable from './ProjectCenterTable'
 import { ViewColumnsDrawer } from './ViewColumnsDrawer'
+import { JobFilterDrawer } from './JobFilterDrawer'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { jobStatusesListOptions, usersListOptions } from '../../../lib/queries'
+import { jobTypesListOptions } from '../../../lib/queries/options/job-type-queries'
+import { paymentChannelsListOptions } from '../../../lib/queries/options/payment-channel-queries'
 
 type Pagination = {
     page: number
@@ -43,6 +47,30 @@ export default function ProjectCenterTableView(
     const search = Route.useSearch()
     const { tab } = Route.useParams()
 
+    const {
+        data: { jobStatuses },
+    } = useSuspenseQuery({
+        ...jobStatusesListOptions(),
+    })
+
+    const {
+        data: { jobTypes },
+    } = useSuspenseQuery({
+        ...jobTypesListOptions(),
+    })
+
+    const {
+        data: { paymentChannels },
+    } = useSuspenseQuery({
+        ...paymentChannelsListOptions(),
+    })
+
+    const {
+        data: { users },
+    } = useSuspenseQuery({
+        ...usersListOptions(),
+    })
+
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
     const [insertAttachmentsTo, setInsertAttachmentsTo] = useState<
         string | null
@@ -54,7 +82,7 @@ export default function ProjectCenterTableView(
     // --- DRAWERS & MODALS ---
     const {
         isOpen: isOpenFilterDrawer,
-        onClose: onCloseFilterDrawer,
+        onOpenChange: onFilterDrawerChange,
         onOpen: onOpenFilterDrawer,
     } = useDisclosure({ id: 'FilterDrawer' })
     const {
@@ -165,15 +193,38 @@ export default function ProjectCenterTableView(
             console.error('Download failed', error)
         }
     }
-
+    const filterOptions = {
+        statuses: (() =>
+            jobStatuses.map((item) => ({
+                label: item.displayName,
+                value: item.code,
+            })))(),
+        types: (() =>
+            jobTypes.map((item) => ({
+                label: item.displayName,
+                value: item.code,
+            })))(),
+        assignees: (() =>
+            users.map((item) => ({
+                label: item.displayName,
+                value: item.username,
+            })))(),
+        paymentChannels: (() =>
+            paymentChannels.map((item) => ({
+                label: item.displayName,
+                value: item.id,
+            })))(),
+    }
     return (
         <>
             {isOpenFilterDrawer && (
-                <FilterDrawer
+                <JobFilterDrawer
                     isOpen={isOpenFilterDrawer}
-                    onClose={onCloseFilterDrawer}
-                    filters={props.filters}
-                    onFiltersChange={props.onFiltersChange}
+                    onOpenChange={onFilterDrawerChange}
+                    onApply={(filters) => {
+                        console.log(filters)
+                    }}
+                    options={filterOptions}
                 />
             )}
             {isOpenViewColDrawer && (

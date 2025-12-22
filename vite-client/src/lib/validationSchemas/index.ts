@@ -5,6 +5,7 @@ export * from './_comment.schema';
 export * from './_config.schema';
 export * from './_department.schema';
 export * from './_excel.schema';
+export * from './_job-filter.schema';
 export * from './_job-status.schema';
 export * from './_job-title.schema';
 export * from './_job-type.schema';

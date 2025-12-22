@@ -63,6 +63,16 @@ export const jobApi = {
             .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/pending-deliver`)
             .then((res) => res.data)
     },
+    pendingPayouts: async () => {
+        return axiosClient
+            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/pending-payouts`)
+            .then((res) => res.data)
+    },
+    jobsDueInMonth: async (month: number, year: number) => {
+        return axiosClient
+            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/due-monthly?month=${month}&year=${year}`)
+            .then((res) => res.data)
+    },
     jobDeliveries: async (jobId: string) => {
         return axiosClient
             .get<

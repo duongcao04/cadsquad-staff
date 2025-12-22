@@ -34,6 +34,7 @@ import { JobSortBuilder } from './dto/job-sort.dto'
 import { RescheduleJobDto } from './dto/reschedule-job.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
+import dayjs from 'dayjs'
 
 @Injectable()
 export class JobService {
@@ -501,7 +502,7 @@ export class JobService {
         }
         try {
             const jobDeliveries = await this.prisma.jobDelivery.findMany({
-                where: { AND: [{ id: jobId }] },
+                where: { job: { id: jobId } },
                 include: { user: true },
             })
 
@@ -576,6 +577,36 @@ export class JobService {
         } catch (error) {
             throw new InternalServerErrorException('Get job by no failed')
         }
+    }
+
+    async getPendingPaymentJobs() {
+        return this.prisma.job.findMany({
+            where: {
+                status: { systemType: 'COMPLETED' },
+                isPaid: false,
+                deletedAt: null,
+            },
+            include: {
+                status: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        code: true,
+                        hexColor: true,
+                    },
+                },
+                type: { select: { displayName: true, code: true } },
+                assignee: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        avatar: true,
+                        username: true,
+                    },
+                },
+            },
+            orderBy: { completedAt: 'asc' }, // Oldest first (pay them first!)
+        })
     }
 
     async getPendingDeliverJobs(userId: string, userRole: RoleEnum) {
@@ -723,6 +754,22 @@ export class JobService {
                 },
             })
 
+            if (isApproved) {
+                // Notify Accounting
+                const accountants = await tx.user.findMany({
+                    where: { role: 'ACCOUNTING' },
+                })
+                await tx.notification.createMany({
+                    data: accountants.map((acc) => ({
+                        userId: acc.id,
+                        title: 'Payment Pending',
+                        content: `Job #${jobUpdated.no} is completed. Please verify payment.`,
+                        type: 'JOB_UPDATE',
+                        redirectUrl: `/financial/pending-payouts`,
+                    })),
+                })
+            }
+
             await tx.notification.create({
                 data: {
                     userId: delivery.userId,
@@ -837,7 +884,6 @@ export class JobService {
             throw new InternalServerErrorException('Update job failed')
         }
     }
-
     async markPaid(
         jobId: string,
         modifierId: string
@@ -845,95 +891,157 @@ export class JobService {
         if (!jobId) throw new BadRequestException('Job ID invalid')
 
         return await this.prisma.$transaction(async (tx) => {
-            const job = await tx.job.findUnique({
-                where: { id: jobId },
-                select: {
-                    id: true,
-                    no: true,
-                    isPaid: true,
-                    assignee: { select: { id: true } },
-                    status: { select: { systemType: true } },
-                },
-            })
-
-            const modifier = await tx.user.findUnique({
-                where: { id: modifierId },
-                select: { displayName: true },
-            })
+            // 1. Fetch Job and Modifier (User) in parallel or combined to save time
+            const [job, modifier] = await Promise.all([
+                tx.job.findUnique({
+                    where: { id: jobId },
+                    select: {
+                        id: true,
+                        no: true,
+                        isPaid: true,
+                        assignee: { select: { id: true } },
+                        status: { select: { systemType: true } },
+                    },
+                }),
+                tx.user.findUnique({
+                    where: { id: modifierId },
+                    select: { displayName: true },
+                }),
+            ])
 
             if (!job) throw new NotFoundException('Job not found')
-            if (job.isPaid) {
+            if (job.isPaid)
                 throw new BadRequestException('Job has already been paid')
-            }
+            if (!modifier)
+                throw new NotFoundException('Modifier user not found')
 
+            // 2. Get the "Finished" status ID
+            // Using findFirst because systemType is an enum, not a unique ID
             const finishStatus = await tx.jobStatus.findFirst({
                 where: { systemType: JobStatusSystemType.TERMINATED },
                 select: { id: true },
             })
 
-            const updateData =
-                job.status.systemType === JobStatusSystemType.COMPLETED
-                    ? {
-                          isPaid: true,
-                          paidAt: new Date(),
-                          statusId: finishStatus?.id,
-                          finishedAt: new Date(),
-                      }
-                    : {
-                          isPaid: true,
-                          paidAt: new Date(),
-                      }
-
-            const updateJob = await tx.job.update({
-                where: { id: jobId },
-                data: updateData,
-            })
-
-            // Log Activity: MarkPaid
-            await tx.jobActivityLog.create({
-                data: {
-                    jobId: jobId,
-                    previousValue: 'false',
-                    currentValue: 'true',
-                    modifiedById: modifierId,
-                    fieldName: 'mark paid',
-                    activityType: ActivityType.MarkPaid,
-                },
-            })
-
-            if (job.assignee && job.assignee.length > 0) {
-                await Promise.all(
-                    job.assignee.map(async (assignee) => {
-                        const notification: CreateNotificationDto = {
-                            userId: assignee.id,
-                            title: renderTemplate(
-                                NOTIFICATION_CONTENT_TEMPLATES
-                                    .notifyAssigneeWhenPaid.title,
-                                { jobNo: job.no }
-                            ),
-                            content: renderTemplate(
-                                NOTIFICATION_CONTENT_TEMPLATES
-                                    .notifyAssigneeWhenPaid.content,
-                                {
-                                    jobNo: job.no,
-                                    paidBy:
-                                        modifier?.displayName ?? 'Accounting',
-                                }
-                            ),
-                            type: NotificationType.JOB_UPDATE,
-                            redirectUrl: renderTemplate(
-                                NOTIFICATION_CONTENT_TEMPLATES
-                                    .notifyAssigneeWhenPaid.url,
-                                { jobNo: job.no }
-                            ),
-                            imageUrl: IMAGES.NOTIFICATION_DEFAULT_IMAGE,
-                        }
-                        return this.notificationService.send(notification)
-                    })
+            if (!finishStatus) {
+                throw new InternalServerErrorException(
+                    'System status TERMINATED not configured in database'
                 )
             }
 
-            return { id: updateJob.id, no: updateJob.no }
+            // 3. Prepare Update Data
+            // If job is in COMPLETED (Staff done), move to TERMINATED (Paid & Archive)
+            // If job is in any other status, just mark as paid but stay in current status
+            const now = new Date()
+            const updateData: Prisma.JobUpdateInput = {
+                isPaid: true,
+                paidAt: now,
+            }
+
+            if (job.status.systemType === JobStatusSystemType.COMPLETED) {
+                updateData.status = { connect: { id: finishStatus.id } }
+                updateData.finishedAt = now
+            }
+
+            // 4. Execute Job Update
+            const updatedJob = await tx.job.update({
+                where: { id: jobId },
+                data: updateData,
+                select: { id: true, no: true },
+            })
+
+            // 5. Log Activity
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId: jobId,
+                    previousValue: 'Unpaid',
+                    currentValue: 'Paid',
+                    modifiedById: modifierId,
+                    fieldName: 'Payment Status',
+                    activityType: ActivityType.MarkPaid,
+                    notes: `Payment confirmed by ${modifier.displayName}`,
+                },
+            })
+
+            // 6. Notify Assignees (Non-blocking notification send)
+            if (job.assignee?.length > 0) {
+                const notifications = job.assignee.map((assignee) => {
+                    const dto: CreateNotificationDto = {
+                        userId: assignee.id,
+                        title: renderTemplate(
+                            NOTIFICATION_CONTENT_TEMPLATES
+                                .notifyAssigneeWhenPaid.title,
+                            { jobNo: job.no }
+                        ),
+                        content: renderTemplate(
+                            NOTIFICATION_CONTENT_TEMPLATES
+                                .notifyAssigneeWhenPaid.content,
+                            {
+                                jobNo: job.no,
+                                paidBy: modifier.displayName,
+                            }
+                        ),
+                        type: NotificationType.JOB_UPDATE,
+                        redirectUrl: renderTemplate(
+                            NOTIFICATION_CONTENT_TEMPLATES
+                                .notifyAssigneeWhenPaid.url,
+                            { jobNo: job.no }
+                        ),
+                        imageUrl: IMAGES.NOTIFICATION_DEFAULT_IMAGE,
+                    }
+                    return this.notificationService.send(dto)
+                })
+
+                // We don't necessarily need to await these inside the transaction
+                // if your notification service is async/queue-based,
+                // but for consistency we keep them in the flow.
+                await Promise.all(notifications)
+            }
+
+            return { id: updatedJob.id, no: updatedJob.no }
+        })
+    }
+
+    async getDueInMonth(
+        month: number,
+        year: number,
+        userId: string,
+        userRole: RoleEnum
+    ) {
+        // 1. Create a Day.js object for the start of the month
+        // Note: Day.js months are 0-indexed (0 = Jan), so we subtract 1
+        const startOfMonth = dayjs()
+            .year(year)
+            .month(month - 1)
+            .startOf('month')
+        const endOfMonth = startOfMonth.endOf('month')
+
+        return this.prisma.job.findMany({
+            where: {
+                AND: [
+                    // Permission check: Staff only see their own, Admins see all
+                    this.buildPermission(userRole, userId),
+                    {
+                        dueAt: {
+                            gte: startOfMonth.toDate(),
+                            lte: endOfMonth.toDate(),
+                        },
+                    },
+                    { deletedAt: null }, // Exclude deleted jobs
+                ],
+            },
+            include: {
+                status: true,
+                type: true,
+                assignee: {
+                    select: {
+                        displayName: true,
+                        avatar: true,
+                    },
+                },
+            },
+            orderBy: {
+                dueAt: 'asc',
+            },
         })
     }
 

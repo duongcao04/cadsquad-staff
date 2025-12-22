@@ -12,8 +12,8 @@ export const jobTypeApi = {
             data
         )
     },
-    findAll: () => {
-        return axiosClient.get<ApiResponse<IJobTypeResponse[]>>('/v1/job-types')
+    findAll: async () => {
+        return axiosClient.get<ApiResponse<IJobTypeResponse[]>>('/v1/job-types').then(res => res.data)
     },
     findOne: (id: string) => {
         return axiosClient.get<ApiResponse<IJobTypeResponse>>(

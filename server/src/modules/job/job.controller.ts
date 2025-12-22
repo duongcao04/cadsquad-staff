@@ -196,6 +196,13 @@ export class JobController {
         )
     }
 
+    @Get('pending-payouts')
+    @UseGuards(RolesGuard)
+    @Roles('ADMIN', 'ACCOUNTING')
+    async getPendingPayouts(@Req() request: Request) {
+        return this.jobService.getPendingPaymentJobs()
+    }
+
     @Post(':id/deliver')
     async deliverJob(
         @Req() request: Request,
@@ -241,6 +248,22 @@ export class JobController {
         @Param('jobId') jobId: string
     ) {
         return this.jobService.getJobDeliver(jobId)
+    }
+
+    @Get('due-monthly')
+    @ApiOperation({ summary: 'Get jobs due in a specific month' })
+    async getDueInMonth(
+        @Query('month') month: number,
+        @Query('year') year: number,
+        @Req() request: Request
+    ) {
+        const userPayload: TokenPayload = await request['user']
+        return this.jobService.getDueInMonth(
+            Number(month),
+            Number(year),
+            userPayload.sub,
+            userPayload.role
+        )
     }
 
     @Get('no/:jobNo')

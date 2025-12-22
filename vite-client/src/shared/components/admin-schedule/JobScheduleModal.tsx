@@ -1,3 +1,5 @@
+import { dateFormatter, INTERNAL_URLS } from '@/lib'
+import { jobByNoOptions } from '@/lib/queries'
 import {
     Avatar,
     AvatarGroup,
@@ -9,62 +11,71 @@ import {
     ModalFooter,
     ModalHeader,
 } from '@heroui/react'
-import { format, parseISO } from 'date-fns'
+import { useQuery } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import { Clock, Plus } from 'lucide-react'
-import { TJob } from '../../types'
 
 type JobScheduleModalProps = {
     isOpen: boolean
     onClose: () => void
-    selectedJob: TJob
+    jobNo: string
 }
 export default function JobScheduleModal({
     isOpen,
     onClose,
-    selectedJob,
+    jobNo,
 }: JobScheduleModalProps) {
+    const { data: job } = useQuery({
+        ...jobByNoOptions(jobNo),
+        enabled: isOpen,
+    })
+    const router = useRouter()
+
+    const handleEditDetails = () => {
+        router.navigate({
+            href: INTERNAL_URLS.editJob(jobNo),
+        })
+        onClose()
+    }
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} backdrop="blur">
             <ModalContent>
                 {(onClose) => (
                     <>
                         <ModalHeader className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2 text-slate-500 text-xs font-medium uppercase tracking-wider">
+                            <div className="flex items-center gap-2 text-text-subdued text-xs font-medium uppercase tracking-wider">
                                 <Clock size={12} />
-                                {selectedJob &&
-                                    format(
-                                        parseISO(selectedJob.dueAt),
-                                        'MMMM d, yyyy • h:mm a'
-                                    )}
+                                {job &&
+                                    dateFormatter(job.dueAt, {
+                                        format: 'longDateTime',
+                                    })}
                             </div>
-                            <span className="text-xl">
-                                {selectedJob?.displayName}
-                            </span>
+                            <span className="text-xl">{job?.displayName}</span>
                         </ModalHeader>
                         <ModalBody>
                             <div className="flex items-center gap-2 mb-4">
                                 <Chip
                                     variant="flat"
                                     style={{
-                                        backgroundColor: `${selectedJob?.hexColor}20`,
-                                        color: selectedJob?.hexColor,
+                                        backgroundColor: `${job?.status.hexColor}20`,
+                                        color: job?.status?.hexColor,
                                     }}
                                 >
-                                    {selectedJob?.status}
+                                    {job?.status.displayName}
                                 </Chip>
-                                <span className="text-sm text-slate-500">
-                                    for{' '}
-                                    <strong>{selectedJob?.clientName}</strong>
+                                <span className="text-sm text-text-subdued">
+                                    for <strong>{job?.clientName}</strong>
                                 </span>
                             </div>
 
-                            <div className="bg-slate-50 p-4 rounded-xl border border-border-default mb-4">
-                                <p className="text-sm font-semibold text-slate-700 mb-2">
+                            <div className="bg-background p-4 rounded-xl border border-border-default mb-4">
+                                <p className="text-sm font-semibold text-text-default mb-2">
                                     Assignees
                                 </p>
                                 <div className="flex items-center gap-3">
                                     <AvatarGroup max={3} isBordered>
-                                        {selectedJob?.assignee.map((a, i) => (
+                                        {job?.assignee.map((a, i) => (
                                             <Avatar
                                                 key={i}
                                                 src={a.avatar}
@@ -76,17 +87,22 @@ export default function JobScheduleModal({
                                         size="sm"
                                         variant="light"
                                         startContent={<Plus size={14} />}
+                                        onPress={() => {
+                                            router.navigate({
+                                                href: `${INTERNAL_URLS.editJob(jobNo)}/?tab=team`,
+                                            })
+                                        }}
                                     >
                                         Add
                                     </Button>
                                 </div>
                             </div>
 
-                            <p className="text-sm text-slate-500">
+                            <p className="text-sm text-text-subdued">
                                 This job is currently in the{' '}
-                                <strong>{selectedJob?.status}</strong> phase.
-                                Ensure all deliverables are uploaded before the
-                                deadline.
+                                <strong>{job?.status.displayName}</strong>{' '}
+                                phase. Ensure all deliverables are uploaded
+                                before the deadline.
                             </p>
                         </ModalBody>
                         <ModalFooter>
@@ -97,7 +113,7 @@ export default function JobScheduleModal({
                             >
                                 Delete
                             </Button>
-                            <Button color="primary" onPress={onClose}>
+                            <Button color="primary" onPress={handleEditDetails}>
                                 Edit Details
                             </Button>
                         </ModalFooter>

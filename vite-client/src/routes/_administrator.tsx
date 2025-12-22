@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { AdminGuard } from '../shared/guards'
+import { ManagerGuard } from '../shared/guards'
 import { AdminSidebar } from '../shared/components/admin/layouts/AdminSidebar'
 import { AdminHeader } from '../shared/components/admin/layouts/AdminHeader'
 import { ScrollArea, ScrollBar } from '../shared/components'
@@ -23,7 +23,7 @@ function AdminLayout() {
     )
 
     return (
-        <AdminGuard>
+        <ManagerGuard>
             <div id="admin-page">
                 <div className="fixed top-0 w-full z-50">
                     <AdminHeader />
@@ -68,6 +68,6 @@ function AdminLayout() {
                     </div>
                 </div>
             </div>
-        </AdminGuard>
+        </ManagerGuard>
     )
 }

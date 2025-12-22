@@ -1,4 +1,6 @@
+import { Link } from '@tanstack/react-router'
 import { Briefcase, AlertCircle, Clock, BanknoteArrowDown } from 'lucide-react'
+import { INTERNAL_URLS } from '../../../../lib'
 
 export const TopStats = ({
     activeJobs,
@@ -86,11 +88,14 @@ export const TopStats = ({
                         Waiting for Payment
                     </p>
                 </div>
-                <div className="h-full flex flex-col justify-end">
+                <Link
+                    to={INTERNAL_URLS.pendingPayouts}
+                    className="h-full flex flex-col justify-end"
+                >
                     <span className="text-xs text-text-subdued hover:text-text-muted cursor-pointer hover:underline flex items-center gap-1">
                         View details →
                     </span>
-                </div>
+                </Link>
             </div>
         </div>
     )

@@ -9,10 +9,10 @@ export const paymentChannelApi = {
     create: (data: TCreatePaymentChannelInput) => {
         return axiosClient.post('/v1/payment-channels', data)
     },
-    findAll: () => {
+    findAll: async () => {
         return axiosClient.get<ApiResponse<IPaymentChannelResponse[]>>(
             '/v1/payment-channels'
-        )
+        ).then(res => res.data)
     },
     findOne: (id: string) => {
         return axiosClient.get<ApiResponse<IPaymentChannelResponse>>(

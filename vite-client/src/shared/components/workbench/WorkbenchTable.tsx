@@ -46,6 +46,7 @@ import {
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
 import { WorkbenchTableViewProps } from './WorkbenchTableView'
+import { useProfile } from '../../../lib'
 
 type Options = {
     fillContainerHeight?: boolean
@@ -70,6 +71,7 @@ export default function WorkbenchTable({
     onLimitChange,
     options = { fillContainerHeight: false },
 }: Props) {
+    const { isAdmin } = useProfile()
     const hasSearchFilter = Boolean(search)
 
     const selectedKeys = useStore(
@@ -85,6 +87,9 @@ export default function WorkbenchTable({
     }
 
     const headerColumns = useMemo(() => {
+        const allColumns = isAdmin
+            ? JOB_COLUMNS
+            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
         const visibleColumns = [
             'thumbnailUrl',
             'no',
@@ -97,7 +102,7 @@ export default function WorkbenchTable({
             'action',
         ]
 
-        return JOB_COLUMNS.filter((column) =>
+        return allColumns.filter((column) =>
             Array.from(visibleColumns ?? []).includes(column.uid)
         )
     }, [])
@@ -136,7 +141,7 @@ export default function WorkbenchTable({
                         }
                         variant="bordered"
                         size="sm"
-                        className="hover:shadow-SM border-border-default border-1"
+                        className="hover:shadow-SM border-border-default border"
                         onPress={onRefresh}
                     >
                         <span className="font-medium">Refresh</span>

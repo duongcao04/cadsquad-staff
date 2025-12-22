@@ -426,18 +426,24 @@ export const useDeleteJobMutation = () => {
         onError: (err) => onErrorToast(err, 'Delete job failed'),
     })
 }
-export const useMarkPaidMutation = () => {
+export const useMarkPaidMutation = (
+    onSuccess?: (res: ApiResponse<{ id: string; no: string }>) => void
+) => {
     return useMutation({
         mutationKey: ['mark-paid', 'job'],
         mutationFn: (jobId: string) => {
             return jobApi.markPaid(jobId)
         },
         onSuccess: (res) => {
-            addToast({
-                title: 'Mark as paid successfully',
-                description: `#${res.result?.no} has been marked as paid`,
-                color: 'success',
-            })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Mark as paid successfully',
+                    description: `#${res.result?.no} has been marked as paid`,
+                    color: 'success',
+                })
+            }
             queryClient.invalidateQueries({
                 queryKey: ['jobs'],
             })

@@ -12,6 +12,7 @@ import {
     Group,
     LayoutDashboard,
     Mail,
+    MonitorCog,
     PieChart,
     Settings,
     Settings2,
@@ -24,7 +25,10 @@ import { ActionButton } from '../../app/ActionButton'
 import { HeroButton } from '../../ui/hero-button'
 import { HeroTooltip } from '../../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
-import { departmentsListOptions } from '../../../../lib/queries'
+import {
+    departmentsListOptions,
+    jobsPendingPayoutsOptions,
+} from '../../../../lib/queries'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
 // --- Types ---
@@ -122,6 +126,10 @@ export const AdminSidebar = ({
         ...departmentsListOptions(),
     })
 
+    const { data: pendingPayoutJobs } = useSuspenseQuery({
+        ...jobsPendingPayoutsOptions(),
+    })
+
     return (
         <aside
             className={`flex flex-col h-full justify-between transition-all duration-300 ease-in-out
@@ -178,6 +186,12 @@ export const AdminSidebar = ({
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.schedule}
                             />
+                            <SidebarItem
+                                icon={MonitorCog}
+                                label="System Configuration"
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.systemConfiguration}
+                            />
                         </div>
                     </div>
 
@@ -229,6 +243,13 @@ export const AdminSidebar = ({
                                 label="Transaction Reports"
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.payment}
+                            />
+                            <SidebarItem
+                                icon={BadgeDollarSign}
+                                label="Pending payouts"
+                                badge={pendingPayoutJobs.length}
+                                isCollapsed={isCollapsed}
+                                url={INTERNAL_URLS.pendingPayouts}
                             />
                             <SidebarItem
                                 icon={Dock}
