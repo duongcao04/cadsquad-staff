@@ -27,8 +27,16 @@ import {
     Send,
     Paperclip,
 } from 'lucide-react'
+import { getPageTitle } from '../../lib'
 
 export const Route = createFileRoute('/_public/help-center')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Help Center'),
+            },
+        ],
+    }),
     component: HelpCenterPage,
 })
 
@@ -171,7 +179,7 @@ function HelpCenterPage() {
                                         key={faq.id}
                                         aria-label={faq.question}
                                         classNames={{
-                                            title:"cursor-pointer"
+                                            title: 'cursor-pointer',
                                         }}
                                         title={
                                             <span className="font-semibold text-text-default">

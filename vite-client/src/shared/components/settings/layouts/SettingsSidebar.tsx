@@ -44,22 +44,10 @@ const SETTINGS_MENU = [
         title: 'Workspace',
         items: [
             {
-                key: 'general',
-                label: 'General & Branding',
-                icon: Building,
-                href: '/settings/general',
-            },
-            {
                 key: 'appearance',
                 label: 'Appearance',
                 icon: Palette,
                 href: INTERNAL_URLS.appearance,
-            },
-            {
-                key: 'billing',
-                label: 'Billing & Plans',
-                icon: CreditCard,
-                href: '/settings/billing',
             },
             {
                 key: 'language',
@@ -72,12 +60,6 @@ const SETTINGS_MENU = [
     {
         title: 'App',
         items: [
-            {
-                key: 'devices',
-                label: 'Device Management',
-                icon: Smartphone,
-                href: '/settings/devices',
-            },
             {
                 key: 'privacy',
                 label: 'Privacy & Data',
@@ -108,11 +90,11 @@ export default function SettingsSidebar() {
                         selectedIcon: 'hidden', // Hide default checkmark
                     }}
                 >
-                    {SETTINGS_MENU.map((section) => (
+                    {SETTINGS_MENU.map((section, idx) => (
                         <ListboxSection
                             key={section.title}
                             title={section.title}
-                            showDivider
+                            showDivider={idx !== SETTINGS_MENU.length - 1}
                             classNames={{
                                 heading:
                                     'text-xs font-bold text-text-default uppercase tracking-wider px-3 mb-4 mt-2',

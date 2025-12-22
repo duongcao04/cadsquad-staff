@@ -1,4 +1,4 @@
-import { INTERNAL_URLS } from '@/lib'
+import { getPageTitle, INTERNAL_URLS } from '@/lib'
 import { jobScheduleOptions } from '@/lib/queries/options/job-queries'
 import {
     AdminPageHeading,
@@ -26,6 +26,13 @@ import { ChevronLeft, ChevronRight, House, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 export const Route = createFileRoute('/_administrator/admin/schedule')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Schedule'),
+            },
+        ],
+    }),
     component: SchedulePage,
 })
 

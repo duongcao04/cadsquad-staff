@@ -26,7 +26,7 @@ import {
     House,
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
-import { INTERNAL_URLS } from '../../lib'
+import { getPageTitle, INTERNAL_URLS } from '../../lib'
 import {
     HeroBreadcrumbs,
     HeroBreadcrumbItem,
@@ -36,6 +36,13 @@ import { useTheme } from 'next-themes'
 import { useThemeColor } from '../../shared/contexts/ThemeColorContext'
 
 export const Route = createFileRoute('/settings/appearance')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Appearance'),
+            },
+        ],
+    }),
     component: AppearanceSettingsPage,
 })
 

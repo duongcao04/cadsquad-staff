@@ -1,8 +1,11 @@
 import { HeroUIProvider, ToastProvider } from '@heroui/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import {
+    createRootRouteWithContext,
+    HeadContent,
+    Outlet,
+} from '@tanstack/react-router'
 import { ConfigProvider } from 'antd'
 import { ThemeProvider } from 'antd-style'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
@@ -17,50 +20,53 @@ interface AppRouterContext {
 }
 export const Route = createRootRouteWithContext<AppRouterContext>()({
     component: () => (
-        <div
-            id="app"
-            className="max-w-screen max-h-screen bg-background-muted scroll-smooth"
-        >
-            <ThemeColorProvider>
-                <AblyProvider client={ablyClient}>
-                    <QueryClientProvider client={queryClient}>
-                        <NextThemesProvider
-                            attribute="class"
-                            defaultTheme="light"
-                            enableSystem={true}
-                        >
-                            <HeroUIProvider>
-                                <AntdProvider>
-                                    <ToastProvider
-                                        placement="bottom-right"
-                                        maxVisibleToasts={10}
-                                        toastOffset={20}
-                                        toastProps={{
-                                            radius: 'sm',
-                                            timeout: 1200,
-                                            variant: 'flat',
-                                            classNames: {
-                                                closeButton:
-                                                    'opacity-100 absolute right-4 top-1/2 -translate-y-1/2',
-                                            },
-                                        }}
-                                        regionProps={{
-                                            classNames: {
-                                                base: '!z-[10000]',
-                                            },
-                                        }}
-                                    />
-                                    <Outlet />
-                                </AntdProvider>
-                            </HeroUIProvider>
-                        </NextThemesProvider>
+        <>
+            <HeadContent />
+            <div
+                id="app"
+                className="max-w-screen max-h-screen bg-background-muted scroll-smooth"
+            >
+                <ThemeColorProvider>
+                    <AblyProvider client={ablyClient}>
+                        <QueryClientProvider client={queryClient}>
+                            <NextThemesProvider
+                                attribute="class"
+                                defaultTheme="light"
+                                enableSystem={true}
+                            >
+                                <HeroUIProvider>
+                                    <AntdProvider>
+                                        <ToastProvider
+                                            placement="bottom-right"
+                                            maxVisibleToasts={10}
+                                            toastOffset={20}
+                                            toastProps={{
+                                                radius: 'sm',
+                                                timeout: 1200,
+                                                variant: 'flat',
+                                                classNames: {
+                                                    closeButton:
+                                                        'opacity-100 absolute right-4 top-1/2 -translate-y-1/2',
+                                                },
+                                            }}
+                                            regionProps={{
+                                                classNames: {
+                                                    base: '!z-[10000]',
+                                                },
+                                            }}
+                                        />
+                                        <Outlet />
+                                    </AntdProvider>
+                                </HeroUIProvider>
+                            </NextThemesProvider>
 
-                        <ReactQueryDevtools />
-                        {/* <TanStackRouterDevtools /> */}
-                    </QueryClientProvider>
-                </AblyProvider>
-            </ThemeColorProvider>
-        </div>
+                            <ReactQueryDevtools />
+                            {/* <TanStackRouterDevtools /> */}
+                        </QueryClientProvider>
+                    </AblyProvider>
+                </ThemeColorProvider>
+            </div>
+        </>
     ),
 })
 

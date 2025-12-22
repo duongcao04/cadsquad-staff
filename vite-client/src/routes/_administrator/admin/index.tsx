@@ -1,4 +1,4 @@
-import { useProfile } from '@/lib'
+import { getPageTitle, useProfile } from '@/lib'
 import { analyticsOverviewOptions } from '@/lib/queries/options/analytics-queries'
 import { HeroButton } from '@/shared/components'
 import { RevenueChart } from '@/shared/components/admin/charts/RevenueChart'
@@ -9,6 +9,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 
 export const Route = createFileRoute('/_administrator/admin/')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Admin Dashboard'),
+            },
+        ],
+    }),
     loader: ({ context }) => {
         return context.queryClient.ensureQueryData(analyticsOverviewOptions({}))
     },

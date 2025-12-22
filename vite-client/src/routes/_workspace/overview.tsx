@@ -1,19 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-
-import React, { useState, useMemo } from 'react'
+import { useState } from 'react'
 import {
     Card,
     CardBody,
     CardHeader,
     Button,
-    Select,
-    SelectItem,
     Tabs,
     Tab,
     Avatar,
     Chip,
     Progress,
-    Divider,
 } from '@heroui/react'
 import {
     TrendingUp,
@@ -22,9 +18,7 @@ import {
     Briefcase,
     CheckCircle2,
     Clock,
-    Calendar,
     Download,
-    Filter,
 } from 'lucide-react'
 import {
     AreaChart,
@@ -39,14 +33,19 @@ import {
     Cell,
     BarChart,
     Bar,
-    Legend,
 } from 'recharts'
+import { getPageTitle } from '../../lib'
 
 export const Route = createFileRoute('/_workspace/overview')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Overview'),
+            },
+        ],
+    }),
     component: OverviewPage,
 })
-
-// --- Mock Data Generators ---
 
 const TIME_RANGES = [
     { key: '7d', label: 'Last 7 Days' },

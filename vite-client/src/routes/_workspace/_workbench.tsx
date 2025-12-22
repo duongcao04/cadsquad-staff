@@ -5,6 +5,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { workbenchDataOptions } from '../../lib/queries'
 import AppLoading from '../../shared/components/app/AppLoading'
+import { getPageTitle } from '../../lib'
 
 const DEFAULT_SORT = 'displayName:asc'
 
@@ -21,6 +22,18 @@ export const workbenchParamsSchema = z.object({
 export type TWorkbenchSearch = z.infer<typeof workbenchParamsSchema>
 
 export const Route = createFileRoute('/_workspace/_workbench')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Workbench Dashboard'),
+            },
+            {
+                name: 'description',
+                content:
+                    'A high-level overview of your active tasks, upcoming deadlines, and personal performance.',
+            },
+        ],
+    }),
     validateSearch: (search) => workbenchParamsSchema.parse(search),
     loaderDeps: ({ search }) => ({ search }),
     pendingComponent: () => <AppLoading />,

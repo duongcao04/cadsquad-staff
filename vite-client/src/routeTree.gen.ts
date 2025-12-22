@@ -15,6 +15,7 @@ import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AdministratorRouteImport } from './routes/_administrator'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as SettingsPrivacyRouteImport } from './routes/settings/privacy'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
 import { Route as SettingsMyProfileRouteImport } from './routes/settings/my-profile'
 import { Route as SettingsLoginAndSecurityRouteImport } from './routes/settings/login-and-security'
@@ -54,7 +55,6 @@ import { Route as AdministratorAdminMgmtStaffDirectoryIndexRouteImport } from '.
 import { Route as AdministratorAdminMgmtJobsIndexRouteImport } from './routes/_administrator/admin/mgmt/jobs/index'
 import { Route as AdministratorAdminMgmtFileDocsIndexRouteImport } from './routes/_administrator/admin/mgmt/file-docs/index'
 import { Route as AdministratorAdminMgmtJobsNoRouteImport } from './routes/_administrator/admin/mgmt/jobs/$no'
-import { Route as AdministratorAdminMgmtStaffDirectoryUsernameIndexRouteImport } from './routes/_administrator/admin/mgmt/staff-directory/$username/index'
 import { Route as AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport } from './routes/_administrator/admin/mgmt/staff-directory/$username/edit'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -81,6 +81,11 @@ const AdministratorRoute = AdministratorRouteImport.update({
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => SettingsRoute,
+} as any)
+const SettingsPrivacyRoute = SettingsPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => SettingsRoute,
 } as any)
 const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
@@ -299,12 +304,6 @@ const AdministratorAdminMgmtJobsNoRoute =
     path: '/mgmt/jobs/$no',
     getParentRoute: () => AdministratorAdminRoute,
   } as any)
-const AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute =
-  AdministratorAdminMgmtStaffDirectoryUsernameIndexRouteImport.update({
-    id: '/$username/',
-    path: '/$username/',
-    getParentRoute: () => AdministratorAdminMgmtStaffDirectoryRoute,
-  } as any)
 const AdministratorAdminMgmtStaffDirectoryUsernameEditRoute =
   AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport.update({
     id: '/$username/edit',
@@ -328,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/privacy': typeof SettingsPrivacyRoute
   '/settings/': typeof SettingsIndexRoute
   '/admin/inbox': typeof AdministratorAdminInboxRoute
   '/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -354,7 +354,6 @@ export interface FileRoutesByFullPath {
   '/admin/mgmt/jobs': typeof AdministratorAdminMgmtJobsIndexRoute
   '/admin/mgmt/staff-directory/': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
   '/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
-  '/admin/mgmt/staff-directory/$username': typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
 }
 export interface FileRoutesByTo {
   '/financial': typeof AdministratorFinancialRouteWithChildren
@@ -369,6 +368,7 @@ export interface FileRoutesByTo {
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/privacy': typeof SettingsPrivacyRoute
   '/settings': typeof SettingsIndexRoute
   '/admin/inbox': typeof AdministratorAdminInboxRoute
   '/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -394,7 +394,6 @@ export interface FileRoutesByTo {
   '/admin/mgmt/jobs': typeof AdministratorAdminMgmtJobsIndexRoute
   '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
   '/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
-  '/admin/mgmt/staff-directory/$username': typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -418,6 +417,7 @@ export interface FileRoutesById {
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
+  '/settings/privacy': typeof SettingsPrivacyRoute
   '/settings/': typeof SettingsIndexRoute
   '/_administrator/admin/inbox': typeof AdministratorAdminInboxRoute
   '/_administrator/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -444,7 +444,6 @@ export interface FileRoutesById {
   '/_administrator/admin/mgmt/jobs/': typeof AdministratorAdminMgmtJobsIndexRoute
   '/_administrator/admin/mgmt/staff-directory/': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
   '/_administrator/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
-  '/_administrator/admin/mgmt/staff-directory/$username/': typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -464,6 +463,7 @@ export interface FileRouteTypes {
     | '/settings/login-and-security'
     | '/settings/my-profile'
     | '/settings/notifications'
+    | '/settings/privacy'
     | '/settings/'
     | '/admin/inbox'
     | '/admin/schedule'
@@ -490,7 +490,6 @@ export interface FileRouteTypes {
     | '/admin/mgmt/jobs'
     | '/admin/mgmt/staff-directory/'
     | '/admin/mgmt/staff-directory/$username/edit'
-    | '/admin/mgmt/staff-directory/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/financial'
@@ -505,6 +504,7 @@ export interface FileRouteTypes {
     | '/settings/login-and-security'
     | '/settings/my-profile'
     | '/settings/notifications'
+    | '/settings/privacy'
     | '/settings'
     | '/admin/inbox'
     | '/admin/schedule'
@@ -530,7 +530,6 @@ export interface FileRouteTypes {
     | '/admin/mgmt/jobs'
     | '/admin/mgmt/staff-directory'
     | '/admin/mgmt/staff-directory/$username/edit'
-    | '/admin/mgmt/staff-directory/$username'
   id:
     | '__root__'
     | '/_administrator'
@@ -553,6 +552,7 @@ export interface FileRouteTypes {
     | '/settings/login-and-security'
     | '/settings/my-profile'
     | '/settings/notifications'
+    | '/settings/privacy'
     | '/settings/'
     | '/_administrator/admin/inbox'
     | '/_administrator/admin/schedule'
@@ -579,7 +579,6 @@ export interface FileRouteTypes {
     | '/_administrator/admin/mgmt/jobs/'
     | '/_administrator/admin/mgmt/staff-directory/'
     | '/_administrator/admin/mgmt/staff-directory/$username/edit'
-    | '/_administrator/admin/mgmt/staff-directory/$username/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -632,6 +631,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/settings/'
       preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof SettingsRoute
+    }
+    '/settings/privacy': {
+      id: '/settings/privacy'
+      path: '/privacy'
+      fullPath: '/settings/privacy'
+      preLoaderRoute: typeof SettingsPrivacyRouteImport
       parentRoute: typeof SettingsRoute
     }
     '/settings/notifications': {
@@ -907,13 +913,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministratorAdminMgmtJobsNoRouteImport
       parentRoute: typeof AdministratorAdminRoute
     }
-    '/_administrator/admin/mgmt/staff-directory/$username/': {
-      id: '/_administrator/admin/mgmt/staff-directory/$username/'
-      path: '/$username'
-      fullPath: '/admin/mgmt/staff-directory/$username'
-      preLoaderRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRouteImport
-      parentRoute: typeof AdministratorAdminMgmtStaffDirectoryRoute
-    }
     '/_administrator/admin/mgmt/staff-directory/$username/edit': {
       id: '/_administrator/admin/mgmt/staff-directory/$username/edit'
       path: '/$username/edit'
@@ -927,7 +926,6 @@ declare module '@tanstack/react-router' {
 interface AdministratorAdminMgmtStaffDirectoryRouteChildren {
   AdministratorAdminMgmtStaffDirectoryIndexRoute: typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
   AdministratorAdminMgmtStaffDirectoryUsernameEditRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
-  AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute
 }
 
 const AdministratorAdminMgmtStaffDirectoryRouteChildren: AdministratorAdminMgmtStaffDirectoryRouteChildren =
@@ -936,8 +934,6 @@ const AdministratorAdminMgmtStaffDirectoryRouteChildren: AdministratorAdminMgmtS
       AdministratorAdminMgmtStaffDirectoryIndexRoute,
     AdministratorAdminMgmtStaffDirectoryUsernameEditRoute:
       AdministratorAdminMgmtStaffDirectoryUsernameEditRoute,
-    AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute:
-      AdministratorAdminMgmtStaffDirectoryUsernameIndexRoute,
   }
 
 const AdministratorAdminMgmtStaffDirectoryRouteWithChildren =
@@ -1106,6 +1102,7 @@ interface SettingsRouteChildren {
   SettingsLoginAndSecurityRoute: typeof SettingsLoginAndSecurityRoute
   SettingsMyProfileRoute: typeof SettingsMyProfileRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
+  SettingsPrivacyRoute: typeof SettingsPrivacyRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
@@ -1115,6 +1112,7 @@ const SettingsRouteChildren: SettingsRouteChildren = {
   SettingsLoginAndSecurityRoute: SettingsLoginAndSecurityRoute,
   SettingsMyProfileRoute: SettingsMyProfileRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
+  SettingsPrivacyRoute: SettingsPrivacyRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }
 

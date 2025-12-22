@@ -1,7 +1,9 @@
-import { dateFormatter } from '@/lib'
+import { ApiResponse, dateFormatter } from '@/lib'
+import { jobByNoOptions } from '@/lib/queries'
 import { useJobByNo } from '@/lib/queries/useJob'
-import { INTERNAL_URLS } from '@/lib/utils'
+import { getPageTitle, INTERNAL_URLS } from '@/lib/utils'
 import { JobStatusChip, PageHeading, PaidChip } from '@/shared/components'
+import { JobActionToolbar } from '@/shared/components/job-detail/JobActionToolbar'
 import { JobDetailView } from '@/shared/components/job-detail/JobDetailView'
 import CountdownTimer from '@/shared/components/ui/countdown-timer'
 import {
@@ -14,14 +16,27 @@ import {
     HeroCardHeader,
 } from '@/shared/components/ui/hero-card'
 import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
+import { TJob } from '@/shared/types'
 import { Divider, Skeleton, Spacer, Spinner } from '@heroui/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { CalendarDays, House, LibraryBig, UserRound } from 'lucide-react'
-import { JobActionToolbar } from '@/shared/components/job-detail/JobActionToolbar'
 
 export const Route = createFileRoute('/_workspace/jobs/$no')({
+    head: (ctx) => {
+        const loader = ctx.loaderData as unknown as ApiResponse<TJob>
+        return {
+            meta: [
+                { title: getPageTitle(loader?.result?.displayName ?? 'Job') },
+            ],
+        }
+    },
+    loader({ context, params }) {
+        return context.queryClient.ensureQueryData({
+            ...jobByNoOptions(params.no),
+        })
+    },
     component: JobDetailPage,
 })
 

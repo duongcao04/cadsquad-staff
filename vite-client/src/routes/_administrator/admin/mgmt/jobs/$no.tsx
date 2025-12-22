@@ -1,4 +1,37 @@
 import {
+    ApiResponse,
+    darkenHexColor,
+    EXTERNAL_URLS,
+    getPageTitle,
+    INTERNAL_URLS,
+    lightenHexColor,
+    optimizeCloudinary,
+    PAID_STATUS_COLOR,
+    useAdminDeliverJobMutation,
+    useProfile,
+    useRemoveMemberMutation,
+} from '@/lib'
+import {
+    jobActivityLogsOptions,
+    jobByNoOptions,
+    jobDeliveriesListOptions,
+    jobStatusesListOptions,
+} from '@/lib/queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroTooltip,
+    JobActivityHistory,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import AdminDeliveryCard from '@/shared/components/management-jobs/AdminDeliveryCard'
+import { AdminJobManageAccessModal } from '@/shared/components/modals/AdminJobManageAccessModal'
+import AssignMembersModal from '@/shared/components/modals/AssignMembersModal'
+import { ConfirmCancelJobModal } from '@/shared/components/modals/ConfirmCancelJobModal'
+import { ConfirmRemoveAssigneeModal } from '@/shared/components/modals/ConfirmRemoveAssigneeModal'
+import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
+import { TJob, TUser } from '@/shared/types'
+import {
     Avatar,
     AvatarGroup,
     Button,
@@ -44,38 +77,7 @@ import {
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import * as Yup from 'yup'
-import {
-    darkenHexColor,
-    EXTERNAL_URLS,
-    INTERNAL_URLS,
-    lightenHexColor,
-    optimizeCloudinary,
-    PAID_STATUS_COLOR,
-    useAdminDeliverJobMutation,
-    useProfile,
-    useRemoveMemberMutation,
-} from '@/lib'
-import {
-    jobActivityLogsOptions,
-    jobByNoOptions,
-    jobDeliveriesListOptions,
-    jobStatusesListOptions,
-} from '@/lib/queries'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroTooltip,
-    JobActivityHistory,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
-import AdminDeliveryCard from '@/shared/components/management-jobs/AdminDeliveryCard'
 import { z } from 'zod'
-import AssignMembersModal from '../../../../../shared/components/modals/AssignMembersModal'
-import { AdminJobManageAccessModal } from '../../../../../shared/components/modals/AdminJobManageAccessModal'
-import { ConfirmCancelJobModal } from '../../../../../shared/components/modals/ConfirmCancelJobModal'
-import { TUser } from '../../../../../shared/types'
-import { ConfirmRemoveAssigneeModal } from '../../../../../shared/components/modals/ConfirmRemoveAssigneeModal'
 
 export const manageJobDetailParamsSchema = z.object({
     tab: z
@@ -86,6 +88,14 @@ export const manageJobDetailParamsSchema = z.object({
 
 export type TManageJobDetailParams = z.infer<typeof manageJobDetailParamsSchema>
 export const Route = createFileRoute('/_administrator/admin/mgmt/jobs/$no')({
+    head: (ctx) => {
+        const loader = ctx.loaderData as unknown as ApiResponse<TJob>
+        return {
+            meta: [
+                { title: getPageTitle(loader?.result?.displayName ?? 'Job') },
+            ],
+        }
+    },
     validateSearch: (search) => manageJobDetailParamsSchema.parse(search),
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context, params }) => {
@@ -206,7 +216,7 @@ const JobValidationSchema = Yup.object().shape({
 })
 
 function JobEditPage() {
-    const { tab } = Route.useSearch()
+    const { tab } = Route.useSearch() as TManageJobDetailParams
     const { no } = Route.useParams()
     const navigate = Route.useNavigate()
     const { resolvedTheme } = useTheme()

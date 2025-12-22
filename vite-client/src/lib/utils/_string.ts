@@ -1,3 +1,5 @@
+import { envConfig } from "../config"
+
 /**
  * Removes Vietnamese diacritical marks (tones) from a string
  * and normalizes it for easier comparison or search.
@@ -63,4 +65,9 @@ export const handleCopy = (content: string, onSuccess?: () => void) => {
                 console.error('Error copying command', error)
             })
     }
+}
+
+
+export const getPageTitle = (title: string) => {
+    return title + ' | ' + envConfig.APP_TITLE
 }

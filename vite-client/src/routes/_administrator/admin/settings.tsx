@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useFormik } from 'formik'
 import {
     Button,
@@ -25,8 +25,16 @@ import {
     ShieldCheckIcon,
     ClockIcon,
 } from 'lucide-react'
+import { getPageTitle } from '../../../lib'
 
 export const Route = createFileRoute('/_administrator/admin/settings')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('System Configuration'),
+            },
+        ],
+    }),
     component: AdminSettingsPage,
 })
 
@@ -221,7 +229,7 @@ function AdminSettingsPage() {
                                                     <div className="flex gap-2 items-center">
                                                         <Avatar
                                                             src={user.avatar}
-                                                            size="xs"
+                                                            size="sm"
                                                         />
                                                         <div className="flex flex-col">
                                                             <span className="text-small">

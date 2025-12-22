@@ -1,4 +1,4 @@
-import { STORAGE_KEYS } from '@/lib'
+import { getPageTitle, STORAGE_KEYS } from '@/lib'
 import { jobColumnsOptions, jobsListOptions, useProfile } from '@/lib/queries'
 import ProjectCenterTableView from '@/shared/components/project-center/ProjectCenterTableView'
 import { ProjectCenterTabEnum } from '@/shared/enums'
@@ -29,6 +29,13 @@ export type TProjectCenterSearch = z.infer<typeof projectCenterParamsSchema>
 
 // 2. Route Definition
 export const Route = createFileRoute('/_workspace/project-center/$tab')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Project Center'),
+            },
+        ],
+    }),
     // Validate Query String (?page=...)
     validateSearch: (search) => projectCenterParamsSchema.parse(search),
 

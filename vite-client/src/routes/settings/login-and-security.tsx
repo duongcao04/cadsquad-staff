@@ -27,8 +27,6 @@ import {
     AlertTriangle,
     CheckCircle2,
     Clock,
-    Eye,
-    EyeOff,
     Globe,
     House,
     KeyRound,
@@ -40,6 +38,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import {
+    getPageTitle,
     INTERNAL_URLS,
     TUpdatePasswordInput,
     UpdatePasswordInputSchema,
@@ -52,6 +51,13 @@ import {
 } from '../../shared/components'
 
 export const Route = createFileRoute('/settings/login-and-security')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Login & Security'),
+            },
+        ],
+    }),
     component: SecuritySettingsPage,
 })
 
@@ -431,9 +437,6 @@ function SecuritySettingsPage() {
 }
 
 function UpdatePasswordForm() {
-    const [isVisible, setIsVisible] = useState(false) // Password visibility
-    const toggleVisibility = () => setIsVisible(!isVisible)
-
     const updatePasswordMutation = useUpdatePasswordMutation()
 
     const formik = useFormik<TUpdatePasswordInput>({

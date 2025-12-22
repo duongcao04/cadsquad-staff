@@ -1,11 +1,18 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
 import { useJobsByStatusCode } from '@/lib/queries'
-import { INTERNAL_URLS, JOB_STATUS_CODES } from '@/lib/utils'
+import { getPageTitle, INTERNAL_URLS, JOB_STATUS_CODES } from '@/lib/utils'
+import { PageHeading } from '@/shared/components'
 import JobCard from '@/shared/components/profile/JobCard'
 import { ProfileCard } from '@/shared/components/profile/ProfileCard'
-import { PageHeading } from '../../shared/components'
+import { createFileRoute, Link } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_workspace/profile')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Profile'),
+            },
+        ],
+    }),
     component: ProfilePage,
 })
 

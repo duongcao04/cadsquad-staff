@@ -15,7 +15,6 @@ import {
     AlertTriangle,
     Bell,
     Briefcase,
-    Check,
     CheckCircle2,
     Clock,
     ExternalLink,
@@ -25,7 +24,7 @@ import {
     Trash2,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { INTERNAL_URLS } from '../../../lib'
+import { getPageTitle, INTERNAL_URLS } from '../../../lib'
 import {
     AdminPageHeading,
     HeroBreadcrumbs,
@@ -34,6 +33,13 @@ import {
 import AdminContentContainer from '../../../shared/components/admin/AdminContentContainer'
 
 export const Route = createFileRoute('/_administrator/admin/inbox')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Inbox'),
+            },
+        ],
+    }),
     component: InboxPage,
 })
 
@@ -262,7 +268,7 @@ function InboxPage() {
                           p-4 border-b border-border-default cursor-pointer transition-colors hover:bg-background-hovered relative
                           ${selectedId === item.id ? 'bg-background-hovered hover:bg-background-hovered' : ''}
                           ${item.status === 'UNSEEN' ? 'bg-background-hovered/30' : 'bg-background'}
-                          ${selectedId === item.id && item.status === 'UNSEEN' && "bg-background-hovered!"}
+                          ${selectedId === item.id && item.status === 'UNSEEN' && 'bg-background-hovered!'}
                         `}
                                         >
                                             {/* Unread Indicator */}

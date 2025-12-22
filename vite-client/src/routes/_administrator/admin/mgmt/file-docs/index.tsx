@@ -1,10 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/_administrator/admin/mgmt/file-docs/')({
-    component: FileManagerPage,
-})
-
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
     Card,
     CardBody,
@@ -23,11 +18,7 @@ import {
     TableRow,
     TableCell,
     Progress,
-    Chip,
     Avatar,
-    AvatarGroup,
-    Tabs,
-    Tab,
 } from '@heroui/react'
 import {
     Search,
@@ -43,14 +34,24 @@ import {
     Trash2,
     File,
     Film,
-    Music,
     HardDrive,
     Cloud,
     Share2,
     Clock,
 } from 'lucide-react'
+import { getPageTitle } from '../../../../../lib'
 
-// --- Types based on Prisma Schema ---
+export const Route = createFileRoute('/_administrator/admin/mgmt/file-docs/')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('File & Docs'),
+            },
+        ],
+    }),
+    component: FileManagerPage,
+})
+
 interface FileItem {
     id: string
     name: string
@@ -189,7 +190,7 @@ function FileManagerPage() {
     return (
         <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
             {/* --- SIDEBAR --- */}
-            <div className="w-64 bg-white border-r border-slate-200 flex flex-col p-6 hidden lg:flex">
+            <div className="w-64 bg-white border-r border-slate-200 flex-col p-6 hidden lg:flex">
                 <Button
                     color="primary"
                     className="w-full mb-8 font-semibold shadow-lg shadow-blue-500/20"
@@ -443,7 +444,7 @@ function FileManagerPage() {
                                                                 file.owner
                                                                     .avatar
                                                             }
-                                                            size="xs"
+                                                            size="sm"
                                                         />
                                                         <span className="text-sm text-slate-600">
                                                             {file.owner.name}
@@ -489,7 +490,7 @@ function FileManagerPage() {
                             </Card>
                         ) : (
                             // GRID VIEW
-                            (<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                                 {RECENT_FILES.map((file) => (
                                     <Card
                                         key={file.id}
@@ -583,7 +584,7 @@ function FileManagerPage() {
                                         </CardBody>
                                     </Card>
                                 ))}
-                            </div>)
+                            </div>
                         )}
                     </div>
                 </div>

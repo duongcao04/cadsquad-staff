@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
     Card,
     CardBody,
@@ -10,8 +10,6 @@ import {
     SelectItem,
     Divider,
     Chip,
-    Avatar,
-    Badge,
     Tooltip,
 } from '@heroui/react'
 import {
@@ -22,7 +20,6 @@ import {
     Moon,
     Save,
     Trash2,
-    CheckCircle2,
     AlertCircle,
     Clock,
     Zap,
@@ -31,9 +28,16 @@ import {
     House,
 } from 'lucide-react'
 import { HeroBreadcrumbItem, HeroBreadcrumbs } from '../../shared/components'
-import { INTERNAL_URLS } from '../../lib'
+import { getPageTitle, INTERNAL_URLS } from '../../lib'
 
 export const Route = createFileRoute('/settings/notifications')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Notification Settings'),
+            },
+        ],
+    }),
     component: NotificationSettingsPage,
 })
 

@@ -1,10 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/_workspace/task-summary')({
-    component: TaskSummaryPage,
-})
-
-import React from 'react'
 import {
     Card,
     CardBody,
@@ -13,18 +7,20 @@ import {
     Checkbox,
     User,
     Chip,
-    Tabs,
-    Tab,
 } from '@heroui/react'
-import {
-    Play,
-    Clock,
-    Calendar,
-    AlertCircle,
-    CheckCircle2,
-    TrendingUp,
-    ArrowRight,
-} from 'lucide-react'
+import { Play, AlertCircle, CheckCircle2, TrendingUp } from 'lucide-react'
+import { getPageTitle } from '../../lib'
+
+export const Route = createFileRoute('/_workspace/task-summary')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Task Summary'),
+            },
+        ],
+    }),
+    component: TaskSummaryPage,
+})
 
 const TODAY_TASKS = [
     {
@@ -89,7 +85,7 @@ function TaskSummaryPage() {
                 {/* 2. Main Work Column */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Priority Card */}
-                    <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+                    <Card className="bg-linear-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
                         <CardBody className="p-6">
                             <div className="flex justify-between items-start mb-4">
                                 <div>

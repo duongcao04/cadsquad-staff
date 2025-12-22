@@ -1,22 +1,21 @@
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { INTERNAL_URLS } from '@/lib'
+import { Button, Card, CardBody } from '@heroui/react'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import {
+    Bell,
+    Building,
+    CreditCard,
+    Globe,
+    Lock,
+    Palette,
+    ShieldAlert,
+    Smartphone,
+    User,
+} from 'lucide-react'
 
 export const Route = createFileRoute('/settings/')({
     component: SettingsIndexPage,
 })
-import { Card, CardBody, Button } from '@heroui/react'
-import {
-    User,
-    Bell,
-    Lock,
-    Palette,
-    CreditCard,
-    Building,
-    Globe,
-    Smartphone,
-    ShieldAlert,
-    ChevronRight,
-} from 'lucide-react'
-import { INTERNAL_URLS } from '../../lib'
 
 // --- Configuration Data (Matches Sidebar) ---
 const SETTINGS_SECTIONS = [

@@ -20,6 +20,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import AdminContentContainer from '../../../shared/components/admin/AdminContentContainer'
 import {
     currencyFormatter,
+    getPageTitle,
     INTERNAL_URLS,
     useMarkPaidMutation,
 } from '../../../lib'
@@ -36,6 +37,13 @@ import { ConfirmPaymentModal } from '../../../shared/components/financial/Confir
 export const Route = createFileRoute(
     '/_administrator/financial/pending-payouts'
 )({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Pending Payouts'),
+            },
+        ],
+    }),
     loader: ({ context }) => {
         return context.queryClient.ensureQueryData({
             ...jobsPendingPayoutsOptions(),

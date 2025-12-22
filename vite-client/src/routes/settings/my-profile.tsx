@@ -28,6 +28,7 @@ import { useFormik } from 'formik'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import {
     dateFormatter,
+    getPageTitle,
     INTERNAL_URLS,
     optimizeCloudinary,
     UpdateUserSchema,
@@ -43,6 +44,13 @@ import {
 import { profileOptions } from '@/lib/queries/options/user-queries'
 
 export const Route = createFileRoute('/settings/my-profile')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('My Profile'),
+            },
+        ],
+    }),
     loader: ({ context }) => {
         return context.queryClient.ensureQueryData(profileOptions())
     },

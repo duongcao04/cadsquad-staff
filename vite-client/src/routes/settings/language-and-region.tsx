@@ -1,4 +1,4 @@
-import { dateFormatter, INTERNAL_URLS } from '@/lib'
+import { dateFormatter, getPageTitle, INTERNAL_URLS } from '@/lib'
 import { HeroBreadcrumbItem, HeroBreadcrumbs } from '@/shared/components'
 import {
     addToast,
@@ -26,6 +26,13 @@ import {
 import { useState } from 'react'
 
 export const Route = createFileRoute('/settings/language-and-region')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Language & Region'),
+            },
+        ],
+    }),
     component: SettingsLanguageAndRegionPage,
 })
 
@@ -335,7 +342,7 @@ function SettingsLanguageAndRegionPage() {
                             </h4>
 
                             {/* Preview Card */}
-                            <Card className="bg-background-muted text-white border-1 border-border-default shadow-xl">
+                            <Card className="bg-background-muted text-white border border-border-default shadow-xl">
                                 <CardBody className="p-6 flex flex-col items-center text-center gap-4">
                                     <div className="p-3 bg-white/10 rounded-full">
                                         <Clock

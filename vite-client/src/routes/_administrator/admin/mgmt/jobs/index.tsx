@@ -1,4 +1,4 @@
-import { INTERNAL_URLS } from '@/lib'
+import { getPageTitle, INTERNAL_URLS } from '@/lib'
 import { jobsListOptions } from '@/lib/queries'
 import {
     AdminPageHeading,
@@ -37,6 +37,13 @@ export const manageJobsParamsSchema = z.object({
 export type TManageJobsParams = z.infer<typeof manageJobsParamsSchema>
 
 export const Route = createFileRoute('/_administrator/admin/mgmt/jobs/')({
+    head: () => ({
+        meta: [
+            {
+                title: getPageTitle('Job Management'),
+            },
+        ],
+    }),
     validateSearch: (search) => manageJobsParamsSchema.parse(search),
     loaderDeps: ({ search }) => ({ search }),
     loader: ({ context, deps }) => {

@@ -1,7 +1,9 @@
 import {
+    ApiResponse,
     dateFormatter,
     editUserSchema,
     EditUserValues,
+    getPageTitle,
     INTERNAL_URLS,
     optimizeCloudinary,
     ROLES_LIST,
@@ -60,8 +62,9 @@ import {
 import { useState } from 'react'
 import { z } from 'zod'
 import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
-import { UploadAvatarModal } from '../../../../../../shared/components/modals/UploadAvatarModal'
-import { DeleteUserPermanentlyModal } from '../../../../../../shared/components/modals/DeleteUserPermanentlyModal'
+import { UploadAvatarModal } from '@/shared/components/modals/UploadAvatarModal'
+import { DeleteUserPermanentlyModal } from '@/shared/components/modals/DeleteUserPermanentlyModal'
+import { TUser } from '../../../../../../shared/types'
 
 // --- Helper to connect Zod to Formik without extra deps ---
 const toFormikValidate = <T extends z.ZodType<any, any>>(schema: T) => {
@@ -85,6 +88,14 @@ const toFormikValidate = <T extends z.ZodType<any, any>>(schema: T) => {
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/$username/edit'
 )({
+    head: (ctx) => {
+        const loader = ctx.loaderData as unknown as ApiResponse<TUser>
+        return {
+            meta: [
+                { title: getPageTitle(loader?.result?.displayName ?? 'Job') },
+            ],
+        }
+    },
     loader: ({ context, params }) => {
         const { username } = params
         return context.queryClient.ensureQueryData(userOptions(username))
@@ -203,7 +214,7 @@ function EditStaffPage() {
                     isOpen={isOpenDeleteUserPermanentlyModal}
                     onClose={onCloseDeleteUserPermanentlyModal}
                     user={user}
-                    onConfirm={()=>{}}
+                    onConfirm={() => {}}
                 />
             )}
             {isOpenUploadAvatarModal && (
