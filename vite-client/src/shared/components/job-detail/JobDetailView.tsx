@@ -309,14 +309,18 @@ export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
                             </HeroCardHeader>
                             <HeroCardBody className="gap-4">
                                 <div className="space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-text-subdued">
-                                            Income
-                                        </span>
-                                        <span className="font-semibold text-currency">
-                                            {currencyFormatter(job.incomeCost)}
-                                        </span>
-                                    </div>
+                                    {isAdmin && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm text-text-subdued">
+                                                Income
+                                            </span>
+                                            <span className="font-semibold text-currency">
+                                                {currencyFormatter(
+                                                    job.incomeCost
+                                                )}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-text-subdued">
                                             Staff Cost
@@ -335,7 +339,8 @@ export const JobDetailView: React.FC<JobDetailProps> = ({ data: job }) => {
                                         </span>
                                         <div className="text-right">
                                             <span className="font-semibold text-currency">
-                                                {job.paymentChannel.displayName}
+                                                {job.paymentChannel
+                                                    ?.displayName ?? '-'}
                                             </span>
                                         </div>
                                     </div>
