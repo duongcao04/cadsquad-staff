@@ -1,6 +1,3 @@
-import { envConfig } from '@/lib/config'
-import { JobColumn, JobColumnKey } from '@/shared/types'
-import { RoleEnum } from '../../shared/enums'
 import { capitalize } from 'lodash'
 import {
     CircleUserRound,
@@ -12,46 +9,77 @@ import {
     UsersRound,
 } from 'lucide-react'
 
+import { envConfig } from '@/lib/config'
+import type { JobColumn, JobColumnKey } from '@/shared/types'
+
+import { RoleEnum } from '../../shared/enums'
+
 export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const
 
 export const COOKIES = {
     authentication: 'csd-authTk',
 }
 
-export const APP_THEME_COLORS = [
-    'var(--color-primary)',
-    '#e11d48',
-    '#ea580c',
-    '#f59e0b',
-    '#16a34a',
-    '#0284c7',
-    '#4f46e5',
-    '#3f3f46',
-]
-
-export const INTERNAL_URLS = {
-    home: envConfig.NEXT_PUBLIC_URL + '/',
-    projectCenter: envConfig.NEXT_PUBLIC_URL + '/' + 'project-center',
-    workbench: envConfig.NEXT_PUBLIC_URL + '/',
-    auth: envConfig.NEXT_PUBLIC_URL + '/' + 'auth',
-    profile: envConfig.NEXT_PUBLIC_URL + '/' + 'profile',
-    settings: envConfig.NEXT_PUBLIC_URL + '/' + 'settings',
-    manageUser: envConfig.NEXT_PUBLIC_URL + '/' + 'admin/mgmt/team',
-    accountSettings:
-        envConfig.NEXT_PUBLIC_URL + '/' + 'settings/personal_details',
+export const EXTERNAL_URLS = {
     getJobDetailUrl: (jobNo: string, locale?: string) => {
-        if (!locale)
-            return envConfig.NEXT_PUBLIC_URL + '/' + 'jobs' + '/' + jobNo
-        return (
-            envConfig.NEXT_PUBLIC_URL +
-            '/' +
-            locale +
-            '/' +
-            'jobs' +
-            '/' +
-            jobNo
-        )
+        if (!locale) return envConfig.APP_URL + '/' + 'jobs' + '/' + jobNo
+        return envConfig.APP_URL + '/' + locale + '/' + 'jobs' + '/' + jobNo
     },
+}
+export const INTERNAL_URLS = {
+    home: '/',
+    projectCenter: '/' + 'project-center',
+    workbench: '/',
+    getJobDetailUrl: (jobNo: string, locale?: string) => {
+        if (!locale) return '/' + 'jobs' + '/' + jobNo
+        return '/' + locale + '/' + 'jobs' + '/' + jobNo
+    },
+    profile: '/' + 'profile',
+    userOverview: '/' + 'overview',
+    userTaskSummary: '/' + 'task-summary',
+    helpCenter: '/' + 'help-center',
+    /**
+     * AUTH ROUTES
+    */
+    auth: '/' + 'auth',
+    login: '/' + 'login',
+    /**
+     * SETTINGS ROUTES
+    */
+    settings: '/' + 'settings',
+    accountSettings: '/' + 'settings/my-profile',
+    loginAndSecurity: '/' + 'settings/login-and-security',
+    notificationsSettings: '/' + 'settings/notifications',
+    languageAndRegionSettings: '/' + 'settings/language-and-region',
+    /**
+     * ADMIN ROUTES
+     */
+    admin: '/' + 'admin',
+    systemConfiguration: '/' + 'admin/settings',
+    schedule: '/' + 'admin/schedule',
+    // MANAGEMENT
+    appearance: '/' + 'settings/appearance',
+    fileDocs: '/' + 'admin/mgmt/file-docs',
+    staffDirectory: '/' + 'admin/mgmt/staff-directory',
+    editStaffDetails: (username: string) => '/' + 'admin/mgmt/staff-directory/' + username + '/edit',
+    inviteMember: '/' + 'admin/mgmt/invite-member',
+    revenueReports: '/' + 'admin/mgmt/revenue',
+    teamManage: '/' + 'admin/mgmt/staff-directory',
+    jobManage: '/' + 'admin/mgmt/jobs',
+    departmentsManage: '/' + 'admin/departments',
+    departmentItemManage: (departmentCode: string) => '/' + 'admin/departments/' + departmentCode,
+    editJob: (jobNo: string) => '/' + 'admin/mgmt/jobs/' + jobNo,
+    paymentManage: '/' + 'admin/mgmt/payments',
+    /**
+     * FINANCIAL ROUTES
+    */
+    payment: '/' + 'financial/payment',
+    invoiceTemplates: '/' + 'financial/invoice-templates',
+    pendingPayouts: '/' + 'financial/pending-payouts',
+    payroll: '/' + 'financial/payroll',
+    profitLoss: '/' + 'financial/profit-loss',
+    reimbursements: '/' + 'financial/reimbursements',
+    financialSettings: '/' + 'financial/setting',
 }
 
 export const WEB_PAGES = [
@@ -92,9 +120,9 @@ export const WEB_PAGES = [
     },
 ]
 
-export const baseUrl = envConfig.NEXT_PUBLIC_URL ?? 'http://localhost'
-export const apiBaseUrl = envConfig.NEXT_PUBLIC_API_ENDPOINT
-    ? `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/api`
+export const baseUrl = envConfig.APP_URL ?? 'http://localhost'
+export const apiBaseUrl = envConfig.API_ENDPOINT
+    ? `${envConfig.API_ENDPOINT}/api`
     : 'https://testapi.appnavotar.com/api'
 
 export const STORAGE_KEYS = {
@@ -106,6 +134,10 @@ export const STORAGE_KEYS = {
     currency: 'app-runtime:currency',
     currencyDigits: 'app-runtime:currency-digits',
     projectCenterFinishItems: 'project-center-finish-items',
+    sidebarStatus: 'csd-side',
+    adminRightSidebar: 'csd_admin-right-sidebar',
+    adminLeftSidebar: 'csd_admin-left-sidebar',
+    jobColumns: 'csd-job_columns',
 } as const
 
 export const IMAGES = {
@@ -153,12 +185,11 @@ export const STORAGE_DEFAULTS = {
     theme: 'system' as const,
 }
 
-export const UI_APPLICATION_NAME =
-    envConfig.NEXT_PUBLIC_APP_TITLE ?? 'Cadsquad Staff'
-export const DEPLOYMENT_ENV = process.env.NODE_ENV || 'development'
+export const UI_APPLICATION_NAME = envConfig.APP_TITLE ?? 'Cadsquad Staff'
+export const DEPLOYMENT_ENV = import.meta.env.NODE_ENV || 'development'
 
 export const IS_DEV = DEPLOYMENT_ENV !== 'production'
-export const APP_VERSION = envConfig.NEXT_PUBLIC_APP_VERSION ?? '0.0.0-release'
+export const APP_VERSION = envConfig.APP_VERSION ?? '0.0.0-release'
 
 export const SETTINGS_LOCATION_KEYS = {
     application: 'application',
@@ -235,110 +266,110 @@ export const JOB_COLUMNS: {
     sortable: boolean
     description?: string
 }[] = [
-    {
-        displayName: 'Thumbnail',
-        uid: 'thumbnailUrl',
-        sortable: false,
-        description: 'Preview image representing the project.',
-    },
-    {
-        displayName: 'Client',
-        uid: 'clientName',
-        sortable: false,
-        description: 'Name of the client associated with the project.',
-    },
-    {
-        displayName: 'Job type',
-        uid: 'type',
-        sortable: true,
-        description: 'Category or type of the job.',
-    },
-    {
-        displayName: 'Job no',
-        uid: 'no',
-        sortable: true,
-        description: 'Unique job or project number identifier.',
-    },
-    {
-        displayName: 'Job name',
-        uid: 'displayName',
-        sortable: true,
-        description: 'Official name or title of the job or project.',
-    },
-    {
-        displayName: 'Income',
-        uid: 'incomeCost',
-        sortable: true,
-        description: 'Total income or revenue generated from the project.',
-    },
-    {
-        displayName: 'Staff Cost',
-        uid: 'staffCost',
-        sortable: true,
-        description: 'Total cost associated with staff working on the project.',
-    },
-    {
-        displayName: 'Status',
-        uid: 'status',
-        sortable: false,
-        description: 'Current status of the project (e.g., Active, Completed).',
-    },
-    {
-        displayName: 'Due on',
-        uid: 'dueAt',
-        sortable: true,
-        description: 'Deadline or due date for the project.',
-    },
-    {
-        displayName: 'Attachments',
-        uid: 'attachmentUrls',
-        sortable: false,
-        description:
-            'List of attached files or documents related to the project.',
-    },
-    {
-        displayName: 'Assignee',
-        uid: 'assignee',
-        sortable: false,
-        description: 'Person or team assigned to handle the project.',
-    },
-    {
-        displayName: 'Payment status',
-        uid: 'isPaid',
-        sortable: true,
-        description: 'Indicates whether the project has been paid for.',
-    },
-    {
-        displayName: 'Payment channel',
-        uid: 'paymentChannel',
-        sortable: false,
-        description: 'Payment method or channel used (e.g., Bank, Cash).',
-    },
-    {
-        displayName: 'Completed at',
-        uid: 'completedAt',
-        sortable: true,
-        description: 'Date and time when the project was completed.',
-    },
-    {
-        displayName: 'Created at',
-        uid: 'createdAt',
-        sortable: true,
-        description: 'Date and time when the project record was created.',
-    },
-    {
-        displayName: 'Modified at',
-        uid: 'updatedAt',
-        sortable: true,
-        description: 'Date and time of the most recent modification.',
-    },
-    {
-        displayName: 'Actions',
-        uid: 'action',
-        sortable: false,
-        description: 'Available actions such as view, edit, or delete.',
-    },
-]
+        {
+            displayName: 'Thumbnail',
+            uid: 'thumbnailUrl',
+            sortable: false,
+            description: 'Preview image representing the project.',
+        },
+        {
+            displayName: 'Client',
+            uid: 'clientName',
+            sortable: false,
+            description: 'Name of the client associated with the project.',
+        },
+        {
+            displayName: 'Job type',
+            uid: 'type',
+            sortable: true,
+            description: 'Category or type of the job.',
+        },
+        {
+            displayName: 'Job no',
+            uid: 'no',
+            sortable: true,
+            description: 'Unique job or project number identifier.',
+        },
+        {
+            displayName: 'Job name',
+            uid: 'displayName',
+            sortable: true,
+            description: 'Official name or title of the job or project.',
+        },
+        {
+            displayName: 'Income',
+            uid: 'incomeCost',
+            sortable: true,
+            description: 'Total income or revenue generated from the project.',
+        },
+        {
+            displayName: 'Staff Cost',
+            uid: 'staffCost',
+            sortable: true,
+            description: 'Total cost associated with staff working on the project.',
+        },
+        {
+            displayName: 'Status',
+            uid: 'status',
+            sortable: false,
+            description: 'Current status of the project (e.g., Active, Completed).',
+        },
+        {
+            displayName: 'Due on',
+            uid: 'dueAt',
+            sortable: true,
+            description: 'Deadline or due date for the project.',
+        },
+        {
+            displayName: 'Attachments',
+            uid: 'attachmentUrls',
+            sortable: false,
+            description:
+                'List of attached files or documents related to the project.',
+        },
+        {
+            displayName: 'Assignee',
+            uid: 'assignee',
+            sortable: false,
+            description: 'Person or team assigned to handle the project.',
+        },
+        {
+            displayName: 'Payment status',
+            uid: 'isPaid',
+            sortable: true,
+            description: 'Indicates whether the project has been paid for.',
+        },
+        {
+            displayName: 'Payment channel',
+            uid: 'paymentChannel',
+            sortable: false,
+            description: 'Payment method or channel used (e.g., Bank, Cash).',
+        },
+        {
+            displayName: 'Completed at',
+            uid: 'completedAt',
+            sortable: true,
+            description: 'Date and time when the project was completed.',
+        },
+        {
+            displayName: 'Created at',
+            uid: 'createdAt',
+            sortable: true,
+            description: 'Date and time when the project record was created.',
+        },
+        {
+            displayName: 'Modified at',
+            uid: 'updatedAt',
+            sortable: true,
+            description: 'Date and time of the most recent modification.',
+        },
+        {
+            displayName: 'Actions',
+            uid: 'action',
+            sortable: false,
+            description: 'Available actions such as view, edit, or delete.',
+        },
+    ]
 
 export const USER_COLUMNS = [
     {
@@ -370,10 +401,10 @@ export const USER_COLUMNS = [
 ]
 
 export const TABLE_ROW_PER_PAGE_OPTIONS = [
-    { displayName: '5 items', value: 5 },
-    { displayName: '10 items', value: 10 },
-    { displayName: '15 items', value: 15 },
-    { displayName: '20 items', value: 20 },
+    { displayName: '5 items', value: 5, key: '5items' },
+    { displayName: '10 items', value: 10, key: '10items' },
+    { displayName: '15 items', value: 15, key: '15items' },
+    { displayName: '20 items', value: 20, key: '20items' },
 ]
 
 export const APP_THEMES = [

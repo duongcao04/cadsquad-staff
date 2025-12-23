@@ -1,23 +1,22 @@
-'use client'
-
-import { Link } from '@/i18n/navigation'
-import { optimizeCloudinary } from '@/lib'
-import { userApi } from '@/lib/api'
-import { useProfile, useUpdateUserMutation } from '@/lib/queries'
-import { IMAGES } from '@/lib/utils'
-import { TUpdateUserInput } from '@/lib/validationSchemas'
 import {
     addToast,
     Button,
     Input,
-    InputProps,
+    type InputProps,
     Skeleton,
     useDisclosure,
 } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
 import { Image } from 'antd'
 import { useFormik } from 'formik'
-import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
+
+import { optimizeCloudinary } from '@/lib'
+import { userApi } from '@/lib/api'
+import { useProfile, useUpdateUserMutation } from '@/lib/queries'
+import { IMAGES } from '@/lib/utils'
+import { type TUpdateUserInput } from '@/lib/validationSchemas'
+
 import UploadAvatarModal from './UploadAvatarModal'
 
 const getPhoneNumber = (phoneNum: string) => {
@@ -31,8 +30,6 @@ const getPhoneNumber = (phoneNum: string) => {
 }
 
 export function UpdateAccountForm() {
-    const t = useTranslations('settings')
-
     const { isAdmin, profile, isLoading: loadingProfile } = useProfile()
 
     const {
@@ -105,7 +102,7 @@ export function UpdateAccountForm() {
             <form onSubmit={formik.handleSubmit} className="space-y-8">
                 <div className="size-full border-px border-text-muted rounded-xl px-6 pt-4 pb-7">
                     <h2 className="text-base font-semibold">
-                        {t('generalInformation')}
+                        General information
                     </h2>
                     <div>
                         <div className="mt-4 grid grid-cols-[1fr_0.35fr] gap-16">
@@ -116,7 +113,7 @@ export function UpdateAccountForm() {
                                         className="w-fit h-fit rounded-md"
                                     >
                                         <p className="text-text-default text-sm">
-                                            {t('fields.email')}
+                                            Email
                                         </p>
                                     </Skeleton>
                                     <Skeleton
@@ -129,7 +126,7 @@ export function UpdateAccountForm() {
                                             value={formik.values.email}
                                             classNames={inputClassNames}
                                             variant="bordered"
-                                            description={t('fields.emailDesc')}
+                                            description="Your contact email address, used for notifications and account verification."
                                             isDisabled={!isAdmin}
                                         />
                                     </Skeleton>
@@ -140,7 +137,7 @@ export function UpdateAccountForm() {
                                         className="w-fit h-fit rounded-md"
                                     >
                                         <p className="text-text-default text-sm">
-                                            {t('fields.fullname')}
+                                            Full name
                                         </p>
                                     </Skeleton>
                                     <Skeleton
@@ -153,9 +150,7 @@ export function UpdateAccountForm() {
                                             classNames={inputClassNames}
                                             variant="bordered"
                                             value={formik.values.displayName}
-                                            description={t(
-                                                'fields.fullnameDesc'
-                                            )}
+                                            description="Your full name as registered in the system, displayed in your profile and across the platform."
                                             onChange={formik.handleChange}
                                         />
                                     </Skeleton>
@@ -166,7 +161,7 @@ export function UpdateAccountForm() {
                                         className="w-fit h-fit rounded-md"
                                     >
                                         <p className="text-text-default text-sm">
-                                            {t('fields.username')}
+                                            Username
                                         </p>
                                     </Skeleton>
                                     <Skeleton
@@ -179,9 +174,7 @@ export function UpdateAccountForm() {
                                             startContent={<p>@</p>}
                                             classNames={inputClassNames}
                                             variant="bordered"
-                                            description={t(
-                                                'fields.usernameDesc'
-                                            )}
+                                            description="The account name you use to log in to the system."
                                             value={formik.values.username}
                                             onChange={async (e) => {
                                                 const value = e.target.value
@@ -211,7 +204,7 @@ export function UpdateAccountForm() {
                                         className="w-fit h-fit rounded-md"
                                     >
                                         <p className="text-text-default text-sm">
-                                            {t('fields.department')}
+                                            Department
                                         </p>
                                     </Skeleton>
                                     <Skeleton
@@ -223,9 +216,7 @@ export function UpdateAccountForm() {
                                             name="department"
                                             classNames={inputClassNames}
                                             variant="bordered"
-                                            description={t(
-                                                'fields.departmentDesc'
-                                            )}
+                                            description="The department you belong to within the company."
                                             value={
                                                 profile?.department?.displayName
                                             }
@@ -239,7 +230,7 @@ export function UpdateAccountForm() {
                                         className="w-fit h-fit rounded-md"
                                     >
                                         <p className="text-text-default text-sm">
-                                            {t('fields.jobTitle')}
+                                            Job title
                                         </p>
                                     </Skeleton>
                                     <Skeleton
@@ -251,9 +242,7 @@ export function UpdateAccountForm() {
                                             name="jobTitle"
                                             classNames={inputClassNames}
                                             variant="bordered"
-                                            description={t(
-                                                'fields.jobTitleDesc'
-                                            )}
+                                            description="Your position or role within the company."
                                             // value={formik.values.jobTitle[0]}
                                             onChange={formik.handleChange}
                                             isDisabled={!isAdmin}
@@ -266,7 +255,7 @@ export function UpdateAccountForm() {
                                         className="w-fit h-fit rounded-md"
                                     >
                                         <p className="text-text-default text-sm">
-                                            {t('fields.phoneNumber')}
+                                            Phone number
                                         </p>
                                     </Skeleton>
                                     <Skeleton
@@ -280,9 +269,7 @@ export function UpdateAccountForm() {
                                             startContent={
                                                 <p className="text-sm">+84</p>
                                             }
-                                            description={t(
-                                                'fields.phoneNumberDesc'
-                                            )}
+                                            description="Your contact phone number, used for calls or SMS notifications."
                                             variant="bordered"
                                             value={formik.values.phoneNumber}
                                             onChange={formik.handleChange}
@@ -336,7 +323,7 @@ export function UpdateAccountForm() {
                 <p className="text-sm">
                     Đổi mật khẩu, nhấn vào{' '}
                     <Link
-                        href={'/settings/password_and_security'}
+                        to={'/settings/password_security'}
                         className="text-primary-600 underline"
                     >
                         đây

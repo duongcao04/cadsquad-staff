@@ -1,3 +1,3 @@
-import { IConfigResponse } from "../interfaces";
+import type { IConfigResponse } from '../interfaces'
 
 export type TUserConfig = Omit<IConfigResponse, 'userId'>

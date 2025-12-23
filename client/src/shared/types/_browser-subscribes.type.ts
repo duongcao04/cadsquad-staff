@@ -1,3 +1,3 @@
-import { IBrowserSubscribeResponse } from "../interfaces";
+import type { IBrowserSubscribeResponse } from '../interfaces'
 
 export type TBrowserSubscribe = Omit<IBrowserSubscribeResponse, ''>

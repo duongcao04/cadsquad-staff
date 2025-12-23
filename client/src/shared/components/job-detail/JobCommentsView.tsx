@@ -1,8 +1,3 @@
-'use client'
-
-import { optimizeCloudinary } from '@/lib/cloudinary'
-import { dateFormatter } from '@/lib/dayjs'
-import { useComments, useCreateComment, useProfile } from '@/lib/queries'
 import { addToast, Avatar, Button, Divider } from '@heroui/react'
 import {
     BlockquotePlugin,
@@ -16,7 +11,12 @@ import {
 import { MessageSquareMore } from 'lucide-react'
 import { Plate, usePlateEditor } from 'platejs/react'
 import { serializeHtml } from 'platejs/static'
-import { TJob } from '../../types'
+
+import { optimizeCloudinary } from '@/lib/cloudinary'
+import { dateFormatter } from '@/lib/dayjs'
+import { useComments, useCreateComment, useProfile } from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+
 import { BlockquoteElement } from '../ui/blockquote-node'
 import { Editor, EditorContainer } from '../ui/editor'
 import { FixedToolbar } from '../ui/fixed-toolbar'
@@ -32,11 +32,10 @@ import HtmlReactParser from '../ui/html-react-parser'
 import { MarkToolbarButton } from '../ui/mark-toolbar-button'
 import { ToolbarButton } from '../ui/toolbar'
 
-type Props = {
+type JobCommentsViewProps = {
     job: TJob
 }
-
-export default function JobCommentsView({ job }: Props) {
+export default function JobCommentsView({ job }: JobCommentsViewProps) {
     const { data: comments } = useComments(job.id)
 
     return (

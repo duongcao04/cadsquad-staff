@@ -1,3 +1,3 @@
-import { IJobTitleResponse } from "../interfaces"
+import type { IJobTitleResponse } from '../interfaces'
 
 export type TJobTitle = Omit<IJobTitleResponse, ''>

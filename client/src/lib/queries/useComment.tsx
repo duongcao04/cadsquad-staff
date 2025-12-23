@@ -1,17 +1,19 @@
 'use client'
 
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
-import { commentApi } from '@/lib/api'
-import {
-    TCreateCommentInput,
-    TUpdateCommentInput,
-} from '@/lib/validationSchemas'
 import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import lodash from 'lodash'
 import { useMemo } from 'react'
-import { ICommentResponse } from '../../shared/interfaces'
-import { TComment } from '../../shared/types'
+
+import { commentApi } from '@/lib/api'
+import {
+    type TCreateCommentInput,
+    type TUpdateCommentInput,
+} from '@/lib/validationSchemas'
+
+import { queryClient } from '../../main'
+import type { ICommentResponse } from '../../shared/interfaces'
+import type { TComment } from '../../shared/types'
 
 const mapItem: (item: ICommentResponse) => TComment = (item) => ({
     content: item.content ?? '',

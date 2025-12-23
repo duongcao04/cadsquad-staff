@@ -1,8 +1,9 @@
+import { isValid, parseISO } from 'date-fns'
 import * as yup from 'yup'
 import { z } from 'zod'
-import { arrayToString, optionalIsoDate } from '../zod'
+
 import { ProjectCenterTabEnum } from '../../shared/enums'
-import { isValid, parseISO } from 'date-fns'
+import { arrayToString, optionalIsoDate } from '../zod'
 
 export const CreateJobSchema = yup.object({
     no: yup.string().required('Job number is required'),
@@ -129,6 +130,8 @@ export const JobQuerySchema = JobFiltersSchema.merge(JobSortSchema).extend({
 
     hideFinishItems: z.enum(['0', '1']).optional().default('0'),
 
+    isAll: z.enum(['0', '1']).optional().default('0'),
+
     // Pagination (Using coerce to handle URL query string numbers)
     limit: z.coerce.number().int().min(1).max(100).optional().default(10),
 
@@ -136,18 +139,13 @@ export const JobQuerySchema = JobFiltersSchema.merge(JobSortSchema).extend({
 })
 
 // Types inferred from Schemas (Optional, but useful for frontend type safety)
-export type TJobFiltersInput = z.input<typeof JobFiltersSchema>
+export type TJobFilters = z.input<typeof JobFiltersSchema>
 export type TJobQueryInput = z.input<typeof JobQuerySchema> // Raw input (e.g. from URLSearchParams)
 export type TJobQueryOutput = z.output<typeof JobQuerySchema> // Transformed output (e.g. ready for API call)
 
 // ---------------------------------------------------------------
 // MUTATION SCHEMAS
 // ---------------------------------------------------------------
-export const ChangeStatusSchema = yup.object({
-    fromStatusId: yup.string().required(),
-    toStatusId: yup.string().required(),
-})
-export type TChangeStatusInput = yup.InferType<typeof ChangeStatusSchema>
 
 export const BulkChangeStatusInputSchema = z.object({
     jobIds: z.array(z.string()).min(1, 'jobIds must contain at least one id'),
@@ -169,3 +167,29 @@ export const RescheduleJobSchema = yup.object({
     toDate: yup.string().required(),
 })
 export type TRescheduleJob = yup.InferType<typeof RescheduleJobSchema>
+
+export const DeliverJobInputSchema = yup.object({
+    jobId: yup.string().required('Please select a job to deliver'),
+
+    note: yup
+        .string()
+        .max(1000, 'Note is too long (max 1000 characters)')
+        .optional(),
+
+    link: yup
+        .string()
+        .url('Link must be a valid URL (e.g., https://figma.com/...)')
+        .optional()
+        .nullable(), // Handle cases where form value might be null
+
+    files: yup
+        .array()
+        .of(yup.string().required()) // Ensures every item in the array is a string
+        // Uncomment the line below to strictly validate URLs for files, matching your commented decorator:
+        // .of(yup.string().url('Each attachment must be a valid URL').required())
+        .optional()
+        .default([]),
+})
+
+// Type inference for usage in React Hook Form / Formik
+export type TDeliverJobInput = yup.InferType<typeof DeliverJobInputSchema>

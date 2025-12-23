@@ -1,12 +1,11 @@
-'use client'
-
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
     useDisclosure,
 } from '@heroui/react'
-import { IconCalendar, IconCalendarOutline } from '../../icons'
+
+import { IconCalendar, IconCalendarOutline } from '../../icons/sidebar-icons'
 import TaskCalendar from './TaskCalendar'
 
 export default function TaskCalendarPopover() {
@@ -19,10 +18,10 @@ export default function TaskCalendarPopover() {
             <div className="group size-full grid grid-cols-[16px_1fr] place-items-center">
                 <div className="w-4 flex items-center">
                     <div
-                        className={`ml-1.5 h-4 w-[3px] rounded-full ${
+                        className={`ml-1.5 h-4 w-0.75 rounded-full ${
                             isOpen
                                 ? 'bg-primary'
-                                : 'bg-transparent group-hover:!bg-text-subdued'
+                                : 'bg-transparent group-hover:bg-text-subdued!'
                         }`}
                     ></div>
                 </div>

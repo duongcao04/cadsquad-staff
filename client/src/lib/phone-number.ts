@@ -1,4 +1,4 @@
-import { CountryCode, parsePhoneNumberFromString } from 'libphonenumber-js'
+import { type CountryCode, parsePhoneNumberFromString } from 'libphonenumber-js'
 
 interface PhoneOutput {
     country: CountryCode | null

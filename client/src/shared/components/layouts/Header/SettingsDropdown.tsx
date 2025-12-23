@@ -1,6 +1,4 @@
-'use client'
-
-import { Link } from '@/i18n/navigation'
+import { INTERNAL_URLS } from '@/lib'
 import { useProfile } from '@/lib/queries'
 import { SettingsGearIcon } from '@/shared/components'
 import {
@@ -11,123 +9,26 @@ import {
     DropdownSection,
     DropdownTrigger,
 } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
 import {
     BellIcon,
     BriefcaseBusiness,
     CircleDollarSign,
-    LucideIcon,
     MonitorCog,
-    Newspaper,
     Palette,
     SquareUserRound,
     Users,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-
-interface ChildItem {
-    id: number
-    icon?: LucideIcon
-    titleKey: string // i18n key
-    descriptionKey: string // i18n key
-    href: string
-}
-
-interface GroupItem {
-    id: number
-    groupTitleKey: string // i18n key
-    children: ChildItem[]
-}
-
-export const ADMIN_SETTINGS_DROPDOWN: GroupItem[] = [
-    {
-        id: 1,
-        groupTitleKey: 'personalSettings',
-        children: [
-            {
-                id: 1.1,
-                icon: SquareUserRound,
-                titleKey: 'accountSettings',
-                descriptionKey: 'accountSettingsDesc',
-                href: '/settings/personal_details',
-            },
-            {
-                id: 1.2,
-                icon: Palette,
-                titleKey: 'appearance',
-                descriptionKey: 'appearanceDesc',
-                href: '/settings/appearance',
-            },
-            {
-                id: 1.3,
-                icon: BellIcon,
-                titleKey: 'notificationSettings',
-                descriptionKey: 'notificationSettingsDesc',
-                href: '/settings/notifications',
-            },
-        ],
-    },
-    {
-        id: 2,
-        groupTitleKey: 'adminSettings',
-        children: [
-            {
-                id: 2.1,
-                icon: MonitorCog,
-                titleKey: 'system',
-                descriptionKey: 'systemDesc',
-                href: '/admin/system',
-            },
-            {
-                id: 2.2,
-                icon: BriefcaseBusiness,
-                titleKey: 'job',
-                descriptionKey: 'jobDesc',
-                href: '/admin/mgmt/jobs',
-            },
-            {
-                id: 2.3,
-                icon: CircleDollarSign,
-                titleKey: 'payment',
-                descriptionKey: 'paymentDesc',
-                href: '/admin/mgmt/payments',
-            },
-            {
-                id: 2.4,
-                icon: Users,
-                titleKey: 'team',
-                descriptionKey: 'teamDesc',
-                href: '/admin/mgmt/team',
-            },
-        ],
-    },
-    {
-        id: 3,
-        groupTitleKey: 'cadsquadSettings',
-        children: [
-            {
-                id: 3.1,
-                icon: Newspaper,
-                titleKey: 'articles',
-                descriptionKey: 'articlesDesc',
-                href: '/admin/site/cadsquad',
-            },
-        ],
-    },
-]
-
-export const USER_SETTINGS_DROPDOWN: GroupItem[] = [
-    {
-        ...ADMIN_SETTINGS_DROPDOWN[0],
-    },
-]
 
 export function SettingsDropdown() {
     const { isAdmin } = useProfile()
-    const t = useTranslations('settings')
 
-    const dropdownActions = isAdmin
-        ? ADMIN_SETTINGS_DROPDOWN
-        : USER_SETTINGS_DROPDOWN
+    // Helper classes for consistent styling
+    const iconWrapperClasses = 'size-8 grid place-items-center'
+    const iconClasses = 'text-text-default'
+    const linkClasses = 'block size-full'
+    const titleClasses = 'font-medium text-text-default'
+    const descClasses = 'text-xs text-text-subdued'
 
     return (
         <Dropdown
@@ -146,57 +47,172 @@ export function SettingsDropdown() {
                 />
             </DropdownTrigger>
             <DropdownMenu
-                aria-label="User notification"
-                disabledKeys={[
-                    'title',
-                    'system',
-                    'job',
-                    'payment',
-                    'articles',
-                    'notificationSettings',
-                ]}
+                aria-label="Settings"
                 classNames={{
                     base: 'w-[520px] overflow-y-auto left-0',
                 }}
             >
-                {dropdownActions.map((group) => {
-                    return (
-                        <DropdownSection
-                            key={group.groupTitleKey}
-                            title={t(group.groupTitleKey)}
+                {/* --- Group 1: Personal Settings (Always Visible) --- */}
+                <DropdownSection title="Settings">
+                    <DropdownItem
+                        key="accountSettings"
+                        startContent={
+                            <div className={iconWrapperClasses}>
+                                <SquareUserRound
+                                    size={24}
+                                    className={iconClasses}
+                                />
+                            </div>
+                        }
+                    >
+                        <Link
+                            to={INTERNAL_URLS.accountSettings}
+                            className={linkClasses}
                         >
-                            {group.children.map((item) => {
-                                return (
-                                    <DropdownItem
-                                        key={item.titleKey}
-                                        startContent={
-                                            <div className="size-8 grid place-items-center">
-                                                {item.icon && (
-                                                    <item.icon
-                                                        size={24}
-                                                        className="text-text-7"
-                                                    />
-                                                )}
-                                            </div>
-                                        }
-                                    >
-                                        <Link
-                                            href={item.href}
-                                            className="block size-full"
-                                        >
-                                            <p className="font-medium text-text-7">
-                                                {t(item.titleKey)}
-                                            </p>
-                                            <p className="text-xs text-text-subdued">
-                                                {t(item.descriptionKey)}
-                                            </p>
-                                        </Link>
-                                    </DropdownItem>
-                                )
-                            })}
-                        </DropdownSection>
-                    )
-                })}
+                            <p className={titleClasses}>Account settings</p>
+                            <p className={descClasses}>
+                                Manage language and other personal preferences.
+                            </p>
+                        </Link>
+                    </DropdownItem>
+
+                    <DropdownItem
+                        key="appearance"
+                        startContent={
+                            <div className={iconWrapperClasses}>
+                                <Palette size={24} className={iconClasses} />
+                            </div>
+                        }
+                    >
+                        <Link
+                            to={INTERNAL_URLS.appearance}
+                            className={linkClasses}
+                        >
+                            <p className={titleClasses}>Appearance</p>
+                            <p className={descClasses}>
+                                Manage how your public dashboard looks and
+                                feels.
+                            </p>
+                        </Link>
+                    </DropdownItem>
+
+                    <DropdownItem
+                        key="notificationSettings"
+                        startContent={
+                            <div className={iconWrapperClasses}>
+                                <BellIcon size={24} className={iconClasses} />
+                            </div>
+                        }
+                    >
+                        <Link
+                            to={INTERNAL_URLS.notificationsSettings}
+                            className={linkClasses}
+                        >
+                            <p className={titleClasses}>
+                                Notification settings
+                            </p>
+                            <p className={descClasses}>
+                                Manage email and in-product notification from
+                                site.
+                            </p>
+                        </Link>
+                    </DropdownItem>
+                </DropdownSection>
+
+                {/* --- Group 2: Admin Settings (Conditional) --- */}
+                {isAdmin ? (
+                    <DropdownSection title="Admin settings">
+                        <DropdownItem
+                            key="system"
+                            startContent={
+                                <div className={iconWrapperClasses}>
+                                    <MonitorCog
+                                        size={24}
+                                        className={iconClasses}
+                                    />
+                                </div>
+                            }
+                        >
+                            <Link
+                                to={INTERNAL_URLS.admin}
+                                className={linkClasses}
+                            >
+                                <p className={titleClasses}>
+                                    Performance Insights
+                                </p>
+                                <p className={descClasses}>
+                                    Real-time financial data and system metrics.
+                                </p>
+                            </Link>
+                        </DropdownItem>
+
+                        <DropdownItem
+                            key="job"
+                            startContent={
+                                <div className={iconWrapperClasses}>
+                                    <BriefcaseBusiness
+                                        size={24}
+                                        className={iconClasses}
+                                    />
+                                </div>
+                            }
+                        >
+                            <Link
+                                to={INTERNAL_URLS.jobManage}
+                                className={linkClasses}
+                            >
+                                <p className={titleClasses}>Job management</p>
+                                <p className={descClasses}>
+                                    Manage job type, overview analysis and more.
+                                </p>
+                            </Link>
+                        </DropdownItem>
+
+                        <DropdownItem
+                            key="payment"
+                            startContent={
+                                <div className={iconWrapperClasses}>
+                                    <CircleDollarSign
+                                        size={24}
+                                        className={iconClasses}
+                                    />
+                                </div>
+                            }
+                        >
+                            <Link
+                                to={INTERNAL_URLS.payment}
+                                className={linkClasses}
+                            >
+                                <p className={titleClasses}>
+                                    Payment management
+                                </p>
+                                <p className={descClasses}>
+                                    Manage income, staff cost, payment method,
+                                    overview analysis and more.
+                                </p>
+                            </Link>
+                        </DropdownItem>
+
+                        <DropdownItem
+                            key="team"
+                            startContent={
+                                <div className={iconWrapperClasses}>
+                                    <Users size={24} className={iconClasses} />
+                                </div>
+                            }
+                        >
+                            <Link
+                                to={INTERNAL_URLS.staffDirectory}
+                                className={linkClasses}
+                            >
+                                <p className={titleClasses}>Team management</p>
+                                <p className={descClasses}>
+                                    Manage teams, access request and more.
+                                </p>
+                            </Link>
+                        </DropdownItem>
+                    </DropdownSection>
+                ) : null}
             </DropdownMenu>
         </Dropdown>
     )

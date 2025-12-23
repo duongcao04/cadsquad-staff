@@ -1,25 +1,12 @@
-'use client'
-
 import { useQuery } from '@tanstack/react-query'
-import { jobTypeApi } from '@/lib/api'
-import { IJobTypeResponse } from '../../shared/interfaces'
-import { TJobType } from '../../shared/types'
 import { useMemo } from 'react'
-
-export const mapJobType: (item: IJobTypeResponse) => TJobType = (item) => ({
-    code: item.code,
-    id: item.id,
-    displayName: item.displayName ?? '',
-    jobs: item.jobs ?? [],
-    hexColor: item.hexColor ?? '',
-    _count: item._count ?? undefined,
-})
-
+import { jobTypeApi } from '@/lib/api'
+import { mapJobType } from './options/job-type-queries'
 export const useJobTypes = () => {
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ['jobTypes'],
         queryFn: () => jobTypeApi.findAll(),
-        select: (res) => res.data.result,
+        select: (res) => res.result,
     })
 
     const jobTypes = useMemo(() => {

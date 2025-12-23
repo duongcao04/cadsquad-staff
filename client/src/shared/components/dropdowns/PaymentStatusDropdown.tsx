@@ -1,16 +1,31 @@
-'use client'
-import { darkenHexColor, lightenHexColor, PAID_STATUS_COLOR } from '@/lib/utils'
-import { Job } from '@/shared/interfaces'
-import { Button, Popover, PopoverContent, PopoverTrigger } from '@heroui/react'
-import { PaidChip } from '../chips'
-import { useTheme } from 'next-themes'
+import {
+    addToast,
+    Button,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@heroui/react'
 import { ChevronDown } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { darkenHexColor, lightenHexColor, PAID_STATUS_COLOR } from '@/lib/utils'
+import type { TJob } from '@/shared/types'
+import { useMarkPaidMutation, useProfile } from '@/lib'
+import { PaidChip } from '../chips/PaidChip'
+import { useState } from 'react'
 
 type Props = {
-    jobData: Job
+    jobData: TJob
+    afterChangeStatus?: () => void
 }
-export default function PaymentStatusDropdown({ jobData }: Props) {
+export default function PaymentStatusDropdown({
+    jobData,
+    afterChangeStatus,
+}: Props) {
+    const [isOpen, setOpen] = useState(false)
+    const { isAdmin, isAccounting } = useProfile()
     const { resolvedTheme } = useTheme()
+
+    const markAsPaidMutation = useMarkPaidMutation()
 
     const getBackgroundColor = (statusTitle: 'paid' | 'unpaid') => {
         return resolvedTheme === 'light'
@@ -28,9 +43,22 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
               )
     }
 
+    const handleMarkAsPaid = async () => {
+        if (jobData?.id) {
+            await markAsPaidMutation.mutateAsync(jobData.id, {
+                onSuccess() {
+                    setOpen(false)
+                    afterChangeStatus?.()
+                },
+            })
+        }
+    }
+
     const statusTitle = jobData.isPaid ? 'paid' : 'unpaid'
 
     const changeStatusTitle = !jobData.isPaid ? 'paid' : 'unpaid'
+
+    const canChangeStatus = (isAdmin || isAccounting) && !jobData.isPaid
 
     return (
         <Popover
@@ -43,9 +71,29 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
                 trigger: '!z-0',
             }}
             showArrow={true}
+            isOpen={isOpen}
+            onOpenChange={setOpen}
         >
             <PopoverTrigger className="opacity-100">
-                <button className="cursor-pointer">
+                {canChangeStatus ? (
+                    <button className="cursor-pointer">
+                        <PaidChip
+                            status={statusTitle}
+                            classNames={{
+                                base: '!w-[100px]',
+                                content: '!w-[100px] text-center',
+                            }}
+                            childrenRender={(paidStatus) => {
+                                return (
+                                    <div className="flex items-center justify-between gap-2">
+                                        <p>{paidStatus.title}</p>
+                                        <ChevronDown size={14} />
+                                    </div>
+                                )
+                            }}
+                        />
+                    </button>
+                ) : (
                     <PaidChip
                         status={statusTitle}
                         classNames={{
@@ -56,12 +104,11 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
                             return (
                                 <div className="flex items-center justify-between gap-2">
                                     <p>{paidStatus.title}</p>
-                                    <ChevronDown size={14} />
                                 </div>
                             )
                         }}
                     />
-                </button>
+                )}
             </PopoverTrigger>
             <PopoverContent aria-label="Change payment status action">
                 <div className="size-full space-y-2.5">
@@ -70,6 +117,16 @@ export default function PaymentStatusDropdown({ jobData }: Props) {
                         style={{
                             backgroundColor:
                                 getBackgroundColor(changeStatusTitle),
+                        }}
+                        onPress={() => {
+                            if (!jobData.isPaid) {
+                                handleMarkAsPaid()
+                            } else {
+                                addToast({
+                                    title: 'Job is already paid',
+                                    color: 'danger',
+                                })
+                            }
                         }}
                     >
                         <div className="flex items-center justify-start gap-2">

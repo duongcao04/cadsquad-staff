@@ -1,33 +1,18 @@
-'use client'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
 
 import { departmentApi } from '@/lib/api'
 import {
-    TCreateDepartmentInput,
-    TUpdateDepartmentInput,
+    type TCreateDepartmentInput,
+    type TUpdateDepartmentInput,
 } from '@/lib/validationSchemas'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { IDepartmentResponse } from '../../shared/interfaces'
-import { TDepartment } from '../../shared/types'
-import { useMemo } from 'react'
-
-export const mapDepartment: (item: IDepartmentResponse) => TDepartment = (
-    item
-) => ({
-    id: item.id ?? '',
-    code: item.code ?? '',
-    users: item.users ?? [],
-    hexColor: item.hexColor ?? '#ffffff',
-    notes: item.notes ?? '',
-    displayName: item.displayName ?? '',
-    createdAt: new Date(item.createdAt),
-    updatedAt: new Date(item.updatedAt),
-})
+import { mapDepartment } from './options/department-queries'
 
 export const useDepartments = () => {
     const { data, isFetching, isLoading } = useQuery({
         queryKey: ['departments'],
         queryFn: () => departmentApi.findAll(),
-        select: (res) => res.data.result,
+        select: (res) => res.result,
     })
 
     const departments = useMemo(() => {
@@ -56,7 +41,7 @@ export const useDepartmentById = (id: string) => {
             }
             return departmentApi.findOne(id)
         },
-        select: (res) => res?.data.result,
+        select: (res) => res?.result,
         enabled: !!id,
     })
 }

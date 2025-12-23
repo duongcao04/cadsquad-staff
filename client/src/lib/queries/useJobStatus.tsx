@@ -1,32 +1,17 @@
-import { jobStatusApi } from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
 import lodash from 'lodash'
 import { useMemo } from 'react'
-import { IJobStatusResponse } from '../../shared/interfaces'
-import { TJobStatus } from '../../shared/types'
-import { JobStatusSystemTypeEnum } from '../../shared/enums'
 
-const mapItem: (item: IJobStatusResponse) => TJobStatus = (item) => ({
-    code: item.code ?? '',
-    hexColor: item.hexColor ?? '#ffffff',
-    systemType: item.systemType ?? JobStatusSystemTypeEnum.STANDARD,
-    jobs: item.jobs ?? [],
-    order: item.order ?? 0,
-    icon: item.icon ?? '',
-    nextStatusOrder: item.nextStatusOrder ?? null,
-    prevStatusOrder: item.prevStatusOrder ?? null,
-    id: item.id,
-    displayName: item.displayName,
-    createdAt: new Date(item.createdAt),
-    updatedAt: new Date(item.updatedAt),
-    thumbnailUrl: item.thumbnailUrl ?? '',
-})
-
+import { jobStatusApi } from '@/lib/api'
+import {
+    mapJobStatus,
+    statusByOrderOptions,
+} from './options/job-status-queries'
 export const useJobStatuses = () => {
     const { data, isLoading, isFetching } = useQuery({
         queryKey: ['job-statuses'],
         queryFn: () => jobStatusApi.findAll(),
-        select: (res) => res.data.result,
+        select: (res) => res.result,
     })
     const jobStatuses = useMemo(() => {
         const jobStatusesData = data
@@ -35,7 +20,7 @@ export const useJobStatuses = () => {
             return []
         }
 
-        return jobStatusesData.map((item) => mapItem(item))
+        return jobStatusesData.map((item) => mapJobStatus(item))
     }, [data])
 
     return {
@@ -65,7 +50,7 @@ export const useJobStatusDetail = (statusId?: string) => {
             return undefined
         }
 
-        return mapItem(jobData)
+        return mapJobStatus(jobData)
     }, [data])
 
     return {
@@ -77,31 +62,15 @@ export const useJobStatusDetail = (statusId?: string) => {
     }
 }
 
-export const useJobStatusByOrder = (orderNumber?: number | null) => {
+export const useJobStatusByOrder = (order: number, enable?: boolean) => {
     const { data, refetch, error, isLoading } = useQuery({
-        queryKey: orderNumber ? ['job-statuses', 'order', orderNumber] : [],
-        queryFn: () => {
-            if (!orderNumber) {
-                return
-            }
-            return jobStatusApi.findByOrder(orderNumber)
-        },
-        enabled: !!orderNumber,
-        select: (res) => res?.data.result,
+        ...statusByOrderOptions(order),
+        enabled: enable ?? true,
     })
-    const jobStatus = useMemo(() => {
-        const jobData = data
-
-        if (lodash.isEmpty(jobData)) {
-            return undefined
-        }
-
-        return mapItem(jobData)
-    }, [data])
     return {
         refetch,
-        jobStatus: jobStatus,
-        data: jobStatus,
+        data,
+        status: data, // data đã được map trong select
         error,
         isLoading,
     }

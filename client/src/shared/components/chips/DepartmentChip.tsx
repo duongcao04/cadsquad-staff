@@ -1,12 +1,11 @@
-'use client'
-
-import { cn, darkenHexColor, lightenHexColor } from '@/lib/utils'
-import { Department } from '@/shared/interfaces'
-import { Chip, ChipProps } from '@heroui/react'
+import { Chip, type ChipProps } from '@heroui/react'
 import { useTheme } from 'next-themes'
 
+import { cn, darkenHexColor, lightenHexColor } from '@/lib/utils'
+import { type TDepartment } from '@/shared/types'
+
 type Props = {
-    data: Department
+    data: TDepartment
     classNames?: ChipProps['classNames']
     props?: ChipProps
 }

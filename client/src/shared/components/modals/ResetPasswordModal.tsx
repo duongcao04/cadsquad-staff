@@ -1,11 +1,9 @@
-'use client'
-
-import { ApiError } from '@/lib/axios'
-import { useResetPasswordMutation } from '@/lib/queries'
-import { addToast, Button, Radio, RadioGroup } from '@heroui/react'
-import { useTranslations } from 'next-intl'
+import { Button, Radio, RadioGroup } from '@heroui/react'
 import React, { useState } from 'react'
-import { TUser } from '../../types'
+
+import { useResetPasswordMutation } from '@/lib/queries'
+import type { TUser } from '@/shared/types'
+
 import HeroCopyButton from '../ui/hero-copy-button'
 import {
     HeroModal,
@@ -39,8 +37,6 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
     const [passwordInput, setPasswordInput] = useState('')
     const [isSuccess, setSuccess] = useState(false)
 
-    const t = useTranslations()
-
     const handleClose = () => {
         onClose()
         setResetOption('automatic')
@@ -64,29 +60,11 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
                     },
                 },
                 {
-                    onSuccess: (res) => {
-                        addToast({
-                            title: t('success'),
-                            description: res.data.message,
-                            color: 'success',
-                        })
+                    onSuccess: () => {
                         setSuccess(true)
-                    },
-                    onError: (error) => {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: t('failed'),
-                            description: err.message,
-                            color: 'danger',
-                        })
                     },
                 }
             )
-        } else {
-            addToast({
-                title: t('error'),
-                color: 'danger',
-            })
         }
     }
 
@@ -112,15 +90,11 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
                 >
                     {isSuccess ? (
                         <div>
-                            <p>{t('resetPasswordSuccess')}</p>
+                            <p>Reset password successfully</p>
                             <p>@{data?.username}</p>
                         </div>
                     ) : (
-                        <p>
-                            {t('resetPasswordFor', {
-                                username: `@${data?.username}`,
-                            })}
-                        </p>
+                        <p>Reset password for user @{data?.username}</p>
                     )}
                 </HeroModalHeader>
                 <HeroModalBody>
@@ -133,15 +107,13 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
                                 >
                                     <Radio
                                         value="automatic"
-                                        description={t(
-                                            'automaticallyGeneratePasswordDesc'
-                                        )}
+                                        description={`You'll be able to view and copy the password in the next step`}
                                         classNames={{
                                             base: 'gap-2 items-start',
                                             wrapper: 'mt-1.5',
                                         }}
                                     >
-                                        {t('automaticallyGeneratePassword')}
+                                        Automatically generate a password
                                     </Radio>
                                     <Radio
                                         value="manual"
@@ -149,7 +121,7 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
                                             base: 'gap-2',
                                         }}
                                     >
-                                        {t('createPassword')}
+                                        Create password
                                     </Radio>
                                 </RadioGroup>
                                 {resetOption === 'manual' && (
@@ -192,7 +164,7 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
                                     variant="solid"
                                     textValue={passwordInput}
                                 >
-                                    {t('copyPassword')}
+                                    Copy password
                                 </HeroCopyButton>
                             </>
                         )}
@@ -201,19 +173,19 @@ export default function ResetPasswordModal({ isOpen, onClose, data }: Props) {
                 <HeroModalFooter>
                     {isSuccess ? (
                         <Button variant="light" onPress={handleClose}>
-                            {t('done')}
+                            Done
                         </Button>
                     ) : (
                         <>
                             <Button variant="light" onPress={handleClose}>
-                                {t('cancel')}
+                                Cancel
                             </Button>
                             <Button
                                 color="primary"
                                 isLoading={isResetting}
                                 onPress={handleResetPassword}
                             >
-                                {t('reset')}
+                                Reset
                             </Button>
                         </>
                     )}

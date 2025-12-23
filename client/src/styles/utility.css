@@ -60,3 +60,19 @@
 		/* thumb track */
 	}
 }
+
+@theme {
+	/* 1. Define the animation */
+	--animate-spin-smooth: spin-smooth 1s ease-in-out infinite;
+
+	/* 2. Define keyframes (0 -> 360) */
+	@keyframes spin-smooth {
+		0% {
+			transform: rotate(0deg);
+		}
+
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+}

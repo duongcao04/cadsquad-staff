@@ -1,4 +1,6 @@
-export enum NotificationStatusEnum {
-	SEEN = 'SEEN',
-	UNSEEN = 'UNSEEN',
+export const NotificationStatusEnum = {
+    SEEN: 'SEEN',
+    UNSEEN: 'UNSEEN',
 }
+export type NotificationStatusEnum =
+    (typeof NotificationStatusEnum)[keyof typeof NotificationStatusEnum]

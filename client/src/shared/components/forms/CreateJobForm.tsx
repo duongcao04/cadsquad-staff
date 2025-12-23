@@ -1,4 +1,7 @@
-'use client'
+import { Divider } from '@heroui/react'
+import dayjs, { Dayjs } from 'dayjs'
+import { useFormik } from 'formik'
+import { useState } from 'react'
 
 import {
     useCreateJobMutation,
@@ -6,10 +9,8 @@ import {
     usePaymentChannels,
     useUsers,
 } from '@/lib/queries'
-import { CreateJobSchema, TCreateJobInput } from '@/lib/validationSchemas'
-import dayjs, { Dayjs } from 'dayjs'
-import { useFormik } from 'formik'
-import { useState } from 'react'
+import { CreateJobSchema, type TCreateJobInput } from '@/lib/validationSchemas'
+
 import AssignMemberField from '../form-fields/AssignMemberField'
 import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { JobNoField } from '../form-fields/JobNoField'
@@ -17,13 +18,12 @@ import { PaymentChannelSelect } from '../form-fields/PaymentChannelSelect'
 import { HeroButton } from '../ui/hero-button'
 import {
     HeroDateRangePicker,
-    HeroDateRangePickerProps,
+    type HeroDateRangePickerProps,
 } from '../ui/hero-date-picker'
 import { HeroInput } from '../ui/hero-input'
 import { HeroNumberInput } from '../ui/hero-number-input'
 import HeroRowsStep from '../ui/hero-rows-steps'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
-import { Divider } from '@heroui/react'
 
 type CreateJobFormProps = {
     onSubmit?: () => void
@@ -32,7 +32,7 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
     /**
      * Get initial data
      */
-    const { users } = useUsers()
+    const { data: users } = useUsers()
     const { data: jobTypes } = useJobTypes()
     const { data: paymentChannels } = usePaymentChannels()
 

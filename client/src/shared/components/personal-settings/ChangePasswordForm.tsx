@@ -1,14 +1,13 @@
-'use client'
-
-import { ApiResponse } from '@/lib/axios'
-import { useUpdatePasswordMutation } from '@/lib/queries'
-import {
-    TUpdatePasswordInput,
-    UpdatePasswordInputSchema,
-} from '@/lib/validationSchemas'
-import { addToast, Button, Input, InputProps } from '@heroui/react'
+import { addToast, Button, Input, type InputProps } from '@heroui/react'
 import { AxiosError } from 'axios'
 import { useFormik } from 'formik'
+
+import { type ApiResponse } from '@/lib/axios'
+import { useUpdatePasswordMutation } from '@/lib/queries'
+import {
+    type TUpdatePasswordInput,
+    UpdatePasswordInputSchema,
+} from '@/lib/validationSchemas'
 
 const inputClassNames: InputProps['classNames'] = {
     label: 'pb-1',

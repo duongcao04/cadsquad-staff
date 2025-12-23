@@ -14,10 +14,12 @@ export const CreateJobStatusInputSchema = yup.object({
 export type TCreateJobStatusInput = yup.InferType<typeof CreateJobStatusInputSchema>
 
 export const changeStatusInputSchema = z.object({
-  fromStatusId: z.string(),
-  toStatusId: z.string(),
+  // Code of current status
+  currentStatus: z.string(),
+  // Code of new target status
+  newStatus: z.string(),
 });
-export type ChangeStatusInput = z.infer<typeof changeStatusInputSchema>;
+export type TChangeStatusInput = z.infer<typeof changeStatusInputSchema>;
 
 export const UpdateJobStatusInputSchema = CreateJobStatusInputSchema.partial()
 export type TUpdateJobStatusInput = yup.InferType<typeof UpdateJobStatusInputSchema>

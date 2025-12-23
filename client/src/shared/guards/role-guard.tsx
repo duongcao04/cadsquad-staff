@@ -1,11 +1,9 @@
-'use client'
-
-import { authApi } from '@/lib/api'
 import { addToast } from '@heroui/react'
+import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { usePathname, useRouter } from '../../i18n/navigation'
+import { authApi } from '@/lib/api'
 import { cookie } from '../../lib/cookie'
-import { COOKIES } from '../../lib/utils'
+import { COOKIES, INTERNAL_URLS } from '../../lib/utils'
 import { RoleEnum } from '../enums'
 
 interface RoleGuardProps {
@@ -22,7 +20,7 @@ export default function RoleGuard({
     allowedRoles = [],
 }: RoleGuardProps) {
     const router = useRouter()
-    const pathname = usePathname()
+    const pathname = useLocation().pathname
     const [isLoading, setIsLoading] = useState(true)
     const [isAuthorized, setIsAuthorized] = useState(false)
 
@@ -34,7 +32,9 @@ export default function RoleGuard({
 
                 if (!token) {
                     // Redirect to login, remembering where they wanted to go
-                    router.replace(`/auth?redirect=${pathname}`)
+                    router.navigate({
+                        href: INTERNAL_URLS.login + `?redirect=${pathname}`,
+                    })
                     return
                 }
 
@@ -58,7 +58,7 @@ export default function RoleGuard({
                 if (!hasPermission) {
                     // User is logged in, but doesn't have the right role.
                     // Redirect to a safe page (Home or a 403 page)
-                    router.replace('/')
+                    router.navigate({ href: '/' })
                     return
                 }
 
@@ -72,7 +72,7 @@ export default function RoleGuard({
                     color: 'primary',
                 })
                 // On error (token expired, api down), force re-login
-                router.replace('/auth')
+                router.navigate({ href: INTERNAL_URLS.login })
             } finally {
                 setIsLoading(false)
             }
@@ -95,10 +95,10 @@ export default function RoleGuard({
 // Simple internal loading component
 function LoadingScreen() {
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <div className="flex h-screen w-full items-center justify-center bg-background">
             <div className="flex flex-col items-center gap-2">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                <p className="text-sm text-gray-500">Verifying access...</p>
+                <p className="text-sm text-text-default">Verifying access...</p>
             </div>
         </div>
     )

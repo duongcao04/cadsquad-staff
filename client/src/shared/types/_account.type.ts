@@ -1,3 +1,3 @@
-import { IAccountResponse } from "../interfaces";
+import type { IAccountResponse } from '../interfaces'
 
 export type TAccount = Omit<IAccountResponse, 'providerId' | 'userId'>

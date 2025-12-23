@@ -1,13 +1,10 @@
-'use client'
-
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
-import { ApiError } from '@/lib/axios'
 import {
     useDeleteJobMutation,
+    useMarkPaidMutation,
     useProfile,
-    useUpdateJobMutation,
+    useTogglePinJobMutation,
 } from '@/lib/queries'
-import { TJob } from '@/shared/types'
+import type { TJob } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -24,15 +21,16 @@ import {
     CircleDollarSign,
     EllipsisVerticalIcon,
     PinIcon,
+    PinOff,
     SquareArrowOutUpRight,
     Trash,
     UserPlus,
 } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
+import { INTERNAL_URLS } from '../../../lib'
+import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import ConfirmModal from '../ui/confirm-modal'
-import ReScheduleModal from '../modals/ReScheduleModal'
 
 type WorkbenchTableQuickActionsProps = {
     data: TJob
@@ -40,12 +38,14 @@ type WorkbenchTableQuickActionsProps = {
 export function WorkbenchTableQuickActions({
     data,
 }: WorkbenchTableQuickActionsProps) {
-    const locale = useLocale()
-    const t = useTranslations()
-
     const { isAdmin, isAccounting } = useProfile()
-    const { mutateAsync: updateJobMutation, isPending: isUpdating } =
-        useUpdateJobMutation()
+
+    const jobPinned = data.isPinned
+
+    const markAsPaidMutation = useMarkPaidMutation()
+
+    const togglePinJobMutation = useTogglePinJobMutation()
+
     const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
         useDeleteJobMutation()
 
@@ -96,11 +96,9 @@ export function WorkbenchTableQuickActions({
     }
 
     const handleOpenMarkAsPaidModal = () => {
-        if (Boolean(data.isPaid)) {
+        if (data.isPaid) {
             addToast({
-                title: t('jobPaid', {
-                    jobNo: `#${data.no}`,
-                }),
+                title: `Job #${data.no} already paid`,
                 color: 'danger',
             })
         } else {
@@ -110,83 +108,70 @@ export function WorkbenchTableQuickActions({
 
     const handleMarkAsPaid = async () => {
         if (data?.id) {
-            await updateJobMutation(
-                {
-                    jobId: data?.id,
-                    data: {
-                        isPaid: true,
-                    },
+            await markAsPaidMutation.mutateAsync(data.id, {
+                onSuccess: () => {
+                    onCloseMAPModal()
                 },
-                {
-                    onSuccess: (res) => {
-                        addToast({
-                            title: t('successfully'),
-                            description: t('markJobAsPaidSuccess', {
-                                jobNo: `#${res.data.result?.no ?? data?.no}`,
-                            }),
-                            color: 'success',
-                        })
-                        queryClient.invalidateQueries({
-                            queryKey: ['jobs'],
-                        })
-                        onCloseModal()
-                    },
-                    onError(error) {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: t('failed'),
-                            description: err.message,
-                            color: 'danger',
-                        })
-                    },
-                }
-            )
+            })
         }
+    }
+
+    const handleTogglePin = async () => {
+        togglePinJobMutation.mutateAsync(data.id, {
+            onSuccess: () => {
+                onCloseModal()
+            },
+        })
     }
 
     return (
         <>
-            <ConfirmModal
-                isOpen={isOpenModal}
-                onClose={onCloseModal}
-                onConfirm={onDeleteJob}
-                title={t('deleteJob')}
-                content={t('deleteJobDesc', {
-                    jobNo: `#${data?.no}`,
-                })}
-                confirmLabel={t('yes')}
-                isLoading={isDeleting}
-            />
-            <UpdateCostModal
-                isOpen={isOpenUCostModal}
-                onClose={onCloseUCostModal}
-                data={data}
-            />
-            <ConfirmModal
-                isOpen={isOpenMAPModal}
-                onClose={onCloseMAPModal}
-                onConfirm={handleMarkAsPaid}
-                title={t('markJobAsPaid', {
-                    jobNo: `#${data.no}`,
-                })}
-                content={t('markJobAsPaidDesc', {
-                    jobNo: `#${data.no}`,
-                })}
-                variant="warning"
-                confirmLabel={t('yes')}
-                isLoading={isUpdating}
-            />
-            <ReScheduleModal
-                isOpen={isOpenRescheduleModal}
-                onClose={onCloseRescheduleModal}
-                job={data}
-            />
+            {isOpenModal && (
+                <ConfirmModal
+                    isOpen={isOpenModal}
+                    onClose={onCloseModal}
+                    onConfirm={onDeleteJob}
+                    title="Delete job"
+                    content={`Are you sure you want to delete job ${data.no}? This action cannot be undone.`}
+                    confirmLabel="Yes"
+                    isLoading={isDeleting}
+                />
+            )}
+            {isOpenUCostModal && (
+                <UpdateCostModal
+                    isOpen={isOpenUCostModal}
+                    onClose={onCloseUCostModal}
+                    data={data}
+                />
+            )}
+            {isOpenMAPModal && (
+                <ConfirmModal
+                    isOpen={isOpenMAPModal}
+                    onClose={onCloseMAPModal}
+                    onConfirm={handleMarkAsPaid}
+                    title={`Mark job $${data.no} as paid`}
+                    content={`Are you sure you want to mark job ${data.no} as paid? This action will confirm that the payment has been received.`}
+                    variant="warning"
+                    confirmLabel="Yes"
+                    isLoading={markAsPaidMutation.isPending}
+                />
+            )}
 
-            <AssignMemberModal
-                isOpen={isOpenAssignModal}
-                onClose={onCloseAssignModal}
-                jobNo={data.no}
-            />
+            {isOpenRescheduleModal && (
+                <ReScheduleModal
+                    isOpen={isOpenRescheduleModal}
+                    onClose={onCloseRescheduleModal}
+                    job={data}
+                />
+            )}
+
+            {isOpenAssignModal && (
+                <AssignMemberModal
+                    isOpen={isOpenAssignModal}
+                    onClose={onCloseAssignModal}
+                    jobNo={data.no}
+                />
+            )}
 
             <Dropdown>
                 <DropdownTrigger>
@@ -206,7 +191,7 @@ export function WorkbenchTableQuickActions({
                             }
                             onPress={() =>
                                 window.open(
-                                    `/${locale}/jobs/${data.no}`,
+                                    INTERNAL_URLS.getJobDetailUrl(data.no),
                                     '_blank'
                                 )
                             }
@@ -218,16 +203,21 @@ export function WorkbenchTableQuickActions({
                         <DropdownItem
                             key="pin"
                             startContent={
-                                <PinIcon
-                                    size={14}
-                                    className="text-text-subdued rotate-45"
-                                />
+                                jobPinned ? (
+                                    <PinOff
+                                        size={14}
+                                        className="text-text-subdued"
+                                    />
+                                ) : (
+                                    <PinIcon
+                                        size={14}
+                                        className="text-text-subdued"
+                                    />
+                                )
                             }
-                            onPress={() =>
-                                alert('Tính năng đang được phát triển')
-                            }
+                            onPress={handleTogglePin}
                         >
-                            Pin Job
+                            {jobPinned ? 'Unpin' : 'Pin'}
                         </DropdownItem>
                         <DropdownItem
                             key="assignReassign"

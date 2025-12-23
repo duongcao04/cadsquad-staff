@@ -1,8 +1,7 @@
-'use client'
+import { Select, SelectItem, type SelectProps } from '@heroui/react'
+
 
 import { cn } from '@/lib/utils'
-import { Select, SelectItem, SelectProps } from '@heroui/react'
-import React from 'react'
 
 type HeroSelectProps = {
     children: React.ReactNode

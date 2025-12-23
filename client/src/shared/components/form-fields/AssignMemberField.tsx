@@ -1,10 +1,9 @@
-'use client'
-
 import { Autocomplete, AutocompleteItem, Avatar, Chip } from '@heroui/react'
 import { SearchIcon } from 'lucide-react'
-import { Key, memo, useMemo, useState } from 'react'
-import { optimizeCloudinary } from '../../../lib/cloudinary'
-import { TUser } from '../../types'
+import { type Key, memo, useMemo, useState } from 'react'
+
+import { optimizeCloudinary } from '@/lib/cloudinary'
+import type { TUser } from '@/shared/types'
 
 interface Props {
     users: TUser[]

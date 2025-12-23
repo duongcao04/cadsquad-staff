@@ -1,58 +1,27 @@
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
+import { useMutation, useQuery } from '@tanstack/react-query'
+
 import { notificationApi } from '@/lib/api'
 import { axiosClient } from '@/lib/axios'
 import {
-    TCreateNotificationInput,
-    TUpdateNotificationInput,
+    type TCreateNotificationInput,
+    type TUpdateNotificationInput,
 } from '@/lib/validationSchemas'
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
-import {
-    NotificationStatusEnum,
-    NotificationTypeEnum,
-} from '../../shared/enums'
-import { IUserNotificationResponse } from '../../shared/interfaces'
-import { TUserNotification } from '../../shared/types'
-
-export const mapUserNotification = (
-    item: IUserNotificationResponse
-): TUserNotification => {
-    return {
-        id: item.id,
-        title: item.title ?? '',
-        content: item.content ?? '',
-        status: item.status ?? NotificationStatusEnum.UNSEEN,
-        type: item.type ?? NotificationTypeEnum.INFO,
-        user: item.user,
-        imageUrl: item.imageUrl ?? null,
-        redirectUrl: item.redirectUrl ?? null,
-        sender: item.sender ?? null,
-        updatedAt: new Date(item.updatedAt),
-        createdAt: new Date(item.createdAt),
-    }
-}
+import { queryClient } from '../../main'
+import { notificationsListOptions } from './options/notification-queries'
 
 export const useNotifications = () => {
-    const { data, isFetching, isLoading, refetch } = useQuery({
-        queryKey: ['notifications'],
-        queryFn: () => notificationApi.findAll(),
-        select: (res) => res.data.result,
-    })
+    const options = notificationsListOptions()
 
-    const notifications = useMemo(() => {
-        const notificationsData = data
+    const { data, refetch, error, isFetching, isLoading } = useQuery(options)
 
-        if (!Array.isArray(notificationsData)) {
-            return []
-        }
-
-        return notificationsData.map((item) => mapUserNotification(item))
-    }, [data])
-
+    // Data đã được map sẵn trong options.select
     return {
-        data: notifications ?? [],
-        isLoading: isLoading || isFetching,
         refetch,
+        isLoading: isLoading || isFetching,
+        error,
+        notifications: data?.notifications ?? [],
+        totalCount: data?.totalCount ?? 0,
+        unseenCount: data?.unseenCount ?? 0,
     }
 }
 
@@ -84,7 +53,7 @@ export const useUpdateNotification = (onSuccess?: () => void) => {
         },
         onSuccess: () => {
             // invalidate query notifications để refetch dữ liệu mới
-            queryClient.invalidateQueries({ queryKey: ['notifications'] })
+            queryClient.refetchQueries({ queryKey: ['notifications'] })
             onSuccess?.()
         },
     })

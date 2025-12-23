@@ -1,4 +1,5 @@
-'use client'
+import { Chip, type ChipProps } from '@heroui/react'
+import { useTheme } from 'next-themes'
 
 import {
     cn,
@@ -6,8 +7,6 @@ import {
     lightenHexColor,
     PAID_STATUS_COLOR,
 } from '@/lib/utils'
-import { Chip, ChipProps } from '@heroui/react'
-import { useTheme } from 'next-themes'
 
 type Props = {
     status: 'paid' | 'unpaid'
@@ -24,17 +23,17 @@ export function PaidChip({ status, classNames, props, childrenRender }: Props) {
     const backgroundColor =
         resolvedTheme === 'light'
             ? lightenHexColor(
-                  PAID_STATUS_COLOR[status]?.hexColor
-                      ? PAID_STATUS_COLOR[status].hexColor
-                      : '#ffffff',
-                  90
-              )
+                PAID_STATUS_COLOR[status]?.hexColor
+                    ? PAID_STATUS_COLOR[status].hexColor
+                    : '#ffffff',
+                90
+            )
             : darkenHexColor(
-                  PAID_STATUS_COLOR[status]?.hexColor
-                      ? PAID_STATUS_COLOR[status].hexColor
-                      : '#000000',
-                  70
-              )
+                PAID_STATUS_COLOR[status]?.hexColor
+                    ? PAID_STATUS_COLOR[status].hexColor
+                    : '#000000',
+                70
+            )
 
     return (
         <Chip

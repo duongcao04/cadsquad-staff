@@ -1,7 +1,8 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import { Button, ButtonProps } from '@heroui/react'
+
+import { cn } from '@/lib/utils'
 
 export type FeatureCardAction = ButtonProps & {
     key: string

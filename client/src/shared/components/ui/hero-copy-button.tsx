@@ -1,15 +1,12 @@
-'use client'
-
-import { baseUrl, cn, handleCopy } from '@/lib/utils'
-import { Button, ButtonProps } from '@heroui/react'
+import { Button, type ButtonProps } from '@heroui/react'
 import { CheckCheck, Copy } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
-import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useRef, useState } from 'react'
+
+import { cn, handleCopy } from '@/lib/utils'
 
 type Props = ButtonProps & {
     textValue: string
-    replaceLocale?: boolean
     iconSize?: number
     iconClassName?: string
     onCopySuccess?: () => void
@@ -17,30 +14,17 @@ type Props = ButtonProps & {
 
 export default function HeroCopyButton({
     textValue,
-    replaceLocale = false,
     iconSize = 12,
     iconClassName,
     onCopySuccess,
     ...props
 }: Props) {
-    const locale = useLocale()
-    const t = useTranslations()
     const [copied, setCopied] = useState(false)
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const onCopy = async () => {
         try {
-            let copyValue = textValue
-            if (replaceLocale) {
-                if (textValue.includes(baseUrl)) {
-                    // Thêm $locale ngay sau baseUrl
-                    copyValue = copyValue.replace(
-                        baseUrl,
-                        `${baseUrl}/${locale}`
-                    )
-                }
-            }
-            handleCopy(copyValue, onCopySuccess)
+            handleCopy(textValue, onCopySuccess)
             setCopied(true)
 
             // clear trước khi set lại, tránh chồng timer khi spam click
@@ -64,7 +48,7 @@ export default function HeroCopyButton({
             onPress={onCopy}
             aria-label={copied ? 'Copied' : 'Copy'}
             size="sm"
-            title={t('copiedToClipboard')}
+            title="Copy to clipboard"
             className="w-7! h-7! flex items-center justify-center"
             isIconOnly
             {...props}

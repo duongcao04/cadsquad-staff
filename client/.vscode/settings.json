@@ -1,21 +1,3 @@
 {
-	"cSpell.words": [
-		"attributors",
-		"Cadsquad",
-		"heroui",
-		"saira",
-		"usehooks"
-	],
-	"i18n-ally.localesPaths": [
-		"public/messages",
-		"src/i18n"
-	],
-	"i18n-ally.keystyle": "nested",
-	"cSpell.language": "en,vi",
-	"workbench.colorCustomizations": {
-		"titleBar.activeBackground": "#0051ff",
-		"titleBar.inactiveBackground": "#0051ff49",
-		"titleBar.activeForeground": "#ffffff",
-		"titleBar.inactiveForeground": "#ffffff",
-	},
+	"tailwindCSS.experimental.configFile": ".tailwindrc"
 }

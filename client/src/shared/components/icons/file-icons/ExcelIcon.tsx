@@ -1,5 +1,5 @@
-import React from 'react'
 import type { SVGProps } from 'react'
+
 
 export function ExcelIcon(props: SVGProps<SVGSVGElement>) {
     return (

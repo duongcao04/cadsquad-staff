@@ -1,8 +1,8 @@
-'use client'
-
 import { Avatar } from '@heroui/react'
-import React from 'react'
-import { TPaymentChannel } from '../../types'
+
+
+import type { TPaymentChannel } from '@/shared/types'
+
 import { HeroAutocomplete, HeroAutocompleteItem } from '../ui/hero-autocomplete'
 
 interface PaymentChannelSelectProps {

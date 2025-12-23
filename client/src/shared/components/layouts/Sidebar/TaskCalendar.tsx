@@ -1,10 +1,10 @@
-'use client'
-
-import { Calendar } from '@/shared/components/ui/calendar'
 import { useDisclosure } from '@heroui/react'
 import * as React from 'react'
-import DayButton from './DayButton'
+
+import { Calendar } from '@/shared/components/ui/calendar'
+
 import JobDueModal from '../../modals/JobDueModal'
+import DayButton from './DayButton'
 
 export default function TaskCalendar() {
     const { isOpen, onClose, onOpen } = useDisclosure({ id: 'JobDueModal' })
@@ -26,7 +26,7 @@ export default function TaskCalendar() {
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-lg size-full md:[--cell-size:--spacing(4)]"
+                className="rounded-lg size-full md:[--cell-size:--spacing(4)] text-text-default!"
                 buttonVariant="ghost"
                 animate={false}
                 components={{

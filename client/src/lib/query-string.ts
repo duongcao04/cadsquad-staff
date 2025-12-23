@@ -1,6 +1,5 @@
-import queryString from 'query-string'
-import { type ReadonlyURLSearchParams } from 'next/navigation'
 import dayjs, { Dayjs } from 'dayjs'
+import queryString from 'query-string'
 
 // --- Configuration ---
 const QS_OPTIONS = {
@@ -14,7 +13,7 @@ const QS_OPTIONS = {
 // --- 1. CORE PARSER ---
 
 export const parseSearchParams = (
-    params: string | URLSearchParams | ReadonlyURLSearchParams | null
+    params: string | URLSearchParams | null
 ) => {
     if (!params) return {}
     const stringParams = params.toString()

@@ -1,3 +1,3 @@
-import { IDepartmentResponse } from "../interfaces";
+import type { IDepartmentResponse } from '../interfaces'
 
 export type TDepartment = IDepartmentResponse

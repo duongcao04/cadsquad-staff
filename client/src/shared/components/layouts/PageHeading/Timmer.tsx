@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useEffect, useState } from 'react'
 
 const Timmer: React.FC = () => {
@@ -24,7 +22,9 @@ const Timmer: React.FC = () => {
 
     return (
         <div className="font-arial flex flex-col text-right">
-            <span className="text-xs text-text-6 font-medium dark:text-text-4">Viet Nam</span>
+            <span className="text-xs text-text-6 font-medium dark:text-text-4">
+                Viet Nam
+            </span>
             <span
                 className="-mt-0.5 text-lg font-semibold"
                 suppressHydrationWarning

@@ -1,16 +1,3 @@
-'use client'
-
-import { MotionDiv } from '@/lib/motion'
-import { useProfile } from '@/lib/queries'
-import {
-    CreateJobModal,
-    CreateNotificationModal,
-    CreateUserModal,
-    IconAlertColorful,
-    IconPeopleColorful,
-    IconWorkColorful,
-} from '@/shared/components'
-import { appStore, ESidebarStatus } from '@/shared/stores'
 import {
     Button,
     Dropdown,
@@ -23,36 +10,33 @@ import {
 import { useStore } from '@tanstack/react-store'
 import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
-import { Variants } from 'motion/react'
-import { useTranslations } from 'next-intl'
+import { type Variants } from 'motion/react'
 import { useEffect } from 'react'
+import { MotionDiv } from '@/lib/motion'
+import { useProfile } from '@/lib/queries'
+import {
+    CreateJobModal,
+    CreateNotificationModal,
+    CreateUserModal,
+    IconAlertColorful,
+    IconPeopleColorful,
+} from '@/shared/components'
+import { appStore, ESidebarStatus } from '@/shared/stores'
+import { FluentColorBriefcase20 } from '../icons/FluentColorBriefcase20'
+import { FluentColorApprovalsApp20 } from '../icons/FluentColorApprovalsApp20'
+import { DeliverJobModal } from '../modals/DeliverJobModal'
+import { IssueReportModal } from '../modals/IssueReportModal'
+import { FluentColorErrorCircle20 } from '../icons/FluentColorErrorCircle20'
 
-export function ActionButton() {
-    const { isAdmin, isAccounting, isStaff } = useProfile()
-
-    if (isAdmin) {
-        return <AdminCreateButton />
-    }
-    if (isAccounting) {
-        return <AccountingButton />
-    }
-    if (isStaff) {
-        return <StaffButton />
-    }
-}
-
-export function StaffButton() {
-    return <div></div>
-}
-
-export function AccountingButton() {
-    return <div></div>
-}
-
-export function AdminCreateButton() {
-    const t = useTranslations()
-
-    const sidebarStatus = useStore(appStore, (state) => state.sidebarStatus)
+export function ActionButton({
+    forceStatus,
+}: {
+    forceStatus?: 'collapse' | 'expand'
+}) {
+    const { isAdmin } = useProfile()
+    const sidebarStatus = forceStatus
+        ? forceStatus
+        : useStore(appStore, (state) => state.sidebarStatus)
 
     const {
         isOpen: isOpenJM,
@@ -75,6 +59,16 @@ export function AdminCreateButton() {
     } = useDisclosure({
         id: 'NotificationModal',
     })
+    const {
+        isOpen: isOpenDeliverJobModal,
+        onOpen: onOpenDeliverJobModal,
+        onClose: onCloseDeliverJobModal,
+    } = useDisclosure({ id: 'DeliverJobModal' })
+    const {
+        isOpen: isOpenIssueReportModal,
+        onOpen: onOpenIssueReportModal,
+        onClose: onCloseIssueReportModal,
+    } = useDisclosure({ id: 'IssueReportModal' })
 
     useEffect(() => {
         hotkeys('alt+n,alt+u,alt+m', function (event, handler) {
@@ -115,9 +109,31 @@ export function AdminCreateButton() {
             whileHover="hover"
             className="w-fit"
         >
-            <CreateJobModal isOpen={isOpenJM} onClose={onCloseJM} />
-            <CreateUserModal isOpen={isOpenUM} onClose={onCloseUm} />
-            <CreateNotificationModal isOpen={isOpenNM} onClose={onCloseNM} />
+            {isAdmin && isOpenJM && (
+                <CreateJobModal isOpen={isOpenJM} onClose={onCloseJM} />
+            )}
+            {isAdmin && isOpenUM && (
+                <CreateUserModal isOpen={isOpenUM} onClose={onCloseUm} />
+            )}
+            {isAdmin && isOpenNM && (
+                <CreateNotificationModal
+                    isOpen={isOpenNM}
+                    onClose={onCloseNM}
+                />
+            )}
+            {isOpenDeliverJobModal && (
+                <DeliverJobModal
+                    isOpen={isOpenDeliverJobModal}
+                    onClose={onCloseDeliverJobModal}
+                />
+            )}
+            {isOpenIssueReportModal && (
+                <IssueReportModal
+                    isOpen={isOpenIssueReportModal}
+                    onClose={onCloseIssueReportModal}
+                />
+            )}
+
             <Dropdown>
                 <DropdownTrigger className="w-fit">
                     <Button
@@ -148,55 +164,61 @@ export function AdminCreateButton() {
                                         : 'none',
                             }}
                         >
-                            {t('create')}
+                            Actions
                         </p>
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Admin actions" variant="flat">
-                    <DropdownSection showDivider>
+                    <DropdownSection showDivider title="Job Operations">
+                        {isAdmin ? (
+                            <DropdownItem
+                                key="createJob"
+                                shortcut="Alt + N"
+                                startContent={<FluentColorBriefcase20 />}
+                                onPress={() => onOpenJM()}
+                            >
+                                Create
+                            </DropdownItem>
+                        ) : null}
                         <DropdownItem
-                            key="createJob"
-                            shortcut="Alt + N"
-                            startContent={<IconWorkColorful />}
-                            onPress={() => onOpenJM()}
+                            key="deliverJob"
+                            shortcut="Alt + D"
+                            startContent={<FluentColorApprovalsApp20 />}
+                            onPress={() => onOpenDeliverJobModal()}
                         >
-                            {t('job')}
+                            Deliver
                         </DropdownItem>
                     </DropdownSection>
-                    {/* <DropdownSection showDivider>
+                    <DropdownSection showDivider={isAdmin} title="Support">
                         <DropdownItem
-                            key="createFolder"
-                            shortcut="Ctrl + ⇧ + F"
-                            startContent={<IconFolderColorful />}
+                            key="issueReport"
+                            shortcut="Alt + I"
+                            startContent={<FluentColorErrorCircle20 />}
+                            onPress={() => onOpenIssueReportModal()}
                         >
-                            {t('folder')}
-                        </DropdownItem>
-                        <DropdownItem
-                            key="createFile"
-                            shortcut="Ctrl + ⇧ + G"
-                            startContent={<IconFileColorful />}
-                        >
-                            {t('file')}
-                        </DropdownItem>
-                    </DropdownSection> */}
-                    <DropdownSection>
-                        <DropdownItem
-                            key="createUser"
-                            shortcut="Alt + U"
-                            startContent={<IconPeopleColorful />}
-                            onPress={() => onOpenUM()}
-                        >
-                            {t('user')}
-                        </DropdownItem>
-                        <DropdownItem
-                            key="sendNotification"
-                            shortcut="Alt + M"
-                            startContent={<IconAlertColorful />}
-                            onPress={() => onOpenNM()}
-                        >
-                            {t('notification')}
+                            Issue Report
                         </DropdownItem>
                     </DropdownSection>
+                    {isAdmin ? (
+                        <DropdownSection title="Team">
+                            <DropdownItem
+                                key="createUser"
+                                shortcut="Alt + U"
+                                startContent={<IconPeopleColorful />}
+                                onPress={() => onOpenUM()}
+                            >
+                                User
+                            </DropdownItem>
+                            <DropdownItem
+                                key="sendNotification"
+                                shortcut="Alt + M"
+                                startContent={<IconAlertColorful />}
+                                onPress={() => onOpenNM()}
+                            >
+                                Notifications
+                            </DropdownItem>
+                        </DropdownSection>
+                    ) : null}
                 </DropdownMenu>
             </Dropdown>
         </MotionDiv>

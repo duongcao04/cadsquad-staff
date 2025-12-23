@@ -1,22 +1,7 @@
 'use client'
 
-import { useRouter } from '@/i18n/navigation'
-import { IMAGES, INTERNAL_URLS, WEB_PAGES } from '@/lib'
-import { useSearchJobs } from '@/lib/queries/useJob'
-import {
-    HeroButton,
-    HeroCard,
-    HeroCardBody,
-    HeroCardHeader,
-    HeroInput,
-    HeroModal,
-    HeroModalBody,
-    HeroModalContent,
-    HeroModalHeader,
-    ScrollArea,
-    ScrollBar,
-} from '@/shared/components/ui'
 import { Divider, Kbd, Tab, Tabs } from '@heroui/react'
+import { useRouter } from '@tanstack/react-router'
 import { Image } from 'antd'
 import {
     BriefcaseBusiness,
@@ -26,22 +11,30 @@ import {
     History,
     SearchIcon,
 } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useMemo, useRef } from 'react'
 import { useDebounceValue } from 'usehooks-ts'
-import { TJob } from '../../../types'
+
+import { IMAGES, INTERNAL_URLS, WEB_PAGES } from '@/lib'
+import { useSearchJobs } from '@/lib/queries/useJob'
+import type { TJob } from '@/shared/types'
+
+import { HeroButton } from '../../ui/hero-button'
+import { HeroCard, HeroCardBody, HeroCardHeader } from '../../ui/hero-card'
+import { HeroInput } from '../../ui/hero-input'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalHeader,
+} from '../../ui/hero-modal'
+import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
 
 type SearchModalProps = {
     isOpen: boolean
     onClose: () => void
 }
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
-    const t = useTranslations()
-
-    const locale = useLocale()
-
     const router = useRouter()
-
     const inputRef = useRef<HTMLInputElement | null>(null)
 
     const [inputValue, setInputValue] = useDebounceValue<string | undefined>(
@@ -89,7 +82,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <HeroInput
                         ref={inputRef}
                         className="mt-1"
-                        placeholder={t('search')}
+                        placeholder="Search ..."
                         value={inputValue}
                         isClearable
                         onChange={(e) => {
@@ -115,7 +108,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <History size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         All
                                         {jobs && webPageResult && (
                                             <span className="pl-1 text-sm text-text-subdued">
@@ -144,7 +137,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                             <HeroCardHeader className="py-0 px-2 rounded-none">
                                                 <div className="flex items-center justify-start gap-4">
                                                     <p className="font-medium text-text-subdued text-nowrap">
-                                                        {t('job')}
+                                                        Jobs
                                                         <span className="pl-2 font-semibold text-text-subdued">
                                                             ({jobs?.length})
                                                         </span>
@@ -161,11 +154,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                             onClick={(
                                                                 jobNo
                                                             ) => {
-                                                                router.push(
-                                                                    INTERNAL_URLS.getJobDetailUrl(
-                                                                        jobNo,
-                                                                        locale
-                                                                    )
+                                                                router.navigate(
+                                                                    {
+                                                                        href: INTERNAL_URLS.getJobDetailUrl(
+                                                                            jobNo
+                                                                        ),
+                                                                    }
                                                                 )
                                                                 handleClose()
                                                             }}
@@ -231,7 +225,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <BriefcaseBusiness size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         Jobs
                                         {jobs && (
                                             <span className="pl-1 text-sm text-text-subdued">
@@ -257,7 +251,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                             <HeroCardHeader className="py-0 px-2 rounded-none">
                                                 <div className="flex items-center justify-start gap-4">
                                                     <p className="font-medium text-text-subdued text-nowrap">
-                                                        {t('job')}
+                                                        Jobs
                                                         <span className="pl-2 font-semibold text-text-subdued">
                                                             ({jobs?.length})
                                                         </span>
@@ -274,11 +268,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                                                             onClick={(
                                                                 jobNo
                                                             ) => {
-                                                                router.push(
-                                                                    INTERNAL_URLS.getJobDetailUrl(
-                                                                        jobNo,
-                                                                        locale
-                                                                    )
+                                                                router.navigate(
+                                                                    {
+                                                                        href: INTERNAL_URLS.getJobDetailUrl(
+                                                                            jobNo
+                                                                        ),
+                                                                    }
                                                                 )
                                                                 onClose()
                                                             }}
@@ -296,7 +291,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <FileText size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         Documents
                                     </p>
                                 </div>
@@ -309,7 +304,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                             title={
                                 <div className="flex items-center justify-start gap-2">
                                     <CodeXml size={20} />
-                                    <p className="font-medium text-text-7">
+                                    <p className="font-medium text-text-default">
                                         Others
                                         {webPageResult && (
                                             <span className="pl-1 text-sm text-text-subdued">
@@ -443,7 +438,9 @@ function InternalPageResultCard({
             endContent={<ChevronRight size={16} />}
             disableAnimation={true}
             onPress={() => {
-                router.push(url)
+                router.navigate({
+                    href: url,
+                })
                 onClick?.()
             }}
         >

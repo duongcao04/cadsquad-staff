@@ -1,12 +1,10 @@
-'use client'
-
-import { Link } from '@/i18n/navigation'
+import { Link } from '@tanstack/react-router'
 import { Image } from 'antd'
 import parse, {
-    DOMNode,
+    type DOMNode,
     domToReact,
     Element,
-    HTMLReactParserOptions,
+    type HTMLReactParserOptions,
 } from 'html-react-parser'
 
 type HtmlReactParserProps = {
@@ -24,7 +22,7 @@ export default function HtmlReactParser({ htmlString }: HtmlReactParserProps) {
                     // Ensure strictly internal links use Next Link
                     if (href && href.startsWith('/')) {
                         return (
-                            <Link href={href} className={className}>
+                            <Link to={href} className={className}>
                                 {domToReact(
                                     domNode.children as DOMNode[],
                                     options

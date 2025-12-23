@@ -1,5 +1,5 @@
-'use client'
-
+import { useProfile, useUpdateJobMutation } from '@/lib/queries'
+import type { TJob } from '@/shared/types'
 import { addToast } from '@heroui/react'
 import {
     BlockquotePlugin,
@@ -12,29 +12,32 @@ import {
     UnderlinePlugin,
 } from '@platejs/basic-nodes/react'
 import { Pencil } from 'lucide-react'
-import { Value } from 'platejs'
+import { type Value } from 'platejs'
 import { Plate, usePlateEditor } from 'platejs/react'
 import { serializeHtml } from 'platejs/static'
 import { useMemo, useState } from 'react'
-import { useProfile, useUpdateJobMutation } from '../../../lib/queries'
-import { TJob } from '../../types'
 import { BlockquoteElement } from '../ui/blockquote-node'
 import { Editor, EditorContainer } from '../ui/editor'
 import { FixedToolbar } from '../ui/fixed-toolbar'
 import { H1Element, H2Element, H3Element } from '../ui/heading-node'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
+import { HeroTooltip } from '../ui/hero-tooltip'
 import HtmlReactParser from '../ui/html-react-parser'
 import { MarkToolbarButton } from '../ui/mark-toolbar-button'
 import { ToolbarButton } from '../ui/toolbar'
-import { HeroTooltip } from '../ui/hero-tooltip'
 
-type Props = {
+type JobDescriptionViewProps = {
     job: TJob
 }
-
-export default function JobDescriptionView({ job }: Props) {
-    const updateJobMutation = useUpdateJobMutation()
+export default function JobDescriptionView({ job }: JobDescriptionViewProps) {
+    const updateJobMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Description updated',
+            description: `The description for job ${res.result?.no} has been successfully updated.`,
+            color: 'success',
+        })
+    })
 
     const [isEditable, setIsEditable] = useState(false)
 
@@ -121,7 +124,7 @@ export default function JobDescriptionView({ job }: Props) {
                                     variant="light"
                                     onPress={() => {
                                         setIsEditable(true)
-                                        if (Boolean(inputValue)) {
+                                        if (inputValue) {
                                             if (job.description) {
                                                 const slateValue =
                                                     editor.api.html.deserialize(

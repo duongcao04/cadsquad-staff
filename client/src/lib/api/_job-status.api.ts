@@ -1,29 +1,46 @@
-import { ApiResponse, axiosClient } from '@/lib/axios'
-import { TCreateJobStatusInput, TUpdateJobStatusInput } from '@/lib/validationSchemas'
-import { IJobResponse, IJobStatusResponse } from '@/shared/interfaces'
+import { type ApiResponse, axiosClient } from '@/lib/axios'
+import type {
+    TCreateJobStatusInput,
+    TUpdateJobStatusInput,
+} from '@/lib/validationSchemas'
+import type { IJobResponse, IJobStatusResponse } from '@/shared/interfaces'
 
 export const jobStatusApi = {
-	create: (data: TCreateJobStatusInput) => {
-		return axiosClient.post<ApiResponse<IJobStatusResponse>>('/v1/job-statuses', data)
-	},
-	findAll: () => {
-		return axiosClient.get<ApiResponse<IJobStatusResponse[]>>('/v1/job-statuses')
-	},
-	findJobsByStatusCode: (statusCode: string) => {
-		return axiosClient.get<
-			ApiResponse<IJobResponse[]>
-		>(`/v1/job-statuses/code/${statusCode}/jobs`)
-	},
-	findOne: (id: string) => {
-		return axiosClient.get<ApiResponse<IJobStatusResponse>>(`/v1/job-statuses/${id}`)
-	},
-	findByOrder: (orderNum: number) => {
-		return axiosClient.get<ApiResponse<IJobStatusResponse>>(`/v1/job-statuses/order/${orderNum}`)
-	},
-	update: (id: string, data: TUpdateJobStatusInput) => {
-		return axiosClient.patch<ApiResponse<{ id: string }>>(`/v1/job-statuses/${id}`, data)
-	},
-	remove: (id: string) => {
-		return axiosClient.delete(`/v1/job-statuses/${id}`)
-	},
+    create: (data: TCreateJobStatusInput) => {
+        return axiosClient.post<ApiResponse<IJobStatusResponse>>(
+            '/v1/job-statuses',
+            data
+        )
+    },
+    findAll: async () => {
+        return axiosClient.get<ApiResponse<IJobStatusResponse[]>>(
+            '/v1/job-statuses'
+        ).then(res => res.data)
+    },
+    findJobsByStatusCode: async (statusCode: string) => {
+        return axiosClient
+            .get<
+                ApiResponse<IJobResponse[]>
+            >(`/v1/job-statuses/code/${statusCode}/jobs`)
+            .then((res) => res.data)
+    },
+    findOne: (id: string) => {
+        return axiosClient.get<ApiResponse<IJobStatusResponse>>(
+            `/v1/job-statuses/${id}`
+        )
+    },
+    findByOrder: async (orderNum: number) => {
+        return axiosClient.get<ApiResponse<IJobStatusResponse>>(
+            `/v1/job-statuses/order/${orderNum}`
+        ).then(res => res.data)
+    },
+    update: (id: string, data: TUpdateJobStatusInput) => {
+        return axiosClient.patch<ApiResponse<{ id: string }>>(
+            `/v1/job-statuses/${id}`,
+            data
+        )
+    },
+    remove: (id: string) => {
+        return axiosClient.delete(`/v1/job-statuses/${id}`)
+    },
 }

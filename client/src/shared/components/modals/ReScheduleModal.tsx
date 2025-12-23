@@ -1,7 +1,10 @@
-'use client'
+import { addToast, Button } from '@heroui/react'
+import dayjs, { Dayjs } from 'dayjs'
+import { useState } from 'react'
 
-import { Button } from '@heroui/react'
-import { TJob } from '../../types'
+import { useRescheduleMutation } from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+
 import { HeroDatePicker } from '../ui/hero-date-picker'
 import {
     HeroModal,
@@ -10,9 +13,6 @@ import {
     HeroModalFooter,
     HeroModalHeader,
 } from '../ui/hero-modal'
-import { useState } from 'react'
-import dayjs, { Dayjs } from 'dayjs'
-import { useRescheduleMutation } from '../../../lib/queries'
 
 type ReScheduleModalProps = {
     job: TJob
@@ -27,23 +27,23 @@ export default function ReScheduleModal({
 }: ReScheduleModalProps) {
     const [date, setDate] = useState<Dayjs | null>(dayjs(job.dueAt))
 
-    const rescheduleMutation = useRescheduleMutation()
+    const rescheduleMutation = useRescheduleMutation((res) => {
+        addToast({
+            title: 'Job Rescheduled',
+            description: `Reschedule for job ${res.result?.no} successfully`,
+            color: 'success',
+        })
+        onClose()
+    })
 
     const onReschedule = async () => {
-        await rescheduleMutation.mutateAsync(
-            {
-                jobId: job.id,
-                data: {
-                    fromDate: dayjs(job.dueAt).toISOString(),
-                    toDate: dayjs(date).toISOString(),
-                },
+        await rescheduleMutation.mutateAsync({
+            jobId: job.id,
+            data: {
+                fromDate: dayjs(job.dueAt).toISOString(),
+                toDate: dayjs(date).toISOString(),
             },
-            {
-                onSuccess: () => {
-                    onClose()
-                },
-            }
-        )
+        })
     }
 
     const onCancel = () => {

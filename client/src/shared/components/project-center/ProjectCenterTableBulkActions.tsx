@@ -1,5 +1,3 @@
-'use client'
-
 import {
     Button,
     Dropdown,
@@ -10,14 +8,13 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { ChevronDownIcon } from 'lucide-react'
+
 import BulkChangeStatusModal from './BulkChangeStatusModal'
 
 type ProjectCenterTableBulkActionsProps = {
     keys: Set<string> | 'all'
 }
-export default function ProjectCenterTableBulkActions({
-    keys,
-}: ProjectCenterTableBulkActionsProps) {
+export default function ProjectCenterTableBulkActions({}: ProjectCenterTableBulkActionsProps) {
     const { isOpen, onClose, onOpen } = useDisclosure({
         id: 'ProjectCenterTableBulkActions',
     })

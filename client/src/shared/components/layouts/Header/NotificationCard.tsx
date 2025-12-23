@@ -1,11 +1,11 @@
-import { NotificationStatusEnum } from '@/shared/enums/_notification-status.enum'
-import { useUpdateNotification } from '@/lib/queries/useNotification'
-
-import { Notification } from '@/shared/interfaces/_notification.interface'
-import CadsquadLogo from '@/shared/components/CadsquadLogo'
 import { Image } from 'antd'
 
-export function NotificationCard({ data }: { data: Notification }) {
+import { useUpdateNotification } from '@/lib/queries/useNotification'
+import CadsquadLogo from '@/shared/components/CadsquadLogo'
+import { NotificationStatusEnum } from '@/shared/enums/_notification-status.enum'
+import type { TUserNotification } from '@/shared/types'
+
+export function NotificationCard({ data }: { data: TUserNotification }) {
     const { mutateAsync: updateNotificationMutate } = useUpdateNotification()
 
     return (
@@ -36,16 +36,20 @@ export function NotificationCard({ data }: { data: Notification }) {
                             classNames={{
                                 logo: 'p-1.5',
                             }}
-                            logoTheme="white"
                         />
                     </div>
                 )}
             </div>
             <div className="space-y-1">
-                <p className="text-sm font-semibold line-clamp-1">
-                    {data?.title}
+                <p
+                    className="text-sm font-semibold line-clamp-1"
+                    title={data.title ?? ''}
+                >
+                    {data.title}
                 </p>
-                <p className="text-sm line-clamp-2">{data?.content}</p>
+                <p className="text-sm line-clamp-2" title={data.content}>
+                    {data.content}
+                </p>
             </div>
             {data.status === NotificationStatusEnum.UNSEEN && (
                 <div className="w-full aspect-square rounded-full bg-gray-500"></div>

@@ -1,9 +1,4 @@
-'use client'
-
-import { ApiError } from '@/lib/axios'
-import { useBulkChangeStatusMutation, useJobStatuses } from '@/lib/queries'
 import {
-    addToast,
     Button,
     Modal,
     ModalBody,
@@ -12,17 +7,22 @@ import {
     ModalHeader,
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
-import { useTranslations } from 'next-intl'
 import { useState } from 'react'
+
+import { useBulkChangeStatusMutation, useJobStatuses } from '@/lib/queries'
+
 import { pCenterTableStore } from '../../stores'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 
-type Props = {
+type BulkChangeStatusModalProps = {
     isOpen: boolean
     onClose: () => void
     isLoading?: boolean
 }
-export default function BulkChangeStatusModal({ isOpen, onClose }: Props) {
+export default function BulkChangeStatusModal({
+    isOpen,
+    onClose,
+}: BulkChangeStatusModalProps) {
     const [toStatusId, setToStatusId] = useState<string | null>(null)
 
     const selectedKeys = useStore(
@@ -35,8 +35,6 @@ export default function BulkChangeStatusModal({ isOpen, onClose }: Props) {
 
     const { mutateAsync: bulkChangeStatusMutate, isPending: isUpdating } =
         useBulkChangeStatusMutation()
-
-    const t = useTranslations()
 
     const handleClose = () => {
         onClose()
@@ -55,20 +53,7 @@ export default function BulkChangeStatusModal({ isOpen, onClose }: Props) {
                     },
                 },
                 {
-                    onSuccess: (res) => {
-                        addToast({
-                            title: t('success'),
-                            description: res.data.message,
-                            color: 'success',
-                        })
-                    },
-                    onError: (error) => {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: t('failed'),
-                            description: err.message,
-                            color: 'danger',
-                        })
+                    onSuccess: () => {
                         pCenterTableStore.setState((state) => ({
                             ...state,
                             selectedKeys: new Set(),
@@ -76,12 +61,6 @@ export default function BulkChangeStatusModal({ isOpen, onClose }: Props) {
                     },
                 }
             )
-        } else {
-            addToast({
-                title: t('failed'),
-                description: 'Please choose status to change',
-                color: 'danger',
-            })
         }
     }
 
@@ -192,14 +171,14 @@ export default function BulkChangeStatusModal({ isOpen, onClose }: Props) {
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="light" onPress={handleClose}>
-                        {t('cancel')}
+                        Cancel
                     </Button>
                     <Button
                         color="primary"
                         isLoading={isUpdating}
                         onPress={onSubmit}
                     >
-                        {t('reset')}
+                        Reset
                     </Button>
                 </ModalFooter>
             </ModalContent>

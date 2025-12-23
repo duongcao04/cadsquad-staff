@@ -1,19 +1,3 @@
-'use client'
-
-import { envConfig } from '@/lib/config'
-import { dateFormatter } from '@/lib/dayjs'
-import { useJobStatuses } from '@/lib/queries'
-import {
-    currencyFormatter,
-    DUE_DATE_PRESETS,
-    IMAGES,
-    JOB_COLUMNS,
-} from '@/lib/utils'
-import { TJobFiltersInput } from '@/lib/validationSchemas'
-import { JobStatusDropdown, PaymentStatusDropdown } from '@/shared/components'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import { useSearchParam } from '@/shared/hooks'
-import { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import {
     Button,
     Dropdown,
@@ -24,9 +8,8 @@ import {
     Input,
     Pagination,
     Select,
-    Selection,
+    type Selection,
     SelectItem,
-    SharedSelection,
     Skeleton,
     Spinner,
     Switch,
@@ -44,7 +27,7 @@ import {
     EyeIcon,
     FilePlus,
     Filter,
-    RotateCcw,
+    RefreshCw,
     SearchIcon,
     Sheet,
     SquareChartGantt,
@@ -52,10 +35,26 @@ import {
     UserRoundPlus,
     X,
 } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
-import React from 'react'
+
+import { dateFormatter } from '@/lib/dayjs'
+import { useJobStatuses } from '@/lib/queries'
+import {
+    currencyFormatter,
+    DUE_DATE_PRESETS,
+    IMAGES,
+    INTERNAL_URLS,
+    JOB_COLUMNS,
+    TABLE_ROW_PER_PAGE_OPTIONS,
+} from '@/lib/utils'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
+import { ReactNode, useCallback, useMemo } from 'react'
+import { optimizeCloudinary, useProfile } from '../../../lib'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
-import { pCenterTableStore, projectCenterStore } from '../../stores'
+import { pCenterTableStore } from '../../stores'
+import JobFinishChip from '../chips/JobFinishChip'
+import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
+import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
@@ -70,13 +69,8 @@ import {
 import { HeroTooltip } from '../ui/hero-tooltip'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
-
-const ROW_PER_PAGE_OPTIONS = [
-    { displayName: '5 items', value: 5 },
-    { displayName: '10 items', value: 10 },
-    { displayName: '15 items', value: 15 },
-    { displayName: '20 items', value: 20 },
-]
+import { ProjectCenterTableViewProps } from './ProjectCenterTableView'
+import { HeroButton } from '../ui/hero-button'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
@@ -117,57 +111,44 @@ export const getDueDateRange = (key: string | undefined | null) => {
 type ProjectCenterOptions = {
     fillContainerHeight?: boolean
 }
-type ProjectCenterTableProps = {
-    data: TJob[]
-    isLoading?: boolean
-    onRefresh?: () => void
-    currentPage?: number
-    totalPages?: number
+type ProjectCenterTableProps = ProjectCenterTableViewProps & {
     visibleColumns: 'all' | JobColumnKey[]
     options?: ProjectCenterOptions
     showFinishItems: boolean
-    searchKeywords?: string
-    filters: TJobFiltersInput
-    onFiltersChange?: (filters: TJobFiltersInput) => void
-    onSearchKeywordsChange?: (searchKeywords: string | undefined) => void
-    sortString?: string
-    onSortStringChange: (sortString: string) => void
     onDownloadCsv: () => void
     onShowFinishItemsChange?: (state: boolean) => void
     openFilterDrawer: () => void
     openViewColDrawer: () => void
     openJobDetailDrawer: () => void
     onAssignMember: (jobNo: string) => void
+    onAddAttachments: (jobNo: string) => void
 }
 export default function ProjectCenterTable({
     data,
-    isLoading = false,
+    isLoadingData = false,
     visibleColumns,
-    onRefresh,
-    currentPage = 1,
-    totalPages = 1,
-    sortString,
-    onSortStringChange,
+    sort,
     searchKeywords,
-    onSearchKeywordsChange,
+    pagination,
     filters,
-    onFiltersChange,
-    options = { fillContainerHeight: false },
     showFinishItems,
+    onRefresh,
+    onSearchKeywordsChange,
+    onFiltersChange,
+    onSortChange,
     onDownloadCsv,
     onShowFinishItemsChange,
     openFilterDrawer,
     openViewColDrawer,
     openJobDetailDrawer,
     onAssignMember,
+    onLimitChange,
+    onPageChange,
+    onAddAttachments,
+    options = { fillContainerHeight: false },
 }: ProjectCenterTableProps) {
-    const t = useTranslations()
-
+    const { isAdmin } = useProfile()
     const { data: jobStatuses } = useJobStatuses()
-
-    const locale = useLocale()
-
-    const { setSearchParams } = useSearchParam()
 
     const hasSearchFilter = Boolean(searchKeywords)
 
@@ -177,13 +158,6 @@ export default function ProjectCenterTable({
             contextItem: value,
         }))
     }
-
-    const pagination = useStore(projectCenterStore, (state) => ({
-        rowPerPage: state.limit,
-        page: state.page,
-        totalPages: 10,
-    }))
-
     const selectedKeys = useStore(
         pCenterTableStore,
         (state) => state.selectedKeys
@@ -196,29 +170,19 @@ export default function ProjectCenterTable({
         }))
     }
 
-    const onRowPerPageChange = (keys: SharedSelection) => {
-        const value = Array.from(keys)[0]
-        projectCenterStore.setState((state) => ({
-            ...state,
-            limit: parseInt(value.toString()),
-        }))
-        setSearchParams({ l: value.toString() })
-    }
+    const headerColumns = useMemo(() => {
+        const allColumns = isAdmin
+            ? JOB_COLUMNS
+            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
+        if (visibleColumns === 'all') return allColumns
 
-    const onPageChange = (page: number) => {
-        projectCenterStore.setState((state) => ({ ...state, page }))
-        setSearchParams({ p: page.toString() })
-    }
-
-    const headerColumns = React.useMemo(() => {
-        if (visibleColumns === 'all') return JOB_COLUMNS
-
-        return JOB_COLUMNS.filter((column) =>
+        return allColumns.filter((column) =>
             Array.from(visibleColumns ?? []).includes(column.uid)
         )
     }, [visibleColumns])
 
-    const topContent = React.useMemo(() => {
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+    const topContent = useMemo(() => {
         return (
             <div className="w-full flex flex-col gap-4">
                 <div className="w-full flex justify-between gap-3 items-end">
@@ -229,7 +193,7 @@ export default function ProjectCenterTable({
                                 base: 'w-[450px]',
                                 mainWrapper: 'w-[450px]',
                                 inputWrapper:
-                                    'hover:shadow-SM bg-background border-border-default border-1',
+                                    'hover:shadow-SM bg-background border-border-default border',
                             }}
                             variant="bordered"
                             size="sm"
@@ -243,9 +207,9 @@ export default function ProjectCenterTable({
                                 </div>
                             }
                             value={searchKeywords}
-                            onClear={() => onSearchKeywordsChange?.(undefined)}
+                            onClear={() => onSearchKeywordsChange('')}
                             onValueChange={(value) =>
-                                onSearchKeywordsChange?.(value)
+                                onSearchKeywordsChange(value)
                             }
                         />
 
@@ -253,14 +217,18 @@ export default function ProjectCenterTable({
                         <div className="flex gap-3">
                             <Button
                                 startContent={
-                                    <RotateCcw
-                                        className="text-small"
+                                    <RefreshCw
                                         size={14}
+                                        className={`text-small ${
+                                            isLoadingData
+                                                ? 'animate-spin-smooth'
+                                                : ''
+                                        }`}
                                     />
                                 }
                                 variant="bordered"
                                 size="sm"
-                                className="hover:shadow-SM border-border-default border-1"
+                                className="hover:shadow-SM border-border-default border"
                                 onPress={onRefresh}
                             >
                                 <span className="font-medium">Refresh</span>
@@ -272,7 +240,7 @@ export default function ProjectCenterTable({
                                 }
                                 variant="bordered"
                                 size="sm"
-                                className="hover:shadow-SM border-border-default border-1"
+                                className="hover:shadow-SM border-border-default border"
                                 onPress={openFilterDrawer}
                             >
                                 <span className="font-medium">Filter</span>
@@ -289,7 +257,7 @@ export default function ProjectCenterTable({
                                         }
                                         variant="bordered"
                                         size="sm"
-                                        className="hover:shadow-SM border-border-default border-1"
+                                        className="hover:shadow-SM border-border-default border"
                                     >
                                         <span className="font-medium">
                                             View
@@ -311,7 +279,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <SquareChartGantt
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -322,7 +290,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <SquareKanban
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -333,7 +301,7 @@ export default function ProjectCenterTable({
                                         startContent={
                                             <Sheet
                                                 size={14}
-                                                className="text-text-8"
+                                                className="text-text-default"
                                             />
                                         }
                                     >
@@ -353,7 +321,7 @@ export default function ProjectCenterTable({
                                     <Button
                                         variant="bordered"
                                         size="sm"
-                                        className="hover:shadow-SM border-border-default border-1"
+                                        className="hover:shadow-SM border-border-default border"
                                         isIconOnly
                                     >
                                         <EllipsisVertical
@@ -366,7 +334,7 @@ export default function ProjectCenterTable({
                                     disallowEmptySelection
                                     aria-label="View settings dropdown"
                                 >
-                                    <DropdownSection title={t('viewSettings')}>
+                                    <DropdownSection title="View settings">
                                         <DropdownItem
                                             key="switch"
                                             isReadOnly
@@ -376,13 +344,13 @@ export default function ProjectCenterTable({
                                             startContent={
                                                 <EyeClosed
                                                     size={16}
-                                                    className="text-text-8"
+                                                    className="text-text-default"
                                                 />
                                             }
                                         >
                                             <div className="w-full flex items-center justify-between gap-3">
-                                                <p>{t('hideFinishItems')}</p>
-                                                {isLoading ? (
+                                                <p>Hide finish items</p>
+                                                {isLoadingData ? (
                                                     <Spinner size="sm" />
                                                 ) : (
                                                     <Switch
@@ -406,12 +374,12 @@ export default function ProjectCenterTable({
                                             startContent={
                                                 <Columns3Cog
                                                     size={16}
-                                                    className="text-text-8"
+                                                    className="text-text-default"
                                                 />
                                             }
                                             onPress={openViewColDrawer}
                                         >
-                                            {t('viewColumns')}
+                                            View columns
                                         </DropdownItem>
                                     </DropdownSection>
                                 </DropdownMenu>
@@ -423,10 +391,10 @@ export default function ProjectCenterTable({
                         <div className="flex gap-3">
                             <HeroSelect
                                 selectionMode="multiple"
-                                className="min-w-[130px]"
+                                className="min-w-32.5"
                                 classNames={{
                                     trigger:
-                                        'hover:shadow-SM border-border-default border-1 cursor-pointer',
+                                        'hover:shadow-SM border-border-default border cursor-pointer',
                                     popoverContent: 'w-[200px]!',
                                 }}
                                 placeholder="Status"
@@ -471,10 +439,10 @@ export default function ProjectCenterTable({
                             </HeroSelect>
 
                             <HeroSelect
-                                className="min-w-[130px]"
+                                className="min-w-32.5"
                                 classNames={{
                                     trigger:
-                                        'hover:shadow-SM border-border-default border-1 cursor-pointer',
+                                        'hover:shadow-SM border-border-default border cursor-pointer',
                                     popoverContent: 'w-[200px]!',
                                 }}
                                 placeholder="Due in"
@@ -545,63 +513,52 @@ export default function ProjectCenterTable({
         hasSearchFilter,
         selectedKeys,
         showFinishItems,
-        isLoading,
+        isLoadingData,
         searchKeywords,
     ])
 
-    const bottomContent = React.useMemo(() => {
+    const bottomContent = useMemo(() => {
         return (
-            <div className="py-2 px-2 flex justify-between items-center">
+            <div className="py-2 px-2 grid grid-cols-3 gap-5">
                 <Select
-                    className="w-[120px]"
-                    placeholder="Select rows per page"
+                    className="w-40"
+                    label="Rows per page"
                     variant="bordered"
                     classNames={{
                         trigger: 'shadow-SM',
                     }}
+                    size="sm"
                     selectionMode="single"
-                    selectedKeys={[pagination.rowPerPage.toString()]}
-                    onSelectionChange={onRowPerPageChange}
+                    defaultSelectedKeys={[pagination.limit.toString()]}
+                    onSelectionChange={(keys) => {
+                        onLimitChange(Number(keys.currentKey))
+                    }}
                 >
-                    {ROW_PER_PAGE_OPTIONS.map((opt) => (
+                    {TABLE_ROW_PER_PAGE_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value}>
                             {opt.displayName}
                         </SelectItem>
                     ))}
                 </Select>
-                <Pagination
-                    isCompact
-                    showControls
-                    showShadow
-                    color="primary"
-                    page={currentPage}
-                    total={totalPages}
-                    onChange={onPageChange}
-                />
-                <div className="hidden sm:flex w-[30%] justify-end gap-2">
-                    <Button
-                        isDisabled={pagination.totalPages === 1}
-                        size="sm"
-                        variant="flat"
-                        // onPress={onPreviousPage}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        isDisabled={pagination.totalPages === 1}
-                        size="sm"
-                        variant="flat"
-                        // onPress={onNextPage}
-                    >
-                        Next
-                    </Button>
+                <div className="flex items-center justify-center">
+                    <Pagination
+                        isCompact
+                        showControls
+                        showShadow
+                        color="primary"
+                        page={pagination.page}
+                        total={pagination.totalPages}
+                        onChange={onPageChange}
+                    />
                 </div>
+                <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
             </div>
         )
     }, [selectedKeys, data?.length, pagination, hasSearchFilter])
 
-    const renderCell: (data: TJob, columnKey: JobColumnKey) => React.ReactNode =
-        React.useCallback((data: TJob, columnKey: JobColumnKey) => {
+    const renderCell: (data: TJob, columnKey: JobColumnKey) => ReactNode =
+        // eslint-disable-next-line react-hooks/preserve-manual-memoization
+        useCallback((data: TJob, columnKey: JobColumnKey) => {
             const cellValue = lodash.has(data, columnKey)
                 ? (data[columnKey] as string)
                 : ''
@@ -643,7 +600,7 @@ export default function ProjectCenterTable({
                     )
                 case 'displayName':
                     return (
-                        <p className="w-[250px] line-clamp-1 font-medium">
+                        <p className="w-62.5 line-clamp-1 font-medium">
                             {data.displayName}
                         </p>
                     )
@@ -669,30 +626,46 @@ export default function ProjectCenterTable({
                         </div>
                     )
                 case 'dueAt': {
-                    const isPaused =
+                    const isCompleted =
                         data.status.systemType ===
-                            JobStatusSystemTypeEnum.TERMINATED ||
+                        JobStatusSystemTypeEnum.COMPLETED
+                    const isFinish =
                         data.status.systemType ===
-                            JobStatusSystemTypeEnum.COMPLETED
+                        JobStatusSystemTypeEnum.TERMINATED
+
+                    const isPaused = isCompleted || isFinish
                     const targetDate = dayjs(data.dueAt)
+
                     return (
-                        <CountdownTimer
-                            targetDate={targetDate}
-                            hiddenUnits={['second', 'year']}
-                            paused={isPaused}
-                            className="text-right!"
-                        />
+                        <div className="w-full">
+                            {isPaused ? (
+                                <JobFinishChip
+                                    status={
+                                        isCompleted ? 'completed' : 'finish'
+                                    }
+                                />
+                            ) : (
+                                <CountdownTimer
+                                    targetDate={targetDate}
+                                    hiddenUnits={['second', 'year']}
+                                    paused={isPaused}
+                                    className="text-right!"
+                                />
+                            )}
+                        </div>
                     )
                 }
                 case 'attachmentUrls':
                     return !data.attachmentUrls?.length ? (
                         <div className="size-full flex items-center justify-center">
                             <HeroTooltip content={'Add attachment'}>
-                                <Button
+                                <HeroButton
                                     isIconOnly
                                     variant="light"
                                     size="sm"
                                     className="size-8! flex items-center justify-center"
+                                    onPress={() => onAddAttachments(data.no)}
+                                    color="default"
                                 >
                                     <p className="inline-flex items-center leading-none">
                                         <FilePlus
@@ -700,7 +673,7 @@ export default function ProjectCenterTable({
                                             className="opacity-60"
                                         />
                                     </p>
-                                </Button>
+                                </HeroButton>
                             </HeroTooltip>
                         </div>
                     ) : (
@@ -711,7 +684,7 @@ export default function ProjectCenterTable({
                 case 'assignee':
                     return !data.assignee.length ? (
                         <div className="size-full flex items-center justify-center">
-                            <HeroTooltip content={t('assignMembers')}>
+                            <HeroTooltip content="Assign members">
                                 <Button
                                     isIconOnly
                                     variant="light"
@@ -748,7 +721,7 @@ export default function ProjectCenterTable({
                                 {data.assignee.map((member) => (
                                     <Avatar
                                         key={member.id}
-                                        src={member.avatar}
+                                        src={optimizeCloudinary(member.avatar)}
                                     />
                                 ))}
                             </Avatar.Group>
@@ -765,10 +738,10 @@ export default function ProjectCenterTable({
                         <p>-</p>
                     )
                 case 'completedAt':
-                    return data.completedAt ? (
-                        <span>{dateFormatter(data.completedAt)}</span>
-                    ) : (
-                        <span className="text-text-subdued">-</span>
+                    return (
+                        data.completedAt && (
+                            <span>{dateFormatter(data.completedAt)}</span>
+                        )
                     )
                 case 'createdAt':
                     return data.createdAt ? (
@@ -786,7 +759,7 @@ export default function ProjectCenterTable({
                 case 'action':
                     return (
                         <div className="flex items-center justify-end gap-2">
-                            <HeroTooltip content={t('viewDetail')}>
+                            <HeroTooltip content="View details">
                                 <Button
                                     isIconOnly
                                     variant="light"
@@ -808,12 +781,14 @@ export default function ProjectCenterTable({
                                     </p>
                                 </Button>
                             </HeroTooltip>
-                            <HeroTooltip content={t('copyLink')}>
+                            <HeroTooltip content="Copy link">
                                 <HeroCopyButton
                                     className="size-8! flex items-center justify-center"
                                     iconSize={16}
                                     iconClassName="opacity-60"
-                                    textValue={`${envConfig.NEXT_PUBLIC_URL}/${locale}/jobs/${data.no}`}
+                                    textValue={INTERNAL_URLS.getJobDetailUrl(
+                                        data.no
+                                    )}
                                 />
                             </HeroTooltip>
                             <ProjectCenterTableQuickActions data={data} />
@@ -834,11 +809,11 @@ export default function ProjectCenterTable({
             selectedKeys={selectedKeys}
             selectionMode="multiple"
             topContent={topContent}
-            sortString={sortString ?? undefined}
-            onSortStringChange={onSortStringChange}
+            sortString={sort ?? undefined}
+            onSortStringChange={onSortChange}
             BaseComponent={(found) => {
                 return (
-                    <ScrollArea className="size-full h-full! border-1 border-border p-2 rounded-md min-h-[calc(100%-150px)]">
+                    <ScrollArea className="size-full h-full! border border-border p-2 rounded-md min-h-[calc(100%-150px)]">
                         <ScrollBar orientation="horizontal" />
                         <ScrollBar orientation="vertical" />
                         {found.children}
@@ -851,7 +826,7 @@ export default function ProjectCenterTable({
             // onSortChange={setSortDescriptor}'
             classNames={{
                 base: `${options.fillContainerHeight ? 'h-full' : ''}`,
-                table: !isLoading ? 'relative' : 'relative min-h-[480px]!',
+                table: !isLoadingData ? 'relative' : 'relative min-h-[480px]!',
             }}
         >
             <HeroTableHeader columns={headerColumns}>
@@ -870,11 +845,11 @@ export default function ProjectCenterTable({
             </HeroTableHeader>
             <HeroTableBody
                 emptyContent={'No items found'}
-                items={isLoading ? [] : data}
+                items={isLoadingData ? [] : data}
                 loadingContent={
                     <div className="flex flex-col gap-3 w-full mt-16">
                         {Array.from({
-                            length: pagination.rowPerPage || 10,
+                            length: pagination.limit || 10,
                         }).map((_, index) => (
                             <Skeleton
                                 key={index}
@@ -883,7 +858,7 @@ export default function ProjectCenterTable({
                         ))}
                     </div>
                 }
-                isLoading={isLoading}
+                isLoading={isLoadingData}
             >
                 {(item) => (
                     <HeroTableRow

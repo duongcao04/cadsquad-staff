@@ -1,18 +1,7 @@
-'use client'
-
+import { JOB_COLUMNS } from '@/lib/utils'
+import type { JobColumnKey } from '@/shared/types'
+import { useStore } from '@tanstack/react-store'
 import { Drawer } from 'antd'
-import React from 'react'
-
-import { RoleEnum } from '@/shared/enums'
-
-import {
-    useJobColumns,
-    useProfile,
-    useUpdateConfigByCodeMutation,
-} from '@/lib/queries'
-import { USER_CONFIG_KEYS, USER_CONFIG_VALUES } from '@/lib/utils'
-import { JobColumn, JobColumnKey } from '@/shared/types'
-import { Spinner } from '@heroui/react'
 import {
     ArrowLeft,
     AtSign,
@@ -30,142 +19,110 @@ import {
     Text,
     UsersRound,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { pCenterTableStore, toggleJobColumns } from '../../stores'
 import { ViewColumnSwitch } from './ViewColumnSwitch'
+import { useProfile } from '../../../lib'
 
-type THeaderColumns = {
-    title: string
-    key: JobColumn
-    icon?: React.ReactNode
-}[]
 type Props = { isOpen: boolean; onClose: () => void }
 
 export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
-    const t = useTranslations()
-    const { jobColumns: showColumns } = useJobColumns()
-    const { userRole } = useProfile()
-    const { mutateAsync: updateConfigMutate, isPending: isLoading } =
-        useUpdateConfigByCodeMutation()
+    const { isAdmin, isAccounting } = useProfile()
+
+    const JOB_COLUMNS_FINAL =
+        isAdmin || isAccounting
+            ? JOB_COLUMNS
+            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
+
+    const visibleColumns = useStore(
+        pCenterTableStore,
+        (state) => state.jobColumns
+    )
 
     const columnMeta: Record<
-        JobColumn,
+        JobColumnKey,
         { title: string; icon?: React.ReactNode }
     > = {
         no: {
-            title: t('jobColumns.no'),
+            title: 'Job no',
             icon: <p className="font-bold text-lg text-text-subdued">#</p>,
         },
         type: {
-            title: t('jobColumns.type'),
+            title: 'Type',
             icon: <Layers2 size={20} className="text-text-subdued" />,
         },
-        thumbnail: {
-            title: t('jobColumns.thumbnail'),
+        thumbnailUrl: {
+            title: 'Thumbnail',
             icon: <GalleryThumbnails size={20} className="text-text-subdued" />,
         },
         displayName: {
-            title: t('jobColumns.displayName'),
+            title: 'Display name',
             icon: <AtSign size={20} className="text-text-subdued" />,
         },
         description: {
-            title: t('jobColumns.description'),
+            title: 'Description',
             icon: <Text size={20} className="text-text-subdued" />,
         },
         attachmentUrls: {
-            title: t('jobColumns.attachmentUrls'),
+            title: 'Attachments',
             icon: <Paperclip size={20} className="text-text-subdued" />,
         },
         clientName: {
-            title: t('jobColumns.clientName'),
+            title: 'Client name',
             icon: <Handshake size={20} className="text-text-subdued" />,
         },
         incomeCost: {
-            title: t('jobColumns.incomeCost'),
+            title: 'Income cost',
             icon: <DollarSign size={20} className="text-text-subdued" />,
         },
         staffCost: {
-            title: t('jobColumns.staffCost'),
+            title: 'Staff cost',
             icon: <p className="font-semibold text-lg text-text-subdued">đ</p>,
         },
         assignee: {
-            title: t('jobColumns.assignee'),
+            title: 'Assignees',
             icon: <UsersRound size={20} className="text-text-subdued" />,
         },
         paymentChannel: {
-            title: t('jobColumns.paymentChannel'),
+            title: 'Payment channel',
             icon: <Landmark size={20} className="text-text-subdued" />,
         },
         status: {
-            title: t('jobColumns.status'),
+            title: 'Status',
             icon: <Loader size={20} className="text-text-subdued" />,
         },
         isPaid: {
-            title: t('jobColumns.isPaid'),
+            title: 'Paid status',
             icon: <BanknoteArrowUp size={20} className="text-text-subdued" />,
         },
         dueAt: {
-            title: t('jobColumns.dueAt'),
+            title: 'Due on',
             icon: <CalendarClock size={20} className="text-text-subdued" />,
         },
         completedAt: {
-            title: t('jobColumns.completedAt'),
+            title: 'Completed at',
             icon: <Calendar size={20} className="text-text-subdued" />,
         },
         createdAt: {
-            title: t('jobColumns.createdAt'),
+            title: 'Created at',
             icon: <Calendar size={20} className="text-text-subdued" />,
         },
         updatedAt: {
-            title: t('jobColumns.updatedAt'),
+            title: 'Updated at',
             icon: <Calendar size={20} className="text-text-subdued" />,
         },
         action: {
-            title: t('jobColumns.action'),
+            title: 'Actions',
             icon: <Hand size={20} className="text-text-subdued" />,
         },
     }
 
-    // Auto-generate headerColumns from JobCols
-    const headerColumns: THeaderColumns = (
-        Object.keys(columnMeta) as JobColumn[]
-    ).map((key) => ({
-        key,
-        ...columnMeta[key],
-    }))
-    const canShowCols =
-        userRole === RoleEnum.ADMIN
-            ? USER_CONFIG_VALUES.allJobColumns.admin
-            : USER_CONFIG_VALUES.allJobColumns.user
-    const finalColumns = headerColumns.filter((col) => {
-        return canShowCols.includes(col.key)
-    })
-
-    const handleSwitch = (colKey: string, isSelected: boolean) => {
-        if (showColumns) {
-            if (!isSelected) {
-                const newCols = showColumns?.filter((item) => item !== colKey)
-                updateConfigMutate({
-                    code: USER_CONFIG_KEYS.jobShowColumns,
-                    data: {
-                        value: JSON.stringify(newCols),
-                    },
-                })
-            } else {
-                const newCols = [...showColumns, colKey]
-                updateConfigMutate({
-                    code: USER_CONFIG_KEYS.jobShowColumns,
-                    data: {
-                        value: JSON.stringify(newCols),
-                    },
-                })
-            }
-        }
-    }
+    const handleSwitch = (key: JobColumnKey, isVisible: boolean) =>
+        toggleJobColumns(key, isVisible)
 
     return (
         <Drawer
             open={isOpen}
-            title={<p>{t('viewColumns')}</p>}
+            title="View columns"
             width={450}
             maskClosable
             closeIcon={<ArrowLeft size={16} />}
@@ -176,53 +133,19 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
             }}
         >
             <div className="relative size-full">
-                {isLoading && (
-                    <div className="absolute bg-background opacity-50 size-full z-20 flex items-center justify-center">
-                        <Spinner size="lg" className="!opacity-100" />
-                    </div>
-                )}
                 <div className="flex items-center justify-between">
                     <p className="font-medium text-text-subdued">
-                        {t('shownStatus')}
+                        Show columns
                     </p>
-                    <button
-                        className="cursor-pointer hover:underline underline-offset-2 transition duration-150"
-                        onClick={() => {
-                            const canShowAll =
-                                showColumns && showColumns.length === 0
-                            if (canShowAll) {
-                                const data =
-                                    userRole === RoleEnum.ADMIN
-                                        ? USER_CONFIG_VALUES.allJobColumns.admin
-                                        : USER_CONFIG_VALUES.allJobColumns.user
-                                updateConfigMutate({
-                                    code: USER_CONFIG_KEYS.jobShowColumns,
-                                    data: {
-                                        value: JSON.stringify(data),
-                                    },
-                                })
-                            } else {
-                                updateConfigMutate({
-                                    code: USER_CONFIG_KEYS.jobShowColumns,
-                                    data: {
-                                        value: JSON.stringify([]),
-                                    },
-                                })
-                            }
-                        }}
-                    >
-                        <p className="font-medium text-text-subdued">
-                            {showColumns?.length === 0
-                                ? t('showAll')
-                                : t('hideAll')}
-                        </p>
-                    </button>
                 </div>
                 <div className="mt-2">
-                    {finalColumns.map((col, idx) => {
+                    {JOB_COLUMNS_FINAL?.map((col, idx) => {
                         const isSelected =
-                            showColumns?.includes(col.key as JobColumnKey) ??
-                            false
+                            visibleColumns === 'all'
+                                ? true
+                                : visibleColumns?.includes(
+                                      col.uid as JobColumnKey
+                                  )
 
                         return (
                             <div
@@ -230,13 +153,15 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
                                 className="flex items-center justify-between"
                             >
                                 <div className="py-2.5 flex items-center justify-start gap-3">
-                                    <div className="size-6 flex items-center justify-center">
-                                        {col.icon}
-                                    </div>
-                                    <p className="text-base">{col.title}</p>
+                                    <p className="text-text-7">
+                                        {columnMeta[col.uid]?.icon}
+                                    </p>
+                                    <p className="text-sm font-medium text-text-7">
+                                        {col.displayName}
+                                    </p>
                                 </div>
                                 <ViewColumnSwitch
-                                    colKey={col.key}
+                                    colKey={col.uid}
                                     isSelected={isSelected}
                                     onSwitch={handleSwitch}
                                 />

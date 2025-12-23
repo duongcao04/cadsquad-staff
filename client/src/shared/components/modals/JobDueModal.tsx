@@ -1,13 +1,10 @@
-'use client'
-
-import { Link } from '@/i18n/navigation'
-import { dateFormatter } from '@/lib/dayjs'
-import { useJobsByDeadline } from '@/lib/queries'
 import { Skeleton } from '@heroui/react'
 import { CalendarDays } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+
+import { dateFormatter } from '@/lib/dayjs'
+import { useJobsDueOnDate } from '@/lib/queries'
+
 import React from 'react'
-import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 import JobCard, { JobCardSkeleton } from '../profile/JobCard'
 import {
     HeroModal,
@@ -15,6 +12,7 @@ import {
     HeroModalContent,
     HeroModalHeader,
 } from '../ui/hero-modal'
+import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 
 type Props = {
     isOpen: boolean
@@ -23,9 +21,7 @@ type Props = {
 }
 
 function JobDueModal({ isOpen, onClose, currentDate }: Props) {
-    const t = useTranslations()
-
-    const { data: jobs, isLoading } = useJobsByDeadline(
+    const { data: jobs, isLoading } = useJobsDueOnDate(
         currentDate.toISOString()
     )
 
@@ -36,15 +32,13 @@ function JobDueModal({ isOpen, onClose, currentDate }: Props) {
             classNames={{
                 base: 'max-w-[90%] sm:max-w-[80%] md:max-w-[80%] xl:max-w-[60%]',
             }}
-            style={{
-                bottom: '200px',
-            }}
+            placement="top"
         >
             <HeroModalContent>
                 <HeroModalHeader>
                     <div className="space-y-1">
                         <p className="text-lg font-semibold">
-                            {t('upcomingTask')}{' '}
+                            Upcoming tasks
                             <Skeleton
                                 className="inline-block w-8 h-3 rounded-md"
                                 isLoaded={!isLoading}
@@ -71,7 +65,7 @@ function JobDueModal({ isOpen, onClose, currentDate }: Props) {
                     <ScrollArea className="size-full">
                         <ScrollBar orientation="horizontal" />
                         <ScrollBar orientation="vertical" />
-                        <div className="min-w-full w-fit py-5 space-y-5 border-t border-border max-h-[500px]">
+                        <div className="min-w-full w-fit py-5 space-y-5 border-t border-border max-h-125">
                             {/* Loading */}
                             {isLoading &&
                                 new Array(4).fill(0).map((_, idx) => {
@@ -82,16 +76,16 @@ function JobDueModal({ isOpen, onClose, currentDate }: Props) {
                             {!isLoading && jobs?.length === 0 && (
                                 <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-subdued">
                                     <p className="text-base font-semibold">
-                                        {t('emptyDueOnToday')}
+                                        Empty tasks for today.
                                     </p>
                                     <p className="tracking-wide text-sm">
-                                        {t('viewAllJobs')}{' '}
-                                        <Link
-                                            href={'/project-center?tab=active'}
-                                            className="link underline!"
+                                        View all jobs
+                                        <a
+                                            href={'/project-center/active'}
+                                            className="pl-2 link underline!"
                                         >
-                                            {t('here')}
-                                        </Link>
+                                            here
+                                        </a>
                                     </p>
                                 </div>
                             )}

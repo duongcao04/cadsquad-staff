@@ -1,5 +1,3 @@
-'use client'
-
 import CreateJobForm from '../forms/CreateJobForm'
 import {
     HeroModal,

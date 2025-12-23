@@ -1,75 +1,97 @@
-'use client'
-
 import {
     useChangeStatusMutation,
-    useJobStatusByOrder,
     useJobStatuses,
     useProfile,
 } from '@/lib/queries'
+import { statusByOrderOptions } from '@/lib/queries/options/job-status-queries'
 import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
-import { TJob, TJobStatus } from '@/shared/types'
+import type { TJob, TJobStatus } from '@/shared/types'
 import {
     addToast,
     Button,
+    Divider,
     Popover,
     PopoverContent,
     PopoverTrigger,
     Tab,
     Tabs,
 } from '@heroui/react'
+import { useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { JobStatusChip } from '../chips'
+import { useState } from 'react'
+import { JobStatusSystemTypeEnum } from '../../enums'
+import { JobStatusChip } from '../chips/JobStatusChip'
 
-type Props = {
+type JobStatusDropdownProps = {
     jobData: TJob
     statusData: TJobStatus
+    afterChangeStatus?: () => void
 }
-export default function JobStatusDropdown({ jobData, statusData }: Props) {
+export default function JobStatusDropdown({
+    jobData,
+    statusData,
+    afterChangeStatus,
+}: JobStatusDropdownProps) {
+    const [isOpen, setIsOpen] = useState(false)
+
     const { resolvedTheme } = useTheme()
 
     const { isAdmin } = useProfile()
-    const { mutateAsync: changeStatusMutation } = useChangeStatusMutation()
-    const { jobStatus: nextStatus } = useJobStatusByOrder(
-        statusData.nextStatusOrder
-    )
-    const { jobStatus: prevStatus } = useJobStatusByOrder(
-        statusData.prevStatusOrder
-    )
+
+    const changeStatusMutation = useChangeStatusMutation((res) => {
+        addToast({
+            title: 'Job status updated',
+            description: `Job ${res.result?.no} has been successfully updated`,
+            color: 'success',
+        })
+    })
+
+    const { data: nextStatus } = useQuery({
+        // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+        // The query won't run because of 'enabled' below.
+        ...statusByOrderOptions(statusData.nextStatusOrder ?? -1),
+
+        // Only fetch if nextStatusOrder exists
+        enabled:
+            isOpen &&
+            !!statusData.nextStatusOrder &&
+            statusData.nextStatusOrder !== null,
+    })
+
+    const { data: prevStatus } = useQuery({
+        // If prevStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+        // The query won't run because of 'enabled' below.
+        ...statusByOrderOptions(statusData.prevStatusOrder ?? -1),
+
+        // Only fetch if prevStatusOrder exists
+        enabled:
+            isOpen &&
+            !!statusData.prevStatusOrder &&
+            statusData.prevStatusOrder !== null,
+    })
+
     const { data: jobStatuses } = useJobStatuses()
 
+    const canClickable =
+        isAdmin && statusData.systemType !== JobStatusSystemTypeEnum.TERMINATED
+
     const handleChangeStatus = async (nextStatus: TJobStatus) => {
-        try {
-            await changeStatusMutation(
-                {
-                    jobId: jobData.id?.toString(),
-                    data: {
-                        fromStatusId: jobData?.status.id?.toString(),
-                        toStatusId: nextStatus.id?.toString(),
-                    },
+        await changeStatusMutation.mutateAsync(
+            {
+                jobId: jobData.id,
+                data: {
+                    currentStatus: statusData.code,
+                    newStatus: nextStatus.code,
                 },
-                {
-                    onSuccess: () => {
-                        addToast({
-                            title: 'Cập nhật trạng thái thành công',
-                            color: 'success',
-                        })
-                    },
-                    onError: () => {
-                        addToast({
-                            title: 'Cập nhật trạng thái thất bại',
-                            color: 'danger',
-                        })
-                    },
-                }
-            )
-        } catch (error) {
-            console.log(error)
-            addToast({
-                title: 'Cập nhật trạng thái thất bại',
-                color: 'danger',
-            })
-        }
+            },
+            {
+                onSuccess() {
+                    afterChangeStatus?.()
+                    setIsOpen(false)
+                },
+            }
+        )
     }
 
     const actions: { key: string; data?: TJobStatus; action: () => void }[] = [
@@ -78,8 +100,8 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
             data: isAdmin
                 ? nextStatus
                 : nextStatus?.code === JOB_STATUS_CODES.delivered
-                ? nextStatus
-                : undefined,
+                  ? nextStatus
+                  : undefined,
             action: () => {
                 handleChangeStatus(nextStatus as TJobStatus)
             },
@@ -89,8 +111,8 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
             data: isAdmin
                 ? prevStatus
                 : prevStatus?.code === JOB_STATUS_CODES.delivered
-                ? prevStatus
-                : undefined,
+                  ? prevStatus
+                  : undefined,
             action: () => {
                 handleChangeStatus(prevStatus as TJobStatus)
             },
@@ -109,8 +131,8 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                   )
                 : '#ffffff'
             : data
-            ? darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
-            : '#000000'
+              ? darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
+              : '#000000'
     }
 
     return (
@@ -123,10 +145,31 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                 backdrop: '!z-0',
                 trigger: '!z-0',
             }}
+            isOpen={isOpen}
             showArrow={true}
+            onOpenChange={setIsOpen}
         >
             <PopoverTrigger className="opacity-100">
-                <button className="cursor-pointer">
+                {canClickable ? (
+                    <button className="cursor-pointer">
+                        <JobStatusChip
+                            data={statusData}
+                            classNames={{
+                                base: '!w-[120px]',
+                                content:
+                                    'uppercase text-xs font-semibold font-saira !w-[120px] text-nowrap line-clamp-1',
+                            }}
+                            childrenRender={(statusData) => {
+                                return (
+                                    <div className="flex items-center justify-between gap-2">
+                                        <p>{statusData.displayName}</p>
+                                        <ChevronDown size={14} />
+                                    </div>
+                                )
+                            }}
+                        />
+                    </button>
+                ) : (
                     <JobStatusChip
                         data={statusData}
                         classNames={{
@@ -134,16 +177,8 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                             content:
                                 'uppercase text-xs font-semibold font-saira !w-[120px] text-nowrap line-clamp-1',
                         }}
-                        childrenRender={(statusData) => {
-                            return (
-                                <div className="flex items-center justify-between gap-2">
-                                    <p>{statusData.displayName}</p>
-                                    <ChevronDown size={14} />
-                                </div>
-                            )
-                        }}
                     />
-                </button>
+                )}
             </PopoverTrigger>
             <PopoverContent aria-label="Change status action">
                 <Tabs
@@ -229,6 +264,10 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                                                 onPress={() => {
                                                     handleChangeStatus(item)
                                                 }}
+                                                isDisabled={
+                                                    item.code ===
+                                                    statusData.code
+                                                }
                                             >
                                                 {item && (
                                                     <div className="flex items-center justify-start gap-2">
@@ -261,9 +300,13 @@ export default function JobStatusDropdown({ jobData, statusData }: Props) {
                         </Tab>
                     )}
                 </Tabs>
-                <p className="border-t-1 border-text-muted pt-1.5 w-full text-center text-text-muted">
-                    <span className="font-bold">#{jobData?.no}</span> / Update
-                    status
+
+                <Divider className="bg-text-muted" />
+
+                <p className="text-xs pt-1.5 w-full text-center text-text-subdued">
+                    <span className="font-semibold">#{jobData?.no}</span>
+                    <span className="px-0.5">/</span>
+                    <span>Update status</span>
                 </p>
             </PopoverContent>
         </Popover>

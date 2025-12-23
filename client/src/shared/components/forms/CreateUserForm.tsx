@@ -1,15 +1,18 @@
-'use client'
+import { Divider, Spacer } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
+import { useFormik } from 'formik'
 
 import {
     useCreateUserMutation,
     useDepartments,
     useJobTitles,
 } from '@/lib/queries'
-import { CreateUserSchema, TCreateUserInput } from '@/lib/validationSchemas'
-import { Divider, Spacer } from '@heroui/react'
-import { useFormik } from 'formik'
-import { Link } from '../../../i18n/navigation'
-import { INTERNAL_URLS, ROLES_LIST } from '../../../lib/utils'
+import { INTERNAL_URLS, ROLES_LIST } from '@/lib/utils'
+import {
+    CreateUserSchema,
+    type TCreateUserInput,
+} from '@/lib/validationSchemas'
+
 import { RoleEnum } from '../../enums'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardFooter } from '../ui/hero-card'
@@ -76,7 +79,7 @@ export default function CreateUserForm({
             {isSuccess ? (
                 <HeroCard className="py-5 shadow-none border-none">
                     <HeroCardBody className="text-center px-10">
-                        <p className="font-bold text-text-8">
+                        <p className="font-bold text-text-default">
                             {formik.values.displayName}
                         </p>
                         <div className="flex items-center justify-center gap-2">
@@ -98,7 +101,7 @@ export default function CreateUserForm({
                         </p>
                     </HeroCardBody>
                     <HeroCardFooter className="flex items-center justify-center gap-5">
-                        <Link className="block" href={INTERNAL_URLS.manageUser}>
+                        <Link className="block" to={INTERNAL_URLS.manageUser}>
                             <HeroButton className="w-40" variant="bordered">
                                 Manage user
                             </HeroButton>

@@ -3,6 +3,7 @@ import localizedFormat from 'dayjs/plugin/localizedFormat'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
+
 import { TIMEZONE } from './utils'
 
 dayjs.extend(utc)
@@ -23,19 +24,31 @@ export const localizedFormats = {
     /** Example: 8:02 PM */
     time: 'h:mm A',
 
+    /** Example: 8:02 PM */
+    time24h: 'h:mm',
+
     /** Example: 8:02:18 PM */
     timeWithSecond: 'h:mm:ss A',
 
     /** Example: 08/16/25 */
     shortDate: 'DD/MM/YY',
 
-    /** Example: 08/16/2018 */
+    /** Example: 16/08/2018 */
     semiLongDate: 'DD/MM/YYYY',
+
+    /** Example: 08/16/2018 */
+    monthSemiLongData: 'MM/DD/YYYY',
+
+    /** Example: 2018-08-16 */
+    reverseSemiLongDateDashed: 'YYYY-MM-DD',
 
     semiDateTime: 'H:mm - DD/MM/YYYY',
 
     /** Example: August 16, 2018 */
     longDate: 'MMMM D, YYYY',
+
+    /** Example: 19 Jan */
+    dateMonth: 'D MMM',
 
     /** Example: August 16, 2018 8:02 PM */
     longDateTime: 'MMMM D, YYYY h:mm A',

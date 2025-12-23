@@ -1,7 +1,3 @@
-'use client'
-
-import { usePathname, useRouter } from '@/i18n/navigation'
-import { useLogout, useProfile } from '@/lib/queries'
 import {
     addToast,
     Avatar,
@@ -14,25 +10,24 @@ import {
     SelectItem,
     User as UserComp,
 } from '@heroui/react'
+import { useRouter } from '@tanstack/react-router'
 import {
     ChartArea,
+    ListTodo,
     LogOut,
     SunMoon,
     User,
     UserCircle,
     UserCog,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import { THEME_SELECTS } from '../../../../lib/utils'
 import { useTheme } from 'next-themes'
 
-export function UserDropdown() {
-    const tSettings = useTranslations('settings')
-    const tCommon = useTranslations()
+import { useLogout, useProfile } from '@/lib/queries'
+import { INTERNAL_URLS, THEME_SELECTS } from '@/lib/utils'
 
+export function UserDropdown() {
     const { theme, setTheme } = useTheme()
 
-    const pathname = usePathname()
     const router = useRouter()
     const { profile } = useProfile()
     const { mutateAsync: logoutMutate } = useLogout()
@@ -43,9 +38,8 @@ export function UserDropdown() {
                 title: 'Logout successfully!',
                 color: 'success',
             })
-            router.push({
-                pathname: '/auth',
-                query: { redirect: pathname },
+            router.navigate({
+                href: INTERNAL_URLS.login,
             })
         })
     }
@@ -83,7 +77,7 @@ export function UserDropdown() {
                         key="profile"
                         className="h-14 gap-2 opacity-100"
                         onClick={() => {
-                            router.push('/profile')
+                            router.navigate({ href: '/profile' })
                         }}
                     >
                         <UserComp
@@ -103,19 +97,34 @@ export function UserDropdown() {
                         key="overview"
                         startContent={<ChartArea size={16} />}
                         onClick={() => {
-                            router.push('/overview')
+                            router.navigate({
+                                href: INTERNAL_URLS.userOverview,
+                            })
                         }}
                     >
-                        {tCommon('overview')}
+                        Overview
+                    </DropdownItem>
+                    <DropdownItem
+                        key="taskSummary"
+                        startContent={<ListTodo size={16} />}
+                        onClick={() => {
+                            router.navigate({
+                                href: INTERNAL_URLS.userTaskSummary,
+                            })
+                        }}
+                    >
+                        Task Summary
                     </DropdownItem>
                     <DropdownItem
                         key="settings"
                         startContent={<UserCog size={16} />}
                         onClick={() => {
-                            router.push('/setting')
+                            router.navigate({
+                                href: INTERNAL_URLS.settings,
+                            })
                         }}
                     >
-                        {tSettings('accountSettings')}
+                        Settings
                     </DropdownItem>
                 </DropdownSection>
 
@@ -124,10 +133,10 @@ export function UserDropdown() {
                         isReadOnly
                         key="changeTheme"
                         startContent={<SunMoon size={16} />}
-                        className="hover:!bg-transparent"
+                        className="hover:bg-transparent!"
                         endContent={
                             <Select
-                                className="max-w-[100px]"
+                                className="max-w-25"
                                 size="sm"
                                 defaultSelectedKeys={[theme as 'dark']}
                                 onSelectionChange={(keys) => {
@@ -151,10 +160,10 @@ export function UserDropdown() {
                         key="helpCenter"
                         startContent={<UserCircle size={16} />}
                         onClick={() => {
-                            router.push('/help-center')
+                            router.navigate({ href: INTERNAL_URLS.helpCenter })
                         }}
                     >
-                        {tCommon('helpCenter')}
+                        Help center
                     </DropdownItem>
                     <DropdownItem
                         key="logout"
@@ -162,7 +171,7 @@ export function UserDropdown() {
                         color="danger"
                         onPress={handleLogout}
                     >
-                        {tCommon('logout')}
+                        Logout
                     </DropdownItem>
                 </DropdownSection>
             </DropdownMenu>

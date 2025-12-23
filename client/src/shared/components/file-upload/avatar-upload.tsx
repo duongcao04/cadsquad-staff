@@ -1,10 +1,6 @@
-'use client'
+import { TriangleAlert, User, X } from 'lucide-react'
 
-import {
-    formatBytes,
-    useFileUpload,
-    type FileWithPreview,
-} from '@/shared/hooks/use-file-upload'
+import { cn } from '@/lib/utils'
 import {
     Alert,
     AlertContent,
@@ -13,8 +9,11 @@ import {
     AlertTitle,
 } from '@/shared/components/ui/alert'
 import { Button } from '@/shared/components/ui/button'
-import { TriangleAlert, User, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import {
+    type FileWithPreview,
+    formatBytes,
+    useFileUpload,
+} from '@/shared/hooks/use-file-upload'
 
 interface AvatarUploadProps {
     maxSize?: number

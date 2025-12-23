@@ -1,10 +1,10 @@
-'use client'
-
-import { jobApi } from '@/lib/api'
 import { Avatar } from '@heroui/react'
 import { Slash } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { TJobType } from '../../types'
+
+import { jobApi } from '@/lib/api'
+import type { TJobType } from '@/shared/types'
+
 import { HeroAutocomplete, HeroAutocompleteItem } from '../ui/hero-autocomplete'
 
 type JobNoFieldProps = {
@@ -63,8 +63,8 @@ export function JobNoField({
 
                 const res = await jobApi.getNextNo(selectedKey)
 
-                if (!isCancelled && res?.data?.result) {
-                    const newNo = res.data.result
+                if (!isCancelled && res?.result) {
+                    const newNo = res?.result
 
                     // Cập nhật UI nội bộ
                     setJobNoResult(newNo)

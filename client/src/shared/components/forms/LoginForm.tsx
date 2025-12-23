@@ -1,31 +1,25 @@
-'use client'
-
-import { Link, redirect } from '@/i18n/navigation'
-import { useLogin } from '@/lib/queries'
-import { INTERNAL_URLS } from '@/lib/utils'
-import { LoginInput, LoginInputSchema } from '@/lib/validationSchemas'
-import { useDevice, useSearchParam } from '@/shared/hooks'
 import { addToast, Button, Input } from '@heroui/react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import { Eye, EyeOff } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
 import { useState } from 'react'
 
+import { useLogin } from '@/lib/queries'
+import { INTERNAL_URLS } from '@/lib/utils'
+import { LoginInputSchema, type TLoginInput } from '@/lib/validationSchemas'
+import { useDevice } from '@/shared/hooks'
+
 export function LoginForm() {
-    const t = useTranslations()
-    const locale = useLocale()
+    const navigate = useNavigate()
 
     const { isMobile, isTablet } = useDevice()
-
-    const { getSearchParam } = useSearchParam()
-    const redirectUrl = getSearchParam('redirect') ?? '/'
 
     const [isVisible, setIsVisible] = useState(false)
     const toggleVisibility = () => setIsVisible(!isVisible)
 
     const { mutateAsync: loginMutate, isPending: isLoggingIn } = useLogin()
 
-    const formik = useFormik<LoginInput>({
+    const formik = useFormik<TLoginInput>({
         initialValues: {
             email: '',
             password: '',
@@ -40,9 +34,8 @@ export function LoginForm() {
                 {
                     async onSuccess(res) {
                         addToast({ title: res.data.message, color: 'success' })
-                        redirect({
-                            href: redirectUrl,
-                            locale: locale,
+                        navigate({
+                            href: '/',
                         })
                     },
                     onError(error) {
@@ -60,18 +53,17 @@ export function LoginForm() {
     return (
         <form
             onSubmit={formik.handleSubmit}
-            className="min-w-[90%] lg:min-w-[600px] shadow-SM rounded-lg px-8 py-6 lg:py-8 lg:px-16 bg-background-muted space-y-1"
+            className="min-w-[90%] lg:min-w-150 shadow-SM rounded-lg px-8 py-6 lg:py-8 lg:px-16 bg-background-muted space-y-1"
         >
             <h1 className="text-lg lg:text-2xl font-bold text-center lg:text-left font-saira">
-                {t('signIn')}
+                Sign in
             </h1>
-            <p className="text-center lg:text-left text-xs lg:text-base">
-                {t('toContinueTo')}
+            <p className="text-center lg:text-left text-sm! lg:text-base">
+                Login to continue to
                 <Link
-                    href={INTERNAL_URLS.home}
-                    className="text-blue-700 hover:underline underline-offset-2"
+                    to={INTERNAL_URLS.home}
+                    className="pl-1 text-blue-500! hover:underline underline-offset-2"
                 >
-                    {' '}
                     staff.cadsquad.vn
                 </Link>
             </p>
@@ -80,7 +72,7 @@ export function LoginForm() {
                     isRequired
                     id="email"
                     name="email"
-                    label={t('email')}
+                    label="Email"
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     variant="bordered"
@@ -100,7 +92,7 @@ export function LoginForm() {
                     isRequired
                     id="password"
                     name="password"
-                    label={t('password')}
+                    label="Password"
                     type={isVisible ? 'text' : 'password'}
                     value={formik.values.password}
                     onChange={formik.handleChange}
@@ -127,14 +119,14 @@ export function LoginForm() {
                         formik.errors.password
                     }
                 />
-                <p className="ml-1 text-center lg:text-left text-xs lg:text-base">
-                    {t('support')}? {t('contactTo')}{' '}
-                    <Link
+                <p className="ml-1 text-center lg:text-left text-sm! lg:text-base">
+                    You need support? Contact to:
+                    <a
                         href={'mailto:ch.duong@cadsquad.vn'}
-                        className="text-blue-700 hover:underline underline-offset-2"
+                        className="pl-1 text-blue-500! hover:underline underline-offset-2"
                     >
                         Ch.duong@cadsquad.vn
-                    </Link>
+                    </a>
                 </p>
                 <div className="mt-5 lg:mt-10 w-[80%] mx-auto grid place-items-center">
                     <Button
@@ -143,7 +135,7 @@ export function LoginForm() {
                         type="submit"
                         isLoading={isLoggingIn}
                     >
-                        {t('login')}
+                        Login
                     </Button>
                 </div>
             </div>

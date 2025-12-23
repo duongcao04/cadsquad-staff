@@ -1,12 +1,10 @@
-'use client'
-
-import { JobColumn } from '@/shared/types'
 import { Spinner, Switch } from '@heroui/react'
+import { JobColumnKey } from '../../types'
 
 type Props = {
     isSelected: boolean
-    onSwitch: (key: JobColumn, isSelected: boolean) => void
-    colKey: JobColumn
+    onSwitch: (key: JobColumnKey, isSelected: boolean) => void
+    colKey: JobColumnKey
     isLoading?: boolean
 }
 export function ViewColumnSwitch({

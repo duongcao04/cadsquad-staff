@@ -24,10 +24,10 @@ export function AccountingGuard({ children }: { children: React.ReactNode }) {
 }
 
 // 4. Example: Manager Guard (if you have this role)
-// export function ManagerGuard({ children }: { children: React.ReactNode }) {
-//     return (
-//         <RoleGuard allowedRoles={[RoleEnum.MANAGER, RoleEnum.ADMIN]}>
-//             {children}
-//         </RoleGuard>
-//     )
-// }
+export function ManagerGuard({ children }: { children: React.ReactNode }) {
+    return (
+        <RoleGuard allowedRoles={[RoleEnum.ACCOUNTING, RoleEnum.ADMIN]}>
+            {children}
+        </RoleGuard>
+    )
+}

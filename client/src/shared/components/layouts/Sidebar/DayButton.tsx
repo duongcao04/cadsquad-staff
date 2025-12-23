@@ -1,8 +1,9 @@
 import dayjs from 'dayjs'
 import lodash from 'lodash'
-import React from 'react'
+
 import { CalendarDay } from 'react-day-picker'
-import { useJobsByDeadline } from '../../../../lib/queries'
+
+import { useJobsDueOnDate } from '@/lib/queries'
 
 type Props = {
     selectedDate: Date | undefined
@@ -17,7 +18,8 @@ export default function DayButton({
     calendarDay,
     openModal,
 }: Props) {
-    const { data: jobs } = useJobsByDeadline(calendarDay.date?.toISOString())
+    const { data: jobs } = useJobsDueOnDate(calendarDay.date?.toISOString())
+    // eslint-disable-next-line react-hooks/purity
     const today = new Date(Date.now())
     const isSelected = lodash.isEqual(selectedDate, calendarDay.date)
     const isToday = dayjs(today).isSame(calendarDay.date, 'date')
@@ -29,21 +31,19 @@ export default function DayButton({
                 setSelectedDate(calendarDay.date)
                 openModal()
             }}
-            className="size-full flex flex-col items-center justify-center gap-1 rounded-full cursor-pointer hover:bg-primary-100 transition-colors duration-100"
+            className="size-full flex flex-col items-center justify-center gap-1 rounded-full cursor-pointer hover:bg-background-hovered transition-colors duration-100"
             style={{
                 border: '1px solid',
                 borderColor: isToday ? '--background' : 'transparent',
-                backgroundColor: isSelected
-                    ? 'var(--primary)'
-                    : isToday
-                    ? 'var(--color-primary-100)'
-                    : 'transparent',
+                backgroundColor: isSelected ? 'var(--background-hovered)' : '',
             }}
         >
             <p
                 className="text-xs"
                 style={{
-                    color: isSelected ? 'white' : 'black',
+                    color: isSelected
+                        ? '--text-default'
+                        : 'var(--text-default-subdued)',
                 }}
             >
                 {calendarDay.date.getDate().toString()}

@@ -1,4 +1,3 @@
-import { Link } from '@/i18n/navigation'
 import {
     Building2,
     CircleUserRound,
@@ -6,14 +5,15 @@ import {
     MessageCircleMore,
     Phone,
 } from 'lucide-react'
-import { TUser } from '../../types'
+
+import type { TUser } from '@/shared/types'
+
 import HeroCopyButton from '../ui/hero-copy-button'
 
-type Props = {
+type ProfileOverviewProps = {
     data: TUser
 }
-
-export function ProfileOverview({ data }: Props) {
+export function ProfileOverview({ data }: ProfileOverviewProps) {
     return (
         <div className="mt-4">
             <div className="space-y-4">
@@ -26,13 +26,13 @@ export function ProfileOverview({ data }: Props) {
                     <div className="w-full flex items-center justify-between gap-2">
                         <div>
                             <p className="text-xs text-text-subdued">Email</p>
-                            <Link
+                            <a
                                 href={`mailto:${data?.email}`}
                                 className="text-sm font-semibold text-text-7! hover:underline"
                                 target="_blank"
                             >
                                 {data.email}
-                            </Link>
+                            </a>
                         </div>
                         <HeroCopyButton textValue={data.email} />
                     </div>
@@ -47,13 +47,13 @@ export function ProfileOverview({ data }: Props) {
                     <div className="w-full flex items-center justify-between gap-2">
                         <div>
                             <p className="text-xs text-text-subdued">Chat</p>
-                            <Link
+                            <a
                                 href={`mailto:${data?.email}`}
                                 className="text-sm font-semibold text-text-7! hover:underline"
                                 target="_blank"
                             >
                                 {data.email}
-                            </Link>
+                            </a>
                         </div>
                         <HeroCopyButton textValue={data.email} />
                     </div>
@@ -98,13 +98,13 @@ export function ProfileOverview({ data }: Props) {
                             <p className="text-xs text-text-subdued">
                                 Telephone
                             </p>
-                            <Link
+                            <a
                                 href={`tel:${data?.phoneNumber}`}
                                 className="text-sm font-semibold text-text-7! hover:underline"
                                 target="_blank"
                             >
                                 {data.phoneNumber}
-                            </Link>
+                            </a>
                         </div>
                         <HeroCopyButton textValue={data.phoneNumber ?? ''} />
                     </div>

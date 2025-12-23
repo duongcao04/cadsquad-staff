@@ -1,9 +1,3 @@
-'use client'
-
-import { queryClient } from '@/app/providers/TanstackQueryProvider'
-import { ApiError } from '@/lib/axios'
-import { useUpdateJobMutation } from '@/lib/queries'
-import { TJob } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -14,8 +8,10 @@ import {
     ModalHeader,
     NumberInput,
 } from '@heroui/react'
-import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
+
+import { useUpdateJobMutation } from '@/lib/queries'
+import type { TJob } from '@/shared/types'
 
 type Props = {
     data: TJob
@@ -24,8 +20,6 @@ type Props = {
     isLoading?: boolean
 }
 export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
-    const t = useTranslations()
-
     const initialValues = useMemo(() => {
         return {
             incomeCost: data?.incomeCost,
@@ -46,45 +40,22 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
         setStaffCostValue(initialValues.staffCost)
     }
 
-    const { mutateAsync: updateJobMutation, isPending: isUpdating } =
-        useUpdateJobMutation()
+    const updateJobMutation = useUpdateJobMutation((res) => {
+        addToast({
+            title: 'Update cost successfully',
+            description: `${res.result?.no} has been updated.`,
+            color: 'success',
+        })
+    })
 
     const handleUpdate = async () => {
         if (data?.id) {
-            await updateJobMutation(
-                {
-                    jobId: data.id,
-                    data: {
-                        staffCost: staffCostValue,
-                        incomeCost: incomeCostValue,
-                    },
+            await updateJobMutation.mutateAsync({
+                jobId: data.id,
+                data: {
+                    staffCost: staffCostValue,
+                    incomeCost: incomeCostValue,
                 },
-                {
-                    onSuccess: (res) => {
-                        addToast({
-                            title: t('success'),
-                            description: res.data.message,
-                            color: 'success',
-                        })
-                        queryClient.invalidateQueries({
-                            queryKey: ['jobs'],
-                        })
-                        onClose()
-                    },
-                    onError: (error) => {
-                        const err = error as unknown as ApiError
-                        addToast({
-                            title: t('failed'),
-                            description: err.message,
-                            color: 'danger',
-                        })
-                    },
-                }
-            )
-        } else {
-            addToast({
-                title: t('error'),
-                color: 'danger',
             })
         }
     }
@@ -139,7 +110,7 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
                         <NumberInput
                             id="incomeCost"
                             name="incomeCost"
-                            label={t('jobColumns.incomeCost')}
+                            label="Income cost"
                             startContent={
                                 <p className="text-sm font-bold text-text-subdued">
                                     $
@@ -154,7 +125,7 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
                         <NumberInput
                             id="staffCost"
                             name="staffCost"
-                            label={t('jobColumns.staffCost')}
+                            label="Staff cost"
                             startContent={
                                 <p className="text-sm font-bold text-text-subdued">
                                     đ
@@ -170,14 +141,14 @@ export default function UpdateCostModal({ data, isOpen, onClose }: Props) {
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="light" onPress={handleCancel}>
-                        {t('cancel')}
+                        Cancel
                     </Button>
                     <Button
                         color="primary"
-                        isLoading={isUpdating}
+                        isLoading={updateJobMutation.isPending}
                         onPress={handleUpdate}
                     >
-                        {t('update')}
+                        Update
                     </Button>
                 </ModalFooter>
             </ModalContent>

@@ -1,12 +1,3 @@
-'use client'
-
-import { dateFormatter } from '@/lib/dayjs'
-import {
-    useChangeStatusMutation,
-    useJobByNo,
-    useJobStatusByOrder,
-} from '@/lib/queries'
-import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
 import {
     addToast,
     Button,
@@ -23,9 +14,12 @@ import {
     SquareArrowOutUpRight,
     UserRound,
 } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
-import { TJobStatus } from '../../types'
-import { JobStatusChip, PaidChip } from '../chips'
+import { dateFormatter } from '@/lib/dayjs'
+import { jobByNoOptions, useChangeStatusMutation } from '@/lib/queries'
+import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
+import type { TJobStatus } from '../../types'
+import { JobStatusChip } from '../chips/JobStatusChip'
+import { PaidChip } from '../chips/PaidChip'
 import CountdownTimer from '../ui/countdown-timer'
 import { HeroButton } from '../ui/hero-button'
 import HeroCopyButton from '../ui/hero-copy-button'
@@ -38,6 +32,8 @@ import {
 } from '../ui/hero-drawer'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { JobDetailView } from './JobDetailView'
+import { useQuery } from '@tanstack/react-query'
+import { statusByOrderOptions } from '../../../lib/queries/options/job-status-queries'
 
 type JobDetailDrawerProps = {
     isOpen: boolean
@@ -49,11 +45,10 @@ export default function JobDetailDrawer({
     isOpen,
     onClose,
 }: JobDetailDrawerProps) {
-    const t = useTranslations()
-
-    const locale = useLocale()
-
-    const { data: job, isLoading: loadingJob } = useJobByNo(jobNo)
+    const { data: job, isLoading: loadingJob } = useQuery({
+        ...jobByNoOptions(jobNo),
+        enabled: !!jobNo && isOpen,
+    })
 
     const changeStatusMutation = useChangeStatusMutation()
 
@@ -66,8 +61,8 @@ export default function JobDetailDrawer({
             await changeStatusMutation.mutateAsync({
                 jobId: String(job.id),
                 data: {
-                    fromStatusId: String(job?.status.id),
-                    toStatusId: String(nextStatus.id),
+                    currentStatus: job.status.code,
+                    newStatus: nextStatus.code,
                 },
             })
         } else {
@@ -79,7 +74,7 @@ export default function JobDetailDrawer({
 
     return (
         <HeroDrawer isOpen={Boolean(jobNo) && isOpen} onClose={onClose}>
-            <HeroDrawerContent className="max-w-full lg:max-w-[50%] xl:max-w-[45%]">
+            <HeroDrawerContent className="min-w-[calc(100vw-16px)] lg:min-w-0 lg:max-w-225 xl:max-w-225">
                 <HeroDrawerHeader className="flex items-start justify-between">
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2">
@@ -102,9 +97,7 @@ export default function JobDetailDrawer({
                                 <Skeleton className="w-24 h-7 rounded-full" />
                             ) : (
                                 <PaidChip
-                                    status={
-                                        Boolean(job.isPaid) ? 'paid' : 'unpaid'
-                                    }
+                                    status={job.isPaid ? 'paid' : 'unpaid'}
                                 />
                             )}
                         </div>
@@ -206,8 +199,7 @@ export default function JobDetailDrawer({
                                     onPress={() => {
                                         window.open(
                                             INTERNAL_URLS.getJobDetailUrl(
-                                                job.no,
-                                                locale
+                                                job.no
                                             ),
                                             '_blank'
                                         )
@@ -220,12 +212,11 @@ export default function JobDetailDrawer({
                         {isLoading ? (
                             <Skeleton className="size-11 rounded-md" />
                         ) : (
-                            <HeroTooltip content={t('copyLink')}>
+                            <HeroTooltip content="Copy link">
                                 <HeroCopyButton
                                     textValue={INTERNAL_URLS.getJobDetailUrl(
                                         job.no
                                     )}
-                                    replaceLocale
                                     className="size-8!"
                                 />
                             </HeroTooltip>
@@ -275,12 +266,15 @@ export default function JobDetailDrawer({
                                 backgroundColor: job?.status?.hexColor,
                             }}
                         >
-                            {t('finishAtTime', {
-                                time: dateFormatter(
+                            Job had finished at -
+                            <span className="pr-0.5">
+                                {dateFormatter(
                                     job?.finishedAt as string | Date,
-                                    { format: 'full' }
-                                ),
-                            })}
+                                    {
+                                        format: 'full',
+                                    }
+                                )}
+                            </span>
                         </Button>
                     )}
                 </HeroDrawerFooter>
@@ -297,12 +291,16 @@ function ChangeStatusButton({
     onChangeStatus,
     toStatusOrder,
 }: ChangeStatusButtonProps) {
-    /**
-     * Fetch data
-     */
-    const { jobStatus } = useJobStatusByOrder(toStatusOrder)
+    const { data: targetStatus } = useQuery({
+        // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+        // The query won't run because of 'enabled' below.
+        ...statusByOrderOptions(toStatusOrder ?? -1),
 
-    if (!jobStatus) {
+        // Only fetch if nextStatusOrder exists
+        enabled: !!toStatusOrder && toStatusOrder !== null,
+    })
+
+    if (!targetStatus) {
         return <Spinner></Spinner>
     }
 
@@ -311,14 +309,14 @@ function ChangeStatusButton({
             color="danger"
             className="w-full font-semibold font-saira"
             style={{
-                color: jobStatus?.hexColor,
-                backgroundColor: lightenHexColor(jobStatus?.hexColor, 90),
+                color: targetStatus?.hexColor,
+                backgroundColor: lightenHexColor(targetStatus?.hexColor, 90),
             }}
             onPress={() => {
-                onChangeStatus(jobStatus)
+                onChangeStatus(targetStatus)
             }}
         >
-            Mark as {jobStatus.displayName}
+            Mark as {targetStatus.displayName}
         </Button>
     )
 }
