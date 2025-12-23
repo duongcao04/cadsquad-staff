@@ -389,6 +389,7 @@ export default function ProjectCenterTable({
                             <HeroSelect
                                 selectionMode="multiple"
                                 className="min-w-32.5"
+                                size="sm"
                                 classNames={{
                                     trigger:
                                         'hover:shadow-SM border-border-default border cursor-pointer',
@@ -437,6 +438,7 @@ export default function ProjectCenterTable({
 
                             <HeroSelect
                                 className="min-w-32.5"
+                                size="sm"
                                 classNames={{
                                     trigger:
                                         'hover:shadow-SM border-border-default border cursor-pointer',

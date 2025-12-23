@@ -1,24 +1,30 @@
-import React, { useState } from 'react'
+import {
+    jobStatusesListOptions,
+    jobTypesListOptions,
+    listUserOptions,
+    usersListOptions, // Imported your user query
+} from '@/lib/queries'
+import { JobFiltersSchema, jobFiltersSchema } from '@/lib/validationSchemas'
 import {
     Button,
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
+    Chip,
+    DateRangePicker,
     Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
     DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
     Input,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    ScrollShadow,
     Select,
     SelectItem,
-    DateRangePicker,
-    Chip,
-    ScrollShadow,
-    Divider,
 } from '@heroui/react'
-import { getLocalTimeZone } from '@internationalized/date'
-import { Plus, Trash2, Filter, AlertCircle, ChevronDown } from 'lucide-react'
-import { JobFiltersSchema, jobFiltersSchema } from '../../../lib/validationSchemas'
+import { getLocalTimeZone, parseAbsoluteToLocal } from '@internationalized/date'
+import { useSuspenseQueries } from '@tanstack/react-query'
+import { AlertCircle, ChevronDown, Filter, Plus, Trash2 } from 'lucide-react'
+import React, { useState, useEffect, useMemo } from 'react'
 
 // --- 1. Configuration & Types ---
 
@@ -34,103 +40,20 @@ interface FilterConfig {
     key: string
     label: string
     type: FilterType
-    // For filters with switchable fields (e.g. Date -> Created/Due/Completed)
     fields?: FieldDef[]
-    // For simple filters
     dtoKeys?: (keyof JobFiltersSchema)[]
     options?: { label: string; value: string }[]
 }
 
-const FILTER_CONFIG: FilterConfig[] = [
-    {
-        key: 'clientName',
-        label: 'Client Name',
-        type: 'text',
-        dtoKeys: ['clientName'],
-    },
-    {
-        key: 'assignee',
-        label: 'Assignee',
-        type: 'text',
-        dtoKeys: ['assignee'],
-    },
-    {
-        key: 'status',
-        label: 'Status',
-        type: 'select',
-        dtoKeys: ['status'],
-        options: [
-            { label: 'Open', value: 'OPEN' },
-            { label: 'Pending', value: 'PENDING' },
-            { label: 'In Progress', value: 'IN_PROGRESS' },
-            { label: 'Completed', value: 'COMPLETED' },
-        ],
-    },
-    {
-        key: 'type',
-        label: 'Job Type',
-        type: 'select',
-        dtoKeys: ['type'],
-        options: [
-            { label: 'Repair', value: 'REPAIR' },
-            { label: 'Maintenance', value: 'MAINTENANCE' },
-            { label: 'Installation', value: 'INSTALLATION' },
-        ],
-    },
-    {
-        key: 'date_group',
-        label: 'Date',
-        type: 'date_range',
-        fields: [
-            {
-                key: 'createdAt',
-                label: 'Date Created',
-                dtoKeys: ['createdAtFrom', 'createdAtTo'],
-            },
-            {
-                key: 'dueAt',
-                label: 'Date Due',
-                dtoKeys: ['dueAtFrom', 'dueAtTo'],
-            },
-            {
-                key: 'completedAt',
-                label: 'Date Completed',
-                dtoKeys: ['completedAtFrom', 'completedAtTo'],
-            },
-            {
-                key: 'finishedAt',
-                label: 'Date Finished',
-                dtoKeys: ['finishedAtFrom', 'finishedAtTo'],
-            },
-        ],
-    },
-    {
-        key: 'cost_group',
-        label: 'Cost',
-        type: 'number_range',
-        fields: [
-            {
-                key: 'incomeCost',
-                label: 'Income Cost',
-                dtoKeys: ['incomeCostMin', 'incomeCostMax'],
-            },
-            {
-                key: 'staffCost',
-                label: 'Staff Cost',
-                dtoKeys: ['staffCostMin', 'staffCostMax'],
-            },
-        ],
-    },
-]
-
 interface ActiveFilter {
     id: string
     configKey: string
-    fieldKey?: string // Tracks specific sub-field (e.g. 'dueAt')
+    fieldKey?: string
     value: any
 }
 
 interface FilterBuilderProps {
+    defaultFilters?: Partial<JobFiltersSchema>
     onApply: (filters: JobFiltersSchema) => void
     className?: string
 }
@@ -139,11 +62,204 @@ interface FilterBuilderProps {
 
 export const FilterBuilder: React.FC<FilterBuilderProps> = ({
     onApply,
+    defaultFilters,
     className,
 }) => {
     const [isOpen, setIsOpen] = useState(false)
     const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([])
     const [errors, setErrors] = useState<string[]>([])
+
+    // --- Data Fetching ---
+    const [
+        {
+            data: { jobStatuses },
+        },
+        {
+            data: { jobTypes },
+        },
+        {
+            data: { users },
+        }, // Destructure users data
+    ] = useSuspenseQueries({
+        queries: [
+            { ...jobStatusesListOptions() },
+            { ...jobTypesListOptions() },
+            { ...usersListOptions() }, // Add user query here
+        ],
+    })
+
+    // --- Configuration ---
+    const FILTER_CONFIG: FilterConfig[] = useMemo(() => {
+        // Transform API data to options
+        const statusOptions = jobStatuses.map((item) => ({
+            label: item.displayName,
+            value: item.code,
+        }))
+        const typeOptions = jobTypes.map((item) => ({
+            label: item.displayName,
+            value: item.code,
+        }))
+        // Assuming 'username' is the value needed for the DTO filter
+        const assigneeOptions = users.map((user) => ({
+            label: user.displayName || user.username, // Fallback to username if no display name
+            value: user.username,
+        }))
+
+        return [
+            {
+                key: 'clientName',
+                label: 'Client Name',
+                type: 'text',
+                dtoKeys: ['clientName'],
+            },
+            {
+                key: 'assignee',
+                label: 'Assignee',
+                type: 'select', // Changed from 'text' to 'select'
+                dtoKeys: ['assignee'],
+                options: assigneeOptions, // Pass fetched options
+            },
+            {
+                key: 'status',
+                label: 'Status',
+                type: 'select',
+                dtoKeys: ['status'],
+                options: statusOptions,
+            },
+            {
+                key: 'type',
+                label: 'Job Type',
+                type: 'select',
+                dtoKeys: ['type'],
+                options: typeOptions,
+            },
+            {
+                key: 'date_group',
+                label: 'Date',
+                type: 'date_range',
+                fields: [
+                    {
+                        key: 'createdAt',
+                        label: 'Date Created',
+                        dtoKeys: ['createdAtFrom', 'createdAtTo'],
+                    },
+                    {
+                        key: 'dueAt',
+                        label: 'Date Due',
+                        dtoKeys: ['dueAtFrom', 'dueAtTo'],
+                    },
+                    {
+                        key: 'completedAt',
+                        label: 'Date Completed',
+                        dtoKeys: ['completedAtFrom', 'completedAtTo'],
+                    },
+                    {
+                        key: 'finishedAt',
+                        label: 'Date Finished',
+                        dtoKeys: ['finishedAtFrom', 'finishedAtTo'],
+                    },
+                ],
+            },
+            {
+                key: 'cost_group',
+                label: 'Cost',
+                type: 'number_range',
+                fields: [
+                    {
+                        key: 'incomeCost',
+                        label: 'Income Cost',
+                        dtoKeys: ['incomeCostMin', 'incomeCostMax'],
+                    },
+                    {
+                        key: 'staffCost',
+                        label: 'Staff Cost',
+                        dtoKeys: ['staffCostMin', 'staffCostMax'],
+                    },
+                ],
+            },
+        ]
+    }, [jobStatuses, jobTypes, users])
+
+    // --- Effect: Rehydrate UI from defaultFilters ---
+    useEffect(() => {
+        if (!defaultFilters) return
+
+        const newActiveFilters: ActiveFilter[] = []
+
+        FILTER_CONFIG.forEach((config) => {
+            // CASE A: Grouped Fields (Dates, Costs)
+            if (config.fields) {
+                config.fields.forEach((field) => {
+                    const key1 = field.dtoKeys[0]
+                    const key2 = field.dtoKeys[1]
+
+                    const hasData =
+                        defaultFilters[key1] !== undefined ||
+                        defaultFilters[key2] !== undefined
+
+                    if (hasData) {
+                        let value: any = null
+
+                        if (config.type === 'date_range') {
+                            const startStr = defaultFilters[key1] as string
+                            const endStr = defaultFilters[key2] as string
+
+                            if (startStr && endStr) {
+                                try {
+                                    value = {
+                                        start: parseAbsoluteToLocal(startStr),
+                                        end: parseAbsoluteToLocal(endStr),
+                                    }
+                                } catch (e) {
+                                    console.error('Invalid date', e)
+                                }
+                            }
+                        } else if (config.type === 'number_range') {
+                            value = {
+                                min: defaultFilters[key1],
+                                max: defaultFilters[key2],
+                            }
+                        }
+
+                        if (value) {
+                            newActiveFilters.push({
+                                id: crypto.randomUUID(),
+                                configKey: config.key,
+                                fieldKey: field.key,
+                                value,
+                            })
+                        }
+                    }
+                })
+            }
+            // CASE B: Simple Fields
+            else if (config.dtoKeys) {
+                const dtoKey = config.dtoKeys[0]
+                const val = defaultFilters[dtoKey]
+
+                if (val !== undefined && val !== null) {
+                    let finalValue = val
+                    // Ensure selects are hydrated as Sets
+                    if (config.type === 'select') {
+                        const arr = Array.isArray(val) ? val : [val]
+                        finalValue = new Set(arr)
+                    }
+
+                    newActiveFilters.push({
+                        id: crypto.randomUUID(),
+                        configKey: config.key,
+                        value: finalValue,
+                    })
+                }
+            }
+        })
+
+        if (newActiveFilters.length > 0) {
+            setActiveFilters(newActiveFilters)
+        }
+    }, [defaultFilters, FILTER_CONFIG])
+
+    // --- Action Handlers ---
 
     const handleApply = () => {
         setErrors([])
@@ -153,7 +269,6 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
             const config = FILTER_CONFIG.find((c) => c.key === filter.configKey)
             if (!config || !filter.value) return
 
-            // Determine correct DTO keys (handle switchable fields)
             let keys: (keyof JobFiltersSchema)[] = []
             if (config.fields && filter.fieldKey) {
                 const field = config.fields.find(
@@ -166,10 +281,8 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
 
             if (keys.length === 0) return
 
-            // Map Values
             if (config.type === 'date_range' && filter.value.start) {
                 const tz = getLocalTimeZone()
-                // Ensure keys exist before assigning
                 if (keys[0])
                     rawData[keys[0]] = filter.value.start
                         .toDate(tz)
@@ -185,15 +298,13 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                 const val =
                     filter.value instanceof Set
                         ? Array.from(filter.value)
-                        : filter.value.split(',')
+                        : filter.value
                 if (keys[0]) rawData[keys[0]] = val
             } else {
-                // Text
                 if (keys[0]) rawData[keys[0]] = filter.value
             }
         })
 
-        // Validate with Zod
         const result = jobFiltersSchema.safeParse(rawData)
 
         if (!result.success) {
@@ -210,7 +321,6 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
 
     const addFilter = (configKey: string) => {
         const config = FILTER_CONFIG.find((c) => c.key === configKey)
-        // If it's a group, default to the first field
         const defaultFieldKey = config?.fields?.[0]?.key
 
         setActiveFilters((prev) => [
@@ -343,6 +453,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                                 key={filter.id}
                                 index={index}
                                 filter={filter}
+                                filterConfigs={FILTER_CONFIG}
                                 onRemove={() => removeFilter(filter.id)}
                                 onChange={(val) =>
                                     updateFilterValue(filter.id, val)
@@ -405,6 +516,7 @@ interface FilterRowProps {
     onRemove: () => void
     onChange: (value: any) => void
     onFieldChange: (fieldKey: string) => void
+    filterConfigs: FilterConfig[]
 }
 
 const FilterRow: React.FC<FilterRowProps> = ({
@@ -413,11 +525,11 @@ const FilterRow: React.FC<FilterRowProps> = ({
     onRemove,
     onChange,
     onFieldChange,
+    filterConfigs,
 }) => {
-    const config = FILTER_CONFIG.find((c) => c.key === filter.configKey)
+    const config = filterConfigs.find((c) => c.key === filter.configKey)
     if (!config) return null
 
-    // Check if this row allows switching fields (e.g. Date Created <-> Date Due)
     const isGroup = !!config.fields
 
     const getOperatorLabel = () => {
@@ -544,8 +656,11 @@ const FilterInput = ({
                 }}
                 placeholder="Select options"
                 selectionMode="multiple"
-                selectedKeys={value ? new Set(value) : new Set()}
-                onSelectionChange={(keys) => onChange(Array.from(keys))}
+                // Ensure value is a Set for HeroUI Select selection
+                selectedKeys={
+                    value instanceof Set ? value : new Set(value || [])
+                }
+                onSelectionChange={(keys) => onChange(keys)}
             >
                 {(config.options || []).map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
