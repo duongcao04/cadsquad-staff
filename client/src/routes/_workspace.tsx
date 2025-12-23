@@ -4,8 +4,10 @@ import { Header, ScrollArea, ScrollBar, Sidebar } from '../shared/components'
 import { AuthGuard } from '../shared/guards'
 import { useStore } from '@tanstack/react-store'
 import { appStore } from '../shared/stores'
+import AppLoading from '../shared/components/app/AppLoading'
 
 export const Route = createFileRoute('/_workspace')({
+    pendingComponent: AppLoading,
     component: WorkspaceLayout,
 })
 
@@ -18,7 +20,7 @@ function WorkspaceLayout() {
             {/* Height for header */}
             <div className="h-14" />
             <main className="size-full relative flex items-start justify-start">
-                <div className="fixed top-[56px]">
+                <div className="fixed top-14">
                     <Sidebar />
                 </div>
                 <div

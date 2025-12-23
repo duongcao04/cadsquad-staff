@@ -10,7 +10,6 @@ import {
     Select,
     type Selection,
     SelectItem,
-    Skeleton,
     Spinner,
     Switch,
 } from '@heroui/react'
@@ -71,6 +70,7 @@ import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
 import { ProjectCenterTableViewProps } from './ProjectCenterTableView'
 import { HeroButton } from '../ui/hero-button'
+import { FilterBuilder } from './FilterDropdown'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
@@ -108,12 +108,8 @@ export const getDueDateRange = (key: string | undefined | null) => {
     }
 }
 
-type ProjectCenterOptions = {
-    fillContainerHeight?: boolean
-}
 type ProjectCenterTableProps = ProjectCenterTableViewProps & {
     visibleColumns: 'all' | JobColumnKey[]
-    options?: ProjectCenterOptions
     showFinishItems: boolean
     onDownloadCsv: () => void
     onShowFinishItemsChange?: (state: boolean) => void
@@ -145,7 +141,6 @@ export default function ProjectCenterTable({
     onLimitChange,
     onPageChange,
     onAddAttachments,
-    options = { fillContainerHeight: false },
 }: ProjectCenterTableProps) {
     const { isAdmin } = useProfile()
     const { data: jobStatuses } = useJobStatuses()
@@ -228,7 +223,6 @@ export default function ProjectCenterTable({
                                 }
                                 variant="bordered"
                                 size="sm"
-                                className="hover:shadow-SM border-border-default border"
                                 onPress={onRefresh}
                             >
                                 <span className="font-medium">Refresh</span>
@@ -240,11 +234,16 @@ export default function ProjectCenterTable({
                                 }
                                 variant="bordered"
                                 size="sm"
-                                className="hover:shadow-SM border-border-default border"
                                 onPress={openFilterDrawer}
                             >
                                 <span className="font-medium">Filter</span>
                             </Button>
+
+                            <FilterBuilder
+                                onApply={(filters) => {
+                                    console.log(filters)
+                                }}
+                            />
 
                             <Dropdown placement="bottom-start">
                                 <DropdownTrigger className="hidden sm:flex">
@@ -257,7 +256,6 @@ export default function ProjectCenterTable({
                                         }
                                         variant="bordered"
                                         size="sm"
-                                        className="hover:shadow-SM border-border-default border"
                                     >
                                         <span className="font-medium">
                                             View
@@ -321,7 +319,6 @@ export default function ProjectCenterTable({
                                     <Button
                                         variant="bordered"
                                         size="sm"
-                                        className="hover:shadow-SM border-border-default border"
                                         isIconOnly
                                     >
                                         <EllipsisVertical
@@ -622,6 +619,7 @@ export default function ProjectCenterTable({
                             <JobStatusDropdown
                                 jobData={data}
                                 statusData={data.status as TJobStatus}
+                                afterChangeStatus={onRefresh}
                             />
                         </div>
                     )
@@ -825,8 +823,7 @@ export default function ProjectCenterTable({
             onSelectionChange={setSelectedKeys}
             // onSortChange={setSortDescriptor}'
             classNames={{
-                base: `${options.fillContainerHeight ? 'h-full' : ''}`,
-                table: !isLoadingData ? 'relative' : 'relative min-h-[480px]!',
+                table: !isLoadingData ? 'relative' : 'relative min-h-[430px]!',
             }}
         >
             <HeroTableHeader columns={headerColumns}>
@@ -846,18 +843,7 @@ export default function ProjectCenterTable({
             <HeroTableBody
                 emptyContent={'No items found'}
                 items={isLoadingData ? [] : data}
-                loadingContent={
-                    <div className="flex flex-col gap-3 w-full mt-16">
-                        {Array.from({
-                            length: pagination.limit || 10,
-                        }).map((_, index) => (
-                            <Skeleton
-                                key={index}
-                                className="rounded-md w-full h-8!"
-                            />
-                        ))}
-                    </div>
-                }
+                loadingContent={<TableLoadingFallback />}
                 isLoading={isLoadingData}
             >
                 {(item) => (
@@ -876,5 +862,13 @@ export default function ProjectCenterTable({
                 )}
             </HeroTableBody>
         </HeroTable>
+    )
+}
+
+function TableLoadingFallback() {
+    return (
+        <div className="flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-content1/50">
+            <Spinner size="lg" color="primary" label="Loading data..." />
+        </div>
     )
 }

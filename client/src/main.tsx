@@ -19,6 +19,8 @@ export const queryClient = new QueryClient({
 // Tạo router instance
 const router = createRouter({
     routeTree,
+    // Show loader immediately (0ms delay)
+    defaultPendingMs: 0,
     context: {
         queryClient,
     },

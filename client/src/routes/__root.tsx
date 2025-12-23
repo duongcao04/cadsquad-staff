@@ -20,7 +20,7 @@ interface AppRouterContext {
     queryClient: QueryClient
 }
 export const Route = createRootRouteWithContext<AppRouterContext>()({
-    loader: () => {
+    pendingComponent: () => {
         return <AppLoading />
     },
     component: () => (

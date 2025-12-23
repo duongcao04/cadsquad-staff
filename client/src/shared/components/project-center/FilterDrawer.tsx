@@ -1,9 +1,6 @@
 import { Button, Divider } from '@heroui/react'
-
-
 import { type TJobFiltersInput } from '@/lib/validationSchemas'
 import type { JobColumn } from '@/shared/types'
-
 import {
     HeroDrawer,
     HeroDrawerBody,

@@ -2,7 +2,7 @@ import { getPageTitle, STORAGE_KEYS } from '@/lib'
 import { jobColumnsOptions, jobsListOptions, useProfile } from '@/lib/queries'
 import ProjectCenterTableView from '@/shared/components/project-center/ProjectCenterTableView'
 import { ProjectCenterTabEnum } from '@/shared/enums'
-import { Tab, Tabs } from '@heroui/react'
+import { Spinner, Tab, Tabs } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import {
@@ -13,6 +13,7 @@ import {
     Truck,
     Vote,
 } from 'lucide-react'
+import { Suspense } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { z } from 'zod'
 
@@ -27,43 +28,27 @@ export const projectCenterParamsSchema = z.object({
 
 export type TProjectCenterSearch = z.infer<typeof projectCenterParamsSchema>
 
-// 2. Route Definition
+// =========================================================
+// 1. ROUTE DEFINITION
+// =========================================================
 export const Route = createFileRoute('/_workspace/project-center/$tab')({
     head: () => ({
-        meta: [
-            {
-                title: getPageTitle('Project Center'),
-            },
-        ],
+        meta: [{ title: getPageTitle('Project Center') }],
     }),
-    // Validate Query String (?page=...)
     validateSearch: (search) => projectCenterParamsSchema.parse(search),
-
-    // Validate Path Param (/$tab)
     parseParams: (params) => {
-        // Try to parse the enum
         const result = z.nativeEnum(ProjectCenterTabEnum).safeParse(params.tab)
-
-        // If invalid, throw a redirect to the default tab
         if (!result.success) {
-            throw redirect({
-                href: '/project-center/priority',
-            })
+            throw redirect({ href: '/project-center/priority' })
         }
-
-        // Return the valid data so strictly typed params are available below
-        return {
-            tab: result.data,
-        }
+        return { tab: result.data }
     },
-
-    // Dependency Tracking
     loaderDeps: ({ search }) => ({ search }),
 
-    // Data Loading
+    // 🔥 CRITICAL FIX: Non-blocking loader
     loader: ({ context, deps, params }) => {
+        // 1. Get local storage logic
         let hideFinishItems: '1' | '0' = '1'
-        // 1. Check if we are in the browser
         if (typeof window !== 'undefined') {
             const storageValue = localStorage.getItem(
                 STORAGE_KEYS.projectCenterFinishItems
@@ -78,9 +63,11 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
             sort = DEFAULT_SORT,
         } = deps.search
 
+        // 2. Prefetch data but DO NOT 'return' or 'await' it.
+        // Use 'void' to tell Router: "Don't wait for me, render the component NOW!"
         context.queryClient.ensureQueryData(jobColumnsOptions())
 
-        return context.queryClient.ensureQueryData(
+        void context.queryClient.ensureQueryData(
             jobsListOptions({
                 limit,
                 page,
@@ -95,6 +82,9 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
     component: ProjectCenterPage,
 })
 
+// =========================================================
+// 2. PARENT COMPONENT (Layout & Tabs)
+// =========================================================
 export function ProjectCenterPage() {
     const search = Route.useSearch()
     const navigate = Route.useNavigate()
@@ -105,65 +95,73 @@ export function ProjectCenterPage() {
         false
     )
 
-    // Query Data
-    const options = jobsListOptions({
-        ...search,
-        tab,
-        hideFinishItems: Boolean(localShowFinishItems) ? '1' : '0',
-    })
-    const { data, refetch, isFetching } = useSuspenseQuery(options)
-
-    const handlePageChange = (newPage: number) => {
+    // -- Navigation Helpers --
+    const updateParams = (newParams: Partial<TProjectCenterSearch>) => {
         navigate({
-            search: (old) => ({ ...old, page: newPage }),
-            replace: true,
-        })
-    }
-
-    const handleSortChange = (newSort: string) => {
-        navigate({
-            search: (old) => ({
-                ...old,
-                sort: newSort, // undefined để về default
-                page: 1, // Sort lại thì reset về trang 1
-            }),
-            replace: true,
-        })
-    }
-
-    const handleLimitChange = (newLimit: number) => {
-        navigate({
-            search: (old) => ({
-                ...old,
-                limit: newLimit,
-                page: 1,
-            }),
-            replace: true,
-        })
-    }
-
-    const handleSearchChange = (newSearch: string) => {
-        navigate({
-            search: (old) => ({
-                ...old,
-                search: newSearch || undefined, // Rỗng thì xóa khỏi URL
-                page: 1,
-            }),
+            search: (old) => ({ ...old, ...newParams }),
             replace: true,
         })
     }
 
     const handleTabChange = (newTab: ProjectCenterTabEnum) => {
         navigate({
-            to: '/project-center/$tab', // Explicit path giúp TS check params
+            to: '/project-center/$tab',
             params: { tab: newTab },
-            search: (old) => ({
-                ...old,
-                page: 1, // Chuyển tab thì reset trang
-            }),
+            search: (old) => ({ ...old, page: 1 }), // Reset page on tab change
             replace: true,
         })
     }
+
+    return (
+        <div className="size-full space-y-5">
+            {/* 🚀 1. Tabs Render INSTANTLY (because loader didn't block) */}
+            <ProjectCenterTabs onTabChange={handleTabChange} defaultTab={tab} />
+
+            {/* 🚀 2. Table Area shows Spinner until data arrives */}
+            <Suspense fallback={<TableLoadingFallback />}>
+                <ProjectCenterTableContent
+                    tab={tab}
+                    search={search}
+                    localShowFinishItems={localShowFinishItems}
+                    setLocalShowFinishItems={setLocalShowFinishItems}
+                    onPageChange={(p: number) => updateParams({ page: p })}
+                    onSortChange={(s: string) =>
+                        updateParams({ sort: s, page: 1 })
+                    }
+                    onLimitChange={(l: number) =>
+                        updateParams({ limit: l, page: 1 })
+                    }
+                    onSearchChange={(s: string) =>
+                        updateParams({ search: s || undefined, page: 1 })
+                    }
+                />
+            </Suspense>
+        </div>
+    )
+}
+
+// =========================================================
+// 3. CHILD COMPONENT (Data Fetching)
+// =========================================================
+function ProjectCenterTableContent({
+    tab,
+    search,
+    localShowFinishItems,
+    setLocalShowFinishItems,
+    onPageChange,
+    onSortChange,
+    onLimitChange,
+    onSearchChange,
+}: any) {
+    // Query options
+    const options = jobsListOptions({
+        ...search,
+        tab,
+        hideFinishItems: Boolean(localShowFinishItems) ? '1' : '0',
+    })
+
+    // 🛑 This hook will SUSPEND this specific component if data isn't ready
+    const { data, refetch, isFetching } = useSuspenseQuery(options)
 
     const pagination = {
         limit: data.paginate?.limit ?? 10,
@@ -173,38 +171,44 @@ export function ProjectCenterPage() {
     }
 
     return (
-        <div className="size-full space-y-5">
-            <ProjectCenterTabs onTabChange={handleTabChange} defaultTab={tab} />
-            <ProjectCenterTableView
-                showFinishItems={localShowFinishItems}
-                onShowFinishItemsChange={setLocalShowFinishItems}
-                data={data.jobs}
-                pagination={pagination}
-                // State props
-                searchKeywords={search.search}
-                sort={search.sort}
-                isLoadingData={isFetching}
-                // Actions
-                onRefresh={refetch}
-                onFiltersChange={() => {}}
-                onPageChange={handlePageChange}
-                onSearchKeywordsChange={handleSearchChange}
-                onSortChange={handleSortChange}
-                onLimitChange={handleLimitChange}
-                filters={{}}
-            />
+        <ProjectCenterTableView
+            showFinishItems={localShowFinishItems}
+            onShowFinishItemsChange={setLocalShowFinishItems}
+            data={data.jobs}
+            pagination={pagination}
+            searchKeywords={search.search}
+            sort={search.sort}
+            isLoadingData={isFetching}
+            onRefresh={refetch}
+            onFiltersChange={() => {}}
+            onPageChange={onPageChange}
+            onSearchKeywordsChange={onSearchChange}
+            onSortChange={onSortChange}
+            onLimitChange={onLimitChange}
+            filters={{}}
+        />
+    )
+}
+
+// =========================================================
+// 4. UI HELPERS
+// =========================================================
+
+// This is the "Spinner" you asked for
+function TableLoadingFallback() {
+    return (
+        <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-divider bg-content1/50">
+            <Spinner size="lg" color="primary" label="Loading data..." />
         </div>
     )
 }
 
-// --- SUB COMPONENTS ---
-
 function ProjectCenterTabs({
-    defaultTab = ProjectCenterTabEnum.ACTIVE, // Dùng Enum làm default
+    defaultTab,
     onTabChange,
 }: {
-    defaultTab?: ProjectCenterTabEnum
-    onTabChange: (newTab: ProjectCenterTabEnum) => void
+    defaultTab: ProjectCenterTabEnum
+    onTabChange: (t: ProjectCenterTabEnum) => void
 }) {
     const { isAdmin } = useProfile()
 
@@ -213,72 +217,46 @@ function ProjectCenterTabs({
             aria-label="Project Tabs"
             color="primary"
             size="sm"
-            classNames={{
-                tabWrapper: 'border-[1px]',
-                tabList: 'border-1',
-            }}
             variant="bordered"
             selectedKey={defaultTab}
             onSelectionChange={(key) =>
-                onTabChange(key.toString() as ProjectCenterTabEnum)
+                onTabChange(key as ProjectCenterTabEnum)
             }
+            classNames={{ tabWrapper: 'border-[1px]', tabList: 'border-1' }}
         >
             <Tab
-                key={ProjectCenterTabEnum.PRIORITY} // Nên dùng Enum ở đây thay vì hardcode string 'priority'
-                title={
-                    <div className="flex items-center space-x-2">
-                        <PinIcon size={16} className="rotate-45" />
-                        <span>Priority</span>
-                    </div>
-                }
+                key={ProjectCenterTabEnum.PRIORITY}
+                title={<TabTitle icon={PinIcon} label="Priority" rotate />}
             />
             <Tab
                 key={ProjectCenterTabEnum.ACTIVE}
-                title={
-                    <div className="flex items-center space-x-2">
-                        <Vote size={16} />
-                        <span>Active</span>
-                    </div>
-                }
+                title={<TabTitle icon={Vote} label="Active" />}
             />
             <Tab
                 key={ProjectCenterTabEnum.LATE}
-                title={
-                    <div className="flex items-center space-x-2">
-                        <ClockAlert size={16} />
-                        <span>Late</span>
-                    </div>
-                }
+                title={<TabTitle icon={ClockAlert} label="Late" />}
             />
             <Tab
                 key={ProjectCenterTabEnum.DELIVERED}
-                title={
-                    <div className="flex items-center space-x-2">
-                        <Truck size={16} />
-                        <span>Delivered</span>
-                    </div>
-                }
+                title={<TabTitle icon={Truck} label="Delivered" />}
             />
             <Tab
                 key={ProjectCenterTabEnum.COMPLETED}
-                title={
-                    <div className="flex items-center space-x-2">
-                        <CircleCheckBig size={16} />
-                        <span>Completed</span>
-                    </div>
-                }
+                title={<TabTitle icon={CircleCheckBig} label="Completed" />}
             />
             {isAdmin && (
                 <Tab
                     key={ProjectCenterTabEnum.CANCELLED}
-                    title={
-                        <div className="flex items-center space-x-2">
-                            <SquareX size={16} />
-                            <span>Canceled</span>
-                        </div>
-                    }
+                    title={<TabTitle icon={SquareX} label="Canceled" />}
                 />
             )}
         </Tabs>
     )
 }
+
+const TabTitle = ({ icon: Icon, label, rotate }: any) => (
+    <div className="flex items-center space-x-2">
+        <Icon size={16} className={rotate ? 'rotate-45' : ''} />
+        <span>{label}</span>
+    </div>
+)

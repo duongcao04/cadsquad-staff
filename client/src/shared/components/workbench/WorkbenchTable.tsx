@@ -1,3 +1,4 @@
+import { useProfile } from '@/lib'
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import {
     currencyFormatter,
@@ -14,7 +15,7 @@ import {
     Select,
     Selection,
     SelectItem,
-    Skeleton,
+    Spinner,
 } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
@@ -46,7 +47,6 @@ import {
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
 import { WorkbenchTableViewProps } from './WorkbenchTableView'
-import { useProfile } from '../../../lib'
 
 type Options = {
     fillContainerHeight?: boolean
@@ -523,18 +523,7 @@ export default function WorkbenchTable({
             <HeroTableBody
                 emptyContent={'No items found'}
                 items={isDataLoading ? [] : data}
-                loadingContent={
-                    <div className="flex flex-col gap-3 w-full mt-16">
-                        {Array.from({
-                            length: pagination.limit || 10,
-                        }).map((_, index) => (
-                            <Skeleton
-                                key={index}
-                                className="rounded-md w-full h-8!"
-                            />
-                        ))}
-                    </div>
-                }
+                loadingContent={<TableLoadingFallback />}
                 isLoading={isDataLoading}
             >
                 {(item) => (
@@ -548,5 +537,13 @@ export default function WorkbenchTable({
                 )}
             </HeroTableBody>
         </HeroTable>
+    )
+}
+
+function TableLoadingFallback() {
+    return (
+        <div className="flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-content1/50">
+            <Spinner size="lg" color="primary" label="Loading data..." />
+        </div>
     )
 }

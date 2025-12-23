@@ -1,41 +1,59 @@
 import { z } from "zod";
 
-// Helper: Converts Set/Array to CSV string
-const arrayToString = z.union([z.string(), z.array(z.string())]).transform((val) => {
-	if (Array.isArray(val)) return val.join(",");
-	return val;
-});
+// Helper for comma-separated lists or arrays (matches your DTO Transform)
+const stringOrArray = z
+	.union([z.string(), z.array(z.string())])
+	.transform((val) => {
+		if (Array.isArray(val)) return val.join(","); // Convert array to "A,B" for URL
+		return val;
+	})
+	.optional();
 
-const optionalIsoDate = z.string().optional();
+// Helper for numeric strings (Cost fields are strings in your DTO)
+const numericString = z.string().regex(/^\d+$/, "Must be a valid number").optional();
 
-export const JobFiltersInputSchema = z.object({
-	clientName: z.string().trim().optional(),
+// Helper for ISO Dates
+const isoDate = z.string().datetime({ message: "Invalid ISO date format" }).optional();
 
-	// Arrays & Operators
-	type: arrayToString.optional(),
-	typeOperator: z.enum(["AND", "OR"]).default("OR").optional(),
+export const jobFiltersSchema = z
+	.object({
+		clientName: z.string().trim().optional(),
 
-	status: arrayToString.optional(),
-	statusOperator: z.enum(["AND", "OR"]).default("OR").optional(),
+		// Arrays / Lists
+		type: stringOrArray,
+		status: stringOrArray,
+		assignee: stringOrArray,
+		paymentChannel: stringOrArray,
 
-	assignee: arrayToString.optional(),
-	assigneeOperator: z.enum(["AND", "OR"]).default("OR").optional(),
+		// Date Ranges
+		createdAtFrom: isoDate,
+		createdAtTo: isoDate,
+		dueAtFrom: isoDate,
+		dueAtTo: isoDate,
+		completedAtFrom: isoDate,
+		completedAtTo: isoDate,
+		finishedAtFrom: isoDate,
+		finishedAtTo: isoDate,
 
-	paymentChannel: arrayToString.optional(),
+		// Cost Ranges
+		incomeCostMin: numericString,
+		incomeCostMax: numericString,
+		staffCostMin: numericString,
+		staffCostMax: numericString,
+	})
+	// --- LOGICAL VALIDATIONS (Cross-field checks) ---
+	.refine((data) => !data.incomeCostMin || !data.incomeCostMax || Number(data.incomeCostMin) <= Number(data.incomeCostMax), {
+		message: "Min income cost cannot be greater than Max income cost",
+		path: ["incomeCostMin"],
+	})
+	.refine((data) => !data.staffCostMin || !data.staffCostMax || Number(data.staffCostMin) <= Number(data.staffCostMax), {
+		message: "Min staff cost cannot be greater than Max staff cost",
+		path: ["staffCostMin"],
+	})
+	.refine((data) => !data.createdAtFrom || !data.createdAtTo || new Date(data.createdAtFrom) <= new Date(data.createdAtTo), {
+		message: "Start date cannot be after end date",
+		path: ["createdAtFrom"],
+	});
 
-	// Dates
-	createdAtFrom: optionalIsoDate,
-	createdAtTo: optionalIsoDate,
-	dueAtFrom: optionalIsoDate,
-	dueAtTo: optionalIsoDate,
-	finishedAtFrom: optionalIsoDate,
-	finishedAtTo: optionalIsoDate,
-
-	// Costs
-	incomeCostMin: z.string().regex(/^\d*$/, 'Numeric only').optional(),
-	incomeCostMax: z.string().regex(/^\d*$/, 'Numeric only').optional(),
-	staffCostMin: z.string().regex(/^\d*$/, 'Numeric only').optional(),
-	staffCostMax: z.string().regex(/^\d*$/, 'Numeric only').optional(),
-});
-
-export type TJobFiltersInput = z.infer<typeof JobFiltersInputSchema>;
+// Export the Type derived from Zod
+export type JobFiltersSchema = z.infer<typeof jobFiltersSchema>;
