@@ -362,13 +362,13 @@ SET
 -- 4. SEED JOB TYPE
 -- =============================================
 INSERT INTO
-	"JobType" (id, "displayName", code, "hexColor","createdAt", "updatedAt")
+	"JobType" (id, "displayName", "code", "hexColor", "createdAt", "updatedAt")
 VALUES
 	(
 		'2f9c6060-7f9b-42a5-b6fa-df3ac9627c42',
 		'Fiverr',
 		'F',
-		"#173912",
+		'#173912',
 		NOW (),
 		NOW ()
 	),
@@ -376,7 +376,7 @@ VALUES
 		'f93c8c34-f85f-46b6-8dbf-b9e10fd2f3cb',
 		'Global',
 		'G',
-		"#04396C",
+		'#04396C',
 		NOW (),
 		NOW ()
 	),
@@ -384,7 +384,7 @@ VALUES
 		'9c78d5e6-4f11-47d4-8cb3-dfe287d9b763',
 		'Vietnam',
 		'V',
-		"#D43A2E",
+		'#D43A2E',
 		NOW (),
 		NOW ()
 	) ON CONFLICT DO NOTHING;
