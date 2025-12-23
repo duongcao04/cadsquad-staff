@@ -8,15 +8,14 @@ export const Route = createFileRoute('/_workspace/project-center')({
 function ProjectCenterLayout() {
     return (
         <>
-            <div className="border-b border-border-default">
-                <PageHeading
-                    title="Project center"
-                    classNames={{
-                        wrapper: '!py-3 pl-6 pr-3.5',
-                    }}
-                />
-            </div>
-            <div className="pl-5 pr-3.5 pt-3">
+            <PageHeading
+                title="Project center"
+                classNames={{
+                    wrapper:
+                        'w-full border-b border-border-default !py-3 pl-6 pr-3.5',
+                }}
+            />
+            <div className="size-full pl-5 pr-3.5 pt-3">
                 <Outlet />
             </div>
         </>

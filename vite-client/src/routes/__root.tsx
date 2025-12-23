@@ -24,7 +24,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
             <HeadContent />
             <div
                 id="app"
-                className="max-w-screen max-h-screen bg-background-muted scroll-smooth"
+                className="max-w-screen max-h-screen w-screen h-screen bg-background-muted scroll-smooth"
             >
                 <ThemeColorProvider>
                     <AblyProvider client={ablyClient}>

@@ -14,7 +14,7 @@ import {
     useDisclosure,
     addToast,
 } from '@heroui/react'
-import { CheckCircle2, CreditCard, DollarSign, Eye } from 'lucide-react'
+import { CheckCircle2, CreditCard, DollarSign, Eye, X } from 'lucide-react'
 import { jobsPendingPayoutsOptions } from '../../../lib/queries'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import AdminContentContainer from '../../../shared/components/admin/AdminContentContainer'
@@ -211,16 +211,16 @@ function PendingPayoutsPage() {
                                             </HeroTooltip>
                                             <Button
                                                 size="sm"
-                                                color="success"
+                                                color="warning"
                                                 variant="flat"
                                                 onPress={() =>
                                                     handleOpenModal(job)
                                                 }
                                                 startContent={
-                                                    <CheckCircle2 size={16} />
+                                                    <X size={16} />
                                                 }
                                             >
-                                                Confirm Payment
+                                                Waiting Pay
                                             </Button>
                                         </div>
                                     </TableCell>

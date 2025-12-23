@@ -65,7 +65,7 @@ export const ThemeColorProvider = ({
               but we REMOVED the style={} prop. 
             */}
             <div
-                className={`min-h-screen bg-background text-foreground font-sans transition-colors duration-500 ${isMounted ? 'opacity-100' : 'opacity-0'}`}
+                className={`w-screen h-screen bg-background text-foreground font-sans transition-colors duration-500 ${isMounted ? 'opacity-100' : 'opacity-0'}`}
             >
                 {children}
             </div>

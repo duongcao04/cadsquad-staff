@@ -389,7 +389,7 @@ export class JobController {
     @Post(':id/mark-paid')
     @HttpCode(200)
     @ResponseMessage('Mark as paid job successfully')
-    @UseGuards(AdminGuard, JwtGuard)
+    @UseGuards(JwtGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Mark a job as paid' })
     @ApiResponse({

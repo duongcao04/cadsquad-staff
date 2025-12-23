@@ -31,6 +31,7 @@ import { Route as PublicHelpCenterRouteImport } from './routes/_public/help-cent
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AdministratorFinancialRouteImport } from './routes/_administrator/financial'
 import { Route as AdministratorAdminRouteImport } from './routes/_administrator/admin'
+import { Route as WorkspaceProjectCenterIndexRouteImport } from './routes/_workspace/project-center/index'
 import { Route as WorkspaceJobsIndexRouteImport } from './routes/_workspace/jobs/index'
 import { Route as AdministratorAdminIndexRouteImport } from './routes/_administrator/admin/index'
 import { Route as WorkspaceProjectCenterTabRouteImport } from './routes/_workspace/project-center/$tab'
@@ -164,6 +165,12 @@ const AdministratorAdminRoute = AdministratorAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AdministratorRoute,
 } as any)
+const WorkspaceProjectCenterIndexRoute =
+  WorkspaceProjectCenterIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => WorkspaceProjectCenterRoute,
+  } as any)
 const WorkspaceJobsIndexRoute = WorkspaceJobsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -343,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin/': typeof AdministratorAdminIndexRoute
   '/jobs/': typeof WorkspaceJobsIndexRoute
+  '/project-center/': typeof WorkspaceProjectCenterIndexRoute
   '/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
@@ -361,7 +369,6 @@ export interface FileRoutesByTo {
   '/help-center': typeof PublicHelpCenterRoute
   '/overview': typeof WorkspaceOverviewRoute
   '/profile': typeof WorkspaceProfileRoute
-  '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
@@ -384,6 +391,7 @@ export interface FileRoutesByTo {
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin': typeof AdministratorAdminIndexRoute
   '/jobs': typeof WorkspaceJobsIndexRoute
+  '/project-center': typeof WorkspaceProjectCenterIndexRoute
   '/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
@@ -433,6 +441,7 @@ export interface FileRoutesById {
   '/_workspace/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/_administrator/admin/': typeof AdministratorAdminIndexRoute
   '/_workspace/jobs/': typeof WorkspaceJobsIndexRoute
+  '/_workspace/project-center/': typeof WorkspaceProjectCenterIndexRoute
   '/_administrator/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/_administrator/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/_administrator/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
@@ -479,6 +488,7 @@ export interface FileRouteTypes {
     | '/project-center/$tab'
     | '/admin/'
     | '/jobs/'
+    | '/project-center/'
     | '/admin/departments/$code'
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
@@ -497,7 +507,6 @@ export interface FileRouteTypes {
     | '/help-center'
     | '/overview'
     | '/profile'
-    | '/project-center'
     | '/task-summary'
     | '/settings/appearance'
     | '/settings/language-and-region'
@@ -520,6 +529,7 @@ export interface FileRouteTypes {
     | '/project-center/$tab'
     | '/admin'
     | '/jobs'
+    | '/project-center'
     | '/admin/departments/$code'
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/_workspace/project-center/$tab'
     | '/_administrator/admin/'
     | '/_workspace/jobs/'
+    | '/_workspace/project-center/'
     | '/_administrator/admin/departments/$code'
     | '/_administrator/admin/mgmt/invite-member'
     | '/_administrator/admin/mgmt/revenue'
@@ -744,6 +755,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AdministratorAdminRouteImport
       parentRoute: typeof AdministratorRoute
+    }
+    '/_workspace/project-center/': {
+      id: '/_workspace/project-center/'
+      path: '/'
+      fullPath: '/project-center/'
+      preLoaderRoute: typeof WorkspaceProjectCenterIndexRouteImport
+      parentRoute: typeof WorkspaceProjectCenterRoute
     }
     '/_workspace/jobs/': {
       id: '/_workspace/jobs/'
@@ -1062,11 +1080,13 @@ const WorkspaceJobsRouteWithChildren = WorkspaceJobsRoute._addFileChildren(
 
 interface WorkspaceProjectCenterRouteChildren {
   WorkspaceProjectCenterTabRoute: typeof WorkspaceProjectCenterTabRoute
+  WorkspaceProjectCenterIndexRoute: typeof WorkspaceProjectCenterIndexRoute
 }
 
 const WorkspaceProjectCenterRouteChildren: WorkspaceProjectCenterRouteChildren =
   {
     WorkspaceProjectCenterTabRoute: WorkspaceProjectCenterTabRoute,
+    WorkspaceProjectCenterIndexRoute: WorkspaceProjectCenterIndexRoute,
   }
 
 const WorkspaceProjectCenterRouteWithChildren =

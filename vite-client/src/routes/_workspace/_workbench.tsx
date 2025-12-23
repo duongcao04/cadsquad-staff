@@ -149,15 +149,13 @@ export function WorkbenchPage() {
 function WorkbenchLayout({ children }: { children: React.ReactNode }) {
     return (
         <>
-            <div className="border-b border-border-default">
-                <PageHeading
-                    title="Workbench"
-                    classNames={{
-                        wrapper: '!py-3 pl-6 pr-3.5',
-                    }}
-                />
-            </div>
-            <div className="pl-5 pr-3.5 pt-5">{children}</div>
+            <PageHeading
+                title="Workbench"
+                classNames={{
+                    wrapper: '!py-3 pl-6 pr-3.5 border-b border-border-default',
+                }}
+            />
+            <div className="size-full pl-5 pr-3.5 pt-5">{children}</div>
         </>
     )
 }

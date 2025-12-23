@@ -173,7 +173,7 @@ export function ProjectCenterPage() {
     }
 
     return (
-        <div className="space-y-5">
+        <div className="size-full space-y-5">
             <ProjectCenterTabs onTabChange={handleTabChange} defaultTab={tab} />
             <ProjectCenterTableView
                 showFinishItems={localShowFinishItems}
