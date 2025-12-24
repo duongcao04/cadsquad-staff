@@ -24,6 +24,7 @@ import { useTheme } from 'next-themes'
 
 import { useLogout, useProfile } from '@/lib/queries'
 import { INTERNAL_URLS, THEME_SELECTS } from '@/lib/utils'
+import { optimizeCloudinary } from '../../../../lib'
 
 export function UserDropdown() {
     const { theme, setTheme } = useTheme()
@@ -57,7 +58,7 @@ export function UserDropdown() {
                 <Avatar
                     className="cursor-pointer"
                     icon={<User size={18} />}
-                    src={profile.avatar}
+                    src={optimizeCloudinary(profile.avatar)}
                     classNames={{
                         base: '!size-6',
                     }}
@@ -83,7 +84,7 @@ export function UserDropdown() {
                         <UserComp
                             avatarProps={{
                                 size: 'sm',
-                                src: profile?.avatar ?? '',
+                                src: optimizeCloudinary(profile?.avatar),
                             }}
                             classNames={{
                                 name: 'text-text-default font-medium',

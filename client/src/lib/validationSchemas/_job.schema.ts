@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 import { ProjectCenterTabEnum } from '../../shared/enums'
 import { arrayToString, optionalIsoDate } from '../zod'
+import { jobFiltersSchema } from './_job-filter.schema'
 
 export const CreateJobSchema = yup.object({
     no: yup.string().required('Job number is required'),
@@ -68,44 +69,6 @@ export type TUpdateJobInput = yup.InferType<typeof UpdateJobSchema>
 // ---------------------------------------------------------------
 // QUERY SCHEMAS
 // ---------------------------------------------------------------
-// 1. JobFiltersSchema
-export const JobFiltersSchema = z.object({
-    clientName: z.string().trim().optional(),
-
-    // Array Filters (handling CSV string or Array input)
-    type: arrayToString,
-    status: arrayToString,
-    assignee: arrayToString,
-    paymentChannel: arrayToString,
-
-    // Date Range Filters
-    createdAtFrom: optionalIsoDate,
-    createdAtTo: optionalIsoDate,
-    dueAtFrom: optionalIsoDate,
-    dueAtTo: optionalIsoDate,
-    completedAtFrom: optionalIsoDate,
-    completedAtTo: optionalIsoDate,
-    finishedAtFrom: optionalIsoDate,
-    finishedAtTo: optionalIsoDate,
-
-    // Cost Filters (DTO expects String, but usually represents a Number)
-    incomeCostMin: z
-        .string()
-        .regex(/^\d+$/, 'Must be a numeric string')
-        .optional(),
-    incomeCostMax: z
-        .string()
-        .regex(/^\d+$/, 'Must be a numeric string')
-        .optional(),
-    staffCostMin: z
-        .string()
-        .regex(/^\d+$/, 'Must be a numeric string')
-        .optional(),
-    staffCostMax: z
-        .string()
-        .regex(/^\d+$/, 'Must be a numeric string')
-        .optional(),
-})
 
 // 2. JobSortSchema
 export const JobSortSchema = z.object({
@@ -120,7 +83,7 @@ export const JobSortSchema = z.object({
 })
 
 // 3. JobQuerySchema (Combines Filters, Sorts, and Base Query)
-export const JobQuerySchema = JobFiltersSchema.merge(JobSortSchema).extend({
+export const JobQuerySchema = jobFiltersSchema.merge(JobSortSchema).extend({
     tab: z
         .nativeEnum(ProjectCenterTabEnum)
         .optional()
@@ -139,7 +102,6 @@ export const JobQuerySchema = JobFiltersSchema.merge(JobSortSchema).extend({
 })
 
 // Types inferred from Schemas (Optional, but useful for frontend type safety)
-export type TJobFilters = z.input<typeof JobFiltersSchema>
 export type TJobQueryInput = z.input<typeof JobQuerySchema> // Raw input (e.g. from URLSearchParams)
 export type TJobQueryOutput = z.output<typeof JobQuerySchema> // Transformed output (e.g. ready for API call)
 

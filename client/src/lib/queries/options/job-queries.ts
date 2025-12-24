@@ -182,14 +182,6 @@ export const jobsDueOnDateOptions = (isoDate: string) =>
         },
     })
 
-// 4. Job Columns Config
-export const jobColumnsOptions = () =>
-    queryOptions({
-        queryKey: ['configs', 'code', USER_CONFIG_KEYS.jobShowColumns],
-        queryFn: () => jobApi.columns(),
-        select: (res) => res?.result ?? [],
-    })
-
 // 6. Count Jobs By Tab
 export const countJobByTabOptions = (tab: ProjectCenterTabEnum) =>
     queryOptions({

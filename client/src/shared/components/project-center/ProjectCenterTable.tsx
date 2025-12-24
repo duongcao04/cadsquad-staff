@@ -16,7 +16,7 @@ import {
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
 import dayjs from 'dayjs'
-import lodash from 'lodash'
+import lodash, { filter } from 'lodash'
 import {
     Check,
     ChevronDownIcon,
@@ -25,7 +25,6 @@ import {
     EyeClosed,
     EyeIcon,
     FilePlus,
-    Filter,
     RefreshCw,
     SearchIcon,
     Sheet,
@@ -68,9 +67,9 @@ import {
 import { HeroTooltip } from '../ui/hero-tooltip'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
-import { ProjectCenterTableViewProps } from './ProjectCenterTableView'
 import { HeroButton } from '../ui/hero-button'
 import { FilterBuilder } from './FilterDropdown'
+import { TJobFilters } from '../../../lib/validationSchemas'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
@@ -108,14 +107,30 @@ export const getDueDateRange = (key: string | undefined | null) => {
     }
 }
 
-type ProjectCenterTableProps = ProjectCenterTableViewProps & {
+type ProjectCenterTableProps = {
+    data: TJob[]
+    isLoadingData: boolean
+    sort?: string
+    searchKeywords?: string
+    pagination: {
+        limit: number
+        page: number
+        totalPages: number
+        total: number
+    }
+    onRefresh: () => void
+    onSearchKeywordsChange: (newKeyword?: string) => void
+    onLimitChange: (l: number) => void
+    onPageChange: (p: number) => void
+    onSortChange: (s?: string) => void
+    onFiltersChange: (newFilters: TJobFilters) => void
+    filters: Partial<TJobFilters>
     visibleColumns: 'all' | JobColumnKey[]
     showFinishItems: boolean
     onDownloadCsv: () => void
     onShowFinishItemsChange?: (state: boolean) => void
-    openFilterDrawer: () => void
     openViewColDrawer: () => void
-    openJobDetailDrawer: () => void
+    openJobDetailDrawer: (jobNo: string) => void
     onAssignMember: (jobNo: string) => void
     onAddAttachments: (jobNo: string) => void
 }
@@ -134,7 +149,6 @@ export default function ProjectCenterTable({
     onSortChange,
     onDownloadCsv,
     onShowFinishItemsChange,
-    openFilterDrawer,
     openViewColDrawer,
     openJobDetailDrawer,
     onAssignMember,
@@ -228,21 +242,9 @@ export default function ProjectCenterTable({
                                 <span className="font-medium">Refresh</span>
                             </Button>
 
-                            <Button
-                                startContent={
-                                    <Filter className="text-small" size={14} />
-                                }
-                                variant="bordered"
-                                size="sm"
-                                onPress={openFilterDrawer}
-                            >
-                                <span className="font-medium">Filter</span>
-                            </Button>
-
                             <FilterBuilder
-                                onApply={(filters) => {
-                                    console.log(filters)
-                                }}
+                                defaultFilters={filters}
+                                onApply={onFiltersChange}
                             />
 
                             <Dropdown placement="bottom-start">
@@ -397,6 +399,12 @@ export default function ProjectCenterTable({
                                 }}
                                 placeholder="Status"
                                 isClearable
+                                onClear={() => {
+                                    onFiltersChange({
+                                        ...filters,
+                                        status: undefined,
+                                    })
+                                }}
                                 onSelectionChange={(value) => {
                                     const arrayToString =
                                         Array.from(value).join(',')
@@ -509,6 +517,7 @@ export default function ProjectCenterTable({
     }, [
         visibleColumns,
         data?.length,
+        filters,
         hasSearchFilter,
         selectedKeys,
         showFinishItems,
@@ -766,11 +775,7 @@ export default function ProjectCenterTable({
                                     size="sm"
                                     className="size-8! flex items-center justify-center"
                                     onPress={() => {
-                                        openJobDetailDrawer()
-                                        pCenterTableStore.setState((state) => ({
-                                            ...state,
-                                            viewDetail: data.no,
-                                        }))
+                                        openJobDetailDrawer(data.no)
                                     }}
                                 >
                                     <p className="inline-flex items-center leading-none">

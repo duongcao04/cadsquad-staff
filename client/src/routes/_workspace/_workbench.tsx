@@ -44,7 +44,7 @@ export const Route = createFileRoute('/_workspace/_workbench')({
             search,
             sort = DEFAULT_SORT,
         } = deps.search
-        return context.queryClient.ensureQueryData(
+        void context.queryClient.ensureQueryData(
             workbenchDataOptions({
                 limit,
                 page,

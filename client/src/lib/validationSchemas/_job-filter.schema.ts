@@ -13,7 +13,7 @@ const stringOrArray = z
 const numericString = z.string().regex(/^\d+$/, "Must be a valid number").optional();
 
 // Helper for ISO Dates
-const isoDate = z.string().datetime({ message: "Invalid ISO date format" }).optional();
+const isoDate = z.string().date({ message: "Invalid ISO date format" }).optional();
 
 export const jobFiltersSchema = z
 	.object({
@@ -56,4 +56,4 @@ export const jobFiltersSchema = z
 	});
 
 // Export the Type derived from Zod
-export type JobFiltersSchema = z.infer<typeof jobFiltersSchema>;
+export type TJobFilters = z.infer<typeof jobFiltersSchema>;

@@ -1,14 +1,12 @@
 import {
     jobStatusesListOptions,
     jobTypesListOptions,
-    listUserOptions,
-    usersListOptions, // Imported your user query
+    usersListOptions,
 } from '@/lib/queries'
-import { JobFiltersSchema, jobFiltersSchema } from '@/lib/validationSchemas'
+import { jobFiltersSchema, TJobFilters } from '@/lib/validationSchemas'
 import {
     Button,
     Chip,
-    DateRangePicker,
     Dropdown,
     DropdownItem,
     DropdownMenu,
@@ -21,19 +19,21 @@ import {
     Select,
     SelectItem,
 } from '@heroui/react'
+// HeroUI requires these types for the DatePicker state
 import { getLocalTimeZone, parseAbsoluteToLocal } from '@internationalized/date'
 import { useSuspenseQueries } from '@tanstack/react-query'
+import dayjs from 'dayjs' // Import Dayjs
 import { AlertCircle, ChevronDown, Filter, Plus, Trash2 } from 'lucide-react'
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { HeroDateRangePicker } from '../ui/hero-date-picker'
 
-// --- 1. Configuration & Types ---
-
+// --- Types ---
 type FilterType = 'text' | 'select' | 'date_range' | 'number_range'
 
 interface FieldDef {
     key: string
     label: string
-    dtoKeys: (keyof JobFiltersSchema)[]
+    dtoKeys: (keyof TJobFilters)[]
 }
 
 interface FilterConfig {
@@ -41,7 +41,7 @@ interface FilterConfig {
     label: string
     type: FilterType
     fields?: FieldDef[]
-    dtoKeys?: (keyof JobFiltersSchema)[]
+    dtoKeys?: (keyof TJobFilters)[]
     options?: { label: string; value: string }[]
 }
 
@@ -53,23 +53,24 @@ interface ActiveFilter {
 }
 
 interface FilterBuilderProps {
-    defaultFilters?: Partial<JobFiltersSchema>
-    onApply: (filters: JobFiltersSchema) => void
+    defaultFilters?: Partial<TJobFilters>
+    onApply: (filters: TJobFilters) => void
     className?: string
 }
 
-// --- 2. Main Component ---
-
+// --- Main Component ---
 export const FilterBuilder: React.FC<FilterBuilderProps> = ({
     onApply,
     defaultFilters,
     className,
 }) => {
+    console.log(defaultFilters)
+
     const [isOpen, setIsOpen] = useState(false)
     const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([])
     const [errors, setErrors] = useState<string[]>([])
 
-    // --- Data Fetching ---
+    // --- 1. Data Fetching ---
     const [
         {
             data: { jobStatuses },
@@ -79,30 +80,28 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
         },
         {
             data: { users },
-        }, // Destructure users data
+        },
     ] = useSuspenseQueries({
         queries: [
-            { ...jobStatusesListOptions() },
-            { ...jobTypesListOptions() },
-            { ...usersListOptions() }, // Add user query here
+            jobStatusesListOptions(),
+            jobTypesListOptions(),
+            usersListOptions(),
         ],
     })
 
-    // --- Configuration ---
+    // --- 2. Configuration ---
     const FILTER_CONFIG: FilterConfig[] = useMemo(() => {
-        // Transform API data to options
-        const statusOptions = jobStatuses.map((item) => ({
-            label: item.displayName,
-            value: item.code,
+        const statusOptions = jobStatuses.map((i) => ({
+            label: i.displayName,
+            value: i.code,
         }))
-        const typeOptions = jobTypes.map((item) => ({
-            label: item.displayName,
-            value: item.code,
+        const typeOptions = jobTypes.map((i) => ({
+            label: i.displayName,
+            value: i.code,
         }))
-        // Assuming 'username' is the value needed for the DTO filter
-        const assigneeOptions = users.map((user) => ({
-            label: user.displayName || user.username, // Fallback to username if no display name
-            value: user.username,
+        const assigneeOptions = users.map((u) => ({
+            label: u.displayName || u.username,
+            value: u.username,
         }))
 
         return [
@@ -115,9 +114,9 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
             {
                 key: 'assignee',
                 label: 'Assignee',
-                type: 'select', // Changed from 'text' to 'select'
+                type: 'select',
                 dtoKeys: ['assignee'],
-                options: assigneeOptions, // Pass fetched options
+                options: assigneeOptions,
             },
             {
                 key: 'status',
@@ -180,44 +179,56 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
         ]
     }, [jobStatuses, jobTypes, users])
 
-    // --- Effect: Rehydrate UI from defaultFilters ---
+    // --- 3. Initialization (Using Day.js) ---
     useEffect(() => {
-        if (!defaultFilters) return
+        if (!isOpen || !defaultFilters) return
 
         const newActiveFilters: ActiveFilter[] = []
 
         FILTER_CONFIG.forEach((config) => {
-            // CASE A: Grouped Fields (Dates, Costs)
+            // A. Grouped Fields
             if (config.fields) {
                 config.fields.forEach((field) => {
-                    const key1 = field.dtoKeys[0]
-                    const key2 = field.dtoKeys[1]
-
+                    const [k1, k2] = field.dtoKeys
                     const hasData =
-                        defaultFilters[key1] !== undefined ||
-                        defaultFilters[key2] !== undefined
+                        defaultFilters[k1] !== undefined ||
+                        (k2 && defaultFilters[k2] !== undefined)
 
                     if (hasData) {
                         let value: any = null
 
+                        // Parse Dates using Day.js
                         if (config.type === 'date_range') {
-                            const startStr = defaultFilters[key1] as string
-                            const endStr = defaultFilters[key2] as string
+                            const s = defaultFilters[k1] as string
+                            const e = defaultFilters[k2!] as string
 
-                            if (startStr && endStr) {
-                                try {
-                                    value = {
-                                        start: parseAbsoluteToLocal(startStr),
-                                        end: parseAbsoluteToLocal(endStr),
+                            if (s && e) {
+                                const startDay = dayjs(s)
+                                const endDay = dayjs(e)
+
+                                if (startDay.isValid() && endDay.isValid()) {
+                                    // Convert Day.js -> ISO String -> ZonedDateTime (Required by HeroUI)
+                                    try {
+                                        value = {
+                                            start: parseAbsoluteToLocal(
+                                                startDay.toISOString()
+                                            ),
+                                            end: parseAbsoluteToLocal(
+                                                endDay.toISOString()
+                                            ),
+                                        }
+                                    } catch (err) {
+                                        console.error(
+                                            'Date parsing failed',
+                                            err
+                                        )
                                     }
-                                } catch (e) {
-                                    console.error('Invalid date', e)
                                 }
                             }
                         } else if (config.type === 'number_range') {
                             value = {
-                                min: defaultFilters[key1],
-                                max: defaultFilters[key2],
+                                min: defaultFilters[k1],
+                                max: defaultFilters[k2!],
                             }
                         }
 
@@ -232,19 +243,15 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                     }
                 })
             }
-            // CASE B: Simple Fields
+            // B. Simple Fields
             else if (config.dtoKeys) {
-                const dtoKey = config.dtoKeys[0]
-                const val = defaultFilters[dtoKey]
-
+                const k1 = config.dtoKeys[0]
+                const val = defaultFilters[k1]
                 if (val !== undefined && val !== null) {
                     let finalValue = val
-                    // Ensure selects are hydrated as Sets
                     if (config.type === 'select') {
-                        const arr = Array.isArray(val) ? val : [val]
-                        finalValue = new Set(arr)
+                        finalValue = new Set(Array.isArray(val) ? val : [val])
                     }
-
                     newActiveFilters.push({
                         id: crypto.randomUUID(),
                         configKey: config.key,
@@ -254,81 +261,44 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
             }
         })
 
-        if (newActiveFilters.length > 0) {
-            setActiveFilters(newActiveFilters)
-        }
-    }, [defaultFilters, FILTER_CONFIG])
+        setActiveFilters(newActiveFilters)
+    }, [isOpen, defaultFilters, FILTER_CONFIG])
 
-    // --- Action Handlers ---
-
-    const handleApply = () => {
-        setErrors([])
-        const rawData: Record<string, any> = {}
-
-        activeFilters.forEach((filter) => {
-            const config = FILTER_CONFIG.find((c) => c.key === filter.configKey)
-            if (!config || !filter.value) return
-
-            let keys: (keyof JobFiltersSchema)[] = []
-            if (config.fields && filter.fieldKey) {
-                const field = config.fields.find(
-                    (f) => f.key === filter.fieldKey
-                )
-                if (field) keys = field.dtoKeys
-            } else if (config.dtoKeys) {
-                keys = config.dtoKeys
+    // --- 4. Logic Helpers ---
+    const availableFilters = useMemo(() => {
+        return FILTER_CONFIG.filter((config) => {
+            if (config.fields) {
+                const usedFieldKeys = activeFilters
+                    .filter((f) => f.configKey === config.key)
+                    .map((f) => f.fieldKey)
+                return config.fields.some((f) => !usedFieldKeys.includes(f.key))
             }
-
-            if (keys.length === 0) return
-
-            if (config.type === 'date_range' && filter.value.start) {
-                const tz = getLocalTimeZone()
-                if (keys[0])
-                    rawData[keys[0]] = filter.value.start
-                        .toDate(tz)
-                        .toISOString()
-                if (keys[1])
-                    rawData[keys[1]] = filter.value.end.toDate(tz).toISOString()
-            } else if (config.type === 'number_range') {
-                if (filter.value.min && keys[0])
-                    rawData[keys[0]] = filter.value.min
-                if (filter.value.max && keys[1])
-                    rawData[keys[1]] = filter.value.max
-            } else if (config.type === 'select') {
-                const val =
-                    filter.value instanceof Set
-                        ? Array.from(filter.value)
-                        : filter.value
-                if (keys[0]) rawData[keys[0]] = val
-            } else {
-                if (keys[0]) rawData[keys[0]] = filter.value
-            }
+            return !activeFilters.some((f) => f.configKey === config.key)
         })
+    }, [activeFilters, FILTER_CONFIG])
 
-        const result = jobFiltersSchema.safeParse(rawData)
-
-        if (!result.success) {
-            const msgs = result.error.errors.map((e) => {
-                const field = e.path.join('.')
-                return `${field}: ${e.message}`
-            })
-            setErrors(msgs)
-        } else {
-            onApply(result.data)
-            setIsOpen(false)
-        }
-    }
-
+    // --- 5. Actions ---
     const addFilter = (configKey: string) => {
         const config = FILTER_CONFIG.find((c) => c.key === configKey)
-        const defaultFieldKey = config?.fields?.[0]?.key
+        if (!config) return
+
+        let fieldKey = undefined
+        if (config.fields) {
+            const usedFields = activeFilters
+                .filter((f) => f.configKey === configKey)
+                .map((f) => f.fieldKey)
+            const nextAvailable = config.fields.find(
+                (f) => !usedFields.includes(f.key)
+            )
+            fieldKey = nextAvailable?.key
+        }
 
         setActiveFilters((prev) => [
             ...prev,
             {
                 id: crypto.randomUUID(),
                 configKey,
-                fieldKey: defaultFieldKey,
+                fieldKey,
                 value: null,
             },
         ])
@@ -344,13 +314,113 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
         )
     }
 
-    const updateFilterField = (id: string, fieldKey: string) => {
+    const updateFilterField = (id: string, newFieldKey: string) => {
         setActiveFilters((prev) =>
-            prev.map((f) => (f.id === id ? { ...f, fieldKey } : f))
+            prev.map((f) =>
+                f.id === id ? { ...f, fieldKey: newFieldKey, value: null } : f
+            )
         )
     }
 
-    const activeCount = activeFilters.length
+    const onClearAll = () => {
+        const clearPayload: any = {}
+        FILTER_CONFIG.forEach((c) => {
+            if (c.dtoKeys)
+                c.dtoKeys.forEach((k) => (clearPayload[k] = undefined))
+            if (c.fields)
+                c.fields.forEach((f) =>
+                    f.dtoKeys.forEach((k) => (clearPayload[k] = undefined))
+                )
+        })
+
+        onApply(clearPayload)
+        setActiveFilters([])
+        setIsOpen(false)
+    }
+
+    const handleApply = () => {
+        setErrors([])
+        const rawData: Record<string, any> = {}
+
+        activeFilters.forEach((filter) => {
+            const config = FILTER_CONFIG.find((c) => c.key === filter.configKey)
+            if (!config || !filter.value) return
+
+            let keys: (keyof TJobFilters)[] = []
+            if (config.fields && filter.fieldKey) {
+                const field = config.fields.find(
+                    (f) => f.key === filter.fieldKey
+                )
+                if (field) keys = field.dtoKeys
+            } else if (config.dtoKeys) {
+                keys = config.dtoKeys
+            }
+
+            if (!keys.length) return
+
+            // --- PAYLOAD GENERATION WITH DAYJS ---
+            if (
+                config.type === 'date_range' &&
+                filter.value.start &&
+                filter.value.end
+            ) {
+                const tz = getLocalTimeZone()
+
+                // 1. ZonedDateTime -> Native JS Date
+                const jsDateStart = filter.value.start.toDate(tz)
+                const jsDateEnd = filter.value.end.toDate(tz)
+
+                // 2. Native JS Date -> Dayjs -> ISO String
+                if (keys[0])
+                    rawData[keys[0]] = dayjs(jsDateStart)
+                        .toISOString()
+                        .split('T')[0]
+                if (keys[1])
+                    rawData[keys[1]] = dayjs(jsDateEnd)
+                        .toISOString()
+                        .split('T')[0]
+            } else if (config.type === 'number_range') {
+                if (filter.value.min && keys[0])
+                    rawData[keys[0]] = filter.value.min
+                if (filter.value.max && keys[1])
+                    rawData[keys[1]] = filter.value.max
+            } else if (config.type === 'select') {
+                const val =
+                    filter.value instanceof Set
+                        ? Array.from(filter.value)
+                        : filter.value
+                if (keys[0] && val?.length > 0) rawData[keys[0]] = val
+            } else {
+                if (keys[0]) rawData[keys[0]] = filter.value
+            }
+        })
+
+        // Validate
+        const result = jobFiltersSchema.safeParse(rawData)
+        if (!result.success) {
+            console.log(result.error)
+            // setErrors(
+            //     result.error.errors.map(
+            //         (e) => `${e.path.join('.')}: ${e.message}`
+            //     )
+            // )
+        } else {
+            // Build Reset Object to clear removed filters
+            const resetObj: any = {}
+            FILTER_CONFIG.forEach((c) => {
+                const checkAndReset = (keys: string[]) => {
+                    keys.forEach((k) => {
+                        if (!(k in rawData)) resetObj[k] = undefined
+                    })
+                }
+                if (c.dtoKeys) checkAndReset(c.dtoKeys)
+                if (c.fields) c.fields.forEach((f) => checkAndReset(f.dtoKeys))
+            })
+
+            onApply({ ...resetObj, ...result.data })
+            setIsOpen(false)
+        }
+    }
 
     return (
         <Popover
@@ -366,7 +436,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
             <PopoverTrigger>
                 <Button
                     size="sm"
-                    variant="flat"
+                    variant="bordered"
                     className={className}
                     startContent={<Filter className="text-small" size={14} />}
                     endContent={
@@ -377,36 +447,26 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                     }
                 >
                     Filter
-                    {activeCount > 0 && (
-                        <>
-                            <div className="w-px h-4 bg-default-300 mx-1" />
-                            <Chip
-                                size="sm"
-                                color="primary"
-                                variant="solid"
-                                classNames={{
-                                    base: 'h-5 min-h-5 px-1 text-[10px]',
-                                }}
-                            >
-                                {activeCount}
-                            </Chip>
-                        </>
-                    )}
                 </Button>
             </PopoverTrigger>
 
             <PopoverContent>
                 {/* Header */}
                 <div className="w-full px-4 py-3 flex justify-between items-center bg-default-50/50 border-b border-default-100">
-                    <span className="text-small font-semibold text-default-700">
+                    <span className="text-small font-semibold text-text-default">
                         Conditions
+                        {activeFilters.length > 0 && (
+                            <Chip size="sm" color="warning" className="ml-2">
+                                {activeFilters.length} active
+                            </Chip>
+                        )}
                     </span>
                     <div className="flex gap-2">
                         <Button
                             size="sm"
                             variant="light"
                             color="danger"
-                            onPress={() => setActiveFilters([])}
+                            onPress={onClearAll}
                             isDisabled={activeFilters.length === 0}
                         >
                             Clear all
@@ -419,7 +479,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
 
                 {/* Errors */}
                 {errors.length > 0 && (
-                    <div className="mx-4 mt-3 bg-danger-50 border border-danger-200 rounded-md p-2 flex items-start gap-2 animate-appearance-in">
+                    <div className="mx-4 mt-3 bg-danger-50 border border-danger-200 rounded-md p-2 flex items-start gap-2">
                         <AlertCircle
                             className="text-danger-500 mt-0.5 shrink-0"
                             size={16}
@@ -453,7 +513,12 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                                 key={filter.id}
                                 index={index}
                                 filter={filter}
-                                filterConfigs={FILTER_CONFIG}
+                                activeFilters={activeFilters}
+                                config={
+                                    FILTER_CONFIG.find(
+                                        (c) => c.key === filter.configKey
+                                    )!
+                                }
                                 onRemove={() => removeFilter(filter.id)}
                                 onChange={(val) =>
                                     updateFilterValue(filter.id, val)
@@ -479,6 +544,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                                     variant="ghost"
                                     size="sm"
                                     className="justify-start text-default-500 font-normal"
+                                    isDisabled={availableFilters.length === 0}
                                 >
                                     Add condition
                                 </Button>
@@ -487,8 +553,9 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                                 aria-label="Add Filter"
                                 onAction={(key) => addFilter(key as string)}
                                 variant="faded"
+                                items={availableFilters}
                             >
-                                {FILTER_CONFIG.map((config) => (
+                                {(config) => (
                                     <DropdownItem
                                         key={config.key}
                                         description={`Filter by ${config.label}`}
@@ -498,7 +565,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                                     >
                                         {config.label}
                                     </DropdownItem>
-                                ))}
+                                )}
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -508,28 +575,28 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
     )
 }
 
-// --- 3. Sub-Components (Row & Inputs) ---
+// --- Sub-Components (Unchanged from previous version, included for completeness) ---
 
 interface FilterRowProps {
     index: number
     filter: ActiveFilter
+    activeFilters: ActiveFilter[]
+    config: FilterConfig
     onRemove: () => void
     onChange: (value: any) => void
     onFieldChange: (fieldKey: string) => void
-    filterConfigs: FilterConfig[]
 }
 
 const FilterRow: React.FC<FilterRowProps> = ({
     index,
     filter,
+    activeFilters,
+    config,
     onRemove,
     onChange,
     onFieldChange,
-    filterConfigs,
 }) => {
-    const config = filterConfigs.find((c) => c.key === filter.configKey)
     if (!config) return null
-
     const isGroup = !!config.fields
 
     const getOperatorLabel = () => {
@@ -539,7 +606,6 @@ const FilterRow: React.FC<FilterRowProps> = ({
             case 'select':
                 return 'is any of'
             case 'date_range':
-                return 'is between'
             case 'number_range':
                 return 'is between'
             default:
@@ -547,15 +613,19 @@ const FilterRow: React.FC<FilterRowProps> = ({
         }
     }
 
+    const disabledKeys = isGroup
+        ? activeFilters
+              .filter((f) => f.configKey === config.key && f.id !== filter.id)
+              .map((f) => f.fieldKey)
+        : []
+
     return (
         <div className="flex items-center gap-2 text-sm animate-appearance-in group">
-            {/* Logic Connector */}
-            <div className="w-[45px] flex-shrink-0 text-right font-medium text-default-400 select-none text-xs">
+            <div className="w-11.25 shrink-0 text-right font-medium text-default-400 select-none text-xs">
                 {index === 0 ? 'Where' : 'And'}
             </div>
 
-            <div className="flex-grow flex items-center gap-1 pl-1 pr-1 py-1 rounded-medium border border-default-200 bg-content2/40 hover:bg-content2 transition-colors hover:border-default-300">
-                {/* Field Selector (Switchable or Static) */}
+            <div className="grow flex items-center gap-1 pl-1 pr-1 py-1 rounded-medium border border-default-200 bg-content2/40 hover:bg-content2 transition-colors hover:border-default-300">
                 {isGroup ? (
                     <Select
                         aria-label="Select Field"
@@ -563,8 +633,10 @@ const FilterRow: React.FC<FilterRowProps> = ({
                         variant="bordered"
                         classNames={{
                             trigger:
-                                'h-6 min-h-6 border-none shadow-none bg-default-100 rounded data-[hover=true]:bg-default-200 mr-1 w-auto min-w-[130px]',
-                            value: 'text-default-700 font-medium text-xs group-data-[has-value=true]:text-default-700',
+                                'h-6 min-h-6 border-none shadow-none bg-default-100 rounded data-[hover=true]:bg-default-200 mr-1 w-auto min-w-42',
+                            mainWrapper: 'w-42!',
+                            base: 'w-42!',
+                            value: 'text-text-default font-medium text-xs group-data-[has-value=true]:text-text-default',
                             innerWrapper: 'w-auto',
                             selectorIcon: 'text-default-400',
                         }}
@@ -573,6 +645,7 @@ const FilterRow: React.FC<FilterRowProps> = ({
                             onFieldChange(Array.from(keys)[0] as string)
                         }
                         disallowEmptySelection
+                        disabledKeys={disabledKeys}
                         renderValue={(items) =>
                             items.map((item) => item.textValue)
                         }
@@ -584,18 +657,16 @@ const FilterRow: React.FC<FilterRowProps> = ({
                         ))}
                     </Select>
                 ) : (
-                    <div className="flex items-center gap-2 mr-1 py-1 px-2.5 bg-default-100 border border-transparent rounded text-default-700 font-medium text-xs whitespace-nowrap">
+                    <div className="flex items-center gap-2 mr-1 py-1 px-2.5 bg-default-100 border border-transparent rounded text-text-default font-medium text-xs whitespace-nowrap">
                         {config.label}
                     </div>
                 )}
 
-                {/* Operator */}
                 <span className="text-default-400 text-xs whitespace-nowrap mr-2">
                     {getOperatorLabel()}
                 </span>
 
-                {/* Input Area */}
-                <div className="flex-grow min-w-[200px]">
+                <div className="grow min-w-50">
                     <FilterInput
                         config={config}
                         value={filter.value}
@@ -603,7 +674,6 @@ const FilterRow: React.FC<FilterRowProps> = ({
                     />
                 </div>
 
-                {/* Delete */}
                 <Button
                     isIconOnly
                     size="sm"
@@ -656,14 +726,13 @@ const FilterInput = ({
                 }}
                 placeholder="Select options"
                 selectionMode="multiple"
-                // Ensure value is a Set for HeroUI Select selection
                 selectedKeys={
                     value instanceof Set ? value : new Set(value || [])
                 }
                 onSelectionChange={(keys) => onChange(keys)}
             >
                 {(config.options || []).map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
+                    <SelectItem key={opt.value} textValue={opt.label}>
                         {opt.label}
                     </SelectItem>
                 ))}
@@ -672,16 +741,26 @@ const FilterInput = ({
     }
 
     if (config.type === 'date_range') {
+        console.log(new Date(value?.start));
+        
         return (
-            <DateRangePicker
+            <HeroDateRangePicker
                 size="sm"
                 variant="bordered"
                 classNames={{
                     inputWrapper:
                         'h-7 min-h-0 border-none shadow-none bg-transparent',
                 }}
-                value={value}
-                onChange={onChange}
+                hideTimeZone
+                value={{
+                    start: dayjs(value?.start ?? ''),
+                    end: dayjs(value?.end ?? ''),
+                }}
+                onChange={(range) => {
+                    console.log(range)
+
+                    onChange(range)
+                }}
                 aria-label={config.label}
             />
         )
@@ -712,6 +791,5 @@ const FilterInput = ({
             </div>
         )
     }
-
     return null
 }
