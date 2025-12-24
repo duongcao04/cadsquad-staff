@@ -3,6 +3,7 @@ import { PrismaService } from '../../providers/prisma/prisma.service';
 import dayjs from 'dayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { AnalyticsOverviewDto } from './dto/analytics-overview.dto';
+import { Prisma, RoleEnum } from '@prisma/client';
 
 // Load plugins
 dayjs.extend(isSameOrBefore);
@@ -178,5 +179,224 @@ export class AnalyticsService {
 		});
 
 		return result;
+	}
+
+	async userOverview(userId: string, userRole: RoleEnum, from?: string, to?: string, unit: 'day' | 'month' = 'month') {
+		const now = dayjs();
+		// Determine Current Period
+		const startDate = from ? dayjs(from).startOf('day') : now.startOf('month');
+		const endDate = to ? dayjs(to).endOf('day') : now.endOf('day');
+
+		if (!startDate.isValid() || !endDate.isValid()) throw new Error('Invalid date');
+
+		// Determine Previous Period (for trend calculation)
+		const diff = endDate.diff(startDate, 'day');
+		const prevStartDate = startDate.subtract(diff + 1, 'day');
+		const prevEndDate = startDate.subtract(1, 'day');
+
+		// --- 1. Fetch Key Metrics (Parallel Execution) ---
+		const [
+			activeJobsCount,
+			completedJobsCount,
+			periodRevenue,
+			periodHours,
+			statusDistribution,
+			prevPeriodRevenue, // For trend calc
+			rawJobsForGraph
+		] = await Promise.all([
+			// A. Active Jobs (Jobs currently NOT completed/terminated)
+			this.prisma.job.count({
+				where: {
+					AND: [
+						this.buildPermission(userRole, userId),
+						{
+							status: {
+								systemType: { notIn: ['COMPLETED', 'TERMINATED'] }
+							}
+						}
+					]
+				}
+			}),
+
+			// B. Completed Jobs (In this specific period)
+			this.prisma.job.count({
+				where: {
+					AND: [
+						this.buildPermission(userRole, userId),
+						{
+							status: { systemType: 'COMPLETED' },
+							completedAt: {
+								gte: startDate.toDate(),
+								lte: endDate.toDate(),
+							},
+						}]
+				},
+			}),
+
+			// C. Total Earnings (Staff Cost) & Revenue (Income Cost) for Current Period
+			this.prisma.job.aggregate({
+				_sum: {
+					staffCost: true,   // "Earnings" in your chart
+					incomeCost: true,  // "Revenue" in your chart
+				},
+				where: {
+					AND: [
+						this.buildPermission(userRole, userId),
+						{
+							finishedAt: {
+								gte: startDate.toDate(),
+								lte: endDate.toDate(),
+							},
+						}]
+				},
+			}),
+
+			// D. Hours Logged (Sum duration from history)
+			this.prisma.jobStatusHistory.aggregate({
+				_sum: { durationSeconds: true },
+				where: {
+					changedBy: { id: userId }, // Time logged by this specific user
+					createdAt: {
+						gte: startDate.toDate(),
+						lte: endDate.toDate(),
+					},
+				},
+			}),
+
+			// E. Job Status Distribution (Donut Chart)
+			this.prisma.job.groupBy({
+				by: ['statusId'],
+				_count: { id: true },
+				where: {
+					assignee: { some: { id: userId } },
+					// Usually a status chart shows CURRENT state of all jobs, not just those in period
+					// If you want only period specific, add date filters here.
+					status: {
+						systemType: { notIn: ['TERMINATED'] } // Optional: Hide cancelled jobs
+					}
+				},
+			}),
+
+			// F. Previous Period Earnings (For trend %)
+			this.prisma.job.aggregate({
+				_sum: { staffCost: true },
+				where: {
+					AND: [
+						this.buildPermission(userRole, userId),
+						{
+							finishedAt: {
+								gte: prevStartDate.toDate(),
+								lte: prevEndDate.toDate(),
+							},
+						}]
+				},
+			}),
+
+			// G. Fetch Data for Financial Chart (Line Chart)
+			this.prisma.job.findMany({
+				where: {
+					AND: [
+						this.buildPermission(userRole, userId),
+						{
+							finishedAt: {
+								gte: startDate.toDate(),
+								lte: endDate.toDate(),
+							},
+						}]
+				},
+				select: {
+					finishedAt: true,
+					staffCost: true,
+					incomeCost: true,
+				},
+			}),
+		]);
+
+		// --- 2. Process Financial Chart Data ---
+		const chartData: any[] = [];
+		let iterator = startDate.clone();
+
+		// Align iterator based on unit
+		if (unit === 'month') iterator = iterator.startOf('month');
+		else iterator = iterator.startOf('day');
+
+		const formatKey = unit === 'day' ? 'YYYY-MM-DD' : 'YYYY-MM';
+
+		// Create time buckets (filling gaps with 0)
+		while (iterator.isSameOrBefore(endDate, unit)) {
+			const key = iterator.format(formatKey);
+			chartData.push({
+				date: key,
+				displayDate: unit === 'day' ? iterator.format('MMM DD') : iterator.format('MMM YYYY'),
+				earnings: 0, // Staff Cost
+				revenue: 0,  // Income Cost
+			});
+			iterator = iterator.add(1, unit);
+		}
+
+		// Fill buckets with actual data
+		rawJobsForGraph.forEach((job) => {
+			if (!job.finishedAt) return;
+			const key = dayjs(job.finishedAt).format(formatKey);
+			const bucket = chartData.find((d) => d.date === key);
+			if (bucket) {
+				bucket.earnings += job.staffCost || 0;
+				bucket.revenue += job.incomeCost || 0;
+			}
+		});
+
+		// --- 3. Process Status Distribution (Donut Chart) ---
+		// We need to fetch Status details (names/colors) since groupBy only gives IDs
+		const statusIds = statusDistribution.map(s => s.statusId);
+		const statuses = await this.prisma.jobStatus.findMany({
+			where: { id: { in: statusIds } },
+			select: { id: true, displayName: true, hexColor: true, systemType: true }
+		});
+
+		const pieChartData = statusDistribution.map(item => {
+			const statusInfo = statuses.find(s => s.id === item.statusId);
+			return {
+				name: statusInfo?.displayName || 'Unknown',
+				value: item._count.id,
+				color: statusInfo?.hexColor || '#ccc',
+				systemType: statusInfo?.systemType
+			};
+		});
+
+		// --- 4. Calculate Trends ---
+		const currentEarnings = periodRevenue._sum.staffCost || 0;
+		const previousEarnings = prevPeriodRevenue._sum.staffCost || 0;
+		let earningsTrend = 0;
+
+		if (previousEarnings > 0) {
+			earningsTrend = ((currentEarnings - previousEarnings) / previousEarnings) * 100;
+		} else if (currentEarnings > 0) {
+			earningsTrend = 100; // 100% growth if prev was 0
+		}
+
+		// --- 5. Return Final DTO ---
+		return {
+			summary: {
+				totalEarnings: currentEarnings,
+				earningsTrend: Number(earningsTrend.toFixed(1)),
+				jobsCompleted: completedJobsCount,
+				hoursLogged: Math.round((periodHours._sum.durationSeconds || 0) / 3600), // Convert seconds to hours
+				activeJobs: activeJobsCount,
+			},
+			charts: {
+				financial: chartData,
+				jobStatus: pieChartData,
+			}
+		};
+	}
+
+	private buildPermission(
+		userRole: RoleEnum,
+		userId: string
+	): Prisma.JobWhereInput {
+		if (userRole === RoleEnum.ADMIN) return {}
+		return {
+			assignee: { some: { id: userId } },
+		}
 	}
 }

@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 import { IUserResponse } from "../../../shared/interfaces";
 import { TDepartment, TUser } from "../../../shared/types";
 import { IMAGES } from "../../utils";
-import { authApi, userApi } from "../../api";
+import { authApi, IProfileOverview, userApi } from "../../api";
 
 export const mapUser: (item?: IUserResponse) => TUser = (item) => ({
 	id: item?.id ?? "",
@@ -69,6 +69,30 @@ export const profileOptions = () => {
 		select: (res) => {
 			const userData = res?.data.result
 			return mapUser(userData)
+		},
+	})
+}
+export const profileOverviewOptions = () => {
+	return queryOptions({
+		queryKey: ['profile', 'overview'],
+		queryFn: () => userApi.overview(),
+		select: (res) => {
+			console.log(res.result);
+
+			const data: IProfileOverview = {
+				summary: {
+					activeJobs: res.result?.summary.activeJobs ?? 0,
+					earningsTrend: res.result?.summary.earningsTrend ?? 0,
+					hoursLogged: res.result?.summary.hoursLogged ?? 0,
+					jobsCompleted: res.result?.summary.jobsCompleted ?? 0,
+					totalEarnings: res.result?.summary.totalEarnings ?? 0,
+				},
+				charts: {
+					financial: res.result?.charts.financial ?? "",
+					jobStatus: res.result?.charts.jobStatus ?? "",
+				}
+			}
+			return data
 		},
 	})
 }

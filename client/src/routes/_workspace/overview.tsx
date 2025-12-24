@@ -34,7 +34,15 @@ import {
     BarChart,
     Bar,
 } from 'recharts'
-import { getPageTitle } from '../../lib'
+import {
+    currencyFormatter,
+    dateFormatter,
+    getPageTitle,
+    optimizeCloudinary,
+    useProfile,
+} from '../../lib'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { profileOverviewOptions } from '../../lib/queries'
 
 export const Route = createFileRoute('/_workspace/overview')({
     head: () => ({
@@ -84,7 +92,16 @@ const WORKLOAD_DATA = [
 ]
 
 function OverviewPage() {
+    const { profile } = useProfile()
     const [selectedRange, setSelectedRange] = useState('30d')
+
+    const {
+        data: {
+            summary: { activeJobs, hoursLogged, jobsCompleted, totalEarnings },
+        },
+    } = useSuspenseQuery({
+        ...profileOverviewOptions(),
+    })
 
     // --- Components ---
 
@@ -133,23 +150,31 @@ function OverviewPage() {
     )
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto min-h-screen bg-slate-50 space-y-8">
+        <div className="p-8 space-y-8">
             {/* --- Header & Profile Context --- */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div className="flex items-center gap-4">
                     <Avatar
-                        src="https://i.pravatar.cc/150?u=sarah"
-                        className="w-20 h-20 text-large border-4 border-white shadow-md"
+                        src={optimizeCloudinary(profile.avatar, {
+                            width: 256,
+                            height: 256,
+                        })}
+                        className="w-20 h-20 text-large border-4 border-border-default shadow-md"
                     />
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900">
-                            Sarah Wilson
+                            {profile.displayName}
                         </h1>
                         <div className="flex items-center gap-2 text-slate-500 mt-1">
                             <Briefcase size={16} />
-                            <span>Senior Designer</span>
+                            <span>{profile.department?.displayName}</span>
                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                            <span className="text-sm">Joined Jan 2023</span>
+                            <span className="text-sm">
+                                Joined{' '}
+                                {dateFormatter(profile.createdAt, {
+                                    format: 'longDate',
+                                })}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -184,7 +209,7 @@ function OverviewPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KPICard
                     title="Total Earnings"
-                    value="$4,250.00"
+                    value={currencyFormatter(totalEarnings, 'Vietnamese')}
                     subtext="vs last period"
                     trend="up"
                     icon={DollarSign}
@@ -192,7 +217,7 @@ function OverviewPage() {
                 />
                 <KPICard
                     title="Jobs Completed"
-                    value="34"
+                    value={jobsCompleted}
                     subtext="Tasks finished"
                     trend="up"
                     icon={CheckCircle2}
@@ -200,7 +225,7 @@ function OverviewPage() {
                 />
                 <KPICard
                     title="Hours Logged"
-                    value="142h"
+                    value={hoursLogged}
                     subtext="Billable time"
                     trend="down"
                     icon={Clock}
@@ -208,7 +233,7 @@ function OverviewPage() {
                 />
                 <KPICard
                     title="Active Jobs"
-                    value="5"
+                    value={activeJobs}
                     subtext="Currently assigned"
                     trend="up"
                     icon={Briefcase}

@@ -87,11 +87,11 @@ export default function ProfilePage() {
                                         </div>
                                     </HeroCardHeader>
                                     <HeroCardBody>
-                                        <ScrollArea className="size-full max-h-[calc(100vh-300px)] bg-background-muted">
+                                        <ScrollArea className="size-full h-[calc(100vh-300px)] bg-background-muted">
                                             <ScrollBar orientation="horizontal" />
                                             <ScrollBar orientation="vertical" />
                                             {activeJobs?.length ? (
-                                                <ul className="space-y-4 pb-10">
+                                                <ul className="space-y-4">
                                                     {activeJobs.map((aJob) => {
                                                         return (
                                                             <JobCard
@@ -131,25 +131,24 @@ export default function ProfilePage() {
                                 key="waitingResponse"
                                 title="Awaiting response"
                             >
-                                <ScrollArea className="size-full max-h-[calc(100vh-300px)] bg-background-muted">
-                                    <ScrollBar orientation="horizontal" />
-                                    <ScrollBar orientation="vertical" />
+                                <HeroCard className="border-none">
+                                    <HeroCardHeader className="px-3 text-text-default">
+                                        <div>
+                                            <p className="text-base font-semibold">
+                                                Awaiting response{' '}
+                                                <span className="text-base font-medium text-text-subdued">
+                                                    - ({deliveredJobs?.length})
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </HeroCardHeader>
+                                    <HeroCardBody>
+                                        <ScrollArea className="size-full h-[calc(100vh-300px)] bg-background-muted">
+                                            <ScrollBar orientation="horizontal" />
+                                            <ScrollBar orientation="vertical" />
 
-                                    <HeroCard className="border-none">
-                                        <HeroCardHeader className="px-3 text-text-default">
-                                            <div>
-                                                <p className="text-base font-semibold">
-                                                    Awaiting response
-                                                    <span className="text-base font-medium text-text-subdued">
-                                                        ({deliveredJobs?.length}
-                                                        )
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        </HeroCardHeader>
-                                        <HeroCardBody>
                                             {deliveredJobs?.length ? (
-                                                <ul className="space-y-4 pb-10">
+                                                <ul className="space-y-4">
                                                     {deliveredJobs?.map(
                                                         (aJob) => {
                                                             return (
@@ -183,9 +182,9 @@ export default function ProfilePage() {
                                                     </p>
                                                 </div>
                                             )}
-                                        </HeroCardBody>
-                                    </HeroCard>
-                                </ScrollArea>
+                                        </ScrollArea>
+                                    </HeroCardBody>
+                                </HeroCard>
                             </Tab>
                         </Tabs>
                     </div>

@@ -100,7 +100,7 @@ function HelpCenterPage() {
     const [ticketSubject, setTicketSubject] = useState('')
 
     return (
-        <div className="pb-32">
+        <div className="size-full pb-32">
             {/* --- HERO SEARCH SECTION --- */}
             <div className="bg-slate-900 text-white pt-16 pb-24 px-8 text-center relative overflow-hidden">
                 {/* Decorative background blobs */}
@@ -134,7 +134,7 @@ function HelpCenterPage() {
                 </div>
             </div>
 
-            <div className="max-w-300 mx-auto px-8 -mt-12 relative z-10 space-y-12">
+            <div className="w-full max-w-300 mx-auto px-8 -mt-12 relative z-10 space-y-12">
                 {/* --- QUICK CATEGORIES --- */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {CATEGORIES.map((cat) => (

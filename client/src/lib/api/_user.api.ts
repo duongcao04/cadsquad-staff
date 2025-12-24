@@ -7,6 +7,19 @@ import type {
 } from '@/lib/validationSchemas'
 import type { IUserResponse } from '@/shared/interfaces'
 
+export interface IProfileOverview {
+    summary: {
+        totalEarnings: number,
+        earningsTrend: number,
+        jobsCompleted: number,
+        hoursLogged: number,
+        activeJobs: number,
+    },
+    charts: {
+        financial: string,
+        jobStatus: string,
+    }
+}
 export const userApi = {
     create: (data: TCreateUserInput) => {
         return axiosClient.post<ApiResponse<IUserResponse>>('/v1/users', data)
@@ -16,6 +29,9 @@ export const userApi = {
             users: IUserResponse[],
             total: number
         }>>('/v1/users').then(res => res.data)
+    },
+    overview: async () => {
+        return axiosClient.get<ApiResponse<IProfileOverview>>('/v1/analytics/profile-overview').then(res => res.data)
     },
     checkUsernameValid: (username: string) => {
         return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(
