@@ -155,7 +155,7 @@ const OrgCard = ({
     isActive?: boolean
 }) => (
     <Card
-        className={`w-[200px] shrink-0 border transition-all hover:scale-105 hover:shadow-lg ${
+        className={`w-50 shrink-0 border transition-all hover:scale-105 hover:shadow-lg ${
             isActive
                 ? 'border-primary border-2 shadow-md z-10'
                 : 'border-default-200'
@@ -210,11 +210,7 @@ export default function ProfileOrganization() {
     const hiddenCount = totalReports - visibleReports.length
 
     return (
-        <div className="w-full min-h-screen bg-content1/20 p-8 flex flex-col items-center">
-            <h2 className="text-2xl font-bold mb-8 text-default-700">
-                Organization Structure
-            </h2>
-
+        <div className="w-full py-3 flex flex-col items-center">
             {/* SCROLL CONTAINER */}
             <ScrollShadow orientation="horizontal" className="w-full pb-24">
                 <div className="flex flex-col items-center min-w-fit px-8">
