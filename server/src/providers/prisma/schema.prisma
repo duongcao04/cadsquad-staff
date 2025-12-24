@@ -64,6 +64,11 @@ model User {
   statusChanges       JobStatusHistory[]
   pinnedJobs          PinnedJob[]
 
+  // Organization
+  managerId String?
+  manager   User?   @relation("UserHierarchy", fields: [managerId], references: [id])
+  reports   User[]  @relation("UserHierarchy")
+
   // Quan hệ Auth
   sessions      Session[]
   accounts      Account[]

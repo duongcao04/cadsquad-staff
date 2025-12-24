@@ -7,7 +7,7 @@ import { optimizeCloudinary } from '@/lib/cloudinary'
 import { useProfile } from '@/lib/queries'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
-import { ProfileOrganization } from './ProfileOrganization'
+import ProfileOrganization from './ProfileOrganization'
 import { ProfileOverview } from './ProfileOverview'
 
 export function ProfileCard() {

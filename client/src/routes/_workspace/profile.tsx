@@ -1,8 +1,17 @@
-import { useJobsByStatusCode } from '@/lib/queries'
+import { jobsListOptions } from '@/lib/queries'
 import { getPageTitle, INTERNAL_URLS, JOB_STATUS_CODES } from '@/lib/utils'
-import { PageHeading } from '@/shared/components'
+import {
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
+    PageHeading,
+    ScrollArea,
+    ScrollBar,
+} from '@/shared/components'
 import JobCard from '@/shared/components/profile/JobCard'
 import { ProfileCard } from '@/shared/components/profile/ProfileCard'
+import { Tab, Tabs } from '@heroui/react'
+import { useSuspenseQueries } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_workspace/profile')({
@@ -17,16 +26,32 @@ export const Route = createFileRoute('/_workspace/profile')({
 })
 
 export default function ProfilePage() {
-    const { jobs: inprogressJobs } = useJobsByStatusCode(
-        JOB_STATUS_CODES.inProgress
-    )
-    const { jobs: revisionJobs } = useJobsByStatusCode(
-        JOB_STATUS_CODES.revision
-    )
-    const { jobs: deliveredJobs } = useJobsByStatusCode(
-        JOB_STATUS_CODES.delivered
-    )
-    const activeJobs = [...(inprogressJobs ?? []), ...(revisionJobs ?? [])]
+    const [
+        {
+            data: { jobs: activeJobs },
+        },
+        {
+            data: { jobs: deliveredJobs },
+        },
+    ] = useSuspenseQueries({
+        queries: [
+            {
+                ...jobsListOptions({
+                    status: [
+                        JOB_STATUS_CODES.inProgress,
+                        JOB_STATUS_CODES.revision,
+                    ],
+                    isAll: '1',
+                }),
+            },
+            {
+                ...jobsListOptions({
+                    status: [JOB_STATUS_CODES.delivered],
+                    isAll: '1',
+                }),
+            },
+        ],
+    })
 
     return (
         <>
@@ -47,95 +72,122 @@ export default function ProfilePage() {
                     </div>
 
                     {/* JOB OVERVIEW */}
-                    <div
-                        className="col-span-3 w-full h-full overflow-y-auto rounded-lg bg-background"
-                        style={{
-                            boxShadow:
-                                'rgba(0, 0, 0, 0.014) 0px 6px 24px 0px, rgba(0, 0, 0, 0.014) 0px 0px 0px 1px',
-                        }}
-                    >
-                        <div className="relative">
-                            <div className="sticky top-0 z-10 bg-background my-5 px-6 pb-4 pt-3 border-b border-text-muted shadow-xs">
-                                <div className="px-4 py-2.5 border rounded-lg border-text-muted shadow-xs">
-                                    <p className="text-lg font-medium">
-                                        Active jobs -{' '}
-                                        <span className="text-text-muted font-semibold tracking-wider">
-                                            {activeJobs?.length}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                            {activeJobs?.length ? (
-                                <ul className="space-y-4 px-6 pb-10">
-                                    {activeJobs.map((aJob) => {
-                                        return (
-                                            <JobCard
-                                                key={aJob.id}
-                                                data={aJob}
-                                                // isLoading={
-                                                //     inprogressLoading ||
-                                                //     revisionLoading
-                                                // }
-                                            />
-                                        )
-                                    })}
-                                </ul>
-                            ) : (
-                                <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
-                                    <p className="text-base font-semibold">
-                                        No active job found.
-                                    </p>
-                                    <p className="tracking-wide text-sm">
-                                        View all job
-                                        <Link
-                                            to={INTERNAL_URLS.projectCenter}
-                                            className="link underline!"
-                                        >
-                                            here
-                                        </Link>
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                        <div className="sticky top-0 pt-8 pb-4 z-10 px-5 bg-background">
-                            <div className="flex items-center justify-start gap-4 pl-2">
-                                <p className="font-medium text-text-default text-nowrap">
-                                    Awaiting response
-                                    <span className="pl-2 font-semibold text-text-muted">
-                                        ({deliveredJobs?.length})
-                                    </span>
-                                </p>
-                                <div className="bg-text-muted h-px w-full" />
-                            </div>
-                        </div>
-                        {deliveredJobs?.length ? (
-                            <ul className="mt-5 space-y-4 px-6 pb-10">
-                                {deliveredJobs?.map((aJob) => {
-                                    return (
-                                        <JobCard
-                                            key={aJob.id}
-                                            data={aJob}
-                                            // isLoading={deliveredLoading}
-                                        />
-                                    )
-                                })}
-                            </ul>
-                        ) : (
-                            <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
-                                <p className="text-base font-semibold">
-                                    No awaiting response found.
-                                </p>
-                                <p className="tracking-wide text-sm">
-                                    View all jobs
-                                    <Link
-                                        to={INTERNAL_URLS.projectCenter}
-                                        className="link underline!"
-                                    >
-                                        here
-                                    </Link>
-                                </p>
-                            </div>
-                        )}
+                    <div className="col-span-3">
+                        <Tabs aria-label="Profile tracking jobs">
+                            <Tab key="active" title="Active jobs">
+                                <HeroCard className="border-none">
+                                    <HeroCardHeader className="px-3 text-text-default">
+                                        <div>
+                                            <p className="text-base font-semibold">
+                                                Active jobs -{' '}
+                                                <span className="text-base font-medium text-text-subdued">
+                                                    ({activeJobs?.length})
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </HeroCardHeader>
+                                    <HeroCardBody>
+                                        <ScrollArea className="size-full max-h-[calc(100vh-300px)] bg-background-muted">
+                                            <ScrollBar orientation="horizontal" />
+                                            <ScrollBar orientation="vertical" />
+                                            {activeJobs?.length ? (
+                                                <ul className="space-y-4 pb-10">
+                                                    {activeJobs.map((aJob) => {
+                                                        return (
+                                                            <JobCard
+                                                                key={aJob.id}
+                                                                data={aJob}
+                                                                // isLoading={
+                                                                //     inprogressLoading ||
+                                                                //     revisionLoading
+                                                                // }
+                                                            />
+                                                        )
+                                                    })}
+                                                </ul>
+                                            ) : (
+                                                <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
+                                                    <p className="text-base font-semibold">
+                                                        No active job found.
+                                                    </p>
+                                                    <p className="tracking-wide text-sm">
+                                                        View all job
+                                                        <Link
+                                                            to={
+                                                                INTERNAL_URLS.projectCenter
+                                                            }
+                                                            className="link underline!"
+                                                        >
+                                                            here
+                                                        </Link>
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </ScrollArea>
+                                    </HeroCardBody>
+                                </HeroCard>
+                            </Tab>
+                            <Tab
+                                key="waitingResponse"
+                                title="Awaiting response"
+                            >
+                                <ScrollArea className="size-full max-h-[calc(100vh-300px)] bg-background-muted">
+                                    <ScrollBar orientation="horizontal" />
+                                    <ScrollBar orientation="vertical" />
+
+                                    <HeroCard className="border-none">
+                                        <HeroCardHeader className="px-3 text-text-default">
+                                            <div>
+                                                <p className="text-base font-semibold">
+                                                    Awaiting response
+                                                    <span className="text-base font-medium text-text-subdued">
+                                                        ({deliveredJobs?.length}
+                                                        )
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        </HeroCardHeader>
+                                        <HeroCardBody>
+                                            {deliveredJobs?.length ? (
+                                                <ul className="space-y-4 pb-10">
+                                                    {deliveredJobs?.map(
+                                                        (aJob) => {
+                                                            return (
+                                                                <JobCard
+                                                                    key={
+                                                                        aJob.id
+                                                                    }
+                                                                    data={aJob}
+                                                                    // isLoading={deliveredLoading}
+                                                                />
+                                                            )
+                                                        }
+                                                    )}
+                                                </ul>
+                                            ) : (
+                                                <div className="py-12 flex flex-col items-center justify-center gap-2 text-text-muted">
+                                                    <p className="text-base font-semibold">
+                                                        No awaiting response
+                                                        found.
+                                                    </p>
+                                                    <p className="tracking-wide text-sm">
+                                                        View all jobs
+                                                        <Link
+                                                            to={
+                                                                INTERNAL_URLS.projectCenter
+                                                            }
+                                                            className="link underline!"
+                                                        >
+                                                            here
+                                                        </Link>
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </HeroCardBody>
+                                    </HeroCard>
+                                </ScrollArea>
+                            </Tab>
+                        </Tabs>
                     </div>
                 </div>
             </div>
