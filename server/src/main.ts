@@ -7,7 +7,9 @@ import { HttpExceptionFilter } from './common/exceptions/http-exception-filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule,{
+    bodyParser: false, // Required for Better Auth
+  });
 
   app.setGlobalPrefix('api/v1');
 
