@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
     Card,
     CardBody,
@@ -7,7 +7,6 @@ import {
     Chip,
     Progress,
     Avatar,
-    AvatarGroup,
     Tabs,
     Tab,
     Textarea,
@@ -17,17 +16,10 @@ import {
     DropdownMenu,
     DropdownItem,
     Snippet,
-    Tooltip,
 } from '@heroui/react'
 import {
-    Play,
-    Pause,
-    CheckCircle2,
     UploadCloud,
-    MessageSquare,
-    Clock,
     FileText,
-    AlertTriangle,
     MoreVertical,
     Flag,
     Share2,
@@ -72,7 +64,7 @@ function UserJobDetailPage() {
     // This is the "List of Buttons" specific for the user's workflow
 
     return (
-        <div className="p-6 max-w-[1200px] mx-auto min-h-screen bg-slate-50 font-sans space-y-6">
+        <div className="p-6 max-w-300 mx-auto min-h-screen bg-slate-50 font-sans space-y-6">
             {/* --- Breadcrumbs & Header --- */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -149,7 +141,7 @@ function UserJobDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* --- LEFT: MAIN CONTENT --- */}
                 <div className="lg:col-span-2 space-y-6">
-                    <Card className="w-full shadow-sm border border-slate-200 min-h-[500px]">
+                    <Card className="w-full shadow-sm border border-slate-200 min-h-125">
                         <CardHeader className="p-0 border-b border-border-default">
                             <Tabs
                                 aria-label="Job Tabs"

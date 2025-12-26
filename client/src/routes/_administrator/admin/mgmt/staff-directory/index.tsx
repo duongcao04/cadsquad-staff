@@ -169,9 +169,7 @@ const DEPARTMENTS = [
 function StaffDirectoryPage() {
     const options = usersListOptions()
     const {
-        data: { users, total },
-        refetch,
-        isPending,
+        data: { users },
     } = useSuspenseQuery(options)
 
     const {

@@ -1,6 +1,6 @@
 'use client'
 
-import { extendVariants,NumberInput } from '@heroui/react'
+import { extendVariants, NumberInput } from '@heroui/react'
 
 export const HeroNumberInput = extendVariants(NumberInput, {
     variants: {
@@ -9,18 +9,18 @@ export const HeroNumberInput = extendVariants(NumberInput, {
                 inputWrapper: [
                     'shadow-none',
                     'border',
-                    'border-text-muted', // Matches your custom Tailwind color
+                    'border-border-default', // Matches your custom Tailwind color
                     '!bg-background',
                     'transition',
                     'duration-100',
                     'focus-within:border-primary',
                     'data-[hover=true]:border-primary',
                 ],
-                label: ['text-text-7!', 'font-medium'],
+                label: ['text-text-default', 'font-medium'],
                 input: [
                     'text-base',
                     'text-foreground',
-                    'placeholder:text-default-300',
+                    'placeholder:text-default-subdued',
                 ],
             },
         },

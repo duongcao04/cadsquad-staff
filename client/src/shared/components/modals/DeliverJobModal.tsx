@@ -30,11 +30,13 @@ import lodash from 'lodash'
 
 interface DeliverJobModalProps {
     isOpen: boolean
+    defaultJob?: string
     onClose: () => void
     onConfirm?: (data: TDeliverJobInput) => void
 }
 
 export const DeliverJobModal = ({
+    defaultJob,
     isOpen,
     onClose,
     onConfirm,
@@ -44,14 +46,15 @@ export const DeliverJobModal = ({
     // 1. Setup Formik
     const formik = useFormik<TDeliverJobInput>({
         initialValues: {
-            jobId: '',
+            jobId: defaultJob ?? '',
             note: '',
             link: '',
             files: [],
         },
         validationSchema: DeliverJobInputSchema,
+        enableReinitialize: true,
         onSubmit: (values) => {
-            console.log(values);
+            console.log(values)
             // Override submit action
             if (onConfirm) {
                 onConfirm(values)
@@ -63,8 +66,12 @@ export const DeliverJobModal = ({
                         jobId: values.jobId,
                         data: {
                             files: values.files,
-                            link: lodash.isEmpty(values.link) ? undefined : values.link,
-                            note: lodash.isEmpty(values.note) ? undefined : values.note,
+                            link: lodash.isEmpty(values.link)
+                                ? undefined
+                                : values.link,
+                            note: lodash.isEmpty(values.note)
+                                ? undefined
+                                : values.note,
                         },
                     },
                     {
@@ -145,6 +152,12 @@ export const DeliverJobModal = ({
                                                 ? [formik.values.jobId]
                                                 : []
                                         }
+                                        defaultSelectedKeys={
+                                            formik.values.jobId
+                                                ? [formik.values.jobId]
+                                                : []
+                                        }
+                                        isDisabled={!lodash.isEmpty(defaultJob)}
                                         onChange={(e) => {
                                             formik.handleChange(e) // Standard change
                                         }}

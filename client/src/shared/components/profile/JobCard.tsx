@@ -1,5 +1,5 @@
 import { Skeleton } from '@heroui/react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { Image } from 'antd'
 import dayjs from 'dayjs'
 import { Clock2 } from 'lucide-react'
@@ -19,7 +19,7 @@ type Props = {
     onPress?: () => void
 }
 function JobCard({ data, onPress }: Props) {
-    const navigate = useNavigate()
+    const router = useRouter()
     const { isMobile, isTablet } = useDevice()
 
     const targetDate = dayjs(data.dueAt)
@@ -28,13 +28,13 @@ function JobCard({ data, onPress }: Props) {
 
     return (
         <div
-            className="min-w-full w-fit grid grid-cols-[250px_1fr_1fr_1fr] md:grid-cols-[300px_1fr_1fr_1fr] lg:grid-cols-[300px_1fr_1fr_1fr_1fr_40px] gap-3 items-center border-1 rounded-lg px-6 pt-3 pb-5 border-text-muted bg-background hover:bg-background-muted"
+            className="min-w-full w-fit grid grid-cols-[250px_1fr_1fr_1fr] md:grid-cols-[300px_1fr_1fr_1fr] lg:grid-cols-[300px_1fr_1fr_1fr_1fr_40px] gap-3 items-center border-1 rounded-lg px-6 pt-3 pb-5 border-border-default bg-background hover:bg-background-muted"
             style={{
                 cursor: clickable ? 'pointer' : 'default',
             }}
             onClick={() => {
                 if (clickable) {
-                    navigate({
+                    router.navigate({
                         href: INTERNAL_URLS.getJobDetailUrl(data.no),
                     })
                     onPress?.()
@@ -58,9 +58,8 @@ function JobCard({ data, onPress }: Props) {
                     </div>
                     <Link
                         to={INTERNAL_URLS.getJobDetailUrl(data.no)}
-                        className="mt-0.5 block font-semibold line-clamp-1!"
+                        className="mt-0.5 block font-semibold line-clamp-1! hover:underline"
                         title="View detail"
-                        target="_blank"
                     >
                         {data.displayName}
                     </Link>

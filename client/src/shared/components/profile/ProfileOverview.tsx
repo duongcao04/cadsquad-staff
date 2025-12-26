@@ -5,9 +5,7 @@ import {
     MessageCircleMore,
     Phone,
 } from 'lucide-react'
-
 import type { TUser } from '@/shared/types'
-
 import HeroCopyButton from '../ui/hero-copy-button'
 
 type ProfileOverviewProps = {
@@ -17,7 +15,7 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
     return (
         <div className="mt-4">
             <div className="space-y-4">
-                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                <div className="flex items-center justify-start gap-4 hover:bg-background-hovered px-3 py-2 rounded-md">
                     <Mail
                         size={28}
                         strokeWidth={2}
@@ -28,7 +26,7 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
                             <p className="text-xs text-text-subdued">Email</p>
                             <a
                                 href={`mailto:${data?.email}`}
-                                className="text-sm font-semibold text-text-7! hover:underline"
+                                className="text-sm font-semibold text-text-subdued hover:underline"
                                 target="_blank"
                             >
                                 {data.email}
@@ -38,7 +36,7 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                <div className="flex items-center justify-start gap-4 hover:bg-background-hovered px-3 py-2 rounded-md">
                     <MessageCircleMore
                         size={28}
                         strokeWidth={2}
@@ -49,7 +47,7 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
                             <p className="text-xs text-text-subdued">Chat</p>
                             <a
                                 href={`mailto:${data?.email}`}
-                                className="text-sm font-semibold text-text-7! hover:underline"
+                                className="text-sm font-semibold text-text-subdued hover:underline"
                                 target="_blank"
                             >
                                 {data.email}
@@ -59,7 +57,7 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                <div className="flex items-center justify-start gap-4 hover:bg-background-hovered px-3 py-2 rounded-md">
                     <Building2
                         size={28}
                         strokeWidth={2}
@@ -67,13 +65,13 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
                     />
                     <div>
                         <p className="text-xs text-text-subdued">Department</p>
-                        <p className="mt-1 text-sm font-semibold text-text-7! hover:underline">
+                        <p className="mt-1 text-sm font-semibold text-text-subdued hover:underline">
                             {data.department?.displayName}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                <div className="flex items-center justify-start gap-4 hover:bg-background-hovered px-3 py-2 rounded-md">
                     <CircleUserRound
                         size={28}
                         strokeWidth={2}
@@ -81,13 +79,13 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
                     />
                     <div>
                         <p className="text-xs text-text-subdued">Job title</p>
-                        <p className="mt-1 text-sm font-semibold text-text-7! hover:underline">
+                        <p className="mt-1 text-sm font-semibold text-text-subdued hover:underline">
                             {data.jobTitle?.displayName ?? '-'}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center justify-start gap-4 hover:bg-text-3 px-3 py-2 rounded-md">
+                <div className="flex items-center justify-start gap-4 hover:bg-background-hovered px-3 py-2 rounded-md">
                     <Phone
                         size={28}
                         strokeWidth={2}
@@ -100,7 +98,7 @@ export function ProfileOverview({ data }: ProfileOverviewProps) {
                             </p>
                             <a
                                 href={`tel:${data?.phoneNumber}`}
-                                className="text-sm font-semibold text-text-7! hover:underline"
+                                className="text-sm font-semibold text-text-subdued hover:underline"
                                 target="_blank"
                             >
                                 {data.phoneNumber}

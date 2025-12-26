@@ -2,7 +2,6 @@ import { Divider } from '@heroui/react'
 import dayjs, { Dayjs } from 'dayjs'
 import { useFormik } from 'formik'
 import { useState } from 'react'
-
 import {
     useCreateJobMutation,
     useJobTypes,
@@ -10,7 +9,6 @@ import {
     useUsers,
 } from '@/lib/queries'
 import { CreateJobSchema, type TCreateJobInput } from '@/lib/validationSchemas'
-
 import AssignMemberField from '../form-fields/AssignMemberField'
 import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { JobNoField } from '../form-fields/JobNoField'
@@ -30,7 +28,7 @@ type CreateJobFormProps = {
 }
 export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
     /**
-     * Get initial data
+     * Fetch data
      */
     const { data: users } = useUsers()
     const { data: jobTypes } = useJobTypes()

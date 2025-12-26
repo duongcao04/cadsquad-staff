@@ -175,7 +175,7 @@ export const HeroDateRangePicker = ({
             }
             classNames={{
                 label: cn(
-                    'font-medium! text-sm! text-text-7!',
+                    'font-medium! text-sm! text-text-default',
                     props.classNames?.label
                 ),
                 ...props.classNames,

@@ -1,7 +1,5 @@
 import { Button, Divider } from '@heroui/react'
-
-
-import { type TJobFiltersInput } from '@/lib/validationSchemas'
+import { type TJobFilters } from '@/lib/validationSchemas'
 import type { JobColumn } from '@/shared/types'
 
 import {
@@ -22,8 +20,8 @@ export type THeaderColumns = {
 type FilterDrawerProps = {
     isOpen: boolean
     onClose: () => void
-    filters: TJobFiltersInput
-    onFiltersChange: (filters: TJobFiltersInput) => void
+    filters: TJobFilters
+    onFiltersChange: (filters: TJobFilters) => void
 }
 export function FilterDrawer({
     isOpen,

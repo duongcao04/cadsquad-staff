@@ -8,10 +8,8 @@ import {
     SwatchBook,
     UsersRound,
 } from 'lucide-react'
-
 import { envConfig } from '@/lib/config'
 import type { JobColumn, JobColumnKey } from '@/shared/types'
-
 import { RoleEnum } from '../../shared/enums'
 
 export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const

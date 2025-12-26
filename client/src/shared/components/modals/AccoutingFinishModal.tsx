@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
     Modal,
     ModalContent,
@@ -8,9 +8,8 @@ import {
     Button,
     Checkbox,
     Input,
-    Chip,
 } from '@heroui/react'
-import { DollarSign, Check, AlertTriangle } from 'lucide-react'
+import { DollarSign, Check } from 'lucide-react'
 
 interface AccountingFinishModalProps {
     isOpen: boolean

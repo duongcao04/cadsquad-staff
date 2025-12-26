@@ -21,7 +21,6 @@ import {
 } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { House } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 

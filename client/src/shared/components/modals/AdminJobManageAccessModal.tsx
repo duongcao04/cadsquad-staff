@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import { TUser } from '../../types'
 import { useAssignMemberMutation, useRemoveMemberMutation } from '../../../lib'
+import { RoleEnum } from '../../enums'
 
 // --- Mock Data (Replace with API) ---
 const ALL_USERS = [
@@ -119,7 +120,10 @@ export const AdminJobManageAccessModal = ({
         // 2. API Call
         assignMutation.mutate({
             jobId,
-            assignMemberInput: { memberId: user.id },
+            assignMemberInput: {
+                prevMemberIds: user.id,
+                updateMemberIds: user.id,
+            },
         })
     }
 
@@ -204,7 +208,9 @@ export const AdminJobManageAccessModal = ({
                                                     key={user.id}
                                                     className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-50 last:border-0"
                                                     onClick={() =>
-                                                        handleInvite(user)
+                                                        handleInvite(
+                                                            user as unknown as TUser
+                                                        )
                                                     }
                                                 >
                                                     <User
@@ -240,7 +246,7 @@ export const AdminJobManageAccessModal = ({
                                     People with access ({members.length})
                                 </h3>
 
-                                <ScrollShadow className="max-h-[300px] pr-2">
+                                <ScrollShadow className="max-h-75 pr-2">
                                     <div className="space-y-4">
                                         {members.map((member) => (
                                             <div
@@ -253,9 +259,9 @@ export const AdminJobManageAccessModal = ({
                                                     />
                                                     <div>
                                                         <p className="font-semibold text-slate-700 text-sm flex items-center gap-2">
-                                                            {member.name}
+                                                            {member.displayName}
                                                             {member.role ===
-                                                                'Lead Dev' && (
+                                                                RoleEnum.ADMIN && (
                                                                 <Chip
                                                                     size="sm"
                                                                     color="warning"

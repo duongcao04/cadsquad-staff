@@ -211,6 +211,13 @@ export default function AdminManagementJobsTable({
                                 isIconOnly
                                 variant="light"
                                 color="default"
+                                onPress={() => {
+                                    router.navigate({
+                                        href:
+                                            INTERNAL_URLS.editJob(data.no) +
+                                            '?tab=deliveries',
+                                    })
+                                }}
                             >
                                 <TruckElectricIcon size={16} />
                             </HeroButton>

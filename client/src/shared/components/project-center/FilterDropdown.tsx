@@ -18,6 +18,7 @@ import {
     ScrollShadow,
     Select,
     SelectItem,
+    SelectProps,
 } from '@heroui/react'
 // HeroUI requires these types for the DatePicker state
 import { getLocalTimeZone, parseAbsoluteToLocal } from '@internationalized/date'
@@ -250,7 +251,9 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                 if (val !== undefined && val !== null) {
                     let finalValue = val
                     if (config.type === 'select') {
-                        finalValue = new Set(Array.isArray(val) ? val : [val])
+                        finalValue = new Set(
+                            Array.isArray(val) ? val : [val]
+                        ) as unknown as string
                     }
                     newActiveFilters.push({
                         id: crypto.randomUUID(),
@@ -645,7 +648,9 @@ const FilterRow: React.FC<FilterRowProps> = ({
                             onFieldChange(Array.from(keys)[0] as string)
                         }
                         disallowEmptySelection
-                        disabledKeys={disabledKeys}
+                        disabledKeys={
+                            disabledKeys as SelectProps['disabledKeys']
+                        }
                         renderValue={(items) =>
                             items.map((item) => item.textValue)
                         }
@@ -741,8 +746,8 @@ const FilterInput = ({
     }
 
     if (config.type === 'date_range') {
-        console.log(new Date(value?.start));
-        
+        console.log(new Date(value?.start))
+
         return (
             <HeroDateRangePicker
                 size="sm"

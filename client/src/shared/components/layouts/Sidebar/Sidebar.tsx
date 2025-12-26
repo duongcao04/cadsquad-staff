@@ -1,10 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import React, {
-    type Dispatch,
-    type SetStateAction,
-    type SVGProps,
-    useState,
-} from 'react'
+import React, { type SVGProps, useState } from 'react'
 import { type Variants } from 'motion/react'
 import { useStore } from '@tanstack/react-store'
 

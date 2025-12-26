@@ -1,25 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute(
-    '/_administrator/financial/invoice-templates'
-)({
-    component: InvoiceTemplatePage,
-})
-
-import React, { useState, useEffect } from 'react'
-import {
-    Card,
-    CardBody,
-    Button,
-    Tabs,
-    Tab,
-    Input,
-    Select,
-    SelectItem,
-    Chip,
-    ScrollShadow,
-    Tooltip,
-} from '@heroui/react'
+import { useState, useEffect } from 'react'
+import { Card, CardBody, Button, Chip, Tooltip } from '@heroui/react'
 import {
     Save,
     Printer,
@@ -28,9 +9,14 @@ import {
     Eye,
     Copy,
     Check,
-    FileCode,
     Braces,
 } from 'lucide-react'
+
+export const Route = createFileRoute(
+    '/_administrator/financial/invoice-templates'
+)({
+    component: InvoiceTemplatePage,
+})
 
 // --- Mock Data (To simulate DB data in preview) ---
 const MOCK_DATA = {
@@ -229,7 +215,7 @@ function InvoiceTemplatePage() {
     }
 
     return (
-        <div className="p-8 h-screen flex flex-col max-w-[1800px] mx-auto bg-slate-50">
+        <div className="p-8 h-screen flex flex-col max-w-450 mx-auto bg-slate-50">
             {/* --- Header --- */}
             <div className="flex justify-between items-center mb-6 shrink-0">
                 <div>

@@ -101,7 +101,7 @@ export default function CreateUserForm({
                         </p>
                     </HeroCardBody>
                     <HeroCardFooter className="flex items-center justify-center gap-5">
-                        <Link className="block" to={INTERNAL_URLS.manageUser}>
+                        <Link className="block" to={INTERNAL_URLS.teamManage}>
                             <HeroButton className="w-40" variant="bordered">
                                 Manage user
                             </HeroButton>
@@ -122,7 +122,7 @@ export default function CreateUserForm({
                 >
                     {/* 2. Form Content Area */}
 
-                    <ScrollArea className="size-full h-[440px] pl-7 pr-2">
+                    <ScrollArea className="size-full h-110 pl-7 pr-2">
                         <ScrollBar orientation="horizontal" />
                         <ScrollBar orientation="vertical" />
 

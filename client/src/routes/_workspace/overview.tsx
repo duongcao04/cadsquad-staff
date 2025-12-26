@@ -113,14 +113,14 @@ function OverviewPage() {
         icon: Icon,
         color,
     }: any) => (
-        <Card className="shadow-sm border border-slate-200">
+        <Card className="shadow-sm border border-border-default">
             <CardBody className="p-6">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <p className="text-xs font-bold text-text-default uppercase tracking-wider">
                             {title}
                         </p>
-                        <h3 className="text-2xl font-bold text-slate-800 mt-1">
+                        <h3 className="text-2xl font-bold text-text-subdued mt-1">
                             {value}
                         </h3>
                     </div>
@@ -162,13 +162,13 @@ function OverviewPage() {
                         className="w-20 h-20 text-large border-4 border-border-default shadow-md"
                     />
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900">
+                        <h1 className="text-3xl font-bold text-text-default">
                             {profile.displayName}
                         </h1>
-                        <div className="flex items-center gap-2 text-slate-500 mt-1">
+                        <div className="flex items-center gap-2 text-text-subdued mt-1">
                             <Briefcase size={16} />
                             <span>{profile.department?.displayName}</span>
-                            <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                            <span className="w-1 h-1 rounded-full bg-text-subdued"></span>
                             <span className="text-sm">
                                 Joined{' '}
                                 {dateFormatter(profile.createdAt, {
@@ -188,19 +188,15 @@ function OverviewPage() {
                         variant="solid"
                         classNames={{
                             tabList:
-                                'bg-white border border-slate-200 shadow-sm',
+                                'bg-background-hovered border border-border-default shadow-sm',
                         }}
                     >
                         {TIME_RANGES.map((range) => (
                             <Tab key={range.key} title={range.label} />
                         ))}
                     </Tabs>
-                    <Button
-                        isIconOnly
-                        variant="flat"
-                        className="bg-white border border-slate-200"
-                    >
-                        <Download size={18} className="text-slate-500" />
+                    <Button isIconOnly variant="flat">
+                        <Download size={18} className="text-text-subdued" />
                     </Button>
                 </div>
             </div>
@@ -244,13 +240,13 @@ function OverviewPage() {
             {/* --- Main Charts Section --- */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* 1. Financial Trend (Area Chart) */}
-                <Card className="lg:col-span-2 shadow-sm border border-slate-200">
-                    <CardHeader className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <Card className="lg:col-span-2 shadow-sm border border-border-default">
+                    <CardHeader className="px-6 py-4 border-b border-border-default flex justify-between items-center">
                         <div>
-                            <h3 className="font-bold text-slate-800 text-lg">
+                            <h3 className="font-bold text-text-default text-lg">
                                 Financial Performance
                             </h3>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-text-subdued">
                                 Staff Cost (Earnings) vs Project Revenue
                             </p>
                         </div>
@@ -266,7 +262,7 @@ function OverviewPage() {
                         </div>
                     </CardHeader>
                     <CardBody className="p-6">
-                        <div className="h-[350px] w-full">
+                        <div className="h-87.5 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart
                                     data={FINANCIAL_DATA}
@@ -368,17 +364,17 @@ function OverviewPage() {
                 </Card>
 
                 {/* 2. Job Status Distribution (Pie Chart) */}
-                <Card className="shadow-sm border border-slate-200">
-                    <CardHeader className="px-6 py-4 border-b border-slate-100">
-                        <h3 className="font-bold text-slate-800 text-lg">
+                <Card className="shadow-sm border border-border-default">
+                    <CardHeader className="px-6 py-4 border-b border-border-default flex-col items-start gap-1">
+                        <h3 className="font-bold text-text-default text-lg">
                             Job Status
                         </h3>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-text-subdued">
                             Distribution of assigned tasks
                         </p>
                     </CardHeader>
                     <CardBody className="p-6 flex flex-col items-center justify-center">
-                        <div className="h-[250px] w-full">
+                        <div className="h-62.5 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
@@ -416,11 +412,11 @@ function OverviewPage() {
                                                 backgroundColor: status.color,
                                             }}
                                         ></div>
-                                        <span className="text-xs text-slate-600 font-medium">
+                                        <span className="text-xs text-text-subdued font-medium">
                                             {status.name}
                                         </span>
                                     </div>
-                                    <span className="text-xs font-bold text-slate-800">
+                                    <span className="text-xs font-bold text-text-default">
                                         {status.value}%
                                     </span>
                                 </div>
@@ -433,17 +429,17 @@ function OverviewPage() {
             {/* --- Secondary Metrics Row --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 3. Daily Workload (Bar Chart) */}
-                <Card className="shadow-sm border border-slate-200">
+                <Card className="shadow-sm border border-border-default">
                     <CardBody className="p-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-slate-800">
+                            <h3 className="font-bold text-text-default">
                                 Daily Task Activity
                             </h3>
                             <Chip size="sm" variant="flat" color="default">
                                 Last 7 Days
                             </Chip>
                         </div>
-                        <div className="h-[200px] w-full">
+                        <div className="h-50 w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={WORKLOAD_DATA}>
                                     <CartesianGrid
@@ -474,16 +470,16 @@ function OverviewPage() {
                 </Card>
 
                 {/* 4. Efficiency Stats */}
-                <Card className="shadow-sm border border-slate-200">
+                <Card className="shadow-sm border border-border-default">
                     <CardBody className="p-6 space-y-6">
-                        <h3 className="font-bold text-slate-800 mb-2">
+                        <h3 className="font-bold text-text-default mb-2">
                             Efficiency Metrics
                         </h3>
 
                         <div className="space-y-4">
                             <div>
                                 <div className="flex justify-between mb-1">
-                                    <span className="text-sm font-medium text-slate-600">
+                                    <span className="text-sm font-medium text-text-subdued">
                                         On-Time Delivery
                                     </span>
                                     <span className="text-sm font-bold text-emerald-600">
@@ -499,7 +495,7 @@ function OverviewPage() {
 
                             <div>
                                 <div className="flex justify-between mb-1">
-                                    <span className="text-sm font-medium text-slate-600">
+                                    <span className="text-sm font-medium text-text-subdued">
                                         Profile Completion
                                     </span>
                                     <span className="text-sm font-bold text-blue-600">
@@ -515,7 +511,7 @@ function OverviewPage() {
 
                             <div>
                                 <div className="flex justify-between mb-1">
-                                    <span className="text-sm font-medium text-slate-600">
+                                    <span className="text-sm font-medium text-text-subdued">
                                         Client Satisfaction (Avg)
                                     </span>
                                     <span className="text-sm font-bold text-amber-500">

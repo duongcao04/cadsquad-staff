@@ -1,6 +1,6 @@
 'use client'
 
-import { extendVariants,Input } from '@heroui/react'
+import { extendVariants, Input } from '@heroui/react'
 
 export const HeroInput = extendVariants(Input, {
     variants: {
@@ -10,18 +10,18 @@ export const HeroInput = extendVariants(Input, {
                 inputWrapper: [
                     'shadow-none',
                     'border',
-                    'border-text-muted',
+                    'border-border-default',
                     '!bg-background',
                     'transition',
                     'duration-100',
                     'focus-within:border-primary',
                     'data-[hover=true]:border-primary',
                 ],
-                label: ['text-text-7!', 'font-medium'],
+                label: ['text-text-default', 'font-medium'],
                 input: [
                     'text-base',
                     'text-foreground',
-                    'placeholder:text-default-300',
+                    'placeholder:text-text-subdued',
                 ],
             },
         },

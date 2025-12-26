@@ -8,8 +8,14 @@ import {
     User,
     Chip,
 } from '@heroui/react'
-import { Play, AlertCircle, CheckCircle2, TrendingUp } from 'lucide-react'
-import { getPageTitle } from '../../lib'
+import {
+    Play,
+    AlertCircle,
+    CheckCircle2,
+    TrendingUp,
+    Briefcase,
+} from 'lucide-react'
+import { getPageTitle, optimizeCloudinary, useProfile } from '../../lib'
 
 export const Route = createFileRoute('/_workspace/task-summary')({
     head: () => ({
@@ -40,21 +46,33 @@ const TODAY_TASKS = [
 ]
 
 function TaskSummaryPage() {
+    const { profile } = useProfile()
+
     return (
-        <div className="p-6 max-w-[1400px] mx-auto min-h-screen bg-slate-50 space-y-6">
+        <div className="p-8 space-y-8">
             {/* 1. Welcome & Status Header */}
-            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-background-muted p-6 rounded-2xl border border-border-default shadow-sm">
                 <div className="flex items-center gap-4">
                     <User
-                        name="Welcome back, Sarah!"
-                        description="Senior Designer"
+                        name={`Welcome back, ${profile.displayName}!`}
+                        description={
+                            <div className="flex items-center gap-2 text-text-subdued mt-1.5">
+                                <Briefcase size={16} />
+                                <span className="text-sm">
+                                    {profile.department?.displayName}
+                                </span>
+                            </div>
+                        }
                         avatarProps={{
-                            src: 'https://i.pravatar.cc/150?u=sarah',
+                            src: optimizeCloudinary(profile.avatar, {
+                                width: 256,
+                                height: 256,
+                            }),
                             size: 'lg',
                         }}
                         classNames={{
-                            name: 'text-xl font-bold text-slate-800',
-                            description: 'text-slate-500',
+                            name: 'text-xl font-bold text-text-default',
+                            description: 'text-text-subdued',
                         }}
                     />
                 </div>
@@ -139,9 +157,9 @@ function TaskSummaryPage() {
                     </Card>
 
                     {/* Today's Checklist */}
-                    <Card className="border border-slate-200 shadow-sm">
+                    <Card className="border border-border-default shadow-sm">
                         <CardBody className="p-6">
-                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <h3 className="font-bold text-text-default mb-4 flex items-center gap-2">
                                 <CheckCircle2 className="text-emerald-500" />{' '}
                                 Today's Focus
                             </h3>
@@ -149,15 +167,15 @@ function TaskSummaryPage() {
                                 {TODAY_TASKS.map((task) => (
                                     <div
                                         key={task.id}
-                                        className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer group"
+                                        className="flex items-center justify-between p-3 bg-background-muted rounded-xl border border-border-default hover:border-blue-200 transition-colors cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Checkbox size="lg" radius="full" />
                                             <div>
-                                                <p className="font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">
+                                                <p className="font-semibold text-text-default group-hover:text-blue-600 transition-colors">
                                                     {task.title}
                                                 </p>
-                                                <p className="text-xs text-slate-400 flex items-center gap-1">
+                                                <p className="text-xs text-text-subdued flex items-center gap-1">
                                                     <span className="font-mono bg-white px-1 border border-slate-200 rounded">
                                                         {task.job}
                                                     </span>{' '}
@@ -200,14 +218,14 @@ function TaskSummaryPage() {
                                 <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                                     <TrendingUp size={20} />
                                 </div>
-                                <span className="font-bold text-slate-700 text-sm">
+                                <span className="font-bold text-text-default text-sm">
                                     This Month
                                 </span>
                             </div>
-                            <h3 className="text-3xl font-bold text-slate-900">
+                            <h3 className="text-3xl font-bold text-text-default">
                                 $1,250.00
                             </h3>
-                            <p className="text-xs text-slate-400 mt-1">
+                            <p className="text-xs text-text-subdued mt-1">
                                 Pending Payout: <strong>$450.00</strong>
                             </p>
                             <Button
@@ -222,13 +240,13 @@ function TaskSummaryPage() {
                     </Card>
 
                     {/* Notifications */}
-                    <Card className="border border-slate-200 shadow-sm">
+                    <Card className="border border-border-default shadow-sm">
                         <CardBody className="p-0">
-                            <div className="p-4 border-b border-slate-100 font-bold text-slate-700 text-sm">
+                            <div className="p-4 border-b border-border-default font-bold text-text-default text-sm">
                                 Recent Updates
                             </div>
-                            <div className="divide-y divide-slate-100">
-                                <div className="p-4 flex gap-3 hover:bg-slate-50 transition-colors">
+                            <div className="divide-y divide-border-default">
+                                <div className="p-4 flex gap-3 hover:bg-background-hovered transition-colors">
                                     <div className="mt-1">
                                         <AlertCircle
                                             size={16}
@@ -236,7 +254,7 @@ function TaskSummaryPage() {
                                         />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-slate-600">
+                                        <p className="text-xs text-text-default">
                                             <strong>Admin</strong> assigned you
                                             to{' '}
                                             <span className="text-blue-600">
@@ -244,12 +262,12 @@ function TaskSummaryPage() {
                                             </span>
                                             .
                                         </p>
-                                        <p className="text-[10px] text-slate-400 mt-1">
+                                        <p className="text-[10px] text-text-subdued mt-1">
                                             2 hours ago
                                         </p>
                                     </div>
                                 </div>
-                                <div className="p-4 flex gap-3 hover:bg-slate-50 transition-colors">
+                                <div className="p-4 flex gap-3 hover:bg-background-hovered transition-colors">
                                     <div className="mt-1">
                                         <CheckCircle2
                                             size={16}
@@ -257,11 +275,11 @@ function TaskSummaryPage() {
                                         />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-slate-600">
+                                        <p className="text-xs text-text-default">
                                             Job <strong>FV-2028</strong> was
                                             marked Paid.
                                         </p>
-                                        <p className="text-[10px] text-slate-400 mt-1">
+                                        <p className="text-[10px] text-text-subdued mt-1">
                                             Yesterday
                                         </p>
                                     </div>

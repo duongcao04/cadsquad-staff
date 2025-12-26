@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useState } from 'react'
+import { useState } from 'react'
 import {
     Card,
     CardBody,
@@ -280,7 +278,7 @@ export default function ProfileOrganization() {
                     {totalReports > INITIAL_LIMIT && (
                         <div className="mt-12 relative">
                             {/* Small connector line to the button itself */}
-                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-px h-12 bg-gradient-to-b from-default-300 to-transparent"></div>
+                            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-px h-12 bg-linear-to-b from-default-300 to-transparent"></div>
 
                             <Button
                                 size="sm"

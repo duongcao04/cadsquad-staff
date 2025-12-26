@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Modal,
     ModalContent,
@@ -11,7 +11,6 @@ import {
     Select,
     SelectItem,
     Switch,
-    Chip,
 } from '@heroui/react'
 import {
     AlertTriangle,
@@ -172,7 +171,6 @@ export const IssueReportModal = ({
                                 {ISSUE_TYPES.map((type) => (
                                     <SelectItem
                                         key={type.key}
-                                        value={type.key}
                                         textValue={type.label}
                                     >
                                         <div className="flex items-center gap-2">
