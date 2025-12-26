@@ -38,6 +38,7 @@ type AppState = {
     sidebarStatus: SidebarStatus // Generic/Main sidebar
     adminLeftStatus: SidebarStatus // Admin Left
     adminRightStatus: SidebarStatus // Admin Right
+    communitiesLeftStatus: SidebarStatus // Admin Right
 }
 
 // 3. Create Store
@@ -49,6 +50,10 @@ export const appStore = new Store<AppState>({
     ),
     adminRightStatus: getInitialStatus(
         STORAGE_KEYS.adminRightSidebar,
+        ESidebarStatus.EXPAND
+    ),
+    communitiesLeftStatus: getInitialStatus(
+        STORAGE_KEYS.communitiesLeftStatus,
         ESidebarStatus.EXPAND
     ),
 })

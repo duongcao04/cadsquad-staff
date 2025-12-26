@@ -135,6 +135,7 @@ export const STORAGE_KEYS = {
     sidebarStatus: 'csd-side',
     adminRightSidebar: 'csd_admin-right-sidebar',
     adminLeftSidebar: 'csd_admin-left-sidebar',
+    communitiesLeftStatus: 'csd_communities-left-sidebar',
     jobColumns: 'csd-job_columns',
 } as const
 

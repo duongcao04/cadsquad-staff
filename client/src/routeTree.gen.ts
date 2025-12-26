@@ -10,11 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as CommunitiesRouteImport } from './routes/communities'
 import { Route as WorkspaceRouteImport } from './routes/_workspace'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AdministratorRouteImport } from './routes/_administrator'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as CommunitiesIndexRouteImport } from './routes/communities/index'
 import { Route as SettingsPrivacyRouteImport } from './routes/settings/privacy'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
 import { Route as SettingsMyProfileRouteImport } from './routes/settings/my-profile'
@@ -63,6 +65,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunitiesRoute = CommunitiesRouteImport.update({
+  id: '/communities',
+  path: '/communities',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WorkspaceRoute = WorkspaceRouteImport.update({
   id: '/_workspace',
   getParentRoute: () => rootRouteImport,
@@ -83,6 +90,11 @@ const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SettingsRoute,
+} as any)
+const CommunitiesIndexRoute = CommunitiesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CommunitiesRoute,
 } as any)
 const SettingsPrivacyRoute = SettingsPrivacyRouteImport.update({
   id: '/privacy',
@@ -319,6 +331,7 @@ const AdministratorAdminMgmtStaffDirectoryUsernameEditRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/communities': typeof CommunitiesRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
   '/admin': typeof AdministratorAdminRouteWithChildren
   '/financial': typeof AdministratorFinancialRouteWithChildren
@@ -335,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/privacy': typeof SettingsPrivacyRoute
+  '/communities/': typeof CommunitiesIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/admin/inbox': typeof AdministratorAdminInboxRoute
   '/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -376,6 +390,7 @@ export interface FileRoutesByTo {
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/privacy': typeof SettingsPrivacyRoute
+  '/communities': typeof CommunitiesIndexRoute
   '/settings': typeof SettingsIndexRoute
   '/admin/inbox': typeof AdministratorAdminInboxRoute
   '/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -409,6 +424,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteWithChildren
   '/_public': typeof PublicRouteWithChildren
   '/_workspace': typeof WorkspaceRouteWithChildren
+  '/communities': typeof CommunitiesRouteWithChildren
   '/settings': typeof SettingsRouteWithChildren
   '/_administrator/admin': typeof AdministratorAdminRouteWithChildren
   '/_administrator/financial': typeof AdministratorFinancialRouteWithChildren
@@ -426,6 +442,7 @@ export interface FileRoutesById {
   '/settings/my-profile': typeof SettingsMyProfileRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/privacy': typeof SettingsPrivacyRoute
+  '/communities/': typeof CommunitiesIndexRoute
   '/settings/': typeof SettingsIndexRoute
   '/_administrator/admin/inbox': typeof AdministratorAdminInboxRoute
   '/_administrator/admin/schedule': typeof AdministratorAdminScheduleRoute
@@ -457,6 +474,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/communities'
     | '/settings'
     | '/admin'
     | '/financial'
@@ -473,6 +491,7 @@ export interface FileRouteTypes {
     | '/settings/my-profile'
     | '/settings/notifications'
     | '/settings/privacy'
+    | '/communities/'
     | '/settings/'
     | '/admin/inbox'
     | '/admin/schedule'
@@ -514,6 +533,7 @@ export interface FileRouteTypes {
     | '/settings/my-profile'
     | '/settings/notifications'
     | '/settings/privacy'
+    | '/communities'
     | '/settings'
     | '/admin/inbox'
     | '/admin/schedule'
@@ -546,6 +566,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_public'
     | '/_workspace'
+    | '/communities'
     | '/settings'
     | '/_administrator/admin'
     | '/_administrator/financial'
@@ -563,6 +584,7 @@ export interface FileRouteTypes {
     | '/settings/my-profile'
     | '/settings/notifications'
     | '/settings/privacy'
+    | '/communities/'
     | '/settings/'
     | '/_administrator/admin/inbox'
     | '/_administrator/admin/schedule'
@@ -597,6 +619,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   PublicRoute: typeof PublicRouteWithChildren
   WorkspaceRoute: typeof WorkspaceRouteWithChildren
+  CommunitiesRoute: typeof CommunitiesRouteWithChildren
   SettingsRoute: typeof SettingsRouteWithChildren
 }
 
@@ -607,6 +630,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/communities': {
+      id: '/communities'
+      path: '/communities'
+      fullPath: '/communities'
+      preLoaderRoute: typeof CommunitiesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_workspace': {
@@ -643,6 +673,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof SettingsIndexRouteImport
       parentRoute: typeof SettingsRoute
+    }
+    '/communities/': {
+      id: '/communities/'
+      path: '/'
+      fullPath: '/communities/'
+      preLoaderRoute: typeof CommunitiesIndexRouteImport
+      parentRoute: typeof CommunitiesRoute
     }
     '/settings/privacy': {
       id: '/settings/privacy'
@@ -1116,6 +1153,18 @@ const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
   WorkspaceRouteChildren,
 )
 
+interface CommunitiesRouteChildren {
+  CommunitiesIndexRoute: typeof CommunitiesIndexRoute
+}
+
+const CommunitiesRouteChildren: CommunitiesRouteChildren = {
+  CommunitiesIndexRoute: CommunitiesIndexRoute,
+}
+
+const CommunitiesRouteWithChildren = CommunitiesRoute._addFileChildren(
+  CommunitiesRouteChildren,
+)
+
 interface SettingsRouteChildren {
   SettingsAppearanceRoute: typeof SettingsAppearanceRoute
   SettingsLanguageAndRegionRoute: typeof SettingsLanguageAndRegionRoute
@@ -1145,6 +1194,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   PublicRoute: PublicRouteWithChildren,
   WorkspaceRoute: WorkspaceRouteWithChildren,
+  CommunitiesRoute: CommunitiesRouteWithChildren,
   SettingsRoute: SettingsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
