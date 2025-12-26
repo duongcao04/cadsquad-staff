@@ -4,8 +4,6 @@ import {
     DropdownItem,
     DropdownMenu,
     DropdownTrigger,
-    Popover,
-    PopoverTrigger,
     ScrollShadow,
     useDisclosure,
 } from '@heroui/react'
@@ -21,9 +19,9 @@ import {
     SearchIcon,
 } from 'lucide-react'
 import { CreateCommunityModal } from '../CreateCommunityModal'
-import { CreateTopicModal } from '../CreateTopicModal'
 import { useState } from 'react'
 import { HeroButton } from '../../ui/hero-button'
+import { CreateTopicModal } from '../CreateTopicModal'
 
 export const COMMUNITIES = [
     {
@@ -82,17 +80,13 @@ export const COMMUNITIES = [
     },
 ]
 export default function CommunitiesSidebar() {
-    const pathname = useRouterState({
-        select: (state) => state.location.pathname,
-    })
-
     const [selectedCommunity, setSelectedCommunity] = useState<string | null>(
         null
     )
-
     const createCommunityModalDisclosure = useDisclosure({
         id: 'createCommunityModalDisclosure',
     })
+
     const createTopicModalDisclosure = useDisclosure({
         id: 'createTopicModalDisclosure',
     })
@@ -110,8 +104,16 @@ export default function CommunitiesSidebar() {
                     onClose={createCommunityModalDisclosure.onClose}
                 />
             )}
+            {createTopicModalDisclosure.isOpen && selectedCommunity && (
+                <CreateTopicModal
+                    isOpen={createTopicModalDisclosure.isOpen}
+                    onClose={createTopicModalDisclosure.onClose}
+                    communityId={selectedCommunity}
+                    onSubmit={async () => {}}
+                />
+            )}
             <div className="p-4 flex items-center justify-between border-b border-border-default">
-                <h2 className="font-bold text-lg">Communities</h2>
+                <div />
                 <div className="flex gap-1">
                     <Button isIconOnly size="sm" variant="light">
                         <SearchIcon size={18} />
@@ -128,69 +130,92 @@ export default function CommunitiesSidebar() {
             </div>
             <ScrollShadow className="flex-1 pt-2 pb-4">
                 {COMMUNITIES.map((community) => (
-                    <div key={community.id} className="mb-3">
-                        <div className="px-4 py-3 flex items-center justify-between hover:bg-background-hovered transition-colors duration-150 group">
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-white ${community.color}`}
-                                >
-                                    {community.icon}
-                                </div>
-                                <span className="font-semibold text-text-default text-xs uppercase tracking-wider">
-                                    {community.name}
-                                </span>
-                            </div>
-                            <Dropdown>
-                                <DropdownTrigger>
-                                    <HeroButton
-                                        color="default"
-                                        size="xs"
-                                        className="size-4! p-0! hidden group-hover:flex transition duration-150"
-                                        isIconOnly
-                                        variant="light"
-                                    >
-                                        <EllipsisIcon size={14} />
-                                    </HeroButton>
-                                </DropdownTrigger>
-                                <DropdownMenu>
-                                    <DropdownItem key="create_topic">
-                                        Create Topic
-                                    </DropdownItem>
-                                </DropdownMenu>
-                            </Dropdown>
-                        </div>
-                        <div className="flex flex-col">
-                            {community.channels.map((channel) => {
-                                const Icon = channel.icon
+                    <CommunitySection
+                        community={community}
+                        key={community.id}
+                        onOpenTopicModal={handleOpenTopicModal}
+                    />
+                ))}
+            </ScrollShadow>
+        </div>
+    )
+}
 
-                                const isActive = pathname === channel.id
-                                return (
-                                    <button
-                                        key={channel.id}
-                                        className={`flex items-center gap-3 px-6 py-2 text-sm transition-all border-l-2
+function CommunitySection({
+    community,
+    onOpenTopicModal,
+}: {
+    community: any
+    onOpenTopicModal: (communityId: string) => void
+}) {
+    const pathname = useRouterState({
+        select: (state) => state.location.pathname,
+    })
+
+    return (
+        <div key={community.id} className="mb-3">
+            <div className="px-4 py-3 flex items-center justify-between hover:bg-background-hovered transition-colors duration-150 group">
+                <div className="flex items-center gap-3">
+                    <div
+                        className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-white ${community.color}`}
+                    >
+                        {community.icon}
+                    </div>
+                    <span className="font-semibold text-text-default text-xs uppercase tracking-wider">
+                        {community.name}
+                    </span>
+                </div>
+                <Dropdown placement="bottom-end">
+                    <DropdownTrigger>
+                        <HeroButton
+                            color="default"
+                            size="xs"
+                            className="size-4! p-0! flex transition duration-150"
+                            isIconOnly
+                            variant="light"
+                        >
+                            <EllipsisIcon size={14} />
+                        </HeroButton>
+                    </DropdownTrigger>
+                    <DropdownMenu>
+                        <DropdownItem
+                            key="create_topic"
+                            onPress={() => {
+                                onOpenTopicModal(community.id)
+                            }}
+                        >
+                            Create Topic
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
+            <div className="flex flex-col">
+                {community.channels.map((channel) => {
+                    const Icon = channel.icon
+
+                    const isActive = pathname === channel.id
+                    return (
+                        <button
+                            key={channel.id}
+                            className={`flex items-center gap-3 px-6 py-2 text-sm transition-all border-l-2
                         ${
                             isActive
                                 ? 'border-primary bg-primary/10 text-white font-medium'
                                 : 'border-transparent text-text-subdued hover:bg-background-hovered hover:text-text-default'
                         }
                       `}
-                                    >
-                                        <Icon
-                                            size={16}
-                                            className={
-                                                isActive
-                                                    ? 'text-primary'
-                                                    : 'text-zinc-500'
-                                            }
-                                        />
-                                        <span>{channel.name}</span>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
-                ))}
-            </ScrollShadow>
+                        >
+                            <Icon
+                                size={16}
+                                className={
+                                    isActive ? 'text-primary' : 'text-zinc-500'
+                                }
+                            />
+                            <span>{channel.name}</span>
+                        </button>
+                    )
+                })}
+            </div>
         </div>
     )
 }
