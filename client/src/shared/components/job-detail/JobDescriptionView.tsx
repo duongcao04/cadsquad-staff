@@ -90,10 +90,12 @@ export default function JobDescriptionView({ job }: JobDescriptionViewProps) {
     }
 
     return (
-        <HeroCard>
+        <HeroCard className='p-0!'>
             {/* Description */}
-            <HeroCardHeader className="justify-between py-1">
-                <h3 className="text-sm uppercase">Description</h3>
+            <HeroCardHeader className="justify-between py-1 bg-background-muted">
+                <span className="text-small font-bold text-default-600 uppercase tracking-wider">
+                    Description
+                </span>
                 {isAdmin ? (
                     <>
                         {isEditable ? (

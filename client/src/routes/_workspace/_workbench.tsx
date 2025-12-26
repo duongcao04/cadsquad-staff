@@ -4,7 +4,6 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { workbenchDataOptions } from '../../lib/queries'
-import AppLoading from '../../shared/components/app/AppLoading'
 import { getPageTitle } from '../../lib'
 
 const DEFAULT_SORT = 'displayName:asc'
@@ -36,7 +35,6 @@ export const Route = createFileRoute('/_workspace/_workbench')({
     }),
     validateSearch: (search) => workbenchParamsSchema.parse(search),
     loaderDeps: ({ search }) => ({ search }),
-    pendingComponent: () => <AppLoading />,
     loader: ({ context, deps }) => {
         const {
             limit = 10,

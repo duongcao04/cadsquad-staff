@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
     Modal,
     ModalContent,
@@ -12,17 +12,8 @@ import {
     SelectItem,
     Avatar,
     Chip,
-    Divider,
 } from '@heroui/react'
-import {
-    Mail,
-    Send,
-    Paperclip,
-    X,
-    FileText,
-    Copy,
-    ChevronDown,
-} from 'lucide-react'
+import { Mail, Send, Paperclip, FileText, Copy } from 'lucide-react'
 
 // --- Mock Templates ---
 const EMAIL_TEMPLATES = [
@@ -185,7 +176,7 @@ export const EmailUserModal = ({
                                         {EMAIL_TEMPLATES.map((t) => (
                                             <SelectItem
                                                 key={t.key}
-                                                value={t.key}
+                                                textValue={t.key}
                                             >
                                                 {t.label}
                                             </SelectItem>
@@ -268,7 +259,7 @@ export const EmailUserModal = ({
                                         ))}
                                         <Button
                                             size="sm"
-                                            variant="dashed"
+                                            variant="solid"
                                             className="border-slate-300 text-slate-500"
                                             startContent={
                                                 <Paperclip size={14} />

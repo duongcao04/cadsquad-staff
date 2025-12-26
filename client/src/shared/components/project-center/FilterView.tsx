@@ -11,16 +11,15 @@ import {
     useUsers,
 } from '@/lib/queries'
 import { PAID_STATUS_ARRAY } from '@/lib/utils'
-import { type TJobFiltersInput } from '@/lib/validationSchemas'
-
+import { TJobFilters } from '@/lib/validationSchemas'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import { HeroDateRangePicker } from '../ui/hero-date-picker'
 import { HeroNumberInput } from '../ui/hero-number-input'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 
 type FilterViewProps = {
-    filters: TJobFiltersInput
-    onFiltersChange: (filters: TJobFiltersInput) => void
+    filters: TJobFilters
+    onFiltersChange: (filters: TJobFilters) => void
 }
 export default function FilterView({
     filters: defaultFilters,
@@ -32,7 +31,7 @@ export default function FilterView({
     const { data: jobTypes, isLoading: loadingJobTypes } = useJobTypes()
     const { data: users, isLoading: loadingUsers } = useUsers()
 
-    const [filters, setFilters] = useState(defaultFilters)
+    const [filters, setFilters] = useState<TJobFilters>(defaultFilters)
 
     const handleDateChange = (
         key: 'dueAt' | 'createdAt' | 'completedAt' | 'finishedAt',
@@ -41,7 +40,7 @@ export default function FilterView({
         const start = val ? val.start.format('YYYY-MM-DD') : undefined
         const end = val ? val.end.format('YYYY-MM-DD') : undefined
 
-        setFilters((prev) => {
+        setFilters((prev: TJobFilters) => {
             switch (key) {
                 case 'dueAt':
                     return { ...prev, dueAtFrom: start, dueAtTo: end }
@@ -62,19 +61,25 @@ export default function FilterView({
     }
 
     const handleIncomeMinChange = (val: string) => {
-        setFilters((prev) => ({ ...prev, incomeCostMin: val }))
+        setFilters((prev: TJobFilters) => ({
+            ...prev,
+            incomeCostMin: val,
+        }))
     }
 
     const handleIncomeMaxChange = (val: string) => {
-        setFilters((prev) => ({ ...prev, incomeCostMax: val }))
+        setFilters((prev: TJobFilters) => ({
+            ...prev,
+            incomeCostMax: val,
+        }))
     }
 
     const handleStaffCostMinChange = (val: string) => {
-        setFilters((prev) => ({ ...prev, staffCostMin: val }))
+        setFilters((prev: TJobFilters) => ({ ...prev, staffCostMin: val }))
     }
 
     const handleStaffCostMaxChange = (val: string) => {
-        setFilters((prev) => ({ ...prev, staffCostMax: val }))
+        setFilters((prev: TJobFilters) => ({ ...prev, staffCostMax: val }))
     }
 
     return (

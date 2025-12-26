@@ -1,3 +1,15 @@
+import { dateFormatter } from '@/lib/dayjs'
+import { useJobStatuses } from '@/lib/queries'
+import {
+    currencyFormatter,
+    DUE_DATE_PRESETS,
+    IMAGES,
+    INTERNAL_URLS,
+    JOB_COLUMNS,
+    TABLE_ROW_PER_PAGE_OPTIONS,
+} from '@/lib/utils'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import {
     Button,
     Dropdown,
@@ -16,7 +28,7 @@ import {
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
 import dayjs from 'dayjs'
-import lodash, { filter } from 'lodash'
+import lodash from 'lodash'
 import {
     Check,
     ChevronDownIcon,
@@ -33,27 +45,16 @@ import {
     UserRoundPlus,
     X,
 } from 'lucide-react'
-
-import { dateFormatter } from '@/lib/dayjs'
-import { useJobStatuses } from '@/lib/queries'
-import {
-    currencyFormatter,
-    DUE_DATE_PRESETS,
-    IMAGES,
-    INTERNAL_URLS,
-    JOB_COLUMNS,
-    TABLE_ROW_PER_PAGE_OPTIONS,
-} from '@/lib/utils'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { optimizeCloudinary, useProfile } from '../../../lib'
+import { TJobFilters } from '../../../lib/validationSchemas'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore } from '../../stores'
 import JobFinishChip from '../chips/JobFinishChip'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
 import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
+import { HeroButton } from '../ui/hero-button'
 import HeroCopyButton from '../ui/hero-copy-button'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 import {
@@ -65,11 +66,9 @@ import {
     HeroTableRow,
 } from '../ui/hero-table'
 import { HeroTooltip } from '../ui/hero-tooltip'
+import { FilterBuilder } from './FilterDropdown'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
-import { HeroButton } from '../ui/hero-button'
-import { FilterBuilder } from './FilterDropdown'
-import { TJobFilters } from '../../../lib/validationSchemas'
 
 export const getDueDateRange = (key: string | undefined | null) => {
     if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }

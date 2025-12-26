@@ -1,9 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import lodash from 'lodash'
 import queryString from 'query-string'
-
 import { jobApi, jobStatusApi } from '@/lib/api'
-import { USER_CONFIG_KEYS } from '@/lib/utils'
 import { TJobQueryInput } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { IJobResponse } from '@/shared/interfaces'
@@ -13,7 +11,7 @@ import { mapUser } from './user-queries'
 // --- Mappers (Chuyển đổi dữ liệu) ---
 export const mapJob = (item: IJobResponse): TJob => ({
     no: item.no,
-    displayName: item.displayName,
+    displayName: item.displayName || 'Untitled Job',
     assignee: item.assignee ?? [],
     activityLog: item.activityLog ?? [],
     attachmentUrls: item.attachmentUrls ?? [],

@@ -1,15 +1,12 @@
 import { Listbox, ListboxItem, ListboxSection, cn } from '@heroui/react'
 import {
     Bell,
-    Building,
-    CreditCard,
     Globe,
     HelpCircle,
     Lock,
     LogOut,
     Palette,
     ShieldAlert,
-    Smartphone,
     User,
 } from 'lucide-react'
 import { envConfig, INTERNAL_URLS } from '@/lib'

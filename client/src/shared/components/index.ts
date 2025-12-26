@@ -11,7 +11,7 @@ export * from './admin/layouts/AdminHeader';
 export * from './admin/layouts/AdminSidebar';
 export * from './app/ActionButton';
 export * from './app/AppLoading';
-export * from './app/VerifyingAcessScreen';
+export * from './app/VerifyingAccessScreen';
 export * from './chips/DepartmentChip';
 export * from './chips/JobFinishChip';
 export * from './chips/JobStatusChip';

@@ -8,6 +8,7 @@
     "generate-routes": "tsr generate",
     "build": "tsr generate && tsc -b && vite build",
     "lint": "eslint .",
+    "tauri": "tauri",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview"
   },
@@ -84,6 +85,7 @@
     "@tailwindcss/postcss": "^4.1.14",
     "@tanstack/router-cli": "^1.141.2",
     "@tanstack/router-plugin": "^1.141.2",
+    "@tauri-apps/cli": "^2.9.6",
     "@types/node": "^24.10.3",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19.2.5",

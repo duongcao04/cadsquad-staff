@@ -29,12 +29,12 @@ export default function JobAssigneesView({
                 onClose={onClose}
                 isOpen={Boolean(jobNo) && isOpen}
             />
-            <HeroCard>
+            <HeroCard className="p-0!">
                 {/* Assignees */}
-                <HeroCardHeader className="justify-between py-1">
-                    <h3 className="text-sm uppercase">
+                <HeroCardHeader className="justify-between py-1 bg-background-muted">
+                    <span className="text-small font-bold text-default-600 uppercase tracking-wider">
                         Assignees ({totalAssignees})
-                    </h3>
+                    </span>
                     {isAdmin && (
                         <HeroTooltip content="Assign / Reassign">
                             <HeroButton

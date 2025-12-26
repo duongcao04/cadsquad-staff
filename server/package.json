@@ -28,6 +28,7 @@
   "dependencies": {
     "@auth/core": "^0.40.0",
     "@faker-js/faker": "^10.1.0",
+    "@google/gemini-cli": "^0.22.2",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "11.1.9",
     "@nestjs/config": "^4.0.2",

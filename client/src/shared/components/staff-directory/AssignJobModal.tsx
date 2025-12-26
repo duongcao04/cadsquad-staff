@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import {
     Modal,
     ModalContent,
@@ -19,7 +19,7 @@ import { TUser } from '../../types'
 const AVAILABLE_JOBS = [
     {
         id: '1',
-        title: 'Website Redesign',
+        title: 'Website Redesign',  
         client: 'TechCorp',
         status: 'IN_PROGRESS',
         deadline: '2024-03-10',

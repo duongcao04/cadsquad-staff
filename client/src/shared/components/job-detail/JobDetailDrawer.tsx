@@ -1,3 +1,7 @@
+import { dateFormatter } from '@/lib/dayjs'
+import { jobByNoOptions, useChangeStatusMutation } from '@/lib/queries'
+import { statusByOrderOptions } from '@/lib/queries/options/job-status-queries'
+import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
 import {
     addToast,
     Button,
@@ -6,6 +10,7 @@ import {
     Spacer,
     Spinner,
 } from '@heroui/react'
+import { useQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
 import {
@@ -14,9 +19,6 @@ import {
     SquareArrowOutUpRight,
     UserRound,
 } from 'lucide-react'
-import { dateFormatter } from '@/lib/dayjs'
-import { jobByNoOptions, useChangeStatusMutation } from '@/lib/queries'
-import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
 import type { TJobStatus } from '../../types'
 import { JobStatusChip } from '../chips/JobStatusChip'
 import { PaidChip } from '../chips/PaidChip'
@@ -32,8 +34,6 @@ import {
 } from '../ui/hero-drawer'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { JobDetailView } from './JobDetailView'
-import { useQuery } from '@tanstack/react-query'
-import { statusByOrderOptions } from '../../../lib/queries/options/job-status-queries'
 
 type JobDetailDrawerProps = {
     isOpen: boolean
