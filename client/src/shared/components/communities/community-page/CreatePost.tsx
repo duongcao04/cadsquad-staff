@@ -1,4 +1,4 @@
-import { optimizeCloudinary, useProfile } from '@/lib'
+import { dateFormatter, optimizeCloudinary, useProfile } from '@/lib'
 import { Avatar, Button, Textarea } from '@heroui/react'
 import {
     ImageIcon,
@@ -12,6 +12,11 @@ import { TCommunity } from '../../../types'
 import { HeroCard, HeroCardBody } from '../../ui/hero-card'
 import QuillEditor from '../../editor-quill/QuillEditor'
 import { motion, AnimatePresence } from 'framer-motion'
+import {
+    communitiesStore,
+    setWritingPost,
+} from '../../../stores/_communities.store'
+import { useStore } from '@tanstack/react-store'
 
 type CreatePostProps = { community: TCommunity }
 
@@ -21,7 +26,11 @@ const transition = { type: 'spring', bounce: 0, duration: 0.4 }
 export default function CreatePost({ community }: CreatePostProps) {
     const { profile } = useProfile()
     const [postContent, setPostContent] = useState('')
-    const [isActive, setIsActive] = useState(false)
+
+    const isWritingPost = useStore(
+        communitiesStore,
+        (state) => state.isWritingPost
+    )
     const containerRef = useRef<HTMLDivElement>(null)
 
     // Handle click outside
@@ -32,7 +41,7 @@ export default function CreatePost({ community }: CreatePostProps) {
                 !containerRef.current.contains(event.target as Node) &&
                 !postContent
             ) {
-                setIsActive(false)
+                setWritingPost(false)
             }
         }
         document.addEventListener('mousedown', handleClickOutside)
@@ -44,10 +53,10 @@ export default function CreatePost({ community }: CreatePostProps) {
         <div ref={containerRef}>
             <HeroCard
                 as={motion.div}
-                // Removed 'layout' prop to prevent height/position morphing
                 initial={false}
                 animate={{
-                    width: isActive ? '100%' : '896px',
+                    width: isWritingPost ? '100%' : '896px',
+                    height: isWritingPost ? '100%' : 'fit-content',
                 }}
                 transition={transition}
                 className="bg-background mx-auto border border-border-default overflow-hidden"
@@ -55,13 +64,15 @@ export default function CreatePost({ community }: CreatePostProps) {
                 <HeroCardBody className="gap-4">
                     <div
                         className={
-                            !isActive
+                            !isWritingPost
                                 ? 'flex items-start justify-start gap-3'
                                 : ''
                         }
                     >
                         {/* Static Avatar Wrapper */}
-                        <div className="shrink-0 flex items-center mb-4 gap-3">
+                        <div
+                            className={`shrink-0 ${isWritingPost ? 'flex items-center mb-4 gap-3' : ''}`}
+                        >
                             <Avatar
                                 src={optimizeCloudinary(profile.avatar, {
                                     width: 56,
@@ -73,14 +84,21 @@ export default function CreatePost({ community }: CreatePostProps) {
                                     base: 'size-10!',
                                 }}
                             />
-                            <p className="text-sm font-semibold">
-                                {profile.displayName}
-                            </p>
+                            {isWritingPost && (
+                                <div>
+                                    <p className="text-sm font-semibold">
+                                        {profile.displayName}
+                                    </p>
+                                    <p className="text-xs mt-1 text-text-subdued font-medium">
+                                        {dateFormatter(new Date())}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Content Area - Opacity Only, No Layout Shift */}
                         <div className="flex-1 w-full min-w-0">
-                            {isActive ? (
+                            {isWritingPost ? (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -104,7 +122,7 @@ export default function CreatePost({ community }: CreatePostProps) {
                                         placeholder={`Share something with ${community.displayName}...`}
                                         minRows={2}
                                         variant="bordered"
-                                        onFocus={() => setIsActive(true)}
+                                        onFocus={() => setWritingPost(true)}
                                         classNames={{
                                             inputWrapper:
                                                 'bg-background-muted border-border-default focus-within:border-primary',
@@ -119,7 +137,7 @@ export default function CreatePost({ community }: CreatePostProps) {
 
                     {/* Toolbar - Opacity Only (No height animation) */}
                     <AnimatePresence>
-                        {isActive && (
+                        {isWritingPost && (
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -160,7 +178,7 @@ export default function CreatePost({ community }: CreatePostProps) {
                                         variant="flat"
                                         isDisabled={!postContent}
                                         startContent={<XIcon size={16} />}
-                                        onPress={() => setIsActive(false)}
+                                        onPress={() => setWritingPost(false)}
                                     >
                                         Cancel
                                     </Button>
