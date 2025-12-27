@@ -1,9 +1,8 @@
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import type { ICommunityResponse, ITopicResponse } from '@/shared/interfaces'
-import { TCreateCommunityInput } from '../validationSchemas/_community.schema'
-import { TTopic } from '../../shared/types'
-import { TCreateTopicInput } from '../validationSchemas/_topic.schema'
 import { TPost } from '../../shared/types/_post.type'
+import { TCreateCommunityInput } from '../validationSchemas/_community.schema'
+import { TCreateTopicInput } from '../validationSchemas/_topic.schema'
 
 export const communityApi = {
 	// --- Communities ---
@@ -21,7 +20,10 @@ export const communityApi = {
 
 	// --- Topics ---
 	getTopics: async (communityCode: string) =>
-		axiosClient.get<ApiResponse<TTopic[]>>(`/v1/communities/${communityCode}/topics`).then(res => res.data),
+		axiosClient.get<ApiResponse<ITopicResponse[]>>(`/v1/communities/${communityCode}/topics`).then(res => res.data),
+
+	getTopicDetails: async (communityCode: string, topicCode: string) =>
+		axiosClient.get<ApiResponse<ITopicResponse>>(`/v1/communities/${communityCode}/topics/${topicCode}`).then(res => res.data),
 
 	createTopic: async (data: TCreateTopicInput) =>
 		axiosClient.post<ApiResponse<ITopicResponse>>('/v1/topics', data).then(res => res.data),

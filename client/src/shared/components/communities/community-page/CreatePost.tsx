@@ -1,5 +1,7 @@
 import { dateFormatter, optimizeCloudinary, useProfile } from '@/lib'
 import { Avatar, Button, Textarea } from '@heroui/react'
+import { useStore } from '@tanstack/react-store'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
     ImageIcon,
     PaperclipIcon,
@@ -7,23 +9,20 @@ import {
     SmileIcon,
     XIcon,
 } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
-import { TCommunity } from '../../../types'
-import { HeroCard, HeroCardBody } from '../../ui/hero-card'
-import QuillEditor from '../../editor-quill/QuillEditor'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 import {
     communitiesStore,
     setWritingPost,
 } from '../../../stores/_communities.store'
-import { useStore } from '@tanstack/react-store'
+import QuillEditor from '../../editor-quill/QuillEditor'
+import { HeroCard, HeroCardBody } from '../../ui/hero-card'
 
-type CreatePostProps = { community: TCommunity }
+type CreatePostProps = { title: string }
 
 // Crisp transition for width only
 const transition = { type: 'spring', bounce: 0, duration: 0.4 }
 
-export default function CreatePost({ community }: CreatePostProps) {
+export default function CreatePost({ title }: CreatePostProps) {
     const { profile } = useProfile()
     const [postContent, setPostContent] = useState('')
 
@@ -119,7 +118,7 @@ export default function CreatePost({ community }: CreatePostProps) {
                                     className="w-full"
                                 >
                                     <Textarea
-                                        placeholder={`Share something with ${community.displayName}...`}
+                                        placeholder={`Share something with ${title}...`}
                                         minRows={2}
                                         variant="bordered"
                                         onFocus={() => setWritingPost(true)}
@@ -127,8 +126,6 @@ export default function CreatePost({ community }: CreatePostProps) {
                                             inputWrapper:
                                                 'bg-background-muted border-border-default focus-within:border-primary',
                                         }}
-                                        value={postContent}
-                                        onValueChange={setPostContent}
                                     />
                                 </motion.div>
                             )}
@@ -178,7 +175,10 @@ export default function CreatePost({ community }: CreatePostProps) {
                                         variant="flat"
                                         isDisabled={!postContent}
                                         startContent={<XIcon size={16} />}
-                                        onPress={() => setWritingPost(false)}
+                                        onPress={() => {
+                                            setWritingPost(false)
+                                            setPostContent('')
+                                        }}
                                     >
                                         Cancel
                                     </Button>

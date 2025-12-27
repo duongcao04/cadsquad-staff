@@ -41,4 +41,13 @@ export class CommunityController {
   async getTopics(@Param('code') code: string) {
     return this.communityService.findTopicsByCommunity(code);
   }
+
+  @Get(':code/topics/:topicCode')
+  @ResponseMessage('Get topic details successfully')
+  async getTopicDetails(
+    @Param('code') code: string,
+    @Param('topicCode') topicCode: string,
+  ) {
+    return this.communityService.findTopicDetails(code, topicCode);
+  }
 }

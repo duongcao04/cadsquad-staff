@@ -83,7 +83,8 @@ export const INTERNAL_URLS = {
      */
     communities: "/" + 'communities',
     getCommunityUrl: (communityCode: string) => "/" + 'communities/' + communityCode,
-    getCommunityTopicUrl: (communityCode: string, topicCode: string) => "/" + 'communities/' + communityCode + '/' + topicCode
+    getCommunityTopicUrl: (communityCode: string, topicCode: string) => "/" + 'communities/' + communityCode + '/' + topicCode,
+    getPostDetailUrl: (communityCode: string, topicCode: string, postSlug: string) => "/" + 'communities/' + communityCode + '/' + topicCode + '/' + postSlug
 }
 
 export const WEB_PAGES = [

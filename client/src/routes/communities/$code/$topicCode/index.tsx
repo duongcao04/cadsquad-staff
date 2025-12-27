@@ -1,65 +1,54 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { dateFormatter, INTERNAL_URLS, optimizeCloudinary } from '@/lib'
 import {
-    Card,
-    CardFooter,
-    Avatar,
-    AvatarGroup,
-    Button,
-    ScrollShadow,
-    Tabs,
-    Tab,
-    Divider,
-    Chip,
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
-    DropdownItem,
-    useDisclosure,
-} from '@heroui/react'
+    communitiesPostsListOptions,
+    topicQueries,
+} from '@/lib/queries/options/community-queries'
 import {
-    PlusIcon,
-    MoreHorizontalIcon,
-    Image as ImageIcon,
-    PaperclipIcon,
-    SmileIcon,
-    SendIcon,
-    HeartIcon,
-    MessageCircleIcon,
-    ShareIcon,
-    CalendarIcon,
-    FileTextIcon,
-    FileSpreadsheetIcon,
-    DownloadIcon,
-    FilterIcon,
-    BellIcon,
-    ArrowRightIcon,
-    CircleAlertIcon,
-} from 'lucide-react'
-import {
-    HeroButton,
     HeroCard,
     HeroCardBody,
     HeroCardFooter,
     HeroCardHeader,
-} from '../../shared/components'
+} from '@/shared/components'
+import CreatePost from '@/shared/components/communities/community-page/CreatePost'
+import { communitiesStore } from '@/shared/stores/_communities.store'
+import { TPost, TTopic } from '@/shared/types'
 import {
-    communitiesPostsListOptions,
-    communityOptions,
-} from '../../lib/queries/options/community-queries'
+    Avatar,
+    Button,
+    Card,
+    CardFooter,
+    Chip,
+    Divider,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+    ScrollShadow,
+    Tab,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+    Tabs,
+} from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Image } from 'antd'
-import { dateFormatter, optimizeCloudinary } from '../../lib'
-import CreatePost from '../../shared/components/communities/community-page/CreatePost'
-import { TCommunity, TPost } from '../../shared/types'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
-import { communitiesStore } from '../../shared/stores/_communities.store'
+import { Image } from 'antd'
+import {
+    DownloadIcon,
+    FileSpreadsheetIcon,
+    FileTextIcon,
+    FilterIcon,
+    HeartIcon,
+    MessageCircleIcon,
+    MoreHorizontalIcon,
+    PlusIcon,
+    ShareIcon,
+} from 'lucide-react'
+import { useState } from 'react'
 
 export const MOCK_FILES = [
     {
@@ -167,39 +156,25 @@ export const MOCK_POSTS = [
     },
 ]
 
-export const Route = createFileRoute('/communities/$code')({
+export const Route = createFileRoute('/communities/$code/$topicCode/')({
     loader({ context, params }) {
-        const { code } = params
-        void context.queryClient.ensureQueryData({
-            ...communitiesPostsListOptions(code),
-        })
+        const { code, topicCode } = params
         return context.queryClient.ensureQueryData({
-            ...communityOptions(code),
+            ...topicQueries(code, topicCode),
         })
     },
-    component: CommunityPage,
+    component: TopicPage,
 })
 
-export default function CommunityPage() {
-    const { code } = Route.useParams()
-    const { data: community } = useSuspenseQuery({
-        ...communityOptions(code),
+export default function TopicPage() {
+    const { code, topicCode } = Route.useParams()
+    const { data: topic } = useSuspenseQuery({
+        ...topicQueries(code, topicCode),
     })
     const { data: posts } = useSuspenseQuery({
         ...communitiesPostsListOptions(code),
     })
-
-    const detailPanelDisclosure = useDisclosure({
-        id: 'detailPanelDisclosure',
-    })
     const [activeTab, setActiveTab] = useState('posts')
-
-    const isWritingPost = useStore(
-        communitiesStore,
-        (state) => state.isWritingPost
-    )
-
-    // --- SUB-COMPONENTS ---
 
     // 1. FILES VIEW
     const FilesView = () => (
@@ -323,7 +298,6 @@ export default function CommunityPage() {
                 {MOCK_PHOTOS.map((photo) => (
                     <Card key={photo.id} isPressable className="border-none">
                         <Image
-                            removeWrapper
                             alt={photo.caption}
                             className="z-0 w-full h-full object-cover aspect-square hover:scale-110 transition-transform duration-300"
                             src={photo.src}
@@ -345,19 +319,10 @@ export default function CommunityPage() {
         <div className="size-full">
             {/* --- CENTER CONTENT --- */}
             <div className="size-full">
-                {!isWritingPost && (
-                    <Image
-                        src={community.banner}
-                        alt="Banner"
-                        rootClassName="px-3 pt-3 w-full aspect-[1740/400] object-cover overflow-hidden rounded-xl"
-                        className="size-full rounded-xl"
-                        preview={false}
-                    />
-                )}
                 <div className="px-7 pt-3 pb-4 w-full flex items-center justify-between">
                     <div className="flex items-center justify-start gap-3">
                         <Image
-                            src={optimizeCloudinary(community.icon, {
+                            src={optimizeCloudinary(topic.icon, {
                                 width: 512,
                                 height: 512,
                             })}
@@ -366,7 +331,7 @@ export default function CommunityPage() {
                             preview={false}
                         />
                         <h1 className="text-lg font-bold text-text-default">
-                            {community.displayName}
+                            {topic.title}
                         </h1>
                         <Tabs
                             selectedKey={activeTab}
@@ -382,28 +347,7 @@ export default function CommunityPage() {
                             <Tab key="posts" title="Posts" />
                             <Tab key="files" title="Files" />
                             <Tab key="photos" title="Photos" />
-                            <Tab key="members" title="Members" />
                         </Tabs>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button size="sm" color="primary">
-                            Invite
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant="flat"
-                            startContent={<BellIcon size={16} />}
-                        >
-                            Notifications
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant="flat"
-                            onPress={detailPanelDisclosure.onOpen}
-                            isIconOnly
-                        >
-                            <CircleAlertIcon size={16} />
-                        </Button>
                     </div>
                 </div>
             </div>
@@ -411,108 +355,21 @@ export default function CommunityPage() {
             {/* Scrollable Main Area */}
             <ScrollShadow className="flex-1">
                 {activeTab === 'posts' && (
-                    <PostsView community={community} posts={posts} />
+                    <PostsView topic={topic} posts={posts} />
                 )}
                 {activeTab === 'files' && <FilesView />}
                 {activeTab === 'photos' && <PhotosView />}
             </ScrollShadow>
-
-            {/* --- RIGHT SIDEBAR (Events & Info) --- */}
-            {detailPanelDisclosure.isOpen && (
-                <ChannelDetails onClose={detailPanelDisclosure.onClose} />
-            )}
-        </div>
-    )
-}
-type ChannelDetailsProps = {
-    onClose: () => void
-}
-function ChannelDetails({ onClose }: ChannelDetailsProps) {
-    return (
-        <div className="bg-background-muted w-80 shrink-0 border-l border-border-default py-5 px-4 hidden xl:flex flex-col gap-8">
-            {/* About Section */}
-            <div>
-                <div className="flex items-center justify-start gap-2 mb-3">
-                    <HeroButton
-                        onPress={onClose}
-                        isIconOnly
-                        variant="light"
-                        size="sm"
-                        color="default"
-                    >
-                        <ArrowRightIcon size={16} />
-                    </HeroButton>
-                    <h3 className="pt-0.5 text-sm font-bold text-text-default uppercase tracking-wider">
-                        About Channel
-                    </h3>
-                </div>
-                <p className="text-sm text-text-subdued leading-relaxed">
-                    Official communication channel for the Sales & Marketing
-                    department. Please keep discussions relevant to quarterly
-                    targets and brand campaigns.
-                </p>
-            </div>
-
-            {/* Upcoming Events */}
-            <div>
-                <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-sm font-bold text-text-default uppercase tracking-wider">
-                        Upcoming Events
-                    </h3>
-                    <Button isIconOnly size="sm" variant="light">
-                        <PlusIcon size={14} />
-                    </Button>
-                </div>
-                <div className="space-y-3">
-                    {UPCOMING_EVENTS.map((evt) => (
-                        <HeroCard
-                            key={evt.id}
-                            className="bg-background border border-border-default"
-                        >
-                            <HeroCardBody className="p-3 flex gap-3 items-center">
-                                <div className="bg-background-hovered p-2 rounded text-text-default">
-                                    <CalendarIcon size={20} />
-                                </div>
-                                <div className="flex flex-col overflow-hidden">
-                                    <span className="text-sm font-semibold truncate text-text-default">
-                                        {evt.title}
-                                    </span>
-                                    <span className="text-xs text-text-subdued truncate">
-                                        {evt.date}
-                                    </span>
-                                </div>
-                            </HeroCardBody>
-                        </HeroCard>
-                    ))}
-                </div>
-            </div>
-
-            {/* Online Members */}
-            <div>
-                <h3 className="text-sm font-bold text-text-default uppercase tracking-wider mb-3">
-                    Online - 12
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                    <AvatarGroup max={6} size="sm" isBordered>
-                        <Avatar src="https://i.pravatar.cc/150?u=1" />
-                        <Avatar src="https://i.pravatar.cc/150?u=2" />
-                        <Avatar src="https://i.pravatar.cc/150?u=3" />
-                        <Avatar src="https://i.pravatar.cc/150?u=4" />
-                        <Avatar src="https://i.pravatar.cc/150?u=5" />
-                        <Avatar src="https://i.pravatar.cc/150?u=6" />
-                        <Avatar src="https://i.pravatar.cc/150?u=7" />
-                    </AvatarGroup>
-                </div>
-            </div>
         </div>
     )
 }
 
 type PostsViewProps = {
-    community: TCommunity
+    topic: TTopic
     posts: TPost[]
 }
-const PostsView = ({ community, posts }: PostsViewProps) => {
+const PostsView = ({ topic, posts }: PostsViewProps) => {
+    const router = useRouter()
     const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
 
     const isWritingPost = useStore(
@@ -529,7 +386,7 @@ const PostsView = ({ community, posts }: PostsViewProps) => {
 
     return (
         <div className="p-6 size-full space-y-6">
-            <CreatePost community={community} />
+            <CreatePost title={topic.title} />
             {/* Feed */}
             {!isWritingPost && (
                 <div className="max-w-4xl mx-auto">
@@ -655,7 +512,20 @@ const PostsView = ({ community, posts }: PostsViewProps) => {
                                             (likedPosts.has(post.id) ? 1 : 0)}
                                     </span>
                                 </button>
-                                <button className="cursor-pointer flex items-center gap-2 text-text-default/80 hover:text-blue-500 transition-colors text-small">
+                                <button
+                                    className="cursor-pointer flex items-center gap-2 text-text-default/80 hover:text-blue-500 transition-colors text-small"
+                                    onClick={() => {
+                                        if (topic?.community?.code) {
+                                            router.navigate({
+                                                href: INTERNAL_URLS.getPostDetailUrl(
+                                                    topic.community.code,
+                                                    topic.code,
+                                                    'a'
+                                                ),
+                                            })
+                                        }
+                                    }}
+                                >
                                     <MessageCircleIcon size={18} />
                                     <span>{post.comments} Comments</span>
                                 </button>

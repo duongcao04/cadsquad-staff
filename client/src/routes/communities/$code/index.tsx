@@ -1,54 +1,61 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { dateFormatter, optimizeCloudinary } from '@/lib'
 import {
-    Card,
-    CardHeader,
-    CardBody,
-    CardFooter,
+    communitiesPostsListOptions,
+    communityOptions,
+} from '@/lib/queries/options/community-queries'
+import {
+    HeroButton,
+    HeroCard,
+    HeroCardBody,
+    HeroCardFooter,
+    HeroCardHeader,
+} from '@/shared/components'
+import CreatePost from '@/shared/components/communities/community-page/CreatePost'
+import { communitiesStore } from '@/shared/stores/_communities.store'
+import { TCommunity, TPost } from '@/shared/types'
+import {
     Avatar,
     AvatarGroup,
     Button,
-    ScrollShadow,
-    Tabs,
-    Tab,
-    Divider,
+    Card,
+    CardFooter,
     Chip,
-    Textarea,
-    Image,
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
+    Divider,
     Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
     DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+    ScrollShadow,
+    Tab,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+    Tabs,
     useDisclosure,
 } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
+import { Image } from 'antd'
 import {
-    PlusIcon,
-    MoreHorizontalIcon,
-    Image as ImageIcon,
-    PaperclipIcon,
-    SmileIcon,
-    SendIcon,
+    ArrowRightIcon,
+    BellIcon,
+    CalendarIcon,
+    CircleAlertIcon,
+    DownloadIcon,
+    FileSpreadsheetIcon,
+    FileTextIcon,
+    FilterIcon,
     HeartIcon,
     MessageCircleIcon,
+    MoreHorizontalIcon,
+    PlusIcon,
     ShareIcon,
-    CalendarIcon,
-    FileTextIcon,
-    FileSpreadsheetIcon,
-    DownloadIcon,
-    FilterIcon,
-    BellIcon,
-    XIcon,
-    ArrowRightIcon,
-    CircleAlertIcon,
 } from 'lucide-react'
-import { COMMUNITIES } from '../../../shared/components/communities/layouts/CommunitiesSidebar'
-import { HeroButton, HeroCard, HeroCardBody } from '../../../shared/components'
+import { useState } from 'react'
 
 export const MOCK_FILES = [
     {
@@ -157,33 +164,36 @@ export const MOCK_POSTS = [
 ]
 
 export const Route = createFileRoute('/communities/$code/')({
+    loader({ context, params }) {
+        const { code } = params
+        void context.queryClient.ensureQueryData({
+            ...communitiesPostsListOptions(code),
+        })
+        return context.queryClient.ensureQueryData({
+            ...communityOptions(code),
+        })
+    },
     component: CommunityPage,
 })
 
 export default function CommunityPage() {
+    const { code } = Route.useParams()
+    const { data: community } = useSuspenseQuery({
+        ...communityOptions(code),
+    })
+    const { data: posts } = useSuspenseQuery({
+        ...communitiesPostsListOptions(code),
+    })
+
     const detailPanelDisclosure = useDisclosure({
         id: 'detailPanelDisclosure',
     })
-    const [activeChannelId, setActiveChannelId] = useState('ch-1')
     const [activeTab, setActiveTab] = useState('posts')
-    const [postContent, setPostContent] = useState('')
-    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
 
-    // Find active context
-    const activeCommunity =
-        COMMUNITIES.find((c) =>
-            c.channels.some((ch) => ch.id === activeChannelId)
-        ) || COMMUNITIES[0]
-    const activeChannel =
-        activeCommunity.channels.find((ch) => ch.id === activeChannelId) ||
-        activeCommunity.channels[0]
-
-    const toggleLike = (id: string) => {
-        const next = new Set(likedPosts)
-        if (next.has(id)) next.delete(id)
-        else next.add(id)
-        setLikedPosts(next)
-    }
+    const isWritingPost = useStore(
+        communitiesStore,
+        (state) => state.isWritingPost
+    )
 
     // --- SUB-COMPONENTS ---
 
@@ -326,270 +336,43 @@ export default function CommunityPage() {
     )
 
     // 3. POSTS VIEW (Feed)
-    const PostsView = () => (
-        <div className="p-6 max-w-4xl mx-auto w-full space-y-6">
-            {/* Create Post */}
-            <Card className="bg-background border border-border-default">
-                <CardBody className="gap-4">
-                    <div className="flex gap-3">
-                        <Avatar
-                            src="https://i.pravatar.cc/150?u=me"
-                            size="md"
-                        />
-                        <Textarea
-                            placeholder={`Share something with ${activeChannel.name}...`}
-                            minRows={2}
-                            variant="bordered"
-                            classNames={{
-                                inputWrapper:
-                                    'bg-background-muted border-border-default focus-within:border-primary',
-                            }}
-                            value={postContent}
-                            onValueChange={setPostContent}
-                        />
-                    </div>
-                    <div className="flex justify-between items-center pl-12">
-                        <div className="flex gap-1">
-                            <Button
-                                isIconOnly
-                                size="sm"
-                                variant="light"
-                                className="text-zinc-400 hover:text-primary"
-                            >
-                                <ImageIcon size={18} />
-                            </Button>
-                            <Button
-                                isIconOnly
-                                size="sm"
-                                variant="light"
-                                className="text-zinc-400 hover:text-primary"
-                            >
-                                <PaperclipIcon size={18} />
-                            </Button>
-                            <Button
-                                isIconOnly
-                                size="sm"
-                                variant="light"
-                                className="text-zinc-400 hover:text-primary"
-                            >
-                                <SmileIcon size={18} />
-                            </Button>
-                        </div>
-                        <Button
-                            size="sm"
-                            color="primary"
-                            isDisabled={!postContent}
-                            endContent={<SendIcon size={16} />}
-                        >
-                            Post
-                        </Button>
-                    </div>
-                </CardBody>
-            </Card>
-
-            {/* Feed */}
-            {MOCK_POSTS.map((post) => (
-                <Card
-                    key={post.id}
-                    className="bg-background border border-border-default"
-                >
-                    <CardHeader className="justify-between items-start pb-0">
-                        <div className="flex gap-3">
-                            <Avatar src={post.author.avatar} />
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h4 className="text-small font-semibold text-text-default">
-                                        {post.author.name}
-                                    </h4>
-                                    {post.isAnnouncement && (
-                                        <Chip
-                                            size="sm"
-                                            color="warning"
-                                            variant="flat"
-                                            className="h-5 px-1 text-[10px]"
-                                        >
-                                            Announcement
-                                        </Chip>
-                                    )}
-                                </div>
-                                <span className="text-tiny text-text-subdued">
-                                    {post.author.role} • {post.timestamp}
-                                </span>
-                            </div>
-                        </div>
-                        <Dropdown>
-                            <DropdownTrigger>
-                                <Button
-                                    isIconOnly
-                                    variant="light"
-                                    size="sm"
-                                    className="text-zinc-500"
-                                >
-                                    <MoreHorizontalIcon size={18} />
-                                </Button>
-                            </DropdownTrigger>
-                            <DropdownMenu
-                                variant="faded"
-                                aria-label="Post Actions"
-                            >
-                                <DropdownItem key="save">
-                                    Save Post
-                                </DropdownItem>
-                                <DropdownItem key="mute">
-                                    Mute Notifications
-                                </DropdownItem>
-                                <DropdownItem
-                                    key="report"
-                                    className="text-danger"
-                                    color="danger"
-                                >
-                                    Report
-                                </DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                    </CardHeader>
-
-                    <CardBody className="py-4 text-text-default gap-3">
-                        <p>{post.content}</p>
-                        {/* Event Attachment Card */}
-                        {post.hasEvent && (
-                            <div className="flex gap-4 p-3 rounded-lg bg-background-muted border border-border-default cursor-pointer hover:border-primary transition-colors">
-                                <div className="w-12 h-12 rounded-lg bg-red-900/30 text-red-500 flex flex-col items-center justify-center border border-red-900/50">
-                                    <span className="text-[10px] font-bold uppercase">
-                                        OCT
-                                    </span>
-                                    <span className="text-lg font-bold leading-none">
-                                        28
-                                    </span>
-                                </div>
-                                <div className="flex flex-col justify-center">
-                                    <span className="font-bold text-text-default">
-                                        Q4 Strategy Kickoff
-                                    </span>
-                                    <span className="text-xs text-text-subdued">
-                                        Mon • 10:00 AM • Meeting Room A
-                                    </span>
-                                </div>
-                                <Button
-                                    size="sm"
-                                    variant="flat"
-                                    className="ml-auto self-center"
-                                >
-                                    RSVP
-                                </Button>
-                            </div>
-                        )}
-                    </CardBody>
-
-                    <Divider />
-
-                    <CardFooter className="gap-6 pt-3">
-                        <button
-                            onClick={() => toggleLike(post.id)}
-                            className={`cursor-pointer flex items-center gap-2 text-small transition-colors ${likedPosts.has(post.id) ? 'text-pink-500' : 'text-text-default/80 hover:text-text-subdued'}`}
-                        >
-                            <HeartIcon
-                                size={18}
-                                fill={
-                                    likedPosts.has(post.id)
-                                        ? 'currentColor'
-                                        : 'none'
-                                }
-                            />
-                            <span>
-                                {post.likes + (likedPosts.has(post.id) ? 1 : 0)}
-                            </span>
-                        </button>
-                        <button className="cursor-pointer flex items-center gap-2 text-text-default/80 hover:text-blue-500 transition-colors text-small">
-                            <MessageCircleIcon size={18} />
-                            <span>{post.comments} Comments</span>
-                        </button>
-                        <button className="cursor-pointer flex items-center gap-2 text-text-default/80 hover:text-zinc-200 transition-colors text-small ml-auto">
-                            <ShareIcon size={18} />
-                            <span>Share</span>
-                        </button>
-                    </CardFooter>
-                </Card>
-            ))}
-        </div>
-    )
 
     return (
-        <div className="size-full flex">
+        <div className="size-full">
             {/* --- CENTER CONTENT --- */}
-            <div className="flex-1 flex flex-col relative">
-                {/* Header Banner */}
-                <div className="relative shrink-0 h-64">
-                    <div className="absolute inset-0">
+            <div className="size-full">
+                {!isWritingPost && (
+                    <Image
+                        src={community.banner}
+                        alt="Banner"
+                        rootClassName="px-3 pt-3 w-full aspect-[1740/400] object-cover overflow-hidden rounded-xl"
+                        className="size-full rounded-xl"
+                        preview={false}
+                    />
+                )}
+                <div className="px-7 pt-3 pb-4 w-full flex items-center justify-between">
+                    <div className="flex items-center justify-start gap-3">
                         <Image
-                            src={activeCommunity.banner}
-                            alt="Banner"
-                            removeWrapper
-                            className="w-full h-full object-cover opacity-60"
-                            radius="none"
+                            src={optimizeCloudinary(community.icon, {
+                                width: 512,
+                                height: 512,
+                            })}
+                            rootClassName="size-10"
+                            className="rounded-md"
+                            preview={false}
                         />
-                        <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent" />
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 right-0 px-8 pb-0 z-20">
-                        <div className="flex items-end justify-between mb-6">
-                            <div className="flex items-end gap-6">
-                                <div
-                                    className={`w-24 h-24 rounded-2xl flex items-center justify-center text-5xl font-bold shadow-2xl ring-4 ring-black ${activeCommunity.color}`}
-                                >
-                                    {activeCommunity.icon}
-                                </div>
-                                <div className="mb-2">
-                                    <h1 className="text-3xl font-bold text-white drop-shadow-md">
-                                        {activeCommunity.name}
-                                    </h1>
-                                    <div className="flex items-center gap-2 text-zinc-300">
-                                        <span className="w-2 h-2 rounded-full bg-green-500" />
-                                        <span className="font-medium">
-                                            {activeChannel.name}
-                                        </span>
-                                        <span className="text-zinc-500">•</span>
-                                        <span className="text-xs text-zinc-400">
-                                            124 Members
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex gap-3 mb-2">
-                                <Button
-                                    size="sm"
-                                    color="default"
-                                    variant="light"
-                                    onPress={detailPanelDisclosure.onOpen}
-                                    isIconOnly
-                                >
-                                    <CircleAlertIcon size={16} />
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    variant="flat"
-                                    className="bg-white/10 text-white hover:bg-white/20 backdrop-blur-md"
-                                >
-                                    <BellIcon size={16} /> Notifications
-                                </Button>
-                                <Button size="sm" color="primary">
-                                    Invite
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Main Tabs */}
+                        <h1 className="text-lg font-bold text-text-default">
+                            {community.displayName}
+                        </h1>
                         <Tabs
                             selectedKey={activeTab}
                             onSelectionChange={(k) => setActiveTab(k as string)}
                             variant="underlined"
                             color="primary"
                             classNames={{
-                                tabList: 'gap-8 p-0',
-                                cursor: 'w-full bg-primary h-1',
-                                tab: 'px-0 h-12 text-zinc-400 text-medium',
+                                base: 'ml-1',
                                 tabContent:
-                                    'group-data-[selected=true]:text-white font-medium',
+                                    'group-data-[selected=true]:text-text-default group-data-[selected=true]:font-semibold font-medium',
                             }}
                         >
                             <Tab key="posts" title="Posts" />
@@ -598,15 +381,37 @@ export default function CommunityPage() {
                             <Tab key="members" title="Members" />
                         </Tabs>
                     </div>
+                    <div className="flex gap-3">
+                        <Button size="sm" color="primary">
+                            Invite
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="flat"
+                            startContent={<BellIcon size={16} />}
+                        >
+                            Notifications
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="flat"
+                            onPress={detailPanelDisclosure.onOpen}
+                            isIconOnly
+                        >
+                            <CircleAlertIcon size={16} />
+                        </Button>
+                    </div>
                 </div>
-
-                {/* Scrollable Main Area */}
-                <ScrollShadow className="flex-1">
-                    {activeTab === 'posts' && <PostsView />}
-                    {activeTab === 'files' && <FilesView />}
-                    {activeTab === 'photos' && <PhotosView />}
-                </ScrollShadow>
             </div>
+            <Divider />
+            {/* Scrollable Main Area */}
+            <ScrollShadow className="flex-1">
+                {activeTab === 'posts' && (
+                    <PostsView community={community} posts={posts} />
+                )}
+                {activeTab === 'files' && <FilesView />}
+                {activeTab === 'photos' && <PhotosView />}
+            </ScrollShadow>
 
             {/* --- RIGHT SIDEBAR (Events & Info) --- */}
             {detailPanelDisclosure.isOpen && (
@@ -695,6 +500,170 @@ function ChannelDetails({ onClose }: ChannelDetailsProps) {
                     </AvatarGroup>
                 </div>
             </div>
+        </div>
+    )
+}
+
+type PostsViewProps = {
+    community: TCommunity
+    posts: TPost[]
+}
+const PostsView = ({ community, posts }: PostsViewProps) => {
+    const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set())
+
+    const isWritingPost = useStore(
+        communitiesStore,
+        (state) => state.isWritingPost
+    )
+
+    const toggleLike = (id: string) => {
+        const next = new Set(likedPosts)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        setLikedPosts(next)
+    }
+
+    return (
+        <div className="p-6 size-full space-y-6">
+            {/* <CreatePost community={community} /> */}
+            {/* Feed */}
+            {!isWritingPost && (
+                <div className="max-w-4xl mx-auto">
+                    {posts.map((post) => (
+                        <HeroCard
+                            key={post.id}
+                            className="bg-background border border-border-default"
+                        >
+                            <HeroCardHeader className="justify-between items-start pb-0">
+                                <div className="flex gap-3">
+                                    <Avatar
+                                        src={optimizeCloudinary(
+                                            post.author.avatar,
+                                            {
+                                                width: 56,
+                                                height: 56,
+                                            }
+                                        )}
+                                    />
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <h4 className="text-small font-semibold text-text-default">
+                                                {post.author.displayName}
+                                            </h4>
+                                            {post.isPinned && (
+                                                <Chip
+                                                    size="sm"
+                                                    color="warning"
+                                                    variant="flat"
+                                                    className="h-5 px-1 text-[10px]"
+                                                >
+                                                    Announcement
+                                                </Chip>
+                                            )}
+                                        </div>
+                                        <span className="text-tiny text-text-subdued">
+                                            {post.author.role} •{' '}
+                                            {dateFormatter(post.createdAt)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <Dropdown>
+                                    <DropdownTrigger>
+                                        <Button
+                                            isIconOnly
+                                            variant="light"
+                                            size="sm"
+                                            className="text-zinc-500"
+                                        >
+                                            <MoreHorizontalIcon size={18} />
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu
+                                        variant="faded"
+                                        aria-label="Post Actions"
+                                    >
+                                        <DropdownItem key="save">
+                                            Save Post
+                                        </DropdownItem>
+                                        <DropdownItem key="mute">
+                                            Mute Notifications
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            key="report"
+                                            className="text-danger"
+                                            color="danger"
+                                        >
+                                            Report
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
+                            </HeroCardHeader>
+
+                            <HeroCardBody className="py-4 text-text-default gap-3">
+                                <p>{post.content}</p>
+                                {/* Event Attachment HeroCard */}
+                                {post.hasEvent && (
+                                    <div className="flex gap-4 p-3 rounded-lg bg-background-muted border border-border-default cursor-pointer hover:border-primary transition-colors">
+                                        <div className="w-12 h-12 rounded-lg bg-red-900/30 text-red-500 flex flex-col items-center justify-center border border-red-900/50">
+                                            <span className="text-[10px] font-bold uppercase">
+                                                OCT
+                                            </span>
+                                            <span className="text-lg font-bold leading-none">
+                                                28
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col justify-center">
+                                            <span className="font-bold text-text-default">
+                                                Q4 Strategy Kickoff
+                                            </span>
+                                            <span className="text-xs text-text-subdued">
+                                                Mon • 10:00 AM • Meeting Room A
+                                            </span>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="flat"
+                                            className="ml-auto self-center"
+                                        >
+                                            RSVP
+                                        </Button>
+                                    </div>
+                                )}
+                            </HeroCardBody>
+
+                            <Divider />
+
+                            <HeroCardFooter className="gap-6 pt-3">
+                                <button
+                                    onClick={() => toggleLike(post.id)}
+                                    className={`cursor-pointer flex items-center gap-2 text-small transition-colors ${likedPosts.has(post.id) ? `text-pink-500` : `text-text-default/80 hover:text-text-subdued`}`}
+                                >
+                                    <HeartIcon
+                                        size={18}
+                                        fill={
+                                            likedPosts.has(post.id)
+                                                ? 'currentColor'
+                                                : 'none'
+                                        }
+                                    />
+                                    <span>
+                                        {post.likes +
+                                            (likedPosts.has(post.id) ? 1 : 0)}
+                                    </span>
+                                </button>
+                                <button className="cursor-pointer flex items-center gap-2 text-text-default/80 hover:text-blue-500 transition-colors text-small">
+                                    <MessageCircleIcon size={18} />
+                                    <span>{post.comments} Comments</span>
+                                </button>
+                                <button className="cursor-pointer flex items-center gap-2 text-text-default/80 hover:text-zinc-200 transition-colors text-small ml-auto">
+                                    <ShareIcon size={18} />
+                                    <span>Share</span>
+                                </button>
+                            </HeroCardFooter>
+                        </HeroCard>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

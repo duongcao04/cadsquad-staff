@@ -1,7 +1,8 @@
 import { queryOptions } from "@tanstack/react-query"
-import { ICommunityResponse } from "../../../shared/interfaces"
-import { TCommunity } from "../../../shared/types"
+import { ICommunityResponse, ITopicResponse } from "../../../shared/interfaces"
+import { TCommunity, TTopic } from "../../../shared/types"
 import { communityApi } from "../../api/_community.api"
+import { ETopicType } from "../../../shared/enums"
 
 export const mapCommunity: (item?: ICommunityResponse) => TCommunity = (
 	item
@@ -14,6 +15,19 @@ export const mapCommunity: (item?: ICommunityResponse) => TCommunity = (
 	description: item?.description ?? "",
 	icon: item?.icon ?? "",
 	topics: item?.topics ?? [],
+	createdAt: new Date(item?.createdAt ?? ''),
+	updatedAt: new Date(item?.updatedAt ?? ''),
+})
+export const mapTopic: (item?: ITopicResponse) => TTopic = (
+	item
+) => ({
+	id: item?.id ?? '',
+	code: item?.code ?? '',
+	title: item?.title ?? "Unknown Topic",
+	description: item?.description ?? "",
+	icon: item?.icon ?? "",
+	community: item?.community ?? undefined,
+	type: item?.type ?? ETopicType.GENERAL,
 	createdAt: new Date(item?.createdAt ?? ''),
 	updatedAt: new Date(item?.updatedAt ?? ''),
 })
@@ -50,6 +64,16 @@ export const communityOptions = (identify: string) => {
 		select: (res) => {
 			const communityData = res?.result
 			return mapCommunity(communityData)
+		},
+	})
+}
+export const topicQueries = (communityCode: string, topicCode: string) => {
+	return queryOptions({
+		queryKey: ['topic', `community=${communityCode}`, `topic=${topicCode}`],
+		queryFn: () => communityApi.getTopicDetails(communityCode, topicCode),
+		select: (res) => {
+			const topicData = res?.result
+			return mapTopic(topicData)
 		},
 	})
 }

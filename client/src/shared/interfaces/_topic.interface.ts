@@ -1,4 +1,5 @@
 import { ETopicType } from "../enums/_topic-type.enum";
+import { TCommunity } from "../types";
 
 export interface ITopicResponse {
 	id: string;
@@ -8,6 +9,7 @@ export interface ITopicResponse {
 	type: ETopicType;
 	icon?: string | null;
 	communityId: string;
+	community?: TCommunity;
 	createdAt: Date;
 	updatedAt: Date;
 }

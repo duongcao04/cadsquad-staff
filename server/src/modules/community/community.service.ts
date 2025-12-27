@@ -97,4 +97,36 @@ export class CommunityService {
 
     return posts;
   }
+
+  async findTopicDetails(communityCode: string, topicCode: string) {
+    const topic = await this.prisma.topic.findFirst({
+      where: {
+        code: topicCode,
+        community: {
+          code: communityCode,
+        },
+      },
+      include: {
+        posts: true,
+        community: {
+          select: {
+            displayName: true,
+            code: true,
+            color: true,
+          },
+        },
+        _count: {
+          select: { posts: true },
+        },
+      },
+    });
+
+    if (!topic) {
+      throw new NotFoundException(
+        `Topic '${topicCode}' not found in community '${communityCode}'`,
+      );
+    }
+
+    return topic;
+  }
 }

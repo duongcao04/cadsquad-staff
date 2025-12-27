@@ -169,7 +169,12 @@ function CommunitySection({
     return (
         <>
             <Button
-                variant={pathname.includes(community.code) ? 'solid' : 'light'}
+                variant={
+                    pathname.split('/').at(pathname.split('/').length - 1) ===
+                    community.code
+                        ? 'solid'
+                        : 'light'
+                }
                 disableAnimation
                 className="w-full h-17.5 flex items-center justify-between group"
                 onPress={() =>
