@@ -2,6 +2,7 @@ export * from './_ably.api';
 export * from './_analytics.api';
 export * from './_auth.api';
 export * from './_comment.api';
+export * from './_community.api';
 export * from './_department.api';
 export * from './_excel.api';
 export * from './_image.api';

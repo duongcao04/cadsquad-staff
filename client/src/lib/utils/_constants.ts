@@ -78,6 +78,12 @@ export const INTERNAL_URLS = {
     profitLoss: '/' + 'financial/profit-loss',
     reimbursements: '/' + 'financial/reimbursements',
     financialSettings: '/' + 'financial/setting',
+    /**
+     * COMMUNITIES
+     */
+    communities: "/" + 'communities',
+    getCommunityUrl: (communityCode: string) => "/" + 'communities/' + communityCode,
+    getCommunityTopicUrl: (communityCode: string, topicCode: string) => "/" + 'communities/' + communityCode + '/' + topicCode
 }
 
 export const WEB_PAGES = [

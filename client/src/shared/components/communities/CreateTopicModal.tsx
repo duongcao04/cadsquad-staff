@@ -10,17 +10,17 @@ import {
     Textarea,
     Form,
 } from '@heroui/react'
+import {
+    createTopicSchema,
+    TCreateTopicInput,
+} from '../../../lib/validationSchemas/_topic.schema'
 
 interface CreateTopicModalProps {
     isOpen: boolean
     onClose: () => void
-    communityId?: string // Optional: if you need to pass the parent community ID
-    onSubmit: (data: CreateTopicFormData) => Promise<void>
-}
-
-export interface CreateTopicFormData {
-    title: string
-    description: string
+    communityId?: string
+    // Updated type to use the Zod inferred type
+    onSubmit: (data: TCreateTopicInput) => Promise<void>
 }
 
 export const CreateTopicModal = ({
@@ -30,31 +30,41 @@ export const CreateTopicModal = ({
     onSubmit,
 }: CreateTopicModalProps) => {
     const [isLoading, setIsLoading] = useState(false)
-    const [errors, setErrors] = useState<Partial<CreateTopicFormData>>({})
 
     // Form State
-    const [formData, setFormData] = useState<CreateTopicFormData>({
+    const [formData, setFormData] = useState<TCreateTopicInput>({
         title: '',
         description: '',
     })
 
-    const validate = () => {
-        const newErrors: Partial<CreateTopicFormData> = {}
-        if (!formData.title.trim()) newErrors.title = 'Topic title is required.'
-        if (formData.title.length < 3)
-            newErrors.title = 'Title must be at least 3 characters.'
-
-        setErrors(newErrors)
-        return Object.keys(newErrors).length === 0
-    }
+    // Validation State
+    const [errors, setErrors] = useState<Record<string, string>>({})
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!validate()) return
 
+        // --- 2. Run Validation ---
+        const result = createTopicSchema.safeParse(formData)
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {}
+            result.error.issues.forEach((issue) => {
+                const path = issue.path[0]
+                if (path) {
+                    fieldErrors[path.toString()] = issue.message
+                }
+            })
+            setErrors(fieldErrors)
+            return
+        }
+
+        // --- 3. Submit Valid Data ---
         try {
             setIsLoading(true)
-            await onSubmit(formData)
+            setErrors({}) // Clear errors
+
+            await onSubmit(result.data)
+
             // Reset form on success
             setFormData({ title: '', description: '' })
             onClose()
@@ -65,10 +75,24 @@ export const CreateTopicModal = ({
         }
     }
 
+    // Helper to update fields and clear specific error on change
+    const handleFieldChange = (
+        field: keyof TCreateTopicInput,
+        value: string
+    ) => {
+        setFormData((prev) => ({ ...prev, [field]: value }))
+        if (errors[field]) {
+            setErrors((prev) => ({
+                ...prev,
+                [field]: undefined as unknown as string,
+            }))
+        }
+    }
+
     return (
         <Modal
             isOpen={isOpen}
-            onClose={onClose}
+            onOpenChange={onClose} // Best practice: mapped to onOpenChange
             placement="center"
             backdrop="blur"
         >
@@ -93,20 +117,12 @@ export const CreateTopicModal = ({
                                 <Input
                                     autoFocus
                                     label="Title"
-                                    placeholder="e.g., General Discussion, Announcements"
+                                    placeholder="e.g., General Discussion"
                                     variant="bordered"
                                     value={formData.title}
-                                    onValueChange={(val) => {
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            title: val,
-                                        }))
-                                        if (errors.title)
-                                            setErrors((prev) => ({
-                                                ...prev,
-                                                title: undefined,
-                                            }))
-                                    }}
+                                    onValueChange={(val) =>
+                                        handleFieldChange('title', val)
+                                    }
                                     isInvalid={!!errors.title}
                                     errorMessage={errors.title}
                                     isRequired
@@ -117,13 +133,12 @@ export const CreateTopicModal = ({
                                     placeholder="What is this topic about?"
                                     variant="bordered"
                                     minRows={3}
-                                    value={formData.description}
+                                    value={formData.description || ''}
                                     onValueChange={(val) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            description: val,
-                                        }))
+                                        handleFieldChange('description', val)
                                     }
+                                    isInvalid={!!errors.description}
+                                    errorMessage={errors.description}
                                 />
                             </Form>
                         </ModalBody>

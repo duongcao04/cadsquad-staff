@@ -5,12 +5,22 @@ import { useStore } from '@tanstack/react-store'
 import { appStore } from '../shared/stores'
 import { ScrollArea, ScrollBar } from '../shared/components'
 import CommunitiesSidebar from '../shared/components/communities/layouts/CommunitiesSidebar'
+import { communitiesListOptions } from '../lib/queries/options/community-queries'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/communities')({
+    loader({ context }) {
+        void context.queryClient.ensureQueryData({
+            ...communitiesListOptions(),
+        })
+    },
     component: CommunitiesLayout,
 })
 
 function CommunitiesLayout() {
+    const { data: communities } = useSuspenseQuery({
+        ...communitiesListOptions(),
+    })
     const communitiesLeftStatus = useStore(
         appStore,
         (state) => state.communitiesLeftStatus
@@ -27,9 +37,10 @@ function CommunitiesLayout() {
                 <div className="relative w-full h-full flex items-start justify-start">
                     <div className="fixed left-0 top-14.25 z-50 space-y-6 border-r border-border-default h-full bg-background">
                         <CommunitiesSidebar
-                        // isCollapsed={
-                        //     adminLeftSidebar === ESidebarStatus.COLLAPSE
-                        // }
+                            communities={communities}
+                            // isCollapsed={
+                            //     adminLeftSidebar === ESidebarStatus.COLLAPSE
+                            // }
                         />
                     </div>
                     <div
@@ -38,7 +49,7 @@ function CommunitiesLayout() {
                             marginLeft:
                                 communitiesLeftStatus === 'collapse'
                                     ? '72px'
-                                    : '288px',
+                                    : '384px',
                             transition:
                                 'margin 300ms cubic-bezier(0.4, 0, 0.2, 1)',
                         }}

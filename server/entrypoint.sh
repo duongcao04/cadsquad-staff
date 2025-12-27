@@ -80,6 +80,21 @@ else
   echo "[entrypoint] INFO: No seed file found at $SEED_FILE, skipping"
 fi
 
+# Run SQL seed file (use PSQL_URL without query params)
+SEED_FILE="./database/community.sql"
+if [ -f "$SEED_FILE" ]; then
+  echo "[entrypoint] Running seed community SQL: $SEED_FILE"
+  if psql "$PSQL_URL" -f "$SEED_FILE"; then
+    echo "[entrypoint] Seed community completed successfully"
+  else
+    EXIT_CODE=$?
+    echo "[entrypoint] ERROR: Failed to run seed SQL (exit code: $EXIT_CODE)"
+    exit 1
+  fi
+else
+  echo "[entrypoint] INFO: No seed file found at $SEED_FILE, skipping"
+fi
+
 echo "[entrypoint] All initialization complete"
 echo "[entrypoint] Starting application: $*"
 

@@ -73,6 +73,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
   jobDeliveries JobDelivery[]
+  communities   CommunityMember[]
+  posts         Post[]
 }
 
 // Model Session bắt buộc cho Better Auth
@@ -484,4 +486,107 @@ enum NotificationType {
   JOB_UPDATE
   DEADLINE_REMINDER
   STATUS_CHANGE
+}
+
+model Community {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  displayName String
+  description String? @db.Text
+  color       String? // e.g. "bg-pink-600"
+  icon        String? // e.g. "S" or "MegaphoneIcon"
+  banner      String? // URL for the banner image
+
+  // Relation: One Community has many Topics
+  topics Topic[]
+
+  members CommunityMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommunityMember {
+  id String @id @default(uuid())
+
+  // The User
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // The Community
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  // Metadata for the membership
+  role     CommunityRole @default(MEMBER)
+  joinedAt DateTime      @default(now())
+
+  // Composite unique constraint: A user can only join a community once
+  @@unique([userId, communityId])
+  @@index([userId])
+  @@index([communityId])
+}
+
+enum CommunityRole {
+  MEMBER
+  MODERATOR
+  OWNER
+}
+
+model Topic {
+  id   String @id @default(uuid())
+  code String @unique
+
+  // Fields from CreateTopicModal
+  title       String // Mapped from UI "name"
+  description String?   @db.Text
+  type        TopicType @default(GENERAL)
+
+  icon String? // e.g. "S" or "MegaphoneIcon"
+
+  // Relation to Community
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  posts     Post[]
+
+  @@index([communityId])
+}
+
+// 3. Define the Enum for Topic Types
+enum TopicType {
+  GENERAL // General Chat (HashIcon)
+  ANNOUNCEMENT // Official Notices (MegaphoneIcon)
+  FILES // Blueprints/Files (FileTextIcon)
+  IDEA // Kaizen Ideas (LightbulbIcon)
+  SUPPORT // IT Support (MessageSquareIcon)
+}
+
+model Post {
+  id      String @id @default(uuid())
+  content String @db.Text
+
+  // Attachments (Optional: reused from your existing attachment logic)
+  attachments String[] @default([])
+
+  // Relation to Author
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Relation to Topic
+  topicId String
+  topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  // Engagement metadata
+  isPinned Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([topicId])
+  @@index([authorId])
+  @@index([createdAt])
 }

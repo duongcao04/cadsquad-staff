@@ -1,0 +1,44 @@
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Query } from '@nestjs/common';
+import { CommunityService } from './community.service';
+import { JwtGuard } from '../auth/jwt.guard';
+import { ResponseMessage } from '../../common/decorators/responseMessage.decorator';
+
+@Controller('communities')
+@UseGuards(JwtGuard)
+export class CommunityController {
+  constructor(private readonly communityService: CommunityService) { }
+
+  @Get()
+  async findAll(@Req() req) {
+    return this.communityService.findAll(req.user.id);
+  }
+
+  @Get(':code')
+  async findByCode(@Param('code') code: string) {
+    return this.communityService.findByCode(code);
+  }
+
+  @Post(':id/join')
+  async join(@Param('id') communityId: string, @Req() req) {
+    return this.communityService.joinCommunity(req.user.id, communityId);
+  }
+
+  @Get(':code/posts')
+  @ResponseMessage('Get community posts successfully')
+  async getCommunityPosts(
+    @Param('code') code: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20'
+  ) {
+    return this.communityService.findAllPostsByCommunity(
+      code,
+      Number(page),
+      Number(limit)
+    );
+  }
+
+  @Get(':code/topics')
+  async getTopics(@Param('code') code: string) {
+    return this.communityService.findTopicsByCommunity(code);
+  }
+}

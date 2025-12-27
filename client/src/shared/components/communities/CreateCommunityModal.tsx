@@ -13,13 +13,12 @@ import {
     cn,
 } from '@heroui/react'
 import { UsersIcon, LockIcon, GlobeIcon } from 'lucide-react'
+import {
+    createCommunitySchema,
+    TCreateCommunityInput,
+} from '../../../lib/validationSchemas/_community.schema'
 
-interface CreateCommunityModalProps {
-    isOpen: boolean
-    onClose: () => void
-    onSubmit?: (data: any) => void
-}
-
+// --- 1. Define Constants & Schema ---
 const COLORS = [
     'bg-pink-600',
     'bg-purple-600',
@@ -31,18 +30,28 @@ const COLORS = [
     'bg-orange-600',
     'bg-red-600',
     'bg-zinc-700',
-]
+] as const // "as const" allows Zod to use this array as a literal enum
+
+interface CreateCommunityModalProps {
+    isOpen: boolean
+    onClose: () => void
+    onSubmit?: (data: TCreateCommunityInput) => void
+}
 
 export const CreateCommunityModal = ({
     isOpen,
     onClose,
     onSubmit,
 }: CreateCommunityModalProps) => {
+    // Form State
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
-    const [selectedColor, setSelectedColor] = useState(COLORS[2]) // Default Indigo
-    const [privacy, setPrivacy] = useState('public')
+    const [selectedColor, setSelectedColor] = useState<string>(COLORS[2])
+    const [privacy, setPrivacy] = useState<string>('public')
+
+    // UI State
     const [isLoading, setIsLoading] = useState(false)
+    const [errors, setErrors] = useState<Record<string, string>>({})
 
     // Generate initials for the preview icon
     const getInitials = (str: string) => {
@@ -55,38 +64,65 @@ export const CreateCommunityModal = ({
             .toUpperCase()
     }
 
-    const handleSubmit = async (onClose: () => void) => {
-        if (!name.trim()) return
+    const handleSubmit = async (closeModal: () => void) => {
+        // --- 2. Validation Logic ---
+        const payload = {
+            name,
+            description,
+            color: selectedColor,
+            privacy,
+        }
 
+        const result = createCommunitySchema.safeParse(payload)
+
+        if (!result.success) {
+            // Map Zod errors to a simple object: { name: "Error message", ... }
+            const fieldErrors: Record<string, string> = {}
+            result.error.issues.forEach((issue) => {
+                const path = issue.path[0] // e.g., "name"
+                if (path) {
+                    fieldErrors[path.toString()] = issue.message
+                }
+            })
+            setErrors(fieldErrors)
+            return // Stop execution if validation fails
+        }
+
+        // Clear errors if validation passes
+        setErrors({})
         setIsLoading(true)
 
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 1000))
 
-        const newCommunity = {
-            name,
-            description,
-            color: selectedColor,
-            privacy,
-            icon: getInitials(name),
+        console.log('Creating Community:', result.data) // result.data contains the typed, validated data
+
+        if (onSubmit) {
+            // We cast result.data to match the interface needed,
+            // though keeping strict types is better.
+            onSubmit(result.data as TCreateCommunityInput)
         }
 
-        console.log('Creating Community:', newCommunity)
-        if (onSubmit) onSubmit(newCommunity)
-
         setIsLoading(false)
-        onClose()
 
         // Reset form
         setName('')
         setDescription('')
         setPrivacy('public')
+        setSelectedColor(COLORS[2])
+        closeModal()
+    }
+
+    // Clear specific error when user types
+    const handleNameChange = (value: string) => {
+        setName(value)
+        if (errors.name) setErrors((prev) => ({ ...prev, name: '' }))
     }
 
     return (
         <Modal
             isOpen={isOpen}
-            onClose={onClose}
+            onOpenChange={onClose} // Use onOpenChange for standard HeroUI behavior
             placement="center"
             backdrop="blur"
             size="lg"
@@ -128,13 +164,16 @@ export const CreateCommunityModal = ({
                                     </div>
 
                                     <div className="flex-1 space-y-4">
+                                        {/* --- Name Input with Validation --- */}
                                         <Input
                                             autoFocus
                                             label="Community Name"
                                             placeholder="e.g. Engineering Dept"
                                             variant="bordered"
                                             value={name}
-                                            onValueChange={setName}
+                                            onValueChange={handleNameChange}
+                                            isInvalid={!!errors.name}
+                                            errorMessage={errors.name}
                                             classNames={{
                                                 inputWrapper:
                                                     'bg-zinc-950 border-zinc-700 hover:border-zinc-600 focus-within:border-primary data-[hover=true]:border-zinc-600',
@@ -173,13 +212,15 @@ export const CreateCommunityModal = ({
                                     </div>
                                 </div>
 
-                                {/* 2. Description */}
+                                {/* 2. Description with Validation */}
                                 <Textarea
                                     label="Description"
                                     placeholder="What is this community for?"
                                     variant="bordered"
                                     value={description}
                                     onValueChange={setDescription}
+                                    isInvalid={!!errors.description}
+                                    errorMessage={errors.description}
                                     classNames={{
                                         inputWrapper:
                                             'bg-zinc-950 border-zinc-700 hover:border-zinc-600 focus-within:border-primary',
@@ -187,7 +228,7 @@ export const CreateCommunityModal = ({
                                     }}
                                 />
 
-                                {/* 3. Privacy Settings (Custom Radio) */}
+                                {/* 3. Privacy Settings */}
                                 <div>
                                     <label className="text-small font-medium text-zinc-300 mb-2 block">
                                         Privacy
@@ -204,29 +245,24 @@ export const CreateCommunityModal = ({
                                                     ? 'border-primary bg-primary/10'
                                                     : 'border-zinc-700 bg-transparent'
                                             )}
+                                            onClick={() => setPrivacy('public')}
                                         >
                                             <Radio
                                                 value="public"
                                                 className="mt-1"
                                             />
-                                            <div
-                                                className="flex flex-col"
-                                                onClick={() =>
-                                                    setPrivacy('public')
-                                                }
-                                            >
+                                            <div className="flex flex-col">
                                                 <div className="flex items-center gap-2 font-medium text-zinc-200">
                                                     <GlobeIcon size={16} />{' '}
                                                     Public
                                                 </div>
                                                 <span className="text-tiny text-zinc-400">
                                                     Anyone in your organization
-                                                    can find and join this
-                                                    community.
+                                                    can find and join.
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className="h-2" /> {/* Spacer */}
+                                        <div className="h-2" />
                                         <div
                                             className={cn(
                                                 'flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer hover:bg-zinc-800/50',
@@ -234,24 +270,22 @@ export const CreateCommunityModal = ({
                                                     ? 'border-primary bg-primary/10'
                                                     : 'border-zinc-700 bg-transparent'
                                             )}
+                                            onClick={() =>
+                                                setPrivacy('private')
+                                            }
                                         >
                                             <Radio
                                                 value="private"
                                                 className="mt-1"
                                             />
-                                            <div
-                                                className="flex flex-col"
-                                                onClick={() =>
-                                                    setPrivacy('private')
-                                                }
-                                            >
+                                            <div className="flex flex-col">
                                                 <div className="flex items-center gap-2 font-medium text-zinc-200">
                                                     <LockIcon size={16} />{' '}
                                                     Private
                                                 </div>
                                                 <span className="text-tiny text-zinc-400">
                                                     Only invited members can
-                                                    view content and channels.
+                                                    view content.
                                                 </span>
                                             </div>
                                         </div>
@@ -272,7 +306,6 @@ export const CreateCommunityModal = ({
                                 color="primary"
                                 onPress={() => handleSubmit(onClose)}
                                 isLoading={isLoading}
-                                isDisabled={!name}
                                 startContent={
                                     !isLoading && <UsersIcon size={18} />
                                 }

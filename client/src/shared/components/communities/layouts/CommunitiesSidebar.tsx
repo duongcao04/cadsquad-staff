@@ -1,5 +1,6 @@
 import {
     Button,
+    Divider,
     Dropdown,
     DropdownItem,
     DropdownMenu,
@@ -7,7 +8,7 @@ import {
     ScrollShadow,
     useDisclosure,
 } from '@heroui/react'
-import { useRouterState } from '@tanstack/react-router'
+import { useRouter, useRouterState } from '@tanstack/react-router'
 import {
     EllipsisIcon,
     FileTextIcon,
@@ -22,6 +23,9 @@ import { CreateCommunityModal } from '../CreateCommunityModal'
 import { useState } from 'react'
 import { HeroButton } from '../../ui/hero-button'
 import { CreateTopicModal } from '../CreateTopicModal'
+import { TCommunity } from '../../../types'
+import { Image } from 'antd'
+import { INTERNAL_URLS, optimizeCloudinary } from '../../../../lib'
 
 export const COMMUNITIES = [
     {
@@ -79,7 +83,11 @@ export const COMMUNITIES = [
         ],
     },
 ]
-export default function CommunitiesSidebar() {
+export default function CommunitiesSidebar({
+    communities,
+}: {
+    communities: TCommunity[]
+}) {
     const [selectedCommunity, setSelectedCommunity] = useState<string | null>(
         null
     )
@@ -97,7 +105,7 @@ export default function CommunitiesSidebar() {
     }
 
     return (
-        <div className="w-72 h-[calc(100vh-57px)] shrink-0 flex flex-col bg-background">
+        <div className="w-96 h-[calc(100vh-57px)] shrink-0 flex flex-col bg-background">
             {createCommunityModalDisclosure.isOpen && (
                 <CreateCommunityModal
                     isOpen={createCommunityModalDisclosure.isOpen}
@@ -128,13 +136,18 @@ export default function CommunitiesSidebar() {
                     </Button>
                 </div>
             </div>
-            <ScrollShadow className="flex-1 pt-2 pb-4">
-                {COMMUNITIES.map((community) => (
-                    <CommunitySection
-                        community={community}
-                        key={community.id}
-                        onOpenTopicModal={handleOpenTopicModal}
-                    />
+            <ScrollShadow className="flex-1 pt-3 pb-4 px-3">
+                {communities.map((community, idx) => (
+                    <>
+                        <CommunitySection
+                            community={community}
+                            key={community.id}
+                            onOpenTopicModal={handleOpenTopicModal}
+                        />
+                        {idx !== communities.length - 1 && (
+                            <Divider className="my-2 bg-border-default" />
+                        )}
+                    </>
                 ))}
             </ScrollShadow>
         </div>
@@ -145,24 +158,38 @@ function CommunitySection({
     community,
     onOpenTopicModal,
 }: {
-    community: any
+    community: TCommunity
     onOpenTopicModal: (communityId: string) => void
 }) {
     const pathname = useRouterState({
         select: (state) => state.location.pathname,
     })
+    const router = useRouter()
 
     return (
-        <div key={community.id} className="mb-3">
-            <div className="px-4 py-3 flex items-center justify-between hover:bg-background-hovered transition-colors duration-150 group">
+        <>
+            <Button
+                variant={pathname.includes(community.code) ? 'solid' : 'light'}
+                disableAnimation
+                className="w-full h-17.5 flex items-center justify-between group"
+                onPress={() =>
+                    router.navigate({
+                        href: INTERNAL_URLS.getCommunityUrl(community.code),
+                    })
+                }
+            >
                 <div className="flex items-center gap-3">
-                    <div
-                        className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold text-white ${community.color}`}
-                    >
-                        {community.icon}
-                    </div>
-                    <span className="font-semibold text-text-default text-xs uppercase tracking-wider">
-                        {community.name}
+                    <Image
+                        src={optimizeCloudinary(community.icon, {
+                            width: 256,
+                            height: 256,
+                        })}
+                        rootClassName="size-10! rounded-md"
+                        className="size-full rounded-md"
+                        preview={false}
+                    />
+                    <span className="font-semibold text-text-default text-sm uppercase tracking-wider">
+                        {community.displayName}
                     </span>
                 </div>
                 <Dropdown placement="bottom-end">
@@ -188,34 +215,38 @@ function CommunitySection({
                         </DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
-            </div>
-            <div className="flex flex-col">
-                {community.channels.map((channel) => {
-                    const Icon = channel.icon
-
-                    const isActive = pathname === channel.id
+            </Button>
+            <div className="mt-3 flex flex-col gap-0.5">
+                {community.topics.map((topic) => {
+                    const isActive = pathname.includes(topic.code)
                     return (
-                        <button
-                            key={channel.id}
-                            className={`flex items-center gap-3 px-6 py-2 text-sm transition-all border-l-2
-                        ${
-                            isActive
-                                ? 'border-primary bg-primary/10 text-white font-medium'
-                                : 'border-transparent text-text-subdued hover:bg-background-hovered hover:text-text-default'
-                        }
-                      `}
+                        <Button
+                            key={topic.id}
+                            variant={isActive ? 'solid' : 'light'}
+                            startContent={
+                                <Image
+                                    src={optimizeCloudinary(topic.icon ?? '', {
+                                        width: 256,
+                                        height: 256,
+                                    })}
+                                />
+                            }
+                            disableAnimation
+                            onPress={() =>
+                                router.navigate({
+                                    href: INTERNAL_URLS.getCommunityTopicUrl(
+                                        community.code,
+                                        topic.code
+                                    ),
+                                })
+                            }
+                            className="w-full flex items-center justify-start gap-2 px-6 py-2 text-sm"
                         >
-                            <Icon
-                                size={16}
-                                className={
-                                    isActive ? 'text-primary' : 'text-zinc-500'
-                                }
-                            />
-                            <span>{channel.name}</span>
-                        </button>
+                            {topic.title}
+                        </Button>
                     )
                 })}
             </div>
-        </div>
+        </>
     )
 }

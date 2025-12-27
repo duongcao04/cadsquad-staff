@@ -23,6 +23,7 @@ import { Route as SettingsMyProfileRouteImport } from './routes/settings/my-prof
 import { Route as SettingsLoginAndSecurityRouteImport } from './routes/settings/login-and-security'
 import { Route as SettingsLanguageAndRegionRouteImport } from './routes/settings/language-and-region'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
+import { Route as CommunitiesCodeRouteImport } from './routes/communities/$code'
 import { Route as WorkspaceTaskSummaryRouteImport } from './routes/_workspace/task-summary'
 import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
 import { Route as WorkspaceProfileRouteImport } from './routes/_workspace/profile'
@@ -33,6 +34,7 @@ import { Route as PublicHelpCenterRouteImport } from './routes/_public/help-cent
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AdministratorFinancialRouteImport } from './routes/_administrator/financial'
 import { Route as AdministratorAdminRouteImport } from './routes/_administrator/admin'
+import { Route as CommunitiesCodeIndexRouteImport } from './routes/communities/$code/index'
 import { Route as WorkspaceProjectCenterIndexRouteImport } from './routes/_workspace/project-center/index'
 import { Route as WorkspaceJobsIndexRouteImport } from './routes/_workspace/jobs/index'
 import { Route as AdministratorAdminIndexRouteImport } from './routes/_administrator/admin/index'
@@ -128,6 +130,11 @@ const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
   path: '/appearance',
   getParentRoute: () => SettingsRoute,
 } as any)
+const CommunitiesCodeRoute = CommunitiesCodeRouteImport.update({
+  id: '/$code',
+  path: '/$code',
+  getParentRoute: () => CommunitiesRoute,
+} as any)
 const WorkspaceTaskSummaryRoute = WorkspaceTaskSummaryRouteImport.update({
   id: '/task-summary',
   path: '/task-summary',
@@ -176,6 +183,11 @@ const AdministratorAdminRoute = AdministratorAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AdministratorRoute,
+} as any)
+const CommunitiesCodeIndexRoute = CommunitiesCodeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CommunitiesCodeRoute,
 } as any)
 const WorkspaceProjectCenterIndexRoute =
   WorkspaceProjectCenterIndexRouteImport.update({
@@ -342,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/task-summary': typeof WorkspaceTaskSummaryRoute
+  '/communities/$code': typeof CommunitiesCodeRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
@@ -365,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdministratorAdminIndexRoute
   '/jobs/': typeof WorkspaceJobsIndexRoute
   '/project-center/': typeof WorkspaceProjectCenterIndexRoute
+  '/communities/$code/': typeof CommunitiesCodeIndexRoute
   '/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
@@ -407,6 +421,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdministratorAdminIndexRoute
   '/jobs': typeof WorkspaceJobsIndexRoute
   '/project-center': typeof WorkspaceProjectCenterIndexRoute
+  '/communities/$code': typeof CommunitiesCodeIndexRoute
   '/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
@@ -436,6 +451,7 @@ export interface FileRoutesById {
   '/_workspace/profile': typeof WorkspaceProfileRoute
   '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
   '/_workspace/task-summary': typeof WorkspaceTaskSummaryRoute
+  '/communities/$code': typeof CommunitiesCodeRouteWithChildren
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
   '/settings/login-and-security': typeof SettingsLoginAndSecurityRoute
@@ -459,6 +475,7 @@ export interface FileRoutesById {
   '/_administrator/admin/': typeof AdministratorAdminIndexRoute
   '/_workspace/jobs/': typeof WorkspaceJobsIndexRoute
   '/_workspace/project-center/': typeof WorkspaceProjectCenterIndexRoute
+  '/communities/$code/': typeof CommunitiesCodeIndexRoute
   '/_administrator/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/_administrator/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/_administrator/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
@@ -485,6 +502,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/project-center'
     | '/task-summary'
+    | '/communities/$code'
     | '/settings/appearance'
     | '/settings/language-and-region'
     | '/settings/login-and-security'
@@ -508,6 +526,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/jobs/'
     | '/project-center/'
+    | '/communities/$code/'
     | '/admin/departments/$code'
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
@@ -550,6 +569,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/jobs'
     | '/project-center'
+    | '/communities/$code'
     | '/admin/departments/$code'
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
@@ -578,6 +598,7 @@ export interface FileRouteTypes {
     | '/_workspace/profile'
     | '/_workspace/project-center'
     | '/_workspace/task-summary'
+    | '/communities/$code'
     | '/settings/appearance'
     | '/settings/language-and-region'
     | '/settings/login-and-security'
@@ -601,6 +622,7 @@ export interface FileRouteTypes {
     | '/_administrator/admin/'
     | '/_workspace/jobs/'
     | '/_workspace/project-center/'
+    | '/communities/$code/'
     | '/_administrator/admin/departments/$code'
     | '/_administrator/admin/mgmt/invite-member'
     | '/_administrator/admin/mgmt/revenue'
@@ -723,6 +745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAppearanceRouteImport
       parentRoute: typeof SettingsRoute
     }
+    '/communities/$code': {
+      id: '/communities/$code'
+      path: '/$code'
+      fullPath: '/communities/$code'
+      preLoaderRoute: typeof CommunitiesCodeRouteImport
+      parentRoute: typeof CommunitiesRoute
+    }
     '/_workspace/task-summary': {
       id: '/_workspace/task-summary'
       path: '/task-summary'
@@ -792,6 +821,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AdministratorAdminRouteImport
       parentRoute: typeof AdministratorRoute
+    }
+    '/communities/$code/': {
+      id: '/communities/$code/'
+      path: '/'
+      fullPath: '/communities/$code/'
+      preLoaderRoute: typeof CommunitiesCodeIndexRouteImport
+      parentRoute: typeof CommunitiesCodeRoute
     }
     '/_workspace/project-center/': {
       id: '/_workspace/project-center/'
@@ -1153,11 +1189,25 @@ const WorkspaceRouteWithChildren = WorkspaceRoute._addFileChildren(
   WorkspaceRouteChildren,
 )
 
+interface CommunitiesCodeRouteChildren {
+  CommunitiesCodeIndexRoute: typeof CommunitiesCodeIndexRoute
+}
+
+const CommunitiesCodeRouteChildren: CommunitiesCodeRouteChildren = {
+  CommunitiesCodeIndexRoute: CommunitiesCodeIndexRoute,
+}
+
+const CommunitiesCodeRouteWithChildren = CommunitiesCodeRoute._addFileChildren(
+  CommunitiesCodeRouteChildren,
+)
+
 interface CommunitiesRouteChildren {
+  CommunitiesCodeRoute: typeof CommunitiesCodeRouteWithChildren
   CommunitiesIndexRoute: typeof CommunitiesIndexRoute
 }
 
 const CommunitiesRouteChildren: CommunitiesRouteChildren = {
+  CommunitiesCodeRoute: CommunitiesCodeRouteWithChildren,
   CommunitiesIndexRoute: CommunitiesIndexRoute,
 }
 
