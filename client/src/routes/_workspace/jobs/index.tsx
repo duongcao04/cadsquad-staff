@@ -1,37 +1,38 @@
-import { useState } from 'react'
 import {
+    Avatar,
+    Button,
     Card,
     CardBody,
     CardHeader,
-    Button,
     Chip,
-    Progress,
-    Avatar,
-    Tabs,
-    Tab,
-    Textarea,
     Divider,
     Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
     DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+    Progress,
     Snippet,
+    Tab,
+    Tabs,
+    Textarea,
 } from '@heroui/react'
-import {
-    UploadCloud,
-    FileText,
-    MoreVertical,
-    Flag,
-    Share2,
-    Paperclip,
-    Download,
-    Calendar,
-    Briefcase,
-    ChevronRight,
-    Send,
-} from 'lucide-react'
-import { JobActionToolbar } from '../../../shared/components/job-detail/JobActionToolbar'
 import { createFileRoute } from '@tanstack/react-router'
+import {
+    Briefcase,
+    Calendar,
+    ChevronRight,
+    Download,
+    FileText,
+    Flag,
+    MoreVertical,
+    Paperclip,
+    Send,
+    Share2,
+    UploadCloud,
+} from 'lucide-react'
+import { useState } from 'react'
+
+import { JobActionToolbar } from '../../../shared/components/job-detail/JobActionToolbar'
 
 export const Route = createFileRoute('/_workspace/jobs/')({
     component: UserJobDetailPage,

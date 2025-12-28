@@ -1,18 +1,19 @@
 import { Button, Kbd, useDisclosure } from '@heroui/react'
+import { Link } from '@tanstack/react-router'
+import { ChannelProvider } from 'ably/react'
 import { Layout } from 'antd'
 import hotkeys from 'hotkeys-js'
 import { CircleHelpIcon, Search } from 'lucide-react'
 import { useEffect } from 'react'
-import CadsquadLogo from '../../CadsquadLogo'
-import { HeroButton } from '../../ui/hero-button'
-import { ChannelProvider } from 'ably/react'
-import { CHANNELS } from '../../../../lib/ably'
+
 import { useProfile } from '../../../../lib'
+import { CHANNELS } from '../../../../lib/ably'
+import CadsquadLogo from '../../CadsquadLogo'
 import NotificationDropdown from '../../layouts/Header/NotificationDropdown'
 import { SearchModal } from '../../layouts/Header/SearchModal'
 import { SettingsDropdown } from '../../layouts/Header/SettingsDropdown'
 import { UserDropdown } from '../../layouts/Header/UserDropdown'
-import { Link } from '@tanstack/react-router'
+import { HeroButton } from '../../ui/hero-button'
 
 const { Header: AntHeader } = Layout
 

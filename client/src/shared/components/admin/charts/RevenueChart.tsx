@@ -1,4 +1,3 @@
-import { AnalyticsOverview } from '@/lib/api'
 import {
     Area,
     AreaChart,
@@ -8,6 +7,8 @@ import {
     XAxis,
     YAxis,
 } from 'recharts'
+
+import { AnalyticsOverview } from '@/lib/api'
 
 type RevenueChartProps = {
     data: AnalyticsOverview['financialChart']['data']

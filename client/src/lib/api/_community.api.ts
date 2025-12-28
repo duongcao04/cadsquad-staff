@@ -1,5 +1,6 @@
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import type { ICommunityResponse, ITopicResponse } from '@/shared/interfaces'
+
 import { TPost } from '../../shared/types/_post.type'
 import { TCreateCommunityInput } from '../validationSchemas/_community.schema'
 import { TCreateTopicInput } from '../validationSchemas/_topic.schema'

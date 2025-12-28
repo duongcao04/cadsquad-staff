@@ -1,13 +1,3 @@
-import { getPageTitle, INTERNAL_URLS } from '@/lib'
-import { jobsListOptions } from '@/lib/queries'
-import {
-    AdminPageHeading,
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import AdminManagementJobsTable from '@/shared/components/management-jobs/AdminManagementJobsTable'
-import { TJob } from '@/shared/types'
 import {
     Badge,
     Button,
@@ -23,6 +13,17 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
+
+import { getPageTitle, INTERNAL_URLS } from '@/lib'
+import { jobsListOptions } from '@/lib/queries'
+import {
+    AdminPageHeading,
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import AdminManagementJobsTable from '@/shared/components/management-jobs/AdminManagementJobsTable'
+import { TJob } from '@/shared/types'
 
 const DEFAULT_SORT = 'displayName:asc'
 

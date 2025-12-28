@@ -1,6 +1,5 @@
 import dayjs from 'dayjs'
 import lodash from 'lodash'
-
 import { CalendarDay } from 'react-day-picker'
 
 import { useJobsDueOnDate } from '@/lib/queries'

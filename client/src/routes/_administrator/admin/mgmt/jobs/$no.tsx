@@ -1,37 +1,4 @@
 import {
-    ApiResponse,
-    darkenHexColor,
-    EXTERNAL_URLS,
-    getPageTitle,
-    INTERNAL_URLS,
-    lightenHexColor,
-    optimizeCloudinary,
-    PAID_STATUS_COLOR,
-    useAdminDeliverJobMutation,
-    useProfile,
-    useRemoveMemberMutation,
-} from '@/lib'
-import {
-    jobActivityLogsOptions,
-    jobByNoOptions,
-    jobDeliveriesListOptions,
-    jobStatusesListOptions,
-} from '@/lib/queries'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroTooltip,
-    JobActivityHistory,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import AdminDeliveryCard from '@/shared/components/management-jobs/AdminDeliveryCard'
-import { AdminJobManageAccessModal } from '@/shared/components/modals/AdminJobManageAccessModal'
-import AssignMembersModal from '@/shared/components/modals/AssignMembersModal'
-import { ConfirmCancelJobModal } from '@/shared/components/modals/ConfirmCancelJobModal'
-import { ConfirmRemoveAssigneeModal } from '@/shared/components/modals/ConfirmRemoveAssigneeModal'
-import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
-import { TJob, TUser } from '@/shared/types'
-import {
     Avatar,
     AvatarGroup,
     Button,
@@ -78,6 +45,39 @@ import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import * as Yup from 'yup'
 import { z } from 'zod'
+import {
+    ApiResponse,
+    darkenHexColor,
+    EXTERNAL_URLS,
+    getPageTitle,
+    INTERNAL_URLS,
+    lightenHexColor,
+    optimizeCloudinary,
+    PAID_STATUS_COLOR,
+    useAdminDeliverJobMutation,
+    useProfile,
+    useRemoveMemberMutation,
+} from '@/lib'
+import {
+    jobActivityLogsOptions,
+    jobByNoOptions,
+    jobDeliveriesListOptions,
+    jobStatusesListOptions,
+} from '@/lib/queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroTooltip,
+    JobActivityHistory,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import AdminDeliveryCard from '@/shared/components/management-jobs/AdminDeliveryCard'
+import { AdminJobManageAccessModal } from '@/shared/components/modals/AdminJobManageAccessModal'
+import AssignMembersModal from '@/shared/components/modals/AssignMembersModal'
+import { ConfirmCancelJobModal } from '@/shared/components/modals/ConfirmCancelJobModal'
+import { ConfirmRemoveAssigneeModal } from '@/shared/components/modals/ConfirmRemoveAssigneeModal'
+import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
+import { TJob, TUser } from '@/shared/types'
 
 export const manageJobDetailParamsSchema = z.object({
     tab: z
@@ -563,8 +563,9 @@ function JobEditPage() {
                                                             : 'bordered'
                                                     }
                                                     color={
-                                                        formik.values.status ===
-                                                        opt.id
+                                                        data &&
+                                                        data.status.code ===
+                                                            opt.code
                                                             ? (opt.hexColor as any)
                                                             : 'default'
                                                     }
@@ -604,7 +605,7 @@ function JobEditPage() {
                             </Card>
 
                             {/* Main Tabs Form */}
-                            <Card className="w-full shadow-sm border border-border-default min-h-[600px]">
+                            <Card className="w-full shadow-sm border border-border-default min-h-150">
                                 <CardHeader className="p-0 border-b border-border-default">
                                     <Tabs
                                         aria-label="Job Edit Sections"
@@ -795,7 +796,7 @@ function JobEditPage() {
                                                         labelPlacement="outside"
                                                         value={
                                                             formik.values
-                                                                .createdAt
+                                                                .startedAt
                                                         }
                                                         onChange={
                                                             formik.handleChange
@@ -1188,7 +1189,7 @@ function JobEditPage() {
                                                     )}
                                                     <button
                                                         type="button"
-                                                        className="border border-dashed border-slate-300 rounded-xl flex items-center justify-center gap-2 h-[66px] text-text-subdued hover:text-primary hover:border-primary hover:bg-primary-50 transition-all"
+                                                        className="border border-dashed border-slate-300 rounded-xl flex items-center justify-center gap-2 h-16.5 text-text-subdued hover:text-primary hover:border-primary hover:bg-primary-50 transition-all"
                                                         onClick={
                                                             onOpenAssignModal
                                                         }

@@ -1,7 +1,3 @@
-import { cn } from '@/lib'
-import { CHANNELS } from '@/lib/ably'
-import { notificationsListOptions } from '@/lib/queries/options/notification-queries'
-import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
 import {
     addToast,
     Badge,
@@ -18,13 +14,19 @@ import { useRouter } from '@tanstack/react-router'
 import { useChannel } from 'ably/react'
 import { CheckCheck, Inbox, RefreshCcw } from 'lucide-react'
 import { useState } from 'react'
+
+import { cn } from '@/lib'
+import { CHANNELS } from '@/lib/ably'
+import { notificationsListOptions } from '@/lib/queries/options/notification-queries'
+import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
+
+import { jobsListOptions, useProfile } from '../../../../lib/queries'
+import { workbenchDataOptions } from '../../../../lib/queries/options/job-queries'
+import { queryClient } from '../../../../main'
 import { TUserNotification } from '../../../types'
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { HeroButton } from '../../ui/hero-button'
 import { NotificationCard } from './NotificationCard'
-import { queryClient } from '../../../../main'
-import { jobsListOptions, useProfile } from '../../../../lib/queries'
-import { workbenchDataOptions } from '../../../../lib/queries/options/job-queries'
 
 export default function NotificationDropdown() {
     const { profile } = useProfile()

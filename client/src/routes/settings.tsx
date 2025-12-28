@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { AuthGuard } from '../shared/guards'
+
 import { Header } from '../shared/components'
 import SettingsSidebar from '../shared/components/settings/layouts/SettingsSidebar'
+import { AuthGuard } from '../shared/guards'
 
 // Lưu ý: path là id ảo, không xuất hiện trên URL
 export const Route = createFileRoute('/settings')({

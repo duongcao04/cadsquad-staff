@@ -1,17 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router'
 import {
+    Button,
     Card,
     CardBody,
+    Divider,
     Input,
-    Button,
-    Tabs,
-    Tab,
-    Switch,
     Select,
     SelectItem,
-    Divider,
+    Switch,
+    Tab,
+    Tabs,
 } from '@heroui/react'
-import { DollarSign, Building, Target, Save } from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
+import { Building, DollarSign, Save,Target } from 'lucide-react'
 
 export const Route = createFileRoute('/_administrator/financial/setting')({
     component: SettingsPage,

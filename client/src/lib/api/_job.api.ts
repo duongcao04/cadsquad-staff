@@ -1,9 +1,11 @@
+import queryString from 'query-string'
+
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import {
-    TDeliverJobInput,
     type TBulkChangeStatusInput,
     type TChangeStatusInput,
     type TCreateJobInput,
+    TDeliverJobInput,
     type TJobQueryInput,
     type TRescheduleJob,
     type TUpdateJobInput,
@@ -16,7 +18,7 @@ import type {
     IUserResponse,
 } from '@/shared/interfaces'
 import type { JobColumnKey, JobUpdateResponse } from '@/shared/types'
-import queryString from 'query-string'
+
 import { ProjectCenterTabEnum } from '../../shared/enums'
 
 export const jobApi = {

@@ -1,25 +1,26 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useFormik } from 'formik'
 import {
     Button,
     Card,
-    CardHeader,
     CardBody,
-    Switch,
-    Divider,
+    CardHeader,
     Chip,
+    Divider,
+    Switch,
 } from '@heroui/react'
+import { createFileRoute } from '@tanstack/react-router'
+import { useFormik } from 'formik'
 import {
+    DownloadIcon,
     EyeIcon,
     EyeOffIcon,
-    DownloadIcon,
-    Trash2Icon,
-    ShieldAlertIcon,
-    SmartphoneIcon,
     LaptopIcon,
     LogOutIcon,
+    ShieldAlertIcon,
+    SmartphoneIcon,
+    Trash2Icon,
 } from 'lucide-react'
+import { useState } from 'react'
+
 import { getPageTitle } from '../../lib'
 
 export const Route = createFileRoute('/settings/privacy')({

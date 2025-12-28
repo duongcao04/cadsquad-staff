@@ -1,20 +1,21 @@
-import { createFileRoute } from '@tanstack/react-router'
 import {
+    Button,
     Card,
     CardBody,
-    Button,
-    Progress,
     Checkbox,
-    User,
     Chip,
+    Progress,
+    User,
 } from '@heroui/react'
+import { createFileRoute } from '@tanstack/react-router'
 import {
-    Play,
     AlertCircle,
-    CheckCircle2,
-    TrendingUp,
     Briefcase,
+    CheckCircle2,
+    Play,
+    TrendingUp,
 } from 'lucide-react'
+
 import { getPageTitle, optimizeCloudinary, useProfile } from '../../lib'
 
 export const Route = createFileRoute('/_workspace/task-summary')({

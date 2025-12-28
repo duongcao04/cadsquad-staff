@@ -1,6 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
+
 import { IJobTitleResponse } from "@/shared/interfaces";
 import { TJobTitle } from "@/shared/types";
+
 import { jobTitleApi } from "../../api";
 
 export const mapJobTitle: (item?: IJobTitleResponse) => TJobTitle = (item) => ({

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 
 import { paymentChannelApi } from '@/lib/api'
+
 import { mapPaymentChannel } from './options/payment-channel-queries'
 
 export const usePaymentChannels = () => {

@@ -1,11 +1,4 @@
-import {
-    dateFormatter,
-    getGradientColor,
-    INTERNAL_URLS,
-    lightenHexColor,
-    optimizeCloudinary,
-} from '@/lib'
-import { jobsDueOnDateOptions } from '@/lib/queries'
+import { Avatar, AvatarGroup } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import {
@@ -15,10 +8,19 @@ import {
     RefreshCw,
 } from 'lucide-react'
 import { useState } from 'react'
-import { HeroButton } from '../ui/hero-button'
-import { Avatar, AvatarGroup } from '@heroui/react'
-import WeekCalendar from './WeekCalendar'
+
+import {
+    dateFormatter,
+    getGradientColor,
+    INTERNAL_URLS,
+    lightenHexColor,
+    optimizeCloudinary,
+} from '@/lib'
+import { jobsDueOnDateOptions } from '@/lib/queries'
+
 import { toggleAdminRightSidebar } from '../../stores'
+import { HeroButton } from '../ui/hero-button'
+import WeekCalendar from './WeekCalendar'
 
 export const DashboardRightPanel = ({
     isCollapsed = false,

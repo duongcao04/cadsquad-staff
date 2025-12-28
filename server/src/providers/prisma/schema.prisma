@@ -242,7 +242,8 @@ model Job {
   displayName      String
   description      String?
   attachmentUrls   String[]           @default([])
-  clientName       String
+  client           Client             @relation(fields: [clientId], references: [id])
+  clientId         String
   incomeCost       Float
   staffCost        Float
   assignee         User[]             @relation("UserJobs") // Member assigned
@@ -275,6 +276,40 @@ model Job {
   @@index([statusId])
   @@index([createdById])
   @@index([priority])
+}
+
+model Client {
+  id   String     @id @default(uuid())
+  name String // Company name
+  code String     @unique // e.g. "CUST-001"
+  type ClientType @default(COMPANY)
+
+  // Regional Info
+  region   String? // e.g. "North"
+  country  String?
+  address  String?
+  timezone String? @default("UTC")
+
+  // Contact Info
+  email        String? @unique
+  phone        String?
+  billingEmail String?
+
+  // Financials
+  taxId        String?
+  currency     String  @default("USD")
+  paymentTerms Int     @default(30) // Days to pay
+
+  // Relations
+  jobs Job[] // Links back to your Job model
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ClientType {
+  INDIVIDUAL
+  COMPANY
 }
 
 model PinnedJob {

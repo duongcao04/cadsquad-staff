@@ -1,9 +1,11 @@
+import 'react-quill-new/dist/quill.snow.css'
+
+import { Divider } from '@heroui/react'
 import { useRef, useState } from 'react'
 import ReactQuill from 'react-quill-new'
-import 'react-quill-new/dist/quill.snow.css'
-import { EditorToolbar, modules, formats } from './EditorToolbar'
+
+import { EditorToolbar, formats,modules } from './EditorToolbar'
 import { FloatingToolbar } from './FloatingToolbar'
-import { Divider } from '@heroui/react'
 
 interface ModernEditorProps {
     value: string

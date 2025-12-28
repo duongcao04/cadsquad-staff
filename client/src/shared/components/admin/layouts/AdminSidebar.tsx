@@ -1,4 +1,4 @@
-import { INTERNAL_URLS } from '@/lib'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { Link, useRouterState } from '@tanstack/react-router'
 import {
     BadgeDollarSign,
@@ -20,16 +20,18 @@ import {
     Users,
 } from 'lucide-react'
 import React from 'react'
+
+import { INTERNAL_URLS } from '@/lib'
+
+import {
+    departmentsListOptions,
+    jobsPendingPayoutsOptions,
+} from '../../../../lib/queries'
 import { toggleAdminLeftSidebar } from '../../../stores'
 import { ActionButton } from '../../app/ActionButton'
 import { HeroButton } from '../../ui/hero-button'
 import { HeroTooltip } from '../../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
-import {
-    departmentsListOptions,
-    jobsPendingPayoutsOptions,
-} from '../../../../lib/queries'
-import { useSuspenseQuery } from '@tanstack/react-query'
 
 // --- Types ---
 interface SidebarItemProps {

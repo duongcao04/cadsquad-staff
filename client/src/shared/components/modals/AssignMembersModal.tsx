@@ -1,10 +1,4 @@
 import {
-    optimizeCloudinary,
-    useAssignMemberMutation,
-    useRemoveMemberMutation,
-} from '@/lib'
-import { usersListOptions } from '@/lib/queries'
-import {
     Avatar,
     Button,
     Input,
@@ -19,6 +13,14 @@ import {
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { Plus, Search, Users, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+
+import {
+    optimizeCloudinary,
+    useAssignMemberMutation,
+    useRemoveMemberMutation,
+} from '@/lib'
+import { usersListOptions } from '@/lib/queries'
+
 import { TUser } from '../../types'
 import { HeroButton } from '../ui/hero-button'
 

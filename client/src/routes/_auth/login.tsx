@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { LoginForm } from '../../shared/components'
 import { getPageTitle } from '../../lib'
+import { LoginForm } from '../../shared/components'
 
 export const Route = createFileRoute('/_auth/login')({
     head: () => ({

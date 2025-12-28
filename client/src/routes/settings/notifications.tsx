@@ -1,34 +1,35 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
 import {
+    Button,
     Card,
     CardBody,
     CardHeader,
-    Switch,
-    Button,
+    Chip,
+    Divider,
     Select,
     SelectItem,
-    Divider,
-    Chip,
+    Switch,
     Tooltip,
 } from '@heroui/react'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import {
+    AlertCircle,
     Bell,
-    Mail,
-    Smartphone,
+    Briefcase,
+    Clock,
+    House,
     Laptop,
+    Mail,
+    MessageSquare,
     Moon,
     Save,
+    Smartphone,
     Trash2,
-    AlertCircle,
-    Clock,
     Zap,
-    MessageSquare,
-    Briefcase,
-    House,
 } from 'lucide-react'
-import { HeroBreadcrumbItem, HeroBreadcrumbs } from '../../shared/components'
+import { useState } from 'react'
+
 import { getPageTitle, INTERNAL_URLS } from '../../lib'
+import { HeroBreadcrumbItem, HeroBreadcrumbs } from '../../shared/components'
 
 export const Route = createFileRoute('/settings/notifications')({
     head: () => ({

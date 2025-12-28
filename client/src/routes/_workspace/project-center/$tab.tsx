@@ -1,3 +1,19 @@
+import { Spinner, Tab, Tabs, useDisclosure } from '@heroui/react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
+import {
+    CircleCheckBig,
+    ClockAlert,
+    PinIcon,
+    SquareX,
+    Truck,
+    Vote,
+} from 'lucide-react'
+import { Suspense, useMemo, useState } from 'react'
+import { useLocalStorage } from 'usehooks-ts'
+import { z } from 'zod'
+
 import {
     excelApi,
     getPageTitle,
@@ -26,21 +42,6 @@ import ProjectCenterTable from '@/shared/components/project-center/ProjectCenter
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { pCenterTableStore } from '@/shared/stores'
 import { JobColumnKey, TJob } from '@/shared/types'
-import { Spinner, Tab, Tabs, useDisclosure } from '@heroui/react'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { useStore } from '@tanstack/react-store'
-import {
-    CircleCheckBig,
-    ClockAlert,
-    PinIcon,
-    SquareX,
-    Truck,
-    Vote,
-} from 'lucide-react'
-import { Suspense, useMemo, useState } from 'react'
-import { useLocalStorage } from 'usehooks-ts'
-import { z } from 'zod'
 
 const DEFAULT_SORT = 'displayName:asc'
 
@@ -218,7 +219,7 @@ function ProjectCenterTableContent({
         ...jobsListOptions({
             ...search,
             tab,
-            hideFinishItems: Boolean(localShowFinishItems) ? '1' : '0',
+            hideFinishItems: localShowFinishItems ? '1' : '0',
         }),
         placeholderData: keepPreviousData,
     })

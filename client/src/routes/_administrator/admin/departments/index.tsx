@@ -1,39 +1,39 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState, useMemo } from 'react'
-import {
-    Card,
-    CardBody,
-    Button,
-    Input,
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    useDisclosure,
-    Textarea,
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-    Badge,
-} from '@heroui/react'
-import { Search, Plus, Edit, Trash2, Palette, Users, Hash } from 'lucide-react'
-import { INTERNAL_URLS } from '../../../../lib'
+import { INTERNAL_URLS } from '@/lib'
+import { departmentsListOptions } from '@/lib/queries'
 import {
     AdminPageHeading,
-    HeroBreadcrumbs,
     HeroBreadcrumbItem,
-} from '../../../../shared/components'
-import AdminContentContainer from '../../../../shared/components/admin/AdminContentContainer'
-import { departmentsListOptions } from '../../../../lib/queries'
+    HeroBreadcrumbs,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import { TDepartment } from '@/shared/types'
+import {
+    Badge,
+    Button,
+    Card,
+    CardBody,
+    Input,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
+    Textarea,
+    useDisclosure,
+} from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { TDepartment } from '../../../../shared/types'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { Edit, Hash, Palette, Plus, Search, Trash2, Users } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 export const Route = createFileRoute('/_administrator/admin/departments/')({
     loader: ({ context }) => {
@@ -41,52 +41,6 @@ export const Route = createFileRoute('/_administrator/admin/departments/')({
     },
     component: DepartmentsSettingsPage,
 })
-
-// --- Types based on Prisma Schema ---
-interface Department {
-    id: string
-    displayName: string // e.g. "Design Team"
-    code: string // e.g. "DES"
-    hexColor: string // e.g. "#8B5CF6"
-    notes?: string
-    memberCount: number // Aggregated from Users
-}
-
-// --- Mock Data ---
-const MOCK_DEPARTMENTS: Department[] = [
-    {
-        id: 'd1',
-        displayName: 'Design Team',
-        code: 'DES',
-        hexColor: '#8B5CF6',
-        memberCount: 8,
-        notes: 'UI/UX and Graphic Design',
-    },
-    {
-        id: 'd2',
-        displayName: 'Development',
-        code: 'DEV',
-        hexColor: '#3B82F6',
-        memberCount: 12,
-        notes: 'Frontend, Backend, and DevOps',
-    },
-    {
-        id: 'd3',
-        displayName: 'Marketing',
-        code: 'MKT',
-        hexColor: '#F59E0B',
-        memberCount: 5,
-        notes: 'SEO, Content, and Ads',
-    },
-    {
-        id: 'd4',
-        displayName: 'Finance',
-        code: 'FIN',
-        hexColor: '#10B981',
-        memberCount: 3,
-        notes: 'Accounting and Payroll',
-    },
-]
 
 // --- Color Palette Options ---
 const PRESET_COLORS = [
@@ -243,7 +197,7 @@ function DepartmentsSettingsPage() {
                                         labelPlacement="outside"
                                         variant="bordered"
                                         minRows={2}
-                                        value={formData.notes}
+                                        value={formData.notes ?? ''}
                                         onValueChange={(v) =>
                                             setFormData({
                                                 ...formData,
@@ -444,7 +398,7 @@ function DepartmentsSettingsPage() {
                                                 <p className="font-bold text-text-default">
                                                     {dept.displayName}
                                                 </p>
-                                                <p className="text-xs text-text-subdued truncate max-w-[200px]">
+                                                <p className="text-xs text-text-subdued truncate max-w-50">
                                                     {dept.notes ||
                                                         'No description'}
                                                 </p>

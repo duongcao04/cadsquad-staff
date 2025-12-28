@@ -1,6 +1,7 @@
 import { Store } from '@tanstack/react-store'
-import type { JobColumnKey, TJob } from '../types'
+
 import { JOB_COLUMNS, STORAGE_KEYS } from '../../lib'
+import type { JobColumnKey, TJob } from '../types'
 
 const getInitJobColumns = (): JobColumnKey[] | 'all' => {
     if (typeof window === 'undefined') return ['no','displayName','staffCost','status','dueAt','assignee','isPaid','action']

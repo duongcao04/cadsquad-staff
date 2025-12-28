@@ -1,7 +1,9 @@
-import type { TJob } from '@/shared/types'
 import { useDisclosure } from '@heroui/react'
 import lodash from 'lodash'
 import { useState } from 'react'
+
+import type { TJob } from '@/shared/types'
+
 import JobDetailDrawer from '../job-detail/JobDetailDrawer'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import WorkbenchTable from './WorkbenchTable'

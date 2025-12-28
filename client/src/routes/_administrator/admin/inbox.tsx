@@ -1,5 +1,6 @@
 import {
     Avatar,
+    Badge,
     Button,
     Card,
     Chip,
@@ -7,7 +8,6 @@ import {
     Input,
     ScrollShadow,
     Tab,
-    Badge,
     Tabs,
 } from '@heroui/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -24,11 +24,12 @@ import {
     Trash2,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+
 import { getPageTitle, INTERNAL_URLS } from '../../../lib'
 import {
     AdminPageHeading,
-    HeroBreadcrumbs,
     HeroBreadcrumbItem,
+    HeroBreadcrumbs,
 } from '../../../shared/components'
 import AdminContentContainer from '../../../shared/components/admin/AdminContentContainer'
 

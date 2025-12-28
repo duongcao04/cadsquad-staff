@@ -6,6 +6,7 @@ import {
     type TCreateDepartmentInput,
     type TUpdateDepartmentInput,
 } from '@/lib/validationSchemas'
+
 import { mapDepartment } from './options/department-queries'
 
 export const useDepartments = () => {

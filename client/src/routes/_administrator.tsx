@@ -1,10 +1,11 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { ManagerGuard } from '../shared/guards'
-import { AdminSidebar } from '../shared/components/admin/layouts/AdminSidebar'
-import { AdminHeader } from '../shared/components/admin/layouts/AdminHeader'
+import { useStore } from '@tanstack/react-store'
+
 import { ScrollArea, ScrollBar } from '../shared/components'
 import { DashboardRightPanel } from '../shared/components/admin/DashboardRightPanel'
-import { useStore } from '@tanstack/react-store'
+import { AdminHeader } from '../shared/components/admin/layouts/AdminHeader'
+import { AdminSidebar } from '../shared/components/admin/layouts/AdminSidebar'
+import { ManagerGuard } from '../shared/guards'
 import { appStore, ESidebarStatus } from '../shared/stores'
 
 // Lưu ý: path là id ảo, không xuất hiện trên URL

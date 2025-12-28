@@ -1,6 +1,8 @@
+import { queryOptions } from "@tanstack/react-query";
+
 import { IJobTypeResponse } from "@/shared/interfaces";
 import { TJobType } from "@/shared/types";
-import { queryOptions } from "@tanstack/react-query";
+
 import { jobTypeApi } from "../../api";
 
 export const mapJobType: (item: IJobTypeResponse) => TJobType = (item) => ({

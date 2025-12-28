@@ -1,6 +1,5 @@
 import { Avatar } from '@heroui/react'
 
-
 import type { TPaymentChannel } from '@/shared/types'
 
 import { HeroAutocomplete, HeroAutocompleteItem } from '../ui/hero-autocomplete'

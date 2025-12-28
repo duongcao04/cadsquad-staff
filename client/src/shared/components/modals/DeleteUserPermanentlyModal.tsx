@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Button,
-  Input,
   Chip,
+  Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
 } from "@heroui/react";
 import { AlertTriangle, Trash2 } from "lucide-react";
+import { useEffect,useState } from "react";
 
 interface DeleteUserModalProps {
   isOpen: boolean;

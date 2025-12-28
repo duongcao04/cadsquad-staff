@@ -1,24 +1,25 @@
 import { Avatar, Chip, Code, Skeleton, User } from '@heroui/react'
+import { useQuery } from '@tanstack/react-query'
+import lodash from 'lodash'
 import {
     ArrowRightLeft,
     CheckCircle2,
     CreditCard,
     Edit3,
     FileClock,
+    type LucideIcon,
     PackageCheck,
     PlusCircle,
     Trash2,
     UserMinus,
     UserPlus,
-    type LucideIcon,
 } from 'lucide-react'
+import React from 'react'
+
+import { IMAGES, optimizeCloudinary } from '@/lib'
+import { userOptions } from '@/lib/queries/options/user-queries'
 import { ActivityTypeEnum } from '@/shared/enums'
 import type { TJobActivityLog } from '@/shared/types'
-import { useQuery } from '@tanstack/react-query'
-import { userOptions } from '@/lib/queries/options/user-queries'
-import { IMAGES, optimizeCloudinary } from '@/lib'
-import lodash from 'lodash'
-import React from 'react'
 
 interface JobActivityHistoryProps {
     logs: TJobActivityLog[]
@@ -67,7 +68,7 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
         <div className="relative group">
             {/* Timeline Dot */}
             <div
-                className={`absolute -left-[33px] top-1 flex items-center justify-center w-8 h-8 rounded-full border-2 border-background shadow-sm transition-transform group-hover:scale-110 ${config.bgClass} ${config.textClass}`}
+                className={`absolute -left-8.25 top-1 flex items-center justify-center w-8 h-8 rounded-full border-2 border-background shadow-sm transition-transform group-hover:scale-110 ${config.bgClass} ${config.textClass}`}
             >
                 <Icon size={15} />
             </div>
@@ -282,7 +283,7 @@ const UserDisplay = ({ userId }: { userId: string }) => {
 
 const ActivityItemSkeleton = () => (
     <div className="relative group pl-2">
-        <Skeleton className="absolute -left-[33px] top-1 w-8 h-8 rounded-full" />
+        <Skeleton className="absolute -left-8.25 top-1 w-8 h-8 rounded-full" />
         <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
                 <Skeleton className="w-6 h-6 rounded-full" />
@@ -296,7 +297,7 @@ const ActivityItemSkeleton = () => (
 
 // --- Utilities ---
 
-const formatValue = (val: any) => {
+const formatValue = (val?: string | null | string[]) => {
     if (val === null || val === undefined || val === '') return 'Empty'
     if (typeof val === 'boolean') return val ? 'True' : 'False'
     // Try to detect date string
@@ -327,7 +328,9 @@ const isJsonString = (str: string | null) => {
         if (o && typeof o === 'object') {
             return true
         }
-    } catch (e) {}
+    } catch (e: unknown) {
+        console.log(e)
+    }
     return false
 }
 

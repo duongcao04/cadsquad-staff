@@ -1,5 +1,6 @@
-import { type ApiResponse, axiosClientMultipart } from '@/lib/axios'
 import { toFormData } from 'axios';
+
+import { type ApiResponse, axiosClientMultipart } from '@/lib/axios'
 
 export const imageApi = {
     upload: async (image: File) => {
@@ -7,7 +8,7 @@ export const imageApi = {
         formData.append('image', image, image.name)
         formData.append('description', 'test')
         console.log(toFormData(formData));
-        for (let pair of formData.entries()) {
+        for (const pair of formData.entries()) {
             console.log(pair[0] + ', ' + pair[1]);
         }
 

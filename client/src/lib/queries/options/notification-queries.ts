@@ -1,7 +1,9 @@
+import { queryOptions } from '@tanstack/react-query'
+
 import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
 import type { IUserNotificationResponse } from '@/shared/interfaces'
 import type { TUserNotification } from '@/shared/types'
-import { queryOptions } from '@tanstack/react-query'
+
 import { notificationApi } from '../../api'
 
 export const mapUserNotification: (

@@ -3,25 +3,25 @@ import { createFileRoute } from '@tanstack/react-router'
 export const Route = createFileRoute('/communities/')({
     component: CommunitiesIndexPage,
 })
-import { useState } from 'react'
 import {
-    Input,
     Button,
     Card,
-    CardHeader,
     CardBody,
     CardFooter,
+    CardHeader,
     Chip,
     Image,
+    Input,
     useDisclosure,
-    Spinner,
 } from '@heroui/react'
 import {
-    SearchIcon,
-    PlusIcon,
-    UsersIcon,
     MessageSquareIcon,
+    PlusIcon,
+    SearchIcon,
+    UsersIcon,
 } from 'lucide-react'
+import { useState } from 'react'
+
 import { CreateCommunityModal } from '../../shared/components/communities/CreateCommunityModal'
 
 // --- Mock Data (Based on your Prisma Schema) ---
@@ -69,7 +69,7 @@ const MOCK_COMMUNITIES = [
 
 export default function CommunitiesIndexPage() {
     const [searchQuery, setSearchQuery] = useState('')
-    const { isOpen, onOpen, onOpenChange } = useDisclosure()
+    const { isOpen, onOpen, onClose } = useDisclosure()
 
     // Filter logic
     const filteredCommunities = MOCK_COMMUNITIES.filter(
@@ -148,7 +148,7 @@ export default function CommunitiesIndexPage() {
             {/* --- Create Modal --- */}
             <CreateCommunityModal
                 isOpen={isOpen}
-                onClose={() => onOpenChange(false)}
+                onClose={() => onClose()}
                 onSubmit={handleCreateSubmit}
             />
         </div>

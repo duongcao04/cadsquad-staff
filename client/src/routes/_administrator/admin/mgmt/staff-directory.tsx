@@ -1,8 +1,9 @@
-import { usersListOptions } from '@/lib/queries/options/user-queries'
-import { AdminPageHeading } from '@/shared/components/admin/AdminPageHeading'
 import { Badge } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+
+import { usersListOptions } from '@/lib/queries/options/user-queries'
+import { AdminPageHeading } from '@/shared/components/admin/AdminPageHeading'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory'

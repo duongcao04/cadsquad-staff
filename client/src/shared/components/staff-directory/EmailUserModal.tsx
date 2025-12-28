@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
+    Avatar,
     Button,
+    Chip,
     Input,
-    Textarea,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
     Select,
     SelectItem,
-    Avatar,
-    Chip,
+    Textarea,
 } from '@heroui/react'
-import { Mail, Send, Paperclip, FileText, Copy } from 'lucide-react'
+import { Copy,FileText, Mail, Paperclip, Send } from 'lucide-react'
+import { useEffect,useState } from 'react'
 
 // --- Mock Templates ---
 const EMAIL_TEMPLATES = [

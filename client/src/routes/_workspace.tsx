@@ -1,10 +1,10 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
 
 import { Header, ScrollArea, ScrollBar, Sidebar } from '../shared/components'
-import { AuthGuard } from '../shared/guards'
-import { useStore } from '@tanstack/react-store'
-import { appStore } from '../shared/stores'
 import AppLoading from '../shared/components/app/AppLoading'
+import { AuthGuard } from '../shared/guards'
+import { appStore } from '../shared/stores'
 
 export const Route = createFileRoute('/_workspace')({
     pendingComponent: AppLoading,

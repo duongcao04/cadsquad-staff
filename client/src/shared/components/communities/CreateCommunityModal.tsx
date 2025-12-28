@@ -1,18 +1,19 @@
-import { useState } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
     Button,
-    Input,
-    Textarea,
-    RadioGroup,
-    Radio,
     cn,
+    Input,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Radio,
+    RadioGroup,
+    Textarea,
 } from '@heroui/react'
-import { UsersIcon, LockIcon, GlobeIcon } from 'lucide-react'
+import { GlobeIcon,LockIcon, UsersIcon } from 'lucide-react'
+import { useState } from 'react'
+
 import {
     createCommunitySchema,
     TCreateCommunityInput,

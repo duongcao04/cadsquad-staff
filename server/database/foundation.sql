@@ -362,7 +362,14 @@ SET
 -- 4. SEED JOB TYPE
 -- =============================================
 INSERT INTO
-	"JobType" (id, "displayName", "code", "hexColor", "createdAt", "updatedAt")
+	"JobType" (
+		id,
+		"displayName",
+		"code",
+		"hexColor",
+		"createdAt",
+		"updatedAt"
+	)
 VALUES
 	(
 		'2f9c6060-7f9b-42a5-b6fa-df3ac9627c42',
@@ -649,3 +656,89 @@ VALUES
 		NOW (),
 		NOW ()
 	) ON CONFLICT (id) DO NOTHING;
+
+-- =============================================
+-- 8. SEED CLIENT
+-- =============================================
+INSERT INTO
+	"Client" (
+		id,
+		code,
+		name,
+		email,
+		"phoneNumber",
+		region,
+		country,
+		currency,
+		"taxId",
+		"paymentTerms",
+		"createdAt",
+		"updatedAt"
+	)
+VALUES
+	(
+		'c1b2a3d4-e5f6-7890-abcd-111111111111',
+		'CL-AUTO-001',
+		'Tesla Motors',
+		'billing@tesla.com',
+		'+1-888-518-3752',
+		'North America',
+		'USA',
+		'USD',
+		'US-123456789',
+		30,
+		NOW (),
+		NOW ()
+	),
+	(
+		'c2b3a4d5-e6f7-8901-bcde-222222222222',
+		'CL-TECH-002',
+		'Samsung Electronics',
+		'accounts@samsung.com',
+		'+82-2-2053-3000',
+		'Asia Pacific',
+		'South Korea',
+		'USD',
+		'KR-987654321',
+		15,
+		NOW (),
+		NOW ()
+	),
+	(
+		'c3b4a5d6-e7f8-9012-cdef-333333333333',
+		'CL-VN-003',
+		'VinFast Vietnam',
+		'contact@vinfast.vn',
+		'+84-1900-232389',
+		'Vietnam',
+		'Vietnam',
+		'VND',
+		'VN-1122334455',
+		7,
+		NOW (),
+		NOW ()
+	),
+	(
+		'c4b5a6d7-e8f9-0123-defg-444444444444',
+		'CL-EU-004',
+		'Siemens AG',
+		'finance@siemens.de',
+		'+49-89-636-00',
+		'Europe',
+		'Germany',
+		'EUR',
+		'DE-556677889',
+		45,
+		NOW (),
+		NOW ()
+	) ON CONFLICT (code) DO
+UPDATE
+SET
+	"name" = EXCLUDED."name",
+	"email" = EXCLUDED."email",
+	"region" = EXCLUDED."region",
+	"country" = EXCLUDED."country",
+	"currency" = EXCLUDED."currency",
+	"taxId" = EXCLUDED."taxId",
+	"paymentTerms" = EXCLUDED."paymentTerms",
+	"updatedAt" = NOW ();

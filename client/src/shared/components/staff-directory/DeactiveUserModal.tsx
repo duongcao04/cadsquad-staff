@@ -1,15 +1,15 @@
-import { useState } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
     Avatar,
+    Button,
     Chip,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
 } from '@heroui/react'
 import { AlertTriangle, Ban, ShieldAlert } from 'lucide-react'
+import { useState } from 'react'
 
 interface DeactivateUserModalProps {
     isOpen: boolean

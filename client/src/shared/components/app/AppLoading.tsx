@@ -1,10 +1,13 @@
-import { MotionDiv } from '@/lib/motion'
-import { GlassBackground } from '@/shared/components'
+import '../../../styles/loading.css'
+
 import { Image } from 'antd'
 import { useTheme } from 'next-themes'
-import WhiteCSDLogo from '../../../assets/logo-white.webp'
+
+import { MotionDiv } from '@/lib/motion'
+import { GlassBackground } from '@/shared/components'
+
 import CSDLogo from '../../../assets/logo.webp'
-import '../../../styles/loading.css'
+import WhiteCSDLogo from '../../../assets/logo-white.webp'
 
 export default function AppLoading() {
     const { theme, systemTheme } = useTheme()

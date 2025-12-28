@@ -1,6 +1,8 @@
+import { queryOptions } from '@tanstack/react-query'
+
 import type { IConfigResponse } from '@/shared/interfaces'
 import type { TUserConfig } from '@/shared/types'
-import { queryOptions } from '@tanstack/react-query'
+
 import { userConfigApi } from '../../api'
 
 export const mapUserConfig: (item: IConfigResponse) => TUserConfig = (

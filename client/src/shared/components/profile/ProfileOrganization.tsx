@@ -1,13 +1,13 @@
-import { useState } from 'react'
 import {
-    Card,
-    CardBody,
     Avatar,
     Badge,
     Button,
+    Card,
+    CardBody,
     ScrollShadow,
 } from '@heroui/react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
 
 // --- TYPES ---
 interface OrgUser {

@@ -1,12 +1,12 @@
 import './styles/global.css'
 
+import { QueryClient } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 
 // Import file được tự động sinh ra
 import { routeTree } from './routeTree.gen'
-import { QueryClient } from '@tanstack/react-query'
 
 export const queryClient = new QueryClient({
     defaultOptions: {

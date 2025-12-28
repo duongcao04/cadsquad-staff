@@ -7,11 +7,13 @@ import {
 } from '@heroui/react'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { useState } from 'react'
+
+import { useMarkPaidMutation, useProfile } from '@/lib'
 import { darkenHexColor, lightenHexColor, PAID_STATUS_COLOR } from '@/lib/utils'
 import type { TJob } from '@/shared/types'
-import { useMarkPaidMutation, useProfile } from '@/lib'
+
 import { PaidChip } from '../chips/PaidChip'
-import { useState } from 'react'
 
 type Props = {
     jobData: TJob

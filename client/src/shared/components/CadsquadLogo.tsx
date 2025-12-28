@@ -1,9 +1,11 @@
-import { cn } from '@/lib/utils'
 import { Link } from '@tanstack/react-router'
-import { memo } from 'react'
-import CSDWhiteLogo from '../../assets/logo-white.webp'
-import CSDLogo from '../../assets/logo.webp'
 import { useTheme } from 'next-themes'
+import { memo } from 'react'
+
+import { cn } from '@/lib/utils'
+
+import CSDLogo from '../../assets/logo.webp'
+import CSDWhiteLogo from '../../assets/logo-white.webp'
 
 type Props = {
     canRedirect?: boolean

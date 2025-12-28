@@ -3,7 +3,6 @@ import * as yup from 'yup'
 import { z } from 'zod'
 
 import { ProjectCenterTabEnum } from '../../shared/enums'
-import { arrayToString, optionalIsoDate } from '../zod'
 import { jobFiltersSchema } from './_job-filter.schema'
 
 export const CreateJobSchema = yup.object({

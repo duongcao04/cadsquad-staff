@@ -1,5 +1,6 @@
-import { PageHeading } from '@/shared/components'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+
+import { PageHeading } from '@/shared/components'
 
 export const Route = createFileRoute('/_workspace/project-center')({
     component: ProjectCenterLayout,

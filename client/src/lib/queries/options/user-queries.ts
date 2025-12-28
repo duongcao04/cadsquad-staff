@@ -1,8 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
+
 import { IUserResponse } from "../../../shared/interfaces";
 import { TDepartment, TUser } from "../../../shared/types";
-import { IMAGES } from "../../utils";
 import { authApi, IProfileOverview, userApi } from "../../api";
+import { IMAGES } from "../../utils";
 
 export const mapUser: (item?: IUserResponse) => TUser = (item) => ({
 	id: item?.id ?? "",

@@ -1,24 +1,24 @@
-import { createFileRoute } from '@tanstack/react-router'
 import {
+    Button,
     Card,
     CardBody,
-    Button,
-    Tabs,
+    Progress,
     Tab,
     Table,
-    TableHeader,
-    TableColumn,
     TableBody,
-    TableRow,
     TableCell,
-    Progress,
+    TableColumn,
+    TableHeader,
+    TableRow,
+    Tabs,
 } from '@heroui/react'
+import { createFileRoute } from '@tanstack/react-router'
 import {
-    TrendingUp,
-    TrendingDown,
+    AlertTriangle,
     Building,
     Download,
-    AlertTriangle,
+    TrendingDown,
+    TrendingUp,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/_administrator/financial/payroll')({

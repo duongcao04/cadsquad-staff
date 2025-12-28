@@ -1,9 +1,11 @@
+import { queryOptions } from '@tanstack/react-query'
+import lodash from 'lodash'
+
 import { JobStatusSystemTypeEnum } from '@/shared/enums'
 import type { IJobStatusResponse } from '@/shared/interfaces'
 import type { TJobStatus } from '@/shared/types'
-import { queryOptions } from '@tanstack/react-query'
+
 import { jobStatusApi } from '../../api'
-import lodash from 'lodash'
 
 export const mapJobStatus: (item: IJobStatusResponse) => TJobStatus = (
     item

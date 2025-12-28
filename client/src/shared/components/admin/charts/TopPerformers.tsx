@@ -1,7 +1,8 @@
-import { optimizeCloudinary } from '@/lib'
-import { TUser } from '@/shared/types'
 import { Avatar } from '@heroui/react'
 import { MoreVertical } from 'lucide-react'
+
+import { optimizeCloudinary } from '@/lib'
+import { TUser } from '@/shared/types'
 
 type TopPerformersProps = {
     data: TUser[]

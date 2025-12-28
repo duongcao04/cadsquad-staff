@@ -1,8 +1,3 @@
-import { jobsPendingDeliverOptions, useDeliverJobMutation } from '@/lib/queries'
-import {
-    DeliverJobInputSchema,
-    TDeliverJobInput,
-} from '@/lib/validationSchemas/_job.schema'
 import {
     Button,
     Chip,
@@ -18,6 +13,7 @@ import {
 } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useFormik } from 'formik' // Import useFormik
+import lodash from 'lodash'
 import {
     CheckCircle2,
     Link as LinkIcon,
@@ -25,8 +21,14 @@ import {
     Send,
     X,
 } from 'lucide-react'
+
+import { jobsPendingDeliverOptions, useDeliverJobMutation } from '@/lib/queries'
+import {
+    DeliverJobInputSchema,
+    TDeliverJobInput,
+} from '@/lib/validationSchemas/_job.schema'
+
 import { JobStatusChip } from '../chips/JobStatusChip'
-import lodash from 'lodash'
 
 interface DeliverJobModalProps {
     isOpen: boolean

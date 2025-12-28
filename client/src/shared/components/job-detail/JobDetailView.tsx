@@ -11,6 +11,7 @@ import {
     Textarea,
     useDisclosure,
 } from '@heroui/react'
+import { useQuery } from '@tanstack/react-query'
 import {
     CircleDollarSign,
     CirclePlus,
@@ -34,6 +35,7 @@ import {
 } from '@/lib/queries'
 import { currencyFormatter, EXTERNAL_URLS } from '@/lib/utils'
 import type { TJob } from '@/shared/types'
+
 import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import { HeroButton } from '../ui/hero-button'
@@ -44,7 +46,6 @@ import { JobActivityHistory } from './JobActivityHistory'
 import JobAssigneesView from './JobAssigneesView'
 import JobCommentsView from './JobCommentsView'
 import JobDescriptionView from './JobDescriptionView'
-import { useQuery } from '@tanstack/react-query'
 
 interface JobDetailProps {
     data: TJob

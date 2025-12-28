@@ -1,5 +1,3 @@
-import { JOB_COLUMNS } from '@/lib/utils'
-import type { JobColumnKey } from '@/shared/types'
 import { useStore } from '@tanstack/react-store'
 import { Drawer } from 'antd'
 import {
@@ -19,9 +17,13 @@ import {
     Text,
     UsersRound,
 } from 'lucide-react'
+
+import { JOB_COLUMNS } from '@/lib/utils'
+import type { JobColumnKey } from '@/shared/types'
+
+import { useProfile } from '../../../lib'
 import { pCenterTableStore, toggleJobColumns } from '../../stores'
 import { ViewColumnSwitch } from './ViewColumnSwitch'
-import { useProfile } from '../../../lib'
 
 type Props = { isOpen: boolean; onClose: () => void }
 

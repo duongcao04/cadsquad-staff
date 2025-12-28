@@ -1,7 +1,8 @@
 'use client'
 
-import { APP_THEME_COLORS } from '@/lib/utils'
 import React, { createContext, useContext, useEffect, useState } from 'react'
+
+import { APP_THEME_COLORS } from '@/lib/utils'
 
 export type ThemeColorKey = keyof typeof APP_THEME_COLORS
 

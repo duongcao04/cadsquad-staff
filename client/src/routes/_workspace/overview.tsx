@@ -1,39 +1,41 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
 import {
+    Avatar,
+    Button,
     Card,
     CardBody,
     CardHeader,
-    Button,
-    Tabs,
-    Tab,
-    Avatar,
     Chip,
     Progress,
+    Tab,
+    Tabs,
 } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
 import {
-    TrendingUp,
-    TrendingDown,
-    DollarSign,
     Briefcase,
     CheckCircle2,
     Clock,
+    DollarSign,
     Download,
+    TrendingDown,
+    TrendingUp,
 } from 'lucide-react'
+import { useState } from 'react'
 import {
-    AreaChart,
     Area,
+    AreaChart,
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip,
     XAxis,
     YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-    BarChart,
-    Bar,
 } from 'recharts'
+
 import {
     currencyFormatter,
     dateFormatter,
@@ -41,7 +43,6 @@ import {
     optimizeCloudinary,
     useProfile,
 } from '../../lib'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { profileOverviewOptions } from '../../lib/queries'
 
 export const Route = createFileRoute('/_workspace/overview')({

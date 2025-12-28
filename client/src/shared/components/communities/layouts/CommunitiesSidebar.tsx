@@ -9,6 +9,7 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { useRouter, useRouterState } from '@tanstack/react-router'
+import { Image } from 'antd'
 import {
     EllipsisIcon,
     FileTextIcon,
@@ -19,13 +20,13 @@ import {
     PlusIcon,
     SearchIcon,
 } from 'lucide-react'
-import { CreateCommunityModal } from '../CreateCommunityModal'
 import { useState } from 'react'
-import { HeroButton } from '../../ui/hero-button'
-import { CreateTopicModal } from '../CreateTopicModal'
-import { TCommunity } from '../../../types'
-import { Image } from 'antd'
+
 import { INTERNAL_URLS, optimizeCloudinary } from '../../../../lib'
+import { TCommunity } from '../../../types'
+import { HeroButton } from '../../ui/hero-button'
+import { CreateCommunityModal } from '../CreateCommunityModal'
+import { CreateTopicModal } from '../CreateTopicModal'
 
 export const COMMUNITIES = [
     {

@@ -1,6 +1,3 @@
-import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
-import { HeroBreadcrumbItem, HeroBreadcrumbs } from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import {
     Avatar,
     Button,
@@ -30,7 +27,11 @@ import {
     Users,
 } from 'lucide-react'
 import { useState } from 'react'
+
+import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
 import { departmentOptions } from '@/lib/queries'
+import { HeroBreadcrumbItem, HeroBreadcrumbs } from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 
 // --- Mock Data (Replace with API calls) ---
 const DEPT_INFO = {

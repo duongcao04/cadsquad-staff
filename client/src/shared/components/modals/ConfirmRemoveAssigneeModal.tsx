@@ -1,14 +1,15 @@
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
     Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
     User,
 } from '@heroui/react'
-import { TUser } from '../../types'
+
 import { optimizeCloudinary } from '../../../lib'
+import { TUser } from '../../types'
 
 interface ConfirmRemoveAssigneeModalProps {
     isOpen: boolean

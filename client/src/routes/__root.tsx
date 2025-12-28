@@ -6,14 +6,15 @@ import {
     HeadContent,
     Outlet,
 } from '@tanstack/react-router'
+import { AblyProvider } from 'ably/react'
 import { ConfigProvider } from 'antd'
 import { ThemeProvider } from 'antd-style'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
-import { queryClient } from '../main'
-import { AblyProvider } from 'ably/react'
+
 import { ablyClient } from '../lib/ably'
-import { ThemeColorProvider } from '../shared/contexts/ThemeColorContext'
+import { queryClient } from '../main'
 import AppLoading from '../shared/components/app/AppLoading'
+import { ThemeColorProvider } from '../shared/contexts/ThemeColorContext'
 
 // 1. Định nghĩa Interface cho Context
 interface AppRouterContext {

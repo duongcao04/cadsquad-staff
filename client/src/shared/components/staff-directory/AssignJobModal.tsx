@@ -1,18 +1,19 @@
-import  { useState } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
     Autocomplete,
     AutocompleteItem,
     Avatar,
-    Textarea,
+    Button,
     Chip,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    Textarea,
 } from '@heroui/react'
-import { Search, Briefcase, Calendar, CheckCircle2 } from 'lucide-react'
+import { Briefcase, Calendar, CheckCircle2,Search } from 'lucide-react'
+import  { useState } from 'react'
+
 import { TUser } from '../../types'
 
 // --- Mock Data: Available Jobs (Fetch from API in real app) ---

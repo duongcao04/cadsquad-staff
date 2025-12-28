@@ -1,5 +1,6 @@
-import { cn } from '@/lib'
 import { Chip, ChipProps } from '@heroui/react'
+
+import { cn } from '@/lib'
 
 type Props = ChipProps & {
     status: 'completed' | 'finish'

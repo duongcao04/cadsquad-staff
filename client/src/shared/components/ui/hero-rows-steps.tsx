@@ -2,7 +2,7 @@ import type { ButtonProps } from '@heroui/react'
 import { cn } from '@heroui/react'
 import { useControlledState } from '@react-stately/utils'
 import { domAnimation, LazyMotion, m } from 'framer-motion'
-import { forwardRef, type ComponentProps } from 'react'
+import { type ComponentProps,forwardRef } from 'react'
 
 // --- Types ---
 

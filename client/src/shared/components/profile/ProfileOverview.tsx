@@ -5,7 +5,9 @@ import {
     MessageCircleMore,
     Phone,
 } from 'lucide-react'
+
 import type { TUser } from '@/shared/types'
+
 import HeroCopyButton from '../ui/hero-copy-button'
 
 type ProfileOverviewProps = {

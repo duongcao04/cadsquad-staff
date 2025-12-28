@@ -1,12 +1,13 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { AuthGuard } from '../shared/guards'
-import { CommunitiesHeader } from '../shared/components/communities/layouts/CommunitiesHeader'
-import { useStore } from '@tanstack/react-store'
-import { appStore } from '../shared/stores'
-import { ScrollArea, ScrollBar } from '../shared/components'
-import CommunitiesSidebar from '../shared/components/communities/layouts/CommunitiesSidebar'
-import { communitiesListOptions } from '../lib/queries/options/community-queries'
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { useStore } from '@tanstack/react-store'
+
+import { communitiesListOptions } from '../lib/queries/options/community-queries'
+import { ScrollArea, ScrollBar } from '../shared/components'
+import { CommunitiesHeader } from '../shared/components/communities/layouts/CommunitiesHeader'
+import CommunitiesSidebar from '../shared/components/communities/layouts/CommunitiesSidebar'
+import { AuthGuard } from '../shared/guards'
+import { appStore } from '../shared/stores'
 
 export const Route = createFileRoute('/communities')({
     loader({ context }) {

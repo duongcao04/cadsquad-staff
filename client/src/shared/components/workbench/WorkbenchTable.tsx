@@ -1,13 +1,3 @@
-import { useProfile } from '@/lib'
-import { optimizeCloudinary } from '@/lib/cloudinary'
-import {
-    currencyFormatter,
-    IMAGES,
-    INTERNAL_URLS,
-    JOB_COLUMNS,
-    TABLE_ROW_PER_PAGE_OPTIONS,
-} from '@/lib/utils'
-import { JobColumnKey, TJob } from '@/shared/types'
 import {
     Button,
     Input,
@@ -29,6 +19,18 @@ import {
     UserRoundPlus,
 } from 'lucide-react'
 import { ReactNode, useCallback, useMemo } from 'react'
+
+import { useProfile } from '@/lib'
+import { optimizeCloudinary } from '@/lib/cloudinary'
+import {
+    currencyFormatter,
+    IMAGES,
+    INTERNAL_URLS,
+    JOB_COLUMNS,
+    TABLE_ROW_PER_PAGE_OPTIONS,
+} from '@/lib/utils'
+import { JobColumnKey, TJob } from '@/shared/types'
+
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore } from '../../stores'
 import JobFinishChip from '../chips/JobFinishChip'

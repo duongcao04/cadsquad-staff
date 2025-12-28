@@ -1,18 +1,3 @@
-import { dateFormatter, optimizeCloudinary } from '@/lib'
-import {
-    communitiesPostsListOptions,
-    communityOptions,
-} from '@/lib/queries/options/community-queries'
-import {
-    HeroButton,
-    HeroCard,
-    HeroCardBody,
-    HeroCardFooter,
-    HeroCardHeader,
-} from '@/shared/components'
-import CreatePost from '@/shared/components/communities/community-page/CreatePost'
-import { communitiesStore } from '@/shared/stores/_communities.store'
-import { TCommunity, TPost } from '@/shared/types'
 import {
     Avatar,
     AvatarGroup,
@@ -56,6 +41,21 @@ import {
     ShareIcon,
 } from 'lucide-react'
 import { useState } from 'react'
+
+import { dateFormatter, optimizeCloudinary } from '@/lib'
+import {
+    communitiesPostsListOptions,
+    communityOptions,
+} from '@/lib/queries/options/community-queries'
+import {
+    HeroButton,
+    HeroCard,
+    HeroCardBody,
+    HeroCardFooter,
+    HeroCardHeader,
+} from '@/shared/components'
+import { communitiesStore } from '@/shared/stores/_communities.store'
+import { TCommunity, TPost } from '@/shared/types'
 
 export const MOCK_FILES = [
     {

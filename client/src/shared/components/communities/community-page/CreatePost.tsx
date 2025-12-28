@@ -1,4 +1,3 @@
-import { dateFormatter, optimizeCloudinary, useProfile } from '@/lib'
 import { Avatar, Button, Textarea } from '@heroui/react'
 import { useStore } from '@tanstack/react-store'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -10,6 +9,9 @@ import {
     XIcon,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+
+import { dateFormatter, optimizeCloudinary, useProfile } from '@/lib'
+
 import {
     communitiesStore,
     setWritingPost,

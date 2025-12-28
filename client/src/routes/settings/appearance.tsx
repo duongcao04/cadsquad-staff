@@ -1,38 +1,39 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
 import {
+    Avatar,
+    Button,
     Card,
     CardBody,
     CardHeader,
-    Button,
-    RadioGroup,
+    Chip,
+    Divider,
     Radio,
+    RadioGroup,
     Slider,
     Switch,
-    Chip,
-    Avatar,
-    Divider,
 } from '@heroui/react'
-import {
-    Moon,
-    Sun,
-    Monitor,
-    LayoutGrid,
-    Type,
-    Palette,
-    Check,
-    Save,
-    RotateCcw,
-    House,
-} from 'lucide-react'
+import { createFileRoute } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
+import {
+    Check,
+    House,
+    LayoutGrid,
+    Monitor,
+    Moon,
+    Palette,
+    RotateCcw,
+    Save,
+    Sun,
+    Type,
+} from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useState } from 'react'
+
 import { getPageTitle, INTERNAL_URLS } from '../../lib'
 import {
-    HeroBreadcrumbs,
     HeroBreadcrumbItem,
+    HeroBreadcrumbs,
     HeroTooltip,
 } from '../../shared/components'
-import { useTheme } from 'next-themes'
 import { useThemeColor } from '../../shared/contexts/ThemeColorContext'
 
 export const Route = createFileRoute('/settings/appearance')({

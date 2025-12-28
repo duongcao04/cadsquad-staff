@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+
 import { IDepartmentResponse } from "../../../shared/interfaces";
 import { TDepartment } from "../../../shared/types";
 import { departmentApi } from "../../api";

@@ -1,30 +1,31 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useFormik } from 'formik'
 import {
-    Button,
-    Card,
-    CardHeader,
-    CardBody,
-    Input,
-    Switch,
-    Select,
-    SelectItem,
     Avatar,
     AvatarGroup,
+    Button,
+    Card,
+    CardBody,
+    CardHeader,
     Divider,
+    Input,
+    Select,
+    SelectItem,
+    Switch,
     Tab,
     Tabs,
 } from '@heroui/react'
+import { createFileRoute } from '@tanstack/react-router'
+import { useFormik } from 'formik'
 import {
-    SaveIcon,
-    RotateCcwIcon,
     AlertTriangleIcon,
-    BriefcaseIcon,
     BellIcon,
-    ShieldCheckIcon,
+    BriefcaseIcon,
     ClockIcon,
+    RotateCcwIcon,
+    SaveIcon,
+    ShieldCheckIcon,
 } from 'lucide-react'
+import { useState } from 'react'
+
 import { getPageTitle } from '../../../lib'
 
 export const Route = createFileRoute('/_administrator/admin/settings')({

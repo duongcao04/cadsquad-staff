@@ -1,23 +1,23 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
     Avatar,
+    Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
     Slider,
 } from '@heroui/react'
 import {
-    UploadCloud,
     AlertCircle,
     Crop as CropIcon,
     RotateCcw,
+    UploadCloud,
 } from 'lucide-react'
-import { z } from 'zod'
+import React, { useCallback,useEffect, useRef, useState } from 'react'
+import type { Area,Point } from 'react-easy-crop'
 import Cropper from 'react-easy-crop'
-import type { Point, Area } from 'react-easy-crop'
+import { z } from 'zod'
 
 // --- Configuration ---
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB

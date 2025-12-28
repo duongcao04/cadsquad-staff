@@ -2,9 +2,11 @@ import { Divider, Tab, Tabs } from '@heroui/react'
 import { Link } from '@tanstack/react-router'
 import { Image } from 'antd'
 import { Building2, UserRound, UserRoundPen } from 'lucide-react'
+
 import { INTERNAL_URLS } from '@/lib'
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import { useProfile } from '@/lib/queries'
+
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import ProfileOrganization from './ProfileOrganization'

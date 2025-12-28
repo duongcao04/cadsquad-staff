@@ -1,22 +1,4 @@
 import {
-    ApiResponse,
-    dateFormatter,
-    EXTERNAL_URLS,
-    formatCurrencyVND,
-    getPageTitle,
-    INTERNAL_URLS,
-    optimizeCloudinary,
-    PAID_STATUS_COLOR,
-    useUpdateJobMutation,
-} from '@/lib' // Adjusted import path to alias
-import { jobActivityLogsOptions, jobByNoOptions } from '@/lib/queries'
-import Timmer from '@/shared/components/layouts/PageHeading/Timmer'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-} from '@/shared/components/ui/hero-breadcrumbs' // Assuming you have this from previous context
-import { TJob } from '@/shared/types'
-import {
     addToast,
     Avatar,
     Button,
@@ -52,6 +34,26 @@ import {
     UserRound,
 } from 'lucide-react'
 import React from 'react'
+
+import {
+    ApiResponse,
+    dateFormatter,
+    EXTERNAL_URLS,
+    formatCurrencyVND,
+    getPageTitle,
+    INTERNAL_URLS,
+    optimizeCloudinary,
+    PAID_STATUS_COLOR,
+    useUpdateJobMutation,
+} from '@/lib' // Adjusted import path to alias
+import { jobActivityLogsOptions, jobByNoOptions } from '@/lib/queries'
+import Timmer from '@/shared/components/layouts/PageHeading/Timmer'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+} from '@/shared/components/ui/hero-breadcrumbs' // Assuming you have this from previous context
+import { TJob } from '@/shared/types'
+
 import {
     HeroButton,
     HeroCard,
@@ -61,10 +63,10 @@ import {
     ScrollArea,
     ScrollBar,
 } from '../../../shared/components'
-import JobDescriptionView from '../../../shared/components/job-detail/JobDescriptionView'
-import JobAssigneesView from '../../../shared/components/job-detail/JobAssigneesView'
 import JobAttachmentsField from '../../../shared/components/form-fields/JobAttachmentsField'
+import JobAssigneesView from '../../../shared/components/job-detail/JobAssigneesView'
 import JobCommentsView from '../../../shared/components/job-detail/JobCommentsView'
+import JobDescriptionView from '../../../shared/components/job-detail/JobDescriptionView'
 import CountdownTimer from '../../../shared/components/ui/countdown-timer'
 
 export const Route = createFileRoute('/_workspace/jobs/$no')({

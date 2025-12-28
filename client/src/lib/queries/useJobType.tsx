@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+
 import { jobTypeApi } from '@/lib/api'
+
 import { mapJobType } from './options/job-type-queries'
 export const useJobTypes = () => {
     const { data, isLoading, isFetching } = useQuery({

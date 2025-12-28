@@ -1,6 +1,3 @@
-import { INTERNAL_URLS } from '@/lib'
-import { useProfile } from '@/lib/queries'
-import { SettingsGearIcon } from '@/shared/components'
 import {
     Button,
     Dropdown,
@@ -19,6 +16,10 @@ import {
     SquareUserRound,
     Users,
 } from 'lucide-react'
+
+import { INTERNAL_URLS } from '@/lib'
+import { useProfile } from '@/lib/queries'
+import { SettingsGearIcon } from '@/shared/components'
 
 export function SettingsDropdown() {
     const { isAdmin } = useProfile()

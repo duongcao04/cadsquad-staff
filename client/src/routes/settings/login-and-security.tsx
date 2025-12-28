@@ -37,6 +37,7 @@ import {
     Smartphone,
 } from 'lucide-react'
 import { useState } from 'react'
+
 import {
     getPageTitle,
     INTERNAL_URLS,

@@ -1,5 +1,3 @@
-import { useProfile, useUpdateJobMutation } from '@/lib/queries'
-import type { TJob } from '@/shared/types'
 import { addToast } from '@heroui/react'
 import {
     BlockquotePlugin,
@@ -16,6 +14,10 @@ import { type Value } from 'platejs'
 import { Plate, usePlateEditor } from 'platejs/react'
 import { serializeHtml } from 'platejs/static'
 import { useMemo, useState } from 'react'
+
+import { useProfile, useUpdateJobMutation } from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+
 import { BlockquoteElement } from '../ui/blockquote-node'
 import { Editor, EditorContainer } from '../ui/editor'
 import { FixedToolbar } from '../ui/fixed-toolbar'

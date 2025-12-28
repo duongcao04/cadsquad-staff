@@ -1,31 +1,32 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
 import {
+    addToast,
+    Avatar,
+    Button,
     Card,
     CardBody,
     CardHeader,
-    Input,
-    Button,
-    Avatar,
-    Divider,
-    useDisclosure,
     Chip,
-    addToast,
+    Divider,
+    Input,
+    useDisclosure,
 } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useFormik } from 'formik'
 import {
-    Save,
-    User,
+    Briefcase,
+    Building,
+    Calendar,
+    Camera,
+    Github,
+    House,
+    Linkedin,
     Mail,
     Phone,
-    Building,
-    Briefcase,
-    Github,
-    Linkedin,
-    Camera,
-    Calendar,
-    House,
+    Save,
+    User,
 } from 'lucide-react'
-import { useFormik } from 'formik'
-import { useSuspenseQuery } from '@tanstack/react-query'
+
 import {
     dateFormatter,
     getPageTitle,
@@ -36,12 +37,12 @@ import {
     useUpdateUserMutation,
     useUploadImageMutation,
 } from '@/lib'
+import { profileOptions } from '@/lib/queries/options/user-queries'
 import {
-    HeroBreadcrumbs,
     HeroBreadcrumbItem,
+    HeroBreadcrumbs,
     UploadAvatarModal,
 } from '@/shared/components'
-import { profileOptions } from '@/lib/queries/options/user-queries'
 
 export const Route = createFileRoute('/settings/my-profile')({
     head: () => ({

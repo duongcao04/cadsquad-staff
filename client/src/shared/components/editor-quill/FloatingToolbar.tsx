@@ -1,14 +1,14 @@
-import React from 'react'
+import { AnimatePresence,motion } from 'framer-motion'
 import {
     Bold,
-    Italic,
-    Underline,
-    Strikethrough,
     Code,
+    Italic,
     Link as LinkIcon,
+    Strikethrough,
+    Underline,
 } from 'lucide-react'
+import React from 'react'
 import ReactQuill from 'react-quill-new'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface FloatingToolbarProps {
     position: { top: number; left: number; visible: boolean }

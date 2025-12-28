@@ -1,10 +1,10 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import React, { type SVGProps, useState } from 'react'
-import { type Variants } from 'motion/react'
 import { useStore } from '@tanstack/react-store'
+import { type Variants } from 'motion/react'
+import React, { type SVGProps, useState } from 'react'
 
 // --- Imports từ project của bạn ---
-import { MotionButton, MotionDiv, MotionP, MotionAside } from '@/lib/motion'
+import { MotionAside,MotionButton, MotionDiv, MotionP } from '@/lib/motion'
 import {
     ActionButton,
     IconCalendarOutline,
@@ -20,6 +20,7 @@ import {
     IconWorkbenchOutline,
 } from '@/shared/components/icons/sidebar-icons/IconWorkbench'
 import { appStore, ESidebarStatus, toggleSidebar } from '@/shared/stores'
+
 import TaskCalendar from './TaskCalendar'
 import TaskCalendarPopover from './TaskCalendarPopover'
 

@@ -3,6 +3,7 @@ import { Link, useRouter } from '@tanstack/react-router'
 import { Image } from 'antd'
 import dayjs from 'dayjs'
 import { Clock2 } from 'lucide-react'
+import React from 'react'
 
 import { INTERNAL_URLS } from '@/lib'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
@@ -12,7 +13,6 @@ import type { TJob } from '@/shared/types'
 
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
-import React from 'react'
 
 type Props = {
     data: TJob

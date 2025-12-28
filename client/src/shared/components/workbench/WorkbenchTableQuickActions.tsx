@@ -1,11 +1,4 @@
 import {
-    useDeleteJobMutation,
-    useMarkPaidMutation,
-    useProfile,
-    useTogglePinJobMutation,
-} from '@/lib/queries'
-import type { TJob } from '@/shared/types'
-import {
     addToast,
     Button,
     Dropdown,
@@ -26,6 +19,15 @@ import {
     Trash,
     UserPlus,
 } from 'lucide-react'
+
+import {
+    useDeleteJobMutation,
+    useMarkPaidMutation,
+    useProfile,
+    useTogglePinJobMutation,
+} from '@/lib/queries'
+import type { TJob } from '@/shared/types'
+
 import { INTERNAL_URLS } from '../../../lib'
 import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'

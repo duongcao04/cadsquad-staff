@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+
 import { Header } from '../shared/components'
 
 export const Route = createFileRoute('/_public')({

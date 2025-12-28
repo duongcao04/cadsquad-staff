@@ -20,11 +20,12 @@ import {
 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import ReactQuill from 'react-quill-new'
+
 import { HeroButton } from '../ui/hero-button' // Adjust your import path
 import { HeroTooltip } from '../ui/hero-tooltip' // Adjust your import path
 import HeaderSelect from './plugins/header-select'
-import ListSelect from './plugins/list-select'
 import LinkPopover from './plugins/link-popover'
+import ListSelect from './plugins/list-select'
 
 // 1. Modules Configuration
 export const modules = {

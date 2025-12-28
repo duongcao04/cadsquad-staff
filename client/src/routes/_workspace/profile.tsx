@@ -1,3 +1,7 @@
+import { Tab, Tabs } from '@heroui/react'
+import { useSuspenseQueries } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+
 import { jobsListOptions } from '@/lib/queries'
 import { getPageTitle, INTERNAL_URLS, JOB_STATUS_CODES } from '@/lib/utils'
 import {
@@ -10,9 +14,6 @@ import {
 } from '@/shared/components'
 import JobCard from '@/shared/components/profile/JobCard'
 import { ProfileCard } from '@/shared/components/profile/ProfileCard'
-import { Tab, Tabs } from '@heroui/react'
-import { useSuspenseQueries } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_workspace/profile')({
     head: () => ({

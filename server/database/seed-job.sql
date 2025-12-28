@@ -1,25 +1,25 @@
 -- ==========================================
--- Raw INSERTS for 50 Jobs (dot-number format)
+-- Raw INSERTS for 50 Jobs (with Client Relation)
 -- ==========================================
--- Replace with your actual existing JobType, JobStatus, User, PaymentChannel IDs as needed.
--- These examples assume at least one record in each table.
 DO $$
 DECLARE
   v_type RECORD;
   v_status RECORD;
   v_creator RECORD;
   v_payment RECORD;
+  v_client RECORD; -- 1. Added variable for client
   v_job_no TEXT;
   v_seq INT := 1;
 BEGIN
   FOR i IN 1..50 LOOP
-    -- random job type
+    -- Select random relations
     SELECT * INTO v_type FROM "JobType" ORDER BY random() LIMIT 1;
     SELECT * INTO v_status FROM "JobStatus" ORDER BY random() LIMIT 1;
     SELECT * INTO v_creator FROM "User" ORDER BY random() LIMIT 1;
     SELECT * INTO v_payment FROM "PaymentChannel" ORDER BY random() LIMIT 1;
+    SELECT * INTO v_client FROM "Client" ORDER BY random() LIMIT 1; -- 2. Pick a random client
 
-    -- next job number by type (dot format)
+    -- Next job number by type (dot format)
     SELECT COALESCE(MAX((regexp_replace(no, '.*\.', ''))::int), 0) + 1
     INTO v_seq
     FROM "Job"
@@ -28,21 +28,32 @@ BEGIN
     v_job_no := v_type.code || '.' || LPAD(v_seq::text, 4, '0');
 
     INSERT INTO "Job" (
-      id, no, "typeId", "displayName", "clientName",
-      "incomeCost", "staffCost", "statusId",
-      "createdById", "paymentChannelId",
-      "isPaid", "isPublished", "dueAt", "createdAt", "updatedAt"
+      id, 
+      no, 
+      "typeId", 
+      "clientId",     -- 3. Reference the Client table
+      "displayName",
+      "incomeCost", 
+      "staffCost", 
+      "statusId",
+      "createdById", 
+      "paymentChannelId",
+      "isPaid", 
+      "isPublished", 
+      "dueAt", 
+      "createdAt", 
+      "updatedAt"
     )
     VALUES (
       gen_random_uuid(),
       v_job_no,
       v_type.id,
+      v_client.id,  
       (ARRAY['Design','Analysis','Optimization','Testing','Upgrade','Redesign','Development','Implementation','Maintenance','Installation','Calibration','Inspection','Simulation','Validation','Integration'])[1 + floor(random() * 15)::int]
       || ' of ' ||
       (ARRAY['Automated Assembly Line','HVAC System','Robotic Arm','Heat Exchanger','Conveyor Belt System','Pneumatic System','Turbine Blade','Gear Box','Hydraulic Press','Vibration Damping System','Engine Cooling System','CNC Machine Tool','Bearing Analysis','Compressor Performance','Material Handling System','Pump Station','Valve Control System','Shaft Design','Boiler System','Clutch Mechanism','Brake System','Suspension System','Transmission System','Flywheel Design','Pressure Vessel','Piping Network','Cooling Tower','Centrifugal Fan','Steam Turbine','Gas Compressor'])[1 + floor(random() * 30)::int],
-      'Client ' || i,
-      (100 + floor(random() * 900))::int,
-      ((100 + floor(random() * 900))::int) * 26385,
+      (100 + floor(random() * 900))::float,
+      ((100 + floor(random() * 900))::float), -- Updated to simple float to match standard Prisma logic
       v_status.id,
       v_creator.id,
       v_payment.id,

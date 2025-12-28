@@ -1,5 +1,3 @@
-import { dateFormatter, INTERNAL_URLS } from '@/lib'
-import { jobByNoOptions } from '@/lib/queries'
 import {
     Avatar,
     AvatarGroup,
@@ -14,6 +12,9 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { Clock, Plus } from 'lucide-react'
+
+import { dateFormatter, INTERNAL_URLS } from '@/lib'
+import { jobByNoOptions } from '@/lib/queries'
 
 type JobScheduleModalProps = {
     isOpen: boolean

@@ -24,6 +24,7 @@ import { useTheme } from 'next-themes'
 
 import { useLogout, useProfile } from '@/lib/queries'
 import { INTERNAL_URLS, THEME_SELECTS } from '@/lib/utils'
+
 import { optimizeCloudinary } from '../../../../lib'
 
 export function UserDropdown() {

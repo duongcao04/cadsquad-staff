@@ -1,15 +1,3 @@
-import { dateFormatter } from '@/lib/dayjs'
-import { useJobStatuses } from '@/lib/queries'
-import {
-    currencyFormatter,
-    DUE_DATE_PRESETS,
-    IMAGES,
-    INTERNAL_URLS,
-    JOB_COLUMNS,
-    TABLE_ROW_PER_PAGE_OPTIONS,
-} from '@/lib/utils'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import {
     Button,
     Dropdown,
@@ -46,6 +34,20 @@ import {
     X,
 } from 'lucide-react'
 import { ReactNode, useCallback, useMemo } from 'react'
+
+import { dateFormatter } from '@/lib/dayjs'
+import { useJobStatuses } from '@/lib/queries'
+import {
+    currencyFormatter,
+    DUE_DATE_PRESETS,
+    IMAGES,
+    INTERNAL_URLS,
+    JOB_COLUMNS,
+    TABLE_ROW_PER_PAGE_OPTIONS,
+} from '@/lib/utils'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
+
 import { optimizeCloudinary, useProfile } from '../../../lib'
 import { TJobFilters } from '../../../lib/validationSchemas'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'

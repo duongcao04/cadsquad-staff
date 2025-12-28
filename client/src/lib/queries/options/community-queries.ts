@@ -1,8 +1,9 @@
 import { queryOptions } from "@tanstack/react-query"
+
+import { ETopicType } from "../../../shared/enums"
 import { ICommunityResponse, ITopicResponse } from "../../../shared/interfaces"
 import { TCommunity, TTopic } from "../../../shared/types"
 import { communityApi } from "../../api/_community.api"
-import { ETopicType } from "../../../shared/enums"
 
 export const mapCommunity: (item?: ICommunityResponse) => TCommunity = (
 	item

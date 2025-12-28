@@ -1,43 +1,40 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
 import {
-    Card,
-    CardHeader,
-    CardBody,
-    CardFooter,
     Avatar,
-    Button,
-    ScrollShadow,
-    Divider,
-    Chip,
-    Textarea,
-    Image,
-    Breadcrumbs,
     BreadcrumbItem,
+    Breadcrumbs,
+    Button,
+    Card,
+    CardBody,
+    Chip,
+    Divider,
     Dropdown,
-    DropdownTrigger,
-    DropdownMenu,
     DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+    ScrollShadow,
+    Textarea,
     useDisclosure,
 } from '@heroui/react'
+import { createFileRoute } from '@tanstack/react-router'
 import {
     ArrowLeftIcon,
-    MoreHorizontalIcon,
-    HeartIcon,
-    MessageCircleIcon,
-    ShareIcon,
-    ReplyIcon,
+    BoldIcon,
+    EyeIcon,
     FlagIcon,
     HashIcon,
-    UsersIcon,
-    ClockIcon,
-    EyeIcon,
-    BoldIcon,
+    HeartIcon,
     ItalicIcon,
     LinkIcon,
     ListIcon,
+    MessageCircleIcon,
+    MoreHorizontalIcon,
+    ReplyIcon,
+    ShareIcon,
+    UsersIcon,
 } from 'lucide-react'
-import { HeroButton, HeroCard, HeroCardBody } from '@/shared/components'
+import { useState } from 'react'
+
+import { HeroButton } from '@/shared/components'
 
 // --- MOCK DATA ---
 

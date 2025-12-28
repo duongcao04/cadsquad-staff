@@ -1,7 +1,9 @@
 import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
+
 import { userApi } from '@/lib/api'
-import { ApiResponse, type ApiError } from '@/lib/axios'
+import { type ApiError,ApiResponse } from '@/lib/axios'
+
 import { queryClient } from '../../main'
 import type {
     TCreateUserInput,
@@ -9,8 +11,8 @@ import type {
     TUpdatePasswordInput,
     TUpdateUserInput,
 } from '../validationSchemas'
-import { userOptions, usersListOptions } from './options/user-queries'
 import { onErrorToast } from './helper'
+import { userOptions, usersListOptions } from './options/user-queries'
 
 export const useUsers = () => {
     // Gọi Options

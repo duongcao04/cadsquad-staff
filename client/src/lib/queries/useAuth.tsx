@@ -9,6 +9,7 @@ import { COOKIES, IMAGES } from '@/lib/utils'
 import type { TLoginInput } from '@/lib/validationSchemas'
 import { RoleEnum } from '@/shared/enums'
 import type { TUser } from '@/shared/types'
+
 import { queryClient } from '../../main'
 
 function parseExpires(expiresAt: string | number) {

@@ -1,5 +1,3 @@
-import { dateFormatter, getPageTitle, INTERNAL_URLS } from '@/lib'
-import { HeroBreadcrumbItem, HeroBreadcrumbs } from '@/shared/components'
 import {
     addToast,
     Autocomplete,
@@ -24,6 +22,9 @@ import {
     Save,
 } from 'lucide-react'
 import { useState } from 'react'
+
+import { dateFormatter, getPageTitle, INTERNAL_URLS } from '@/lib'
+import { HeroBreadcrumbItem, HeroBreadcrumbs } from '@/shared/components'
 
 export const Route = createFileRoute('/settings/language-and-region')({
     head: () => ({

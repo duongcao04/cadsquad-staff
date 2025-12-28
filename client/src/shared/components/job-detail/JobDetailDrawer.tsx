@@ -1,10 +1,4 @@
-import { dateFormatter } from '@/lib/dayjs'
-import { jobByNoOptions, useChangeStatusMutation } from '@/lib/queries'
-import { statusByOrderOptions } from '@/lib/queries/options/job-status-queries'
-import { INTERNAL_URLS, lightenHexColor } from '@/lib/utils'
 import {
-    addToast,
-    Button,
     Divider,
     Skeleton,
     Spacer,
@@ -20,9 +14,15 @@ import {
     SquareArrowOutUpRight,
     UserRound,
 } from 'lucide-react'
-import type { TJobStatus } from '../../types'
+
+import { dateFormatter } from '@/lib/dayjs'
+import { jobByNoOptions } from '@/lib/queries'
+import { INTERNAL_URLS } from '@/lib/utils'
+
+import { JobStatusSystemTypeEnum } from '../../enums'
 import { JobStatusChip } from '../chips/JobStatusChip'
 import { PaidChip } from '../chips/PaidChip'
+import { DeliverJobModal } from '../modals/DeliverJobModal'
 import CountdownTimer from '../ui/countdown-timer'
 import { HeroButton } from '../ui/hero-button'
 import HeroCopyButton from '../ui/hero-copy-button'
@@ -35,8 +35,6 @@ import {
 } from '../ui/hero-drawer'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { JobDetailView } from './JobDetailView'
-import { JobStatusSystemTypeEnum } from '../../enums'
-import { DeliverJobModal } from '../modals/DeliverJobModal'
 
 type JobDetailDrawerProps = {
     isOpen: boolean
@@ -53,34 +51,32 @@ export default function JobDetailDrawer({
         enabled: !!jobNo && isOpen,
     })
 
-    const changeStatusMutation = useChangeStatusMutation()
-
     const isLoading = lodash.isEmpty(job) || loadingJob
 
     const isJobCompleted =
         job && job.status.systemType !== JobStatusSystemTypeEnum.COMPLETED
 
-    const isJobFinished =
-        job && job.status.systemType !== JobStatusSystemTypeEnum.TERMINATED
+    // const isJobFinished =
+    //     job && job.status.systemType !== JobStatusSystemTypeEnum.TERMINATED
 
-    const isWaitReview =
-        job && job.status.systemType !== JobStatusSystemTypeEnum.WAIT_REVIEW
+    // const isWaitReview =
+    //     job && job.status.systemType !== JobStatusSystemTypeEnum.WAIT_REVIEW
 
-    const onChangeStatus = async (nextStatus: TJobStatus) => {
-        if (!isLoading) {
-            await changeStatusMutation.mutateAsync({
-                jobId: String(job.id),
-                data: {
-                    currentStatus: job.status.code,
-                    newStatus: nextStatus.code,
-                },
-            })
-        } else {
-            addToast({
-                title: 'Vui lòng đợi tải dữ liệu',
-            })
-        }
-    }
+    // const onChangeStatus = async (nextStatus: TJobStatus) => {
+    //     if (!isLoading) {
+    //         await changeStatusMutation.mutateAsync({
+    //             jobId: String(job.id),
+    //             data: {
+    //                 currentStatus: job.status.code,
+    //                 newStatus: nextStatus.code,
+    //             },
+    //         })
+    //     } else {
+    //         addToast({
+    //             title: 'Vui lòng đợi tải dữ liệu',
+    //         })
+    //     }
+    // }
 
     const deliverJobDisclosure = useDisclosure()
 
@@ -307,43 +303,43 @@ export default function JobDetailDrawer({
     )
 }
 
-type ChangeStatusButtonProps = {
-    toStatusOrder: number
-    onChangeStatus: (nextStatus: TJobStatus) => void
-}
-function ChangeStatusButton({
-    onChangeStatus,
-    toStatusOrder,
-}: ChangeStatusButtonProps) {
-    const { data: targetStatus } = useQuery({
-        // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
-        // The query won't run because of 'enabled' below.
-        ...statusByOrderOptions(toStatusOrder ?? -1),
+// type ChangeStatusButtonProps = {
+//     toStatusOrder: number
+//     onChangeStatus: (nextStatus: TJobStatus) => void
+// }
+// function ChangeStatusButton({
+//     onChangeStatus,
+//     toStatusOrder,
+// }: ChangeStatusButtonProps) {
+//     const { data: targetStatus } = useQuery({
+//         // If nextStatusOrder is null/undefined, pass -1 (or 0) to satisfy TS.
+//         // The query won't run because of 'enabled' below.
+//         ...statusByOrderOptions(toStatusOrder ?? -1),
 
-        // Only fetch if nextStatusOrder exists
-        enabled: !!toStatusOrder && toStatusOrder !== null,
-    })
+//         // Only fetch if nextStatusOrder exists
+//         enabled: !!toStatusOrder && toStatusOrder !== null,
+//     })
 
-    if (!targetStatus) {
-        return <Spinner></Spinner>
-    }
+//     if (!targetStatus) {
+//         return <Spinner></Spinner>
+//     }
 
-    return (
-        <Button
-            color="danger"
-            className="w-full font-semibold font-saira"
-            style={{
-                color: targetStatus?.hexColor,
-                backgroundColor: lightenHexColor(targetStatus?.hexColor, 90),
-            }}
-            onPress={() => {
-                onChangeStatus(targetStatus)
-            }}
-        >
-            Mark as {targetStatus.displayName}
-        </Button>
-    )
-}
+//     return (
+//         <Button
+//             color="danger"
+//             className="w-full font-semibold font-saira"
+//             style={{
+//                 color: targetStatus?.hexColor,
+//                 backgroundColor: lightenHexColor(targetStatus?.hexColor, 90),
+//             }}
+//             onPress={() => {
+//                 onChangeStatus(targetStatus)
+//             }}
+//         >
+//             Mark as {targetStatus.displayName}
+//         </Button>
+//     )
+// }
 
 // function ButtonAction() {
 //     return (

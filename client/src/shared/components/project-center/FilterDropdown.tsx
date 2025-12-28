@@ -1,10 +1,4 @@
 import {
-    jobStatusesListOptions,
-    jobTypesListOptions,
-    usersListOptions,
-} from '@/lib/queries'
-import { jobFiltersSchema, TJobFilters } from '@/lib/validationSchemas'
-import {
     Button,
     Chip,
     Dropdown,
@@ -26,6 +20,14 @@ import { useSuspenseQueries } from '@tanstack/react-query'
 import dayjs from 'dayjs' // Import Dayjs
 import { AlertCircle, ChevronDown, Filter, Plus, Trash2 } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
+
+import {
+    jobStatusesListOptions,
+    jobTypesListOptions,
+    usersListOptions,
+} from '@/lib/queries'
+import { jobFiltersSchema, TJobFilters } from '@/lib/validationSchemas'
+
 import { HeroDateRangePicker } from '../ui/hero-date-picker'
 
 // --- Types ---

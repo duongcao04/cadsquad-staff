@@ -12,6 +12,7 @@ import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
 import { type Variants } from 'motion/react'
 import { useEffect } from 'react'
+
 import { MotionDiv } from '@/lib/motion'
 import { useProfile } from '@/lib/queries'
 import {
@@ -22,11 +23,12 @@ import {
     IconPeopleColorful,
 } from '@/shared/components'
 import { appStore, ESidebarStatus } from '@/shared/stores'
-import { FluentColorBriefcase20 } from '../icons/FluentColorBriefcase20'
+
 import { FluentColorApprovalsApp20 } from '../icons/FluentColorApprovalsApp20'
+import { FluentColorBriefcase20 } from '../icons/FluentColorBriefcase20'
+import { FluentColorErrorCircle20 } from '../icons/FluentColorErrorCircle20'
 import { DeliverJobModal } from '../modals/DeliverJobModal'
 import { IssueReportModal } from '../modals/IssueReportModal'
-import { FluentColorErrorCircle20 } from '../icons/FluentColorErrorCircle20'
 
 export function ActionButton({
     forceStatus,

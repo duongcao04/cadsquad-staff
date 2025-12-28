@@ -1,12 +1,4 @@
 import {
-    useChangeStatusMutation,
-    useJobStatuses,
-    useProfile,
-} from '@/lib/queries'
-import { statusByOrderOptions } from '@/lib/queries/options/job-status-queries'
-import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
-import type { TJob, TJobStatus } from '@/shared/types'
-import {
     addToast,
     Button,
     Divider,
@@ -20,6 +12,16 @@ import { useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
+
+import {
+    useChangeStatusMutation,
+    useJobStatuses,
+    useProfile,
+} from '@/lib/queries'
+import { statusByOrderOptions } from '@/lib/queries/options/job-status-queries'
+import { darkenHexColor, JOB_STATUS_CODES, lightenHexColor } from '@/lib/utils'
+import type { TJob, TJobStatus } from '@/shared/types'
+
 import { JobStatusSystemTypeEnum } from '../../enums'
 import { JobStatusChip } from '../chips/JobStatusChip'
 

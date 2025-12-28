@@ -1,10 +1,12 @@
-import { PageHeading } from '@/shared/components'
-import WorkbenchTableView from '@/shared/components/workbench/WorkbenchTableView'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
-import { workbenchDataOptions } from '../../lib/queries'
+
+import { PageHeading } from '@/shared/components'
+import WorkbenchTableView from '@/shared/components/workbench/WorkbenchTableView'
+
 import { getPageTitle } from '../../lib'
+import { workbenchDataOptions } from '../../lib/queries'
 
 const DEFAULT_SORT = 'displayName:asc'
 

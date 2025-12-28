@@ -1,21 +1,3 @@
-import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
-import { usersListOptions } from '@/lib/queries'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroButton,
-    HeroCard,
-    HeroCardBody,
-    HeroCardFooter,
-    HeroCardHeader,
-    HeroTooltip,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
-import { DeactivateUserModal } from '@/shared/components/staff-directory/DeactiveUserModal'
-import { EmailUserModal } from '@/shared/components/staff-directory/EmailUserModal'
-import { SendNotificationModal } from '@/shared/components/staff-directory/SendNotificationModal'
-import { TUser } from '@/shared/types'
 import {
     Avatar,
     Button,
@@ -47,6 +29,25 @@ import {
     UserPen,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+
+import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
+import { usersListOptions } from '@/lib/queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroButton,
+    HeroCard,
+    HeroCardBody,
+    HeroCardFooter,
+    HeroCardHeader,
+    HeroTooltip,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
+import { DeactivateUserModal } from '@/shared/components/staff-directory/DeactiveUserModal'
+import { EmailUserModal } from '@/shared/components/staff-directory/EmailUserModal'
+import { SendNotificationModal } from '@/shared/components/staff-directory/SendNotificationModal'
+import { TUser } from '@/shared/types'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/'

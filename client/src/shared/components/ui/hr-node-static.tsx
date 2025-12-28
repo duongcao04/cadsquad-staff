@@ -1,5 +1,6 @@
 import type { SlateElementProps } from 'platejs/static'
 import { SlateElement } from 'platejs/static'
+
 import { cn } from '@/lib/utils/index'
 
 export function HrElementStatic(props: SlateElementProps) {

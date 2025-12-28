@@ -1,12 +1,13 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Plus } from 'lucide-react'
+
 import { getPageTitle, useProfile } from '@/lib'
 import { analyticsOverviewOptions } from '@/lib/queries/options/analytics-queries'
 import { HeroButton } from '@/shared/components'
 import { RevenueChart } from '@/shared/components/admin/charts/RevenueChart'
 import { TopPerformers } from '@/shared/components/admin/charts/TopPerformers'
 import { TopStats } from '@/shared/components/admin/charts/TopStats'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
-import { Plus } from 'lucide-react'
 
 export const Route = createFileRoute('/_administrator/admin/')({
     head: () => ({

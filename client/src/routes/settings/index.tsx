@@ -1,4 +1,3 @@
-import { INTERNAL_URLS } from '@/lib'
 import { Button, Card, CardBody } from '@heroui/react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import {
@@ -12,6 +11,8 @@ import {
     Smartphone,
     User,
 } from 'lucide-react'
+
+import { INTERNAL_URLS } from '@/lib'
 
 export const Route = createFileRoute('/settings/')({
     component: SettingsIndexPage,

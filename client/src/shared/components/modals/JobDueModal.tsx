@@ -1,10 +1,10 @@
 import { Skeleton } from '@heroui/react'
 import { CalendarDays } from 'lucide-react'
+import React from 'react'
 
 import { dateFormatter } from '@/lib/dayjs'
 import { useJobsDueOnDate } from '@/lib/queries'
 
-import React from 'react'
 import JobCard, { JobCardSkeleton } from '../profile/JobCard'
 import {
     HeroModal,

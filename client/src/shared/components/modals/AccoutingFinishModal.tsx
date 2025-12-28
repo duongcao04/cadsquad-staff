@@ -1,15 +1,15 @@
-import { useState } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
     Button,
     Checkbox,
     Input,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
 } from '@heroui/react'
-import { DollarSign, Check } from 'lucide-react'
+import { Check,DollarSign } from 'lucide-react'
+import { useState } from 'react'
 
 interface AccountingFinishModalProps {
     isOpen: boolean

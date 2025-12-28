@@ -1,17 +1,18 @@
-import React, { useState } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
-    User,
-    Divider,
     Alert,
+    Button,
+    Divider,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    User,
 } from '@heroui/react'
-import { Banknote, CreditCard, AlertCircle, CheckCircle2 } from 'lucide-react'
 import dayjs from 'dayjs'
+import { AlertCircle, Banknote, CheckCircle2,CreditCard } from 'lucide-react'
+import React, { useState } from 'react'
+
 import { TJob } from '@/shared/types'
 
 interface ConfirmPaymentModalProps {

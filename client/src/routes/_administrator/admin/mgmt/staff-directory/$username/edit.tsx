@@ -1,27 +1,4 @@
 import {
-    ApiResponse,
-    dateFormatter,
-    editUserSchema,
-    EditUserValues,
-    getPageTitle,
-    INTERNAL_URLS,
-    optimizeCloudinary,
-    ROLES_LIST,
-    useUpdateAvatarMutation,
-    useUpdateUserMutation,
-    useUploadImageMutation,
-} from '@/lib'
-import { departmentsListOptions } from '@/lib/queries/options/department-queries'
-import { jobTitlesListOptions } from '@/lib/queries/options/job-title-queries'
-import { userOptions } from '@/lib/queries/options/user-queries'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroButton,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
-import {
     addToast,
     Avatar,
     Button,
@@ -36,7 +13,6 @@ import {
     Switch,
     Tab,
     Tabs,
-    Textarea,
     useDisclosure,
 } from '@heroui/react'
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -61,9 +37,34 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { z } from 'zod'
+
+import {
+    ApiResponse,
+    dateFormatter,
+    editUserSchema,
+    EditUserValues,
+    getPageTitle,
+    INTERNAL_URLS,
+    optimizeCloudinary,
+    ROLES_LIST,
+    useUpdateAvatarMutation,
+    useUpdateUserMutation,
+    useUploadImageMutation,
+} from '@/lib'
+import { departmentsListOptions } from '@/lib/queries/options/department-queries'
+import { jobTitlesListOptions } from '@/lib/queries/options/job-title-queries'
+import { userOptions } from '@/lib/queries/options/user-queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroButton,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import { DeleteUserPermanentlyModal } from '@/shared/components/modals/DeleteUserPermanentlyModal'
 import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
 import { UploadAvatarModal } from '@/shared/components/modals/UploadAvatarModal'
-import { DeleteUserPermanentlyModal } from '@/shared/components/modals/DeleteUserPermanentlyModal'
+import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
+
 import { TUser } from '../../../../../../shared/types'
 
 // --- Helper to connect Zod to Formik without extra deps ---

@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react'
 import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
     Button,
     Input,
-    Textarea,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
     Select,
     SelectItem,
     Switch,
+    Textarea,
 } from '@heroui/react'
 import {
     AlertTriangle,
-    Bug,
-    FileQuestion,
-    ServerCrash,
-    Send,
     Ban,
+    Bug,
     CheckCircle2,
+    FileQuestion,
+    Send,
+    ServerCrash,
 } from 'lucide-react'
+import { useEffect,useState } from 'react'
 
 // --- Issue Types Configuration ---
 const ISSUE_TYPES = [
