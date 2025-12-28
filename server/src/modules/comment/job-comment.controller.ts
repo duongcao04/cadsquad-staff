@@ -19,15 +19,15 @@ import {
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { JwtGuard } from '../auth/jwt.guard'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
-import { CommentService } from './comment.service'
+import { JobCommentService } from './job-comment.service'
 import { CommentResponseDto } from './dto/comment-response.dto'
 import { CreateCommentDto } from './dto/create-comment.dto'
 import { UpdateCommentDto } from './dto/update-comment.dto'
 
 @ApiTags('Comments')
 @Controller('comments')
-export class CommentController {
-  constructor(private readonly commentService: CommentService) { }
+export class JobCommentController {
+  constructor(private readonly jobCommentService: JobCommentService) { }
 
   @Post()
   @HttpCode(201)
@@ -45,7 +45,7 @@ export class CommentController {
     @Body() createCommentDto: CreateCommentDto,
   ) {
     const userPayload: TokenPayload = await request['user']
-    return this.commentService.create(userPayload.sub, createCommentDto)
+    return this.jobCommentService.create(userPayload.sub, createCommentDto)
   }
 
   @Get('job/:jobId')
@@ -58,7 +58,7 @@ export class CommentController {
     type: [CommentResponseDto],
   })
   async findAllByJob(@Param('jobId') jobId: string) {
-    return this.commentService.findAllByJob(jobId)
+    return this.jobCommentService.findAllByJob(jobId)
   }
 
   @Get(':id')
@@ -71,7 +71,7 @@ export class CommentController {
     type: CommentResponseDto,
   })
   async findOne(@Param('id') id: string) {
-    return this.commentService.findById(id)
+    return this.jobCommentService.findById(id)
   }
 
   @Patch(':id')
@@ -89,7 +89,7 @@ export class CommentController {
     @Param('id') id: string,
     @Body() updateCommentDto: UpdateCommentDto,
   ) {
-    return this.commentService.update(id, updateCommentDto)
+    return this.jobCommentService.update(id, updateCommentDto)
   }
 
   @Delete(':id')
@@ -103,6 +103,6 @@ export class CommentController {
     description: 'The comment has been successfully deleted.',
   })
   async remove(@Param('id') id: string) {
-    return this.commentService.delete(id)
+    return this.jobCommentService.delete(id)
   }
 }

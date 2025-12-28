@@ -58,7 +58,7 @@ model User {
   configs             UserConfig[]
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
-  comment             Comment[]
+  jobComments         JobComment[]
   gallery             Gallery[]
   userDevices         UserDevices[]
   statusChanges       JobStatusHistory[]
@@ -70,11 +70,12 @@ model User {
   reports   User[]  @relation("UserHierarchy")
 
   // Quan hệ Auth
-  sessions      Session[]
-  accounts      Account[]
-  jobDeliveries JobDelivery[]
-  communities   CommunityMember[]
-  posts         Post[]
+  sessions       Session[]
+  accounts       Account[]
+  jobDeliveries  JobDelivery[]
+  communities    CommunityMember[]
+  posts          Post[]
+  jobAssignments JobAssignment[]
 }
 
 // Model Session bắt buộc cho Better Auth
@@ -133,7 +134,7 @@ model Gallery {
   updatedAt   DateTime @updatedAt
 }
 
-model Comment {
+model JobComment {
   id      String @id @default(uuid())
   content String
   jobId   String
@@ -142,8 +143,8 @@ model Comment {
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   parentId String? // Hỗ trợ reply comment
-  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies  Comment[] @relation("CommentReplies")
+  parent   JobComment?  @relation("JobCommentReplies", fields: [parentId], references: [id])
+  replies  JobComment[] @relation("JobCommentReplies")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -235,18 +236,23 @@ model FileSystem {
 }
 
 model Job {
-  id               String             @id @default(uuid())
-  no               String             @unique // Job No. example FV-0001
-  type             JobType            @relation(fields: [typeId], references: [id])
-  typeId           String
-  displayName      String
-  description      String?
-  attachmentUrls   String[]           @default([])
-  client           Client             @relation(fields: [clientId], references: [id])
-  clientId         String
-  incomeCost       Float
-  staffCost        Float
-  assignee         User[]             @relation("UserJobs") // Member assigned
+  id String @id @default(uuid())
+  no String @unique // Job No. example FV-0001
+
+  type   JobType @relation(fields: [typeId], references: [id])
+  typeId String
+
+  displayName    String
+  description    String?
+  attachmentUrls String[] @default([])
+  client         Client?  @relation(fields: [clientId], references: [id])
+  clientId       String?
+  incomeCost     Float
+
+  assignee User[] @relation("UserJobs") // Member assigned
+
+  assignments JobAssignment[]
+
   createdBy        User               @relation("JobCreator", fields: [createdById], references: [id])
   createdById      String
   paymentChannel   PaymentChannel?    @relation(fields: [paymentChannelId], references: [id])
@@ -267,7 +273,7 @@ model Job {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   deletedAt        DateTime?
-  comments         Comment[]
+  comments         JobComment[]
   statusHistory    JobStatusHistory[]
   pinnedByUsers    PinnedJob[]
   jobDeliveries    JobDelivery[]
@@ -276,6 +282,18 @@ model Job {
   @@index([statusId])
   @@index([createdById])
   @@index([priority])
+}
+
+model JobAssignment {
+  id         String   @id @default(uuid())
+  job        Job      @relation(fields: [jobId], references: [id])
+  jobId      String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  staffCost  Float    @default(0) // Specific cost for THIS staff on THIS job
+  assignedAt DateTime @default(now())
+
+  @@unique([jobId, userId]) // Prevents assigning the same person twice
 }
 
 model Client {
@@ -292,7 +310,7 @@ model Client {
 
   // Contact Info
   email        String? @unique
-  phone        String?
+  phoneNumber  String?
   billingEmail String?
 
   // Financials

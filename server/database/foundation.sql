@@ -742,3 +742,28 @@ SET
 	"taxId" = EXCLUDED."taxId",
 	"paymentTerms" = EXCLUDED."paymentTerms",
 	"updatedAt" = NOW ();
+
+INSERT INTO
+	"Notification" (
+		id,
+		"userId",
+		"title",
+		"content",
+		"type",
+		"status",
+		"createdAt",
+		"updatedAt"
+	)
+SELECT
+	gen_random_uuid (),
+	id,
+	'Welcome to CADSQUAD',
+	'Your account has been successfully set up.',
+	'SUCCESS',
+	'UNSEEN',
+	NOW (),
+	NOW ()
+FROM
+	"User"
+LIMIT
+	10;

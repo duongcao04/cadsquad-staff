@@ -48,7 +48,7 @@ export class JobController {
         private readonly jobService: JobService,
         private readonly jobTypeService: JobTypeService,
         private readonly activityLogService: ActivityLogService
-    ) {}
+    ) { }
 
     @Post(':id/toggle-pin')
     async togglePin(@Req() request: Request, @Param('id') jobId: string) {

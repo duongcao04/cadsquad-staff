@@ -8,19 +8,31 @@ CREATE TYPE "RoleEnum" AS ENUM ('USER', 'ADMIN', 'ACCOUNTING');
 CREATE TYPE "AccountProvider" AS ENUM ('GOOGLE', 'GITHUB', 'MICROSOFT', 'FACEBOOK', 'LOCAL');
 
 -- CreateEnum
+CREATE TYPE "ClientType" AS ENUM ('INDIVIDUAL', 'COMPANY');
+
+-- CreateEnum
 CREATE TYPE "JobPriority" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 
 -- CreateEnum
-CREATE TYPE "JobStatusSystemType" AS ENUM ('STANDARD', 'COMPLETED', 'TERMINATED');
+CREATE TYPE "JobStatusSystemType" AS ENUM ('STANDARD', 'WAIT_REVIEW', 'COMPLETED', 'TERMINATED');
 
 -- CreateEnum
-CREATE TYPE "ActivityType" AS ENUM ('CreateJob', 'ChangeStatus', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'UpdateInformation', 'DeleteJob');
+CREATE TYPE "DeliveryStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
+
+-- CreateEnum
+CREATE TYPE "ActivityType" AS ENUM ('CreateJob', 'ChangeStatus', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'UpdateInformation', 'DeleteJob', 'DeliverJob', 'MarkPaid');
 
 -- CreateEnum
 CREATE TYPE "NotificationStatus" AS ENUM ('SEEN', 'UNSEEN');
 
 -- CreateEnum
 CREATE TYPE "NotificationType" AS ENUM ('INFO', 'WARNING', 'ERROR', 'SUCCESS', 'JOB_UPDATE', 'DEADLINE_REMINDER', 'STATUS_CHANGE');
+
+-- CreateEnum
+CREATE TYPE "CommunityRole" AS ENUM ('MEMBER', 'MODERATOR', 'OWNER');
+
+-- CreateEnum
+CREATE TYPE "TopicType" AS ENUM ('GENERAL', 'ANNOUNCEMENT', 'FILES', 'IDEA', 'SUPPORT');
 
 -- CreateTable
 CREATE TABLE "BrowserSubscribes" (
@@ -61,6 +73,7 @@ CREATE TABLE "User" (
     "lastLoginAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "managerId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -121,7 +134,7 @@ CREATE TABLE "Gallery" (
 );
 
 -- CreateTable
-CREATE TABLE "Comment" (
+CREATE TABLE "JobComment" (
     "id" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "jobId" TEXT NOT NULL,
@@ -130,7 +143,7 @@ CREATE TABLE "Comment" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "JobComment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -198,9 +211,8 @@ CREATE TABLE "Job" (
     "displayName" TEXT NOT NULL,
     "description" TEXT,
     "attachmentUrls" TEXT[] DEFAULT ARRAY[]::TEXT[],
-    "clientName" TEXT NOT NULL,
+    "clientId" TEXT,
     "incomeCost" DOUBLE PRECISION NOT NULL,
-    "staffCost" DOUBLE PRECISION NOT NULL,
     "createdById" TEXT NOT NULL,
     "paymentChannelId" TEXT,
     "statusId" TEXT NOT NULL,
@@ -217,6 +229,39 @@ CREATE TABLE "Job" (
     "deletedAt" TIMESTAMP(3),
 
     CONSTRAINT "Job_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "JobAssignment" (
+    "id" TEXT NOT NULL,
+    "jobId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "staffCost" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "JobAssignment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Client" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "type" "ClientType" NOT NULL DEFAULT 'COMPANY',
+    "region" TEXT,
+    "country" TEXT,
+    "address" TEXT,
+    "timezone" TEXT DEFAULT 'UTC',
+    "email" TEXT,
+    "phoneNumber" TEXT,
+    "billingEmail" TEXT,
+    "taxId" TEXT,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "paymentTerms" INTEGER NOT NULL DEFAULT 30,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Client_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -274,6 +319,22 @@ CREATE TABLE "JobStatus" (
 );
 
 -- CreateTable
+CREATE TABLE "JobDelivery" (
+    "id" TEXT NOT NULL,
+    "jobId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "note" TEXT,
+    "link" TEXT,
+    "files" TEXT[],
+    "status" "DeliveryStatus" NOT NULL DEFAULT 'PENDING',
+    "adminFeedback" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "JobDelivery_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "JobStatusHistory" (
     "id" TEXT NOT NULL,
     "jobId" TEXT NOT NULL,
@@ -321,6 +382,61 @@ CREATE TABLE "Notification" (
 );
 
 -- CreateTable
+CREATE TABLE "Community" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "displayName" TEXT NOT NULL,
+    "description" TEXT,
+    "color" TEXT,
+    "icon" TEXT,
+    "banner" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Community_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CommunityMember" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "communityId" TEXT NOT NULL,
+    "role" "CommunityRole" NOT NULL DEFAULT 'MEMBER',
+    "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "CommunityMember_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Topic" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "type" "TopicType" NOT NULL DEFAULT 'GENERAL',
+    "icon" TEXT,
+    "communityId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Topic_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Post" (
+    "id" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "attachments" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "authorId" TEXT NOT NULL,
+    "topicId" TEXT NOT NULL,
+    "isPinned" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_UserFiles" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -346,13 +462,13 @@ CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 CREATE UNIQUE INDEX "Session_token_key" ON "Session"("token");
 
 -- CreateIndex
-CREATE INDEX "Comment_jobId_idx" ON "Comment"("jobId");
+CREATE INDEX "JobComment_jobId_idx" ON "JobComment"("jobId");
 
 -- CreateIndex
-CREATE INDEX "Comment_userId_idx" ON "Comment"("userId");
+CREATE INDEX "JobComment_userId_idx" ON "JobComment"("userId");
 
 -- CreateIndex
-CREATE INDEX "Comment_createdAt_idx" ON "Comment"("createdAt");
+CREATE INDEX "JobComment_createdAt_idx" ON "JobComment"("createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "JobTitle_code_key" ON "JobTitle"("code");
@@ -383,6 +499,15 @@ CREATE INDEX "Job_createdById_idx" ON "Job"("createdById");
 
 -- CreateIndex
 CREATE INDEX "Job_priority_idx" ON "Job"("priority");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "JobAssignment_jobId_userId_key" ON "JobAssignment"("jobId", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Client_code_key" ON "Client"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Client_email_key" ON "Client"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "JobStatus_code_key" ON "JobStatus"("code");
@@ -418,6 +543,33 @@ CREATE INDEX "Notification_userId_status_idx" ON "Notification"("userId", "statu
 CREATE INDEX "Notification_createdAt_idx" ON "Notification"("createdAt");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Community_code_key" ON "Community"("code");
+
+-- CreateIndex
+CREATE INDEX "CommunityMember_userId_idx" ON "CommunityMember"("userId");
+
+-- CreateIndex
+CREATE INDEX "CommunityMember_communityId_idx" ON "CommunityMember"("communityId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "CommunityMember_userId_communityId_key" ON "CommunityMember"("userId", "communityId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Topic_code_key" ON "Topic"("code");
+
+-- CreateIndex
+CREATE INDEX "Topic_communityId_idx" ON "Topic"("communityId");
+
+-- CreateIndex
+CREATE INDEX "Post_topicId_idx" ON "Post"("topicId");
+
+-- CreateIndex
+CREATE INDEX "Post_authorId_idx" ON "Post"("authorId");
+
+-- CreateIndex
+CREATE INDEX "Post_createdAt_idx" ON "Post"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "_UserFiles_B_index" ON "_UserFiles"("B");
 
 -- CreateIndex
@@ -433,6 +585,9 @@ ALTER TABLE "User" ADD CONSTRAINT "User_jobTitleId_fkey" FOREIGN KEY ("jobTitleI
 ALTER TABLE "User" ADD CONSTRAINT "User_departmentId_fkey" FOREIGN KEY ("departmentId") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_managerId_fkey" FOREIGN KEY ("managerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -442,13 +597,13 @@ ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "Gallery" ADD CONSTRAINT "Gallery_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "JobComment" ADD CONSTRAINT "JobComment_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "JobComment" ADD CONSTRAINT "JobComment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Comment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "JobComment" ADD CONSTRAINT "JobComment_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "JobComment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserConfig" ADD CONSTRAINT "UserConfig_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -463,6 +618,9 @@ ALTER TABLE "FileSystem" ADD CONSTRAINT "FileSystem_jobId_fkey" FOREIGN KEY ("jo
 ALTER TABLE "Job" ADD CONSTRAINT "Job_typeId_fkey" FOREIGN KEY ("typeId") REFERENCES "JobType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Job" ADD CONSTRAINT "Job_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Job" ADD CONSTRAINT "Job_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -472,10 +630,22 @@ ALTER TABLE "Job" ADD CONSTRAINT "Job_paymentChannelId_fkey" FOREIGN KEY ("payme
 ALTER TABLE "Job" ADD CONSTRAINT "Job_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "JobStatus"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "JobAssignment" ADD CONSTRAINT "JobAssignment_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "JobAssignment" ADD CONSTRAINT "JobAssignment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "PinnedJob" ADD CONSTRAINT "PinnedJob_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "PinnedJob" ADD CONSTRAINT "PinnedJob_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "JobDelivery" ADD CONSTRAINT "JobDelivery_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "JobDelivery" ADD CONSTRAINT "JobDelivery_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "JobStatusHistory" ADD CONSTRAINT "JobStatusHistory_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -497,6 +667,21 @@ ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommunityMember" ADD CONSTRAINT "CommunityMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CommunityMember" ADD CONSTRAINT "CommunityMember_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Topic" ADD CONSTRAINT "Topic_communityId_fkey" FOREIGN KEY ("communityId") REFERENCES "Community"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Post" ADD CONSTRAINT "Post_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Post" ADD CONSTRAINT "Post_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_UserFiles" ADD CONSTRAINT "_UserFiles_A_fkey" FOREIGN KEY ("A") REFERENCES "FileSystem"("id") ON DELETE CASCADE ON UPDATE CASCADE;

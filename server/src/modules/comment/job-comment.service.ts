@@ -1,17 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { Comment } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { CreateCommentDto } from './dto/create-comment.dto'
 import { UpdateCommentDto } from './dto/update-comment.dto'
 import { CommentResponseDto } from './dto/comment-response.dto'
+import { JobComment } from '@prisma/client'
 
 @Injectable()
-export class CommentService {
+export class JobCommentService {
   constructor(private readonly prismaService: PrismaService) { }
 
   async create(userId: string, data: CreateCommentDto): Promise<Comment> {
-    const comment = await this.prismaService.comment.create({
+    const comment = await this.prismaService.jobComment.create({
       data: {
         ...data,
         userId: userId
@@ -23,7 +23,7 @@ export class CommentService {
   }
 
   async findAllByJob(jobId: string): Promise<Comment[]> {
-    const comments = await this.prismaService.comment.findMany({
+    const comments = await this.prismaService.jobComment.findMany({
       where: { jobId },
       include: {
         job: {},
@@ -43,7 +43,7 @@ export class CommentService {
   }
 
   async findById(id: string): Promise<Comment> {
-    const comment = await this.prismaService.comment.findUnique({ where: { id } })
+    const comment = await this.prismaService.jobComment.findUnique({ where: { id } })
     if (!comment) throw new NotFoundException('Comment not found')
 
     return plainToInstance(CommentResponseDto, comment, {
@@ -53,7 +53,7 @@ export class CommentService {
 
   async update(id: string, data: UpdateCommentDto): Promise<Comment> {
     try {
-      const updated = await this.prismaService.comment.update({
+      const updated = await this.prismaService.jobComment.update({
         where: { id },
         data,
       })
@@ -65,9 +65,9 @@ export class CommentService {
     }
   }
 
-  async delete(id: string): Promise<Comment> {
+  async delete(id: string): Promise<JobComment> {
     try {
-      return await this.prismaService.comment.delete({ where: { id } })
+      return await this.prismaService.jobComment.delete({ where: { id } })
     } catch (error) {
       throw new NotFoundException('Comment not found')
     }

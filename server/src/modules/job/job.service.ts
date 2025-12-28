@@ -43,7 +43,7 @@ export class JobService {
         private readonly userService: UserService,
         private readonly userConfigService: UserConfigService,
         private readonly notificationService: NotificationService
-    ) {}
+    ) { }
     private readonly logger = new Logger(JobService.name)
 
     /**
@@ -64,13 +64,12 @@ export class JobService {
                         createdById: createdById,
                         createdAt: new Date(),
                         incomeCost: parseFloat(data.incomeCost),
-                        staffCost: parseFloat(data.staffCost),
                         priority: jobData.priority as Job['priority'],
                         statusId: statusId,
                         assignee: assigneeIds?.length
                             ? {
-                                  connect: assigneeIds.map((id) => ({ id })),
-                              }
+                                connect: assigneeIds.map((id) => ({ id })),
+                            }
                             : undefined,
                         attachmentUrls: jobData.attachmentUrls
                             ? Array.isArray(jobData.attachmentUrls)
@@ -295,8 +294,8 @@ export class JobService {
                     totalPages: isAll
                         ? 1
                         : Math.ceil(
-                              (totalUnpinnedJobs + pinnedJobIds.length) / take
-                          ),
+                            (totalUnpinnedJobs + pinnedJobIds.length) / take
+                        ),
                 },
             }
         } catch (error) {
@@ -385,17 +384,17 @@ export class JobService {
 
             const paginateResults = isAll
                 ? {
-                      limit: 0,
-                      page: 1,
-                      total: total ?? 0,
-                      totalPages: Math.ceil(total / Number(take ?? 10)),
-                  }
+                    limit: 0,
+                    page: 1,
+                    total: total ?? 0,
+                    totalPages: Math.ceil(total / Number(take ?? 10)),
+                }
                 : {
-                      limit: take ?? 10,
-                      page: page ?? 1,
-                      total: total ?? 0,
-                      totalPages: Math.ceil(total / Number(take ?? 10)),
-                  }
+                    limit: take ?? 10,
+                    page: page ?? 1,
+                    total: total ?? 0,
+                    totalPages: Math.ceil(total / Number(take ?? 10)),
+                }
             return {
                 data: plainToInstance(this.responseSchema(userRole), data, {
                     excludeExtraneousValues: true,
@@ -842,10 +841,6 @@ export class JobService {
                             incomeCost !== undefined
                                 ? Number(incomeCost)
                                 : undefined,
-                        staffCost:
-                            staffCost !== undefined
-                                ? Number(staffCost)
-                                : undefined,
                         typeId: typeId,
                         paymentChannelId: paymentChannelId,
                         attachmentUrls: attachmentUrls
@@ -863,7 +858,6 @@ export class JobService {
                         jobId: jobId,
                         previousValue: JSON.stringify({
                             incomeCost: currentJob.incomeCost,
-                            staffCost: currentJob.staffCost,
                             paymentChannelId: currentJob.paymentChannelId,
                             displayName: currentJob.displayName,
                         }),
@@ -1188,12 +1182,12 @@ export class JobService {
                     data: {
                         ...(data.updateMemberIds &&
                             JSON.parse(data.updateMemberIds).length > 0 && {
-                                assignee: {
-                                    connect: JSON.parse(
-                                        data.updateMemberIds
-                                    ).map((id: string) => ({ id })),
-                                },
-                            }),
+                            assignee: {
+                                connect: JSON.parse(
+                                    data.updateMemberIds
+                                ).map((id: string) => ({ id })),
+                            },
+                        }),
                     },
                 })
 

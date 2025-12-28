@@ -240,9 +240,9 @@ export class JobFiltersBuilder {
     const where: Prisma.JobWhereInput = {}
 
     // 1. Client Name (Partial Match)
-    if (filters.clientName) {
-      where.clientName = { contains: filters.clientName, mode: 'insensitive' }
-    }
+    // if (filters.clientName) {
+    //   where.clientName = { contains: filters.clientName, mode: 'insensitive' }
+    // }
 
     // 2. Job Type (Relation)
     if (filters.type?.length) {
@@ -286,9 +286,9 @@ export class JobFiltersBuilder {
       where.incomeCost = this.mapNumberRange(filters.incomeCostMin, filters.incomeCostMax)
     }
 
-    if (filters.staffCostMin || filters.staffCostMax) {
-      where.staffCost = this.mapNumberRange(filters.staffCostMin, filters.staffCostMax)
-    }
+    // if (filters.staffCostMin || filters.staffCostMax) {
+    //   where.staffCost = this.mapNumberRange(filters.staffCostMin, filters.staffCostMax)
+    // }
 
     return where
   }
