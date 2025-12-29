@@ -16,7 +16,7 @@ export const CreateJobSchema = yup.object({
     attachmentUrls: yup.array(yup.string().required()).optional(),
     clientName: yup.string().required('Client name is required'),
     incomeCost: yup.number().required('Income cost is required'),
-    staffCost: yup.number().required('Staff cost is required'),
+    sumStaffCost: yup.number().optional(),
     assigneeIds: yup.array().of(yup.string().required()).optional(),
     paymentChannelId: yup.string().nullable(),
     priority: yup

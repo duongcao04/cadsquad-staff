@@ -249,7 +249,8 @@ model Job {
   clientId       String?
   incomeCost     Float
 
-  assignee User[] @relation("UserJobs") // Member assigned
+  sumStaffCost Float  @default(0)
+  assignee     User[] @relation("UserJobs") // Member assigned
 
   assignments JobAssignment[]
 

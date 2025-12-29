@@ -1,7 +1,7 @@
-import { Divider } from '@heroui/react'
+import { addToast, Divider } from '@heroui/react'
 import dayjs from 'dayjs'
 import { useFormik } from 'formik'
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
     useCreateJobMutation,
@@ -10,7 +10,6 @@ import {
     useUsers,
 } from '@/lib/queries'
 import { CreateJobSchema, type TCreateJobInput } from '@/lib/validationSchemas'
-
 import AssignMemberField from '../form-fields/AssignMemberField'
 import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { JobNoField } from '../form-fields/JobNoField'
@@ -21,11 +20,11 @@ import { HeroInput } from '../ui/hero-input'
 import { HeroNumberInput } from '../ui/hero-number-input'
 import HeroRowsStep from '../ui/hero-rows-steps'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
+import lodash from 'lodash'
 
 type CreateJobFormProps = {
     onSubmit?: () => void
 }
-
 export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
     /**
      * Keep your original Fetching logic
@@ -78,8 +77,8 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                     staffCost: 0,
                 },
             ],
+            sumStaffCost: 0,
             incomeCost: null as unknown as number,
-            staffCost: 0, // This will now represent the SUM
             paymentChannelId: null,
         },
         validationSchema: CreateJobSchema,
@@ -206,15 +205,36 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                                             ? dayjs(formik.values.dueAt)
                                             : dayjs(),
                                     }}
-                                    onValueChange={(val: any) => {
+                                    onValueChange={(range) => {
+                                        console.log(range.start.toISOString())
+
                                         formik.setFieldValue(
                                             'startedAt',
-                                            val?.start.toISOString()
+                                            range.start.toISOString()
                                         )
                                         formik.setFieldValue(
                                             'dueAt',
-                                            val?.end.toISOString()
+                                            range.end.toISOString()
                                         )
+                                    }}
+                                    isInvalid={{
+                                        startedAt:
+                                            Boolean(formik.touched.startedAt) &&
+                                            Boolean(formik.errors.startedAt),
+                                        dueAt:
+                                            Boolean(formik.touched.dueAt) &&
+                                            Boolean(formik.errors.dueAt),
+                                    }}
+                                    errorMessages={{
+                                        startedAt: Boolean(
+                                            formik.touched.startedAt
+                                        )
+                                            ? (formik.errors
+                                                  .startedAt as string)
+                                            : undefined,
+                                        dueAt: Boolean(formik.touched.dueAt)
+                                            ? (formik.errors.dueAt as string)
+                                            : undefined,
                                     }}
                                 />
                                 <div>
@@ -429,13 +449,52 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
     )
 }
 
-function DeliveryField({ value, onValueChange }: any) {
+type DeliveryFieldProps = {
+    value:
+        | {
+              start: string | dayjs.Dayjs
+              end: dayjs.Dayjs | string
+          }
+        | null
+        | undefined
+    onValueChange: (range: { start: dayjs.Dayjs; end: dayjs.Dayjs }) => void
+    isInvalid?: {
+        startedAt?: boolean
+        dueAt?: boolean
+    }
+    errorMessages?: {
+        startedAt?: string
+        dueAt?: string
+    }
+}
+function DeliveryField({
+    value,
+    onValueChange,
+    isInvalid,
+    errorMessages,
+}: DeliveryFieldProps) {
+    console.log(errorMessages)
+
     return (
         <HeroDateRangePicker
-            label="Delivery date"
+            label="Project Timeline (Start to Deadline)"
             labelPlacement="outside"
             value={value}
-            onChange={onValueChange}
+            variant="bordered"
+            classNames={{
+                inputWrapper: 'bg-background',
+            }}
+            isInvalid={isInvalid?.startedAt || isInvalid?.dueAt}
+            onChange={(range) => {
+                if (lodash.isNull(range)) {
+                    addToast({
+                        title: 'Have error',
+                        color: 'danger',
+                    })
+                } else {
+                    onValueChange(range)
+                }
+            }}
             isRequired
         />
     )
