@@ -14,22 +14,22 @@ import type {
  */
 export interface IUserResponse {
     /** Unique identifier (UUIDv4) */
-    id: string
+    id?: string
 
     /** Unique email address */
-    email: string
+    email?: string
 
     /** Unique username */
-    username: string
+    username?: string
 
     /** Display name for the user profile */
-    displayName: string
+    displayName?: string
 
     /** Encrypted password */
     password?: string
 
     /** Avatar URL (nullable) */
-    avatar?: string | null
+    avatar?: string
 
     /** Job title information (nullable) */
     jobTitleId?: string | null
@@ -47,44 +47,41 @@ export interface IUserResponse {
     phoneNumber?: string | null
 
     /** User role (e.g., ADMIN, USER) */
-    role: RoleEnum
+    role?: RoleEnum
 
     /** Indicates if the user account is active */
-    isActive: boolean
+    isActive?: boolean
 
     /** Last login date and time (nullable) */
     lastLoginAt?: Date | null
 
     /** List of notifications received by the user */
-    notifications: Notification[]
-
-    /** List of jobs assigned to the user */
-    jobsAssigned: TJob[]
+    notifications?: Notification[]
 
     /** List of jobs created by the user */
-    jobsCreated: TJob[]
+    jobsCreated?: TJob[]
 
     /** List of files created by the user */
-    filesCreated: FileSystem[]
+    filesCreated?: FileSystem[]
 
     /** List of files associated with the user */
-    files: FileSystem[]
+    files?: FileSystem[]
 
     /** Connected accounts (e.g., Google, GitHub) */
-    accounts: TAccount[]
+    accounts?: TAccount[]
 
     /** Notifications sent by the user */
-    sendedNotifications: Notification[]
+    sendedNotifications?: Notification[]
 
     /** Log of job-related activities performed by the user */
-    jobActivityLog: TJobActivityLog[]
+    jobActivityLog?: TJobActivityLog[]
 
     /** Personal configuration settings for the user */
-    configs: TUserConfig[]
+    configs?: TUserConfig[]
 
     /** Date and time when the user was created */
-    createdAt: Date
+    createdAt?: Date | string
 
     /** Date and time when the user was last updated */
-    updatedAt: Date
+    updatedAt?: Date | string
 }

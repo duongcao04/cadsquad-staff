@@ -1,3 +1,16 @@
+import { optimizeCloudinary, useProfile } from '@/lib'
+import { dateFormatter } from '@/lib/dayjs'
+import { useJobStatuses } from '@/lib/queries'
+import {
+    currencyFormatter,
+    DUE_DATE_PRESETS,
+    getAllowedJobColumns,
+    INTERNAL_URLS,
+    TABLE_ROW_PER_PAGE_OPTIONS,
+} from '@/lib/utils'
+import { TJobFilters } from '@/lib/validationSchemas'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
 import {
     Button,
     Dropdown,
@@ -34,23 +47,7 @@ import {
     X,
 } from 'lucide-react'
 import { ReactNode, useCallback, useMemo } from 'react'
-
-import { dateFormatter } from '@/lib/dayjs'
-import { useJobStatuses } from '@/lib/queries'
-import {
-    currencyFormatter,
-    DUE_DATE_PRESETS,
-    getAllowedJobColumns,
-    IMAGES,
-    INTERNAL_URLS,
-    TABLE_ROW_PER_PAGE_OPTIONS,
-} from '@/lib/utils'
-import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
-import type { JobColumnKey, TJob, TJobStatus } from '@/shared/types'
-
-import { optimizeCloudinary, useProfile } from '../../../lib'
-import { TJobFilters } from '../../../lib/validationSchemas'
-import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
+import { JobStatusSystemTypeEnum } from '../../enums'
 import { pCenterTableStore } from '../../stores'
 import JobFinishChip from '../chips/JobFinishChip'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
@@ -386,7 +383,7 @@ export default function ProjectCenterTable({
                         <div className="flex gap-3">
                             <HeroSelect
                                 selectionMode="multiple"
-                                className="min-w-32.5"
+                                className="min-w-34"
                                 size="sm"
                                 classNames={{
                                     trigger:
@@ -441,7 +438,7 @@ export default function ProjectCenterTable({
                             </HeroSelect>
 
                             <HeroSelect
-                                className="min-w-32.5"
+                                className="min-w-34"
                                 size="sm"
                                 classNames={{
                                     trigger:
@@ -456,8 +453,8 @@ export default function ProjectCenterTable({
                                         getDueDateRange(value.currentKey)
                                     onFiltersChange?.({
                                         ...filters,
-                                        dueAtFrom,
-                                        dueAtTo,
+                                        dueAtFrom: dueAtFrom?.split('T')[0],
+                                        dueAtTo: dueAtTo?.split('T')[0],
                                     })
                                 }}
                                 renderValue={(selectedItems) => {
@@ -573,10 +570,7 @@ export default function ProjectCenterTable({
                         <div className="flex items-center justify-center">
                             <div className="overflow-hidden rounded-full size-10">
                                 <Image
-                                    src={
-                                        data.thumbnailUrl ??
-                                        IMAGES.loadingPlaceholder
-                                    }
+                                    src={data.status.thumbnailUrl}
                                     alt="image"
                                     className="object-cover rounded-full size-full"
                                     preview={false}
@@ -585,7 +579,7 @@ export default function ProjectCenterTable({
                         </div>
                     )
                 case 'clientName':
-                    return <p className="line-clamp-1">{data.clientName}</p>
+                    return <p className="line-clamp-1">{data.client.name}</p>
                 case 'type':
                     return (
                         <p className="line-clamp-1">{data.type.displayName}</p>

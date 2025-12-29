@@ -1,5 +1,5 @@
-import { ITopicResponse } from "../interfaces/_topic.interface";
+import { ITopicResponse } from '../interfaces/_topic.interface'
 
-export type TTopic = Omit<ITopicResponse, 'communityId' | 'icon'> & {
-	icon: string
+export type TTopic = Omit<Required<ITopicResponse>, 'communityId' | 'icon'> & {
+    icon: string
 }

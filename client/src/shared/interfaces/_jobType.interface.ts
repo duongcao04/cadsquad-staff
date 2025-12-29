@@ -9,19 +9,19 @@ export interface IJobTypeResponse {
      * The unique identifier for the job type.
      * @type {string}
      */
-    id: string
+    id?: string
 
     /**
      * A unique code for the job type.
      * @type {string}
      */
-    code: string
+    code?: string
 
     /**
      * The human-readable name of the job type.
      * @type {string}
      */
-    displayName: string
+    displayName?: string
 
     /**
      * An optional hexadecimal color code for UI display.
@@ -33,7 +33,7 @@ export interface IJobTypeResponse {
      * A list of jobs that belong to this type.
      * @type {Job[]}
      */
-    jobs: TJob[]
+    jobs?: TJob[]
 
     _count?: Record<string, string>
 }

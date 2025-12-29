@@ -277,8 +277,7 @@ function JobEditPage() {
             // Using fetched data or defaults (ensure JOB_DATA properties exist on data)
             ...data,
             displayName: data?.displayName || '',
-            clientName: data?.clientName || '',
-            priority: data?.priority || 'MEDIUM',
+            clientName: data?.client.name || '',
             incomeCost: data?.incomeCost || 0,
             staffCost: data?.staffCost || 0,
             dueAt: data?.dueAt || '',
@@ -739,7 +738,7 @@ function JobEditPage() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <Select
+                                                    {/* <Select
                                                         name="priority"
                                                         label="Priority"
                                                         labelPlacement="outside"
@@ -786,7 +785,7 @@ function JobEditPage() {
                                                                 </SelectItem>
                                                             )
                                                         )}
-                                                    </Select>
+                                                    </Select> */}
                                                 </div>
                                                 <div>
                                                     <Input

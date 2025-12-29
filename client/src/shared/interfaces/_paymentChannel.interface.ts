@@ -9,13 +9,13 @@ export interface IPaymentChannelResponse {
      * The unique identifier for the payment channel.
      * @type {string}
      */
-    id: string
+    id?: string
 
     /**
      * The human-readable name of the payment channel (e.g., "Bank of America", "PayPal").
      * @type {string}
      */
-    displayName: string
+    displayName?: string
 
     /**
      * An optional hexadecimal color code for UI display.

@@ -2,20 +2,17 @@ import { Avatar, useDisclosure } from '@heroui/react'
 import { UserRoundPlus } from 'lucide-react'
 
 import { optimizeCloudinary } from '@/lib/cloudinary'
-import { useJobAssignees, useProfile } from '@/lib/queries'
+import { useProfile } from '@/lib/queries'
 
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import { HeroChip } from '../ui/hero-chip'
 import { HeroTooltip } from '../ui/hero-tooltip'
+import { TJob } from '../../types'
 
-type JobAssigneesViewProps = { jobId: string; jobNo: string }
-export default function JobAssigneesView({
-    jobId,
-    jobNo,
-}: JobAssigneesViewProps) {
-    const { data: assignees, totalAssignees } = useJobAssignees(jobId)
+type JobAssigneesViewProps = { data: TJob }
+export default function JobAssigneesView({ data }: JobAssigneesViewProps) {
     const { isAdmin } = useProfile()
 
     const { isOpen, onClose, onOpen } = useDisclosure({
@@ -24,16 +21,17 @@ export default function JobAssigneesView({
 
     return (
         <>
-            <AssignMemberModal
-                jobNo={jobNo}
-                onClose={onClose}
-                isOpen={Boolean(jobNo) && isOpen}
-            />
-            <HeroCard className="p-0!">
-                {/* Assignees */}
-                <HeroCardHeader className="justify-between py-1 bg-background-muted">
-                    <span className="text-small font-bold text-default-600 uppercase tracking-wider">
-                        Assignees ({totalAssignees})
+            {isOpen && data.no && (
+                <AssignMemberModal
+                    jobNo={data.no}
+                    onClose={onClose}
+                    isOpen={isOpen}
+                />
+            )}
+            <HeroCard className="p-0! overflow-hidden border-none shadow-none">
+                <HeroCardHeader className="justify-between py-1 text-text-8">
+                    <span className="font-semibold text-xs tracking-wide text-text-default">
+                        Assignees ({data.assignments.length})
                     </span>
                     {isAdmin && (
                         <HeroTooltip content="Assign / Reassign">
@@ -51,32 +49,34 @@ export default function JobAssigneesView({
                         </HeroTooltip>
                     )}
                 </HeroCardHeader>
-                <HeroCardBody className="gap-6">
-                    <div className="flex items-center flex-wrap gap-x-2 gap-y-3">
-                        {assignees?.map((user) => (
+                <HeroCardBody className="py-0! px-3 text-sm gap-6">
+                    <div className="flex items-center flex-wrap gap-x-3 gap-y-3">
+                        {data.assignments?.map((ass, idx) => (
                             <HeroChip
-                                key={user.id}
+                                key={idx}
                                 avatar={
                                     <Avatar
-                                        name={user.displayName}
-                                        src={optimizeCloudinary(user.avatar)}
+                                        name={ass.user.displayName}
+                                        src={optimizeCloudinary(
+                                            ass.user.avatar
+                                        )}
                                     />
                                 }
-                                size="lg"
                                 variant="bordered"
+                                className='border-1'
                             >
-                                {user.displayName}
+                                {ass.user.displayName}
                             </HeroChip>
                         ))}
                         <div className="flex flex-col items-center w-full">
-                            {totalAssignees === 0 && (
-                                <p className="text-text-subdued text-sm whitespace-pre-line leading-relaxed text-center">
+                            {data.assignments.length === 0 && (
+                                <p className="text-text-subdued text-xs whitespace-pre-line leading-relaxed text-center">
                                     No assignees yet.
                                 </p>
                             )}
-                            {totalAssignees === 0 && isAdmin && (
+                            {data.assignments.length === 0 && isAdmin && (
                                 <button
-                                    className="text-text-subdued text-sm underline underline-offset-2 hover:text-text-default cursor-pointer w-fit"
+                                    className="text-text-subdued text-xs underline underline-offset-2 hover:text-text-default cursor-pointer w-fit"
                                     onClick={onOpen}
                                 >
                                     Assign anyone

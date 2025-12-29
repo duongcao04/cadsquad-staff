@@ -19,4 +19,4 @@ export type TCommentRefAll = TCommentWithJob &
     TCommentWithParent &
     TCommentWithReply
 
-export type TComment = Omit<ICommentResponse, 'parentId' | 'jobId' | 'userId'>
+export type TComment = Required<ICommentResponse>

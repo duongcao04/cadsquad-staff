@@ -135,6 +135,11 @@ export class JobService {
                     type: true,
                     status: true,
                     paymentChannel: true,
+                    client: {
+                        select: {
+                            name: true,
+                        },
+                    },
                     assignments: { include: { user: true } },
                 },
             }),
@@ -188,6 +193,11 @@ export class JobService {
                 createdBy: true,
                 paymentChannel: true,
                 status: true,
+                client: {
+                    select: {
+                        name: true,
+                    },
+                },
                 comments: {
                     include: { user: true },
                     orderBy: { createdAt: 'desc' },

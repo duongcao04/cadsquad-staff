@@ -1,3 +1,3 @@
 import type { IAccountResponse } from '../interfaces'
 
-export type TAccount = Omit<IAccountResponse, 'providerId' | 'userId'>
+export type TAccount = Required<IAccountResponse>

@@ -159,8 +159,11 @@ export const STORAGE_KEYS = {
 
 export const IMAGES = {
     loadingPlaceholder: 'https://placehold.co/400x400?text=Loading',
+    emptyCommunityBanner: 'https://placehold.co/1200x400?text=Cadsquad+banner',
     emptyAvatar:
         'https://res.cloudinary.com/dqx1guyc0/image/upload/v1762496668/.temp/empty_avatar_wai3iw.webp',
+    cadsquadLogoOrange:
+        'https://res.cloudinary.com/dqx1guyc0/image/upload/v1765885688/AVATAR-_Fiverr_kwcsip.png',
 } as const
 
 export const USER_CONFIG_KEYS = {
@@ -172,6 +175,10 @@ export const STORAGE_DEFAULTS = {
     tableRowCount: '10',
     currencyDigits: '2',
     theme: 'system' as const,
+}
+
+export const COLORS = {
+    white: '#ffffff',
 }
 
 export const UI_APPLICATION_NAME = envConfig.APP_TITLE ?? 'Cadsquad Staff'

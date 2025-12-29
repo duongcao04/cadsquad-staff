@@ -1,6 +1,6 @@
 import type { IUserNotificationResponse } from '../interfaces'
 
 export type TUserNotification = Omit<
-    IUserNotificationResponse,
+    Required<IUserNotificationResponse>,
     'userId' | 'senderId'
 >

@@ -1,3 +1,3 @@
 import type { IJobStatusResponse } from '../interfaces'
 
-export type TJobStatus = Omit<IJobStatusResponse, ''>
+export type TJobStatus = Required<IJobStatusResponse>

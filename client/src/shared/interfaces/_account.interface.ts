@@ -11,29 +11,29 @@ export interface IAccountResponse {
      * The unique identifier for the account record.
      * @type {string}
      */
-    id: string
+    id?: string
 
     /**
      * The authentication provider, such as GOOGLE, GITHUB, etc.
      * @type {AccountProviderEnum}
      */
-    provider: AccountProviderEnum
+    provider?: AccountProviderEnum
 
     /**
      * The unique identifier for the user within the external provider's system.
      * @type {string}
      */
-    providerId: string
+    providerId?: string
 
     /**
      * The ID of the user in the local system that this external account is linked to.
      * @type {string}
      */
-    userId: string
+    userId?: string
 
     /**
      * A reference to the full User object associated with this account.
      * @type {User}
      */
-    user: TUser
+    user?: TUser
 }

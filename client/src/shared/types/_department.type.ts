@@ -1,3 +1,3 @@
 import type { IDepartmentResponse } from '../interfaces'
 
-export type TDepartment = IDepartmentResponse
+export type TDepartment = Required<IDepartmentResponse>

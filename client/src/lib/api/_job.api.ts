@@ -37,10 +37,10 @@ export const jobApi = {
                 dueAt: new Date(data.dueAt).toISOString(),
                 incomeCost: data.incomeCost.toString(),
                 totalStaffCost: data.totalStaffCost.toString(),
-                jobAssignments: data.jobAssignments?.map(item => ({
+                jobAssignments: data.jobAssignments?.map((item) => ({
                     ...item,
-                    staffCost: item.staffCost.toString()
-                }))
+                    staffCost: item.staffCost.toString(),
+                })),
             })
             .then((res) => res.data)
     },
@@ -76,14 +76,14 @@ export const jobApi = {
     },
     jobsDueInMonth: async (month: number, year: number) => {
         return axiosClient
-            .get<ApiResponse<IJobResponse[]>>(`/v1/jobs/due-monthly?month=${month}&year=${year}`)
+            .get<
+                ApiResponse<IJobResponse[]>
+            >(`/v1/jobs/due-monthly?month=${month}&year=${year}`)
             .then((res) => res.data)
     },
     jobDeliveries: async (jobId: string) => {
         return axiosClient
-            .get<
-                ApiResponse<IJobDelivery[]>
-            >(`/v1/jobs/${jobId}/deliveries`)
+            .get<ApiResponse<IJobDelivery[]>>(`/v1/jobs/${jobId}/deliveries`)
             .then((res) => res.data)
     },
     deliverJob: async (
@@ -100,7 +100,9 @@ export const jobApi = {
         feedback?: string
     ) => {
         return axiosClient
-            .post<ApiResponse>(`/v1/jobs/deliver/${deliveryId}/${action}`, { feedback })
+            .post<ApiResponse>(`/v1/jobs/deliver/${deliveryId}/${action}`, {
+                feedback,
+            })
             .then((res) => res.data)
     },
     getJobsDueOnDate: async (isoDate: string) => {

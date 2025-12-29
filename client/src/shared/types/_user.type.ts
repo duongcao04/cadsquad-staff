@@ -41,8 +41,6 @@ export type UserColumnKey =
     | 'action'
 
 export type TUser = Omit<
-    IUserResponse,
-    'jobTitleId' | 'departmentId' | 'avatar' | 'password'
-> & {
-    avatar: string
-}
+    Required<IUserResponse>,
+    'password' | 'departmentId' | 'jobTitleId'
+>

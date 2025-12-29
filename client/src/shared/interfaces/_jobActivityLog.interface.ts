@@ -11,19 +11,7 @@ export interface IJobActivityLogResponse {
      * The unique identifier for the activity log entry.
      * @type {string}
      */
-    id: string
-
-    /**
-     * A reference to the Job object that this activity log belongs to.
-     * @type {Job}
-     */
-    job: TJob
-
-    /**
-     * The ID of the job associated with this activity.
-     * @type {string}
-     */
-    jobId: string
+    id?: string
 
     /**
      * The value of the field before the change.
@@ -42,31 +30,31 @@ export interface IJobActivityLogResponse {
      * The timestamp when the modification occurred.
      * @type {Date}
      */
-    modifiedAt: Date
+    modifiedAt?: Date | string
 
     /**
      * The user who performed the modification.
      * @type {User}
      */
-    modifiedBy: TUser
+    modifiedBy?: TUser
 
     /**
      * The ID of the user who performed the modification.
      * @type {string}
      */
-    modifiedById: string
+    modifiedById?: string
 
     /**
      * The name of the field that was changed (e.g., "statusId", "assignee").
      * @type {string}
      */
-    fieldName: string
+    fieldName?: string
 
     /**
      * The type of activity that was performed (e.g., "ChangeStatus", "AssignMember").
      * @type {ActivityTypeEnum}
      */
-    activityType: ActivityTypeEnum
+    activityType?: ActivityTypeEnum
 
     /**
      * Optional notes or comments about the activity.

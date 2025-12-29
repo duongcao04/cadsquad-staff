@@ -15,7 +15,6 @@ import {
     UserPlus,
 } from 'lucide-react'
 import React from 'react'
-
 import { IMAGES, optimizeCloudinary } from '@/lib'
 import { userOptions } from '@/lib/queries/options/user-queries'
 import { ActivityTypeEnum } from '@/shared/enums'
@@ -79,7 +78,7 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
                 <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
                         <Avatar
-                            src={optimizeCloudinary(log.modifiedBy.avatar)}
+                            src={optimizeCloudinary(log.modifiedBy?.avatar)}
                             name={log.modifiedBy.displayName}
                             className="w-6 h-6 text-[10px]"
                         />

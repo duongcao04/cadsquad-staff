@@ -1,9 +1,8 @@
-import { JobPriorityEnum } from '@/shared/enums'
-
 import type {
+    TClient,
     TComment,
-    TJob,
     TJobActivityLog,
+    TJobAssignment,
     TJobStatus,
     TJobType,
     TPaymentChannel,
@@ -20,31 +19,31 @@ export interface IJobResponse {
      * The unique identifier for the job.
      * @type {string}
      */
-    id: string
+    id?: string
 
     /**
      * A unique, human-readable number or code for the job.
      * @type {string}
      */
-    no: string
+    no?: string
 
     /**
      * The type of the job (e.g., "Drafting", "Modeling").
      * @type {TJobType}
      */
-    type: TJobType
+    type?: TJobType
 
     /**
      * The ID of the job's type.
      * @type {string}
      */
-    typeId: string
+    typeId?: string
 
     /**
      * The main display name or title of the job.
      * @type {string}
      */
-    displayName: string
+    displayName?: string
 
     /**
      * An optional detailed description of the job.
@@ -56,138 +55,126 @@ export interface IJobResponse {
      * A list of URLs for attachments related to the job.
      * @type {string[]}
      */
-    attachmentUrls: string[]
+    attachmentUrls?: string[]
 
     /**
      * The name of the client for whom the job is being done.
-     * @type {string}
+     * @type {TClient}
      */
-    clientName: string
+    client?: TClient
 
     /**
      * The income generated from the job.
      * @type {number}
      */
-    incomeCost: number
+    incomeCost?: number
 
     /**
      * @type {IJobDelivery}
      */
-    jobDeliveries: IJobDelivery[]
+    jobDeliveries?: IJobDelivery[]
 
     /**
      * A list of comments.
      * @type {TComment[]}
      */
-    comments: TComment[]
-
-    /**
-     * Url of job by job status
-     * @type {string}
-     */
-    thumbnailUrl: string
+    comments?: TComment[]
 
     /**
      * The cost associated with the staff working on the job.
      * @type {number}
      */
-    staffCost: number
+    staffCost?: number
 
     /**
      * The total cost associated with the staffs working on the job.
      * @type {number}
      */
-    totalStaffCost: number
+    totalStaffCost?: number
 
     /**
      * A list of users assigned to work on the job.
-     * @type {IJobAssignment[]}
+     * @type {TJobAssignment[]}
      */
-    assignments: IJobAssignment[]
+    assignments?: TJobAssignment[]
 
     /**
      * The user who created the job.
      * @type {User}
      */
-    createdBy: TUser
+    createdBy?: TUser
 
     /**
      * The ID of the user who created the job.
      * @type {string}
      */
-    createdById: string
+    createdById?: string
 
     /**
      * The payment channel used for the job's transactions.
      * @type {PaymentChannel}
      */
-    paymentChannel: TPaymentChannel
+    paymentChannel?: TPaymentChannel | null
 
     /**
      * The ID of the payment channel.
      * @type {string}
      */
-    paymentChannelId: string
+    paymentChannelId?: string
 
     /**
      * The current status of the job (e.g., "In Progress", "Completed").
      * @type {TJobStatus}
      */
-    status: TJobStatus
+    status?: TJobStatus
 
     /**
      * The ID of the job's current status.
      * @type {string}
      */
-    statusId: string
+    statusId?: string
 
     /**
      * A log of all activities and changes related to the job.
      * @type {JobActivityLog[]}
      */
-    activityLog: TJobActivityLog[]
+    activityLog?: TJobActivityLog[]
 
     /**
      * The date and time when the job was started.
      * @type {Date}
      */
-    startedAt: Date
-
-    /**
-     * The priority level of the job (e.g., "LOW", "HIGH").
-     * @type {JobPriorityEnum}
-     */
-    priority: JobPriorityEnum
+    startedAt?: Date | string
 
     /**
      * A list of files and folders associated with the job.
      * @type {FileSystem[]}
      */
-    files: FileSystem[]
+    files?: FileSystem[]
 
     /**
      * A flag indicating whether the job is pinned for easy access.
      * @type {boolean}
      */
-    isPinned: boolean
+    isPinned?: boolean
 
     /**
-     * A flag indicating whether the job is published or visible.
+     * A flag indicating  whether the job is published or visible.
      * @type {boolean}
      */
-    isPublished: boolean
+    isPublished?: boolean
 
     /**
      * A flag indicating whether the job has been paid for.
      * @type {boolean}
      */
-    isPaid: boolean
+    isPaid?: boolean
 
     /**
      * The deadline for the job.
      * @type {Date}
      */
-    dueAt: Date
+    dueAt?: Date | string
 
     /**
      * The date and time when the job was completed.
@@ -208,26 +195,26 @@ export interface IJobResponse {
      * Can be null if the job is not yet paid.
      * @type {Date | null | undefined}
      */
-    paidAt?: Date | null
+    paidAt?: Date | string | null
 
     /**
      * The timestamp when the job was created.
      * @type {Date}
      */
-    createdAt: Date
+    createdAt?: Date | string
 
     /**
      * The timestamp when the job was last updated.
      * @type {Date}
      */
-    updatedAt: Date
+    updatedAt: Date | string
 
     /**
      * The timestamp when the job was soft-deleted.
      * Can be null if the job is active.
      * @type {Date | null | undefined}
      */
-    deletedAt?: Date | null
+    deletedAt?: Date | string | null
 }
 
 // 1. Define the Enum (matches your Prisma enum)
@@ -250,12 +237,4 @@ export interface IJobDelivery {
     createdAt: Date
     updatedAt: Date
     user?: TUser
-}
-
-export type IJobAssignment = {
-    id: string
-    job: TJob
-    user: TUser
-    staffCost: number
-    assignedAt: Date | string
 }

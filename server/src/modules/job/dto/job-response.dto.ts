@@ -5,7 +5,7 @@ import { JobStatusResponseDto } from '../../job-status/dto/job-status-response.d
 import { JobTypeResponseDto } from '../../job-type/dto/job-type-response.dto'
 import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-channel-response.dto'
 import { UserResponseDto } from '../../user/dto/user-response.dto'
-import { JobAssignment, RoleEnum } from '@prisma/client'
+import { type Client, JobAssignment, RoleEnum } from '@prisma/client'
 
 export class JobResponseDto {
     @ApiProperty({ description: 'Job ID' })
@@ -32,9 +32,9 @@ export class JobResponseDto {
     @Expose()
     sourceUrl?: string
 
-    @ApiProperty({ description: 'Name of the client' })
+    @ApiProperty({ description: 'The client' })
     @Expose()
-    clientName: string
+    client: Client
 
     @ApiProperty({ description: 'Income cost of the job' })
     @Expose({ groups: [RoleEnum.ADMIN, RoleEnum.ACCOUNTING] })

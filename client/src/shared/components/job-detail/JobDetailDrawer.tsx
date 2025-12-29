@@ -1,9 +1,27 @@
+import { dateFormatter } from '@/lib/dayjs'
+import {
+    jobActivityLogsOptions,
+    jobByNoOptions,
+    useProfile,
+    useUpdateJobMutation,
+} from '@/lib/queries'
+import {
+    currencyFormatter,
+    EXTERNAL_URLS,
+    INTERNAL_URLS,
+    PAID_STATUS_COLOR,
+} from '@/lib/utils'
 import {
     addToast,
     Avatar,
     Button,
     Chip,
     Divider,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownSection,
+    DropdownTrigger,
     Progress,
     Snippet,
     Spinner,
@@ -12,47 +30,41 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
+import { useRouter } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
 import {
     AlertCircle,
     CalendarDays,
     CheckCircle2,
+    ChevronRight,
     CirclePlus,
     Clock,
+    ExpandIcon,
     FileText,
     LibraryBig,
     LinkIcon,
     Maximize2,
     MessageSquare,
     Pencil,
+    PinIcon,
     RotateCcw,
-    SquareArrowOutUpRight,
+    TrendingDown,
+    TruckElectricIcon,
     UserRound,
     Users,
     Wallet,
-    TrendingDown,
-    ChevronRight,
 } from 'lucide-react'
-import { useMemo, useState, useEffect } from 'react'
-
-import { dateFormatter } from '@/lib/dayjs'
-import {
-    jobActivityLogsOptions,
-    jobByNoOptions,
-    useProfile,
-    useUpdateJobMutation,
-} from '@/lib/queries'
-import { currencyFormatter, EXTERNAL_URLS, INTERNAL_URLS } from '@/lib/utils'
-
+import { useEffect, useMemo, useState } from 'react'
 import { JobStatusSystemTypeEnum } from '../../enums'
-import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { JobStatusChip } from '../chips/JobStatusChip'
 import { PaidChip } from '../chips/PaidChip'
+import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { DeliverJobModal } from '../modals/DeliverJobModal'
 import UpdateProjectFinancialModal from '../project-center/UpdateCostModal'
 import CountdownTimer from '../ui/countdown-timer'
 import { HeroButton } from '../ui/hero-button'
+import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import HeroCopyButton from '../ui/hero-copy-button'
 import {
     HeroDrawer,
@@ -60,23 +72,26 @@ import {
     HeroDrawerContent,
     HeroDrawerHeader,
 } from '../ui/hero-drawer'
-import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import HtmlReactParser from '../ui/html-react-parser'
 import { JobActivityHistory } from './JobActivityHistory'
 import JobAssigneesView from './JobAssigneesView'
 import JobCommentsView from './JobCommentsView'
 import JobDescriptionModal from './JobDescriptionModal'
-import QuillEditor from '../editor-quill/QuillEditor'
 
-type Props = {
+type JobDetailDrawerProps = {
     isOpen: boolean
     onClose: () => void
     jobNo: string
 }
-
-export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
+export default function JobDetailDrawer({
+    jobNo,
+    isOpen,
+    onClose,
+}: JobDetailDrawerProps) {
     // 1. TOP-LEVEL HOOKS
     const { isAdmin } = useProfile()
+    const router = useRouter()
+
     const deliverJobDisclosure = useDisclosure()
     const financialModal = useDisclosure()
     const fullEditorDisclosure = useDisclosure()
@@ -99,7 +114,6 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
         addToast({ title: 'Success', color: 'success' })
     })
 
-    const [isEditable, setIsEditable] = useState(false)
     const [descContent, setDescContent] = useState('')
 
     useEffect(() => {
@@ -108,12 +122,16 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
 
     // 2. DERIVED LOGIC
     const isLoading = lodash.isEmpty(job) || loadingJob
-    const profit = useMemo(
-        () => (job?.incomeCost || 0) - (job?.totalStaffCost || 0),
-        [job]
-    )
+
     const isJobCompleted =
         job?.status?.systemType === JobStatusSystemTypeEnum.COMPLETED
+
+    const isJobFinished =
+        job?.status?.systemType === JobStatusSystemTypeEnum.TERMINATED
+
+    const isJobWaitReview =
+        job?.status?.systemType === JobStatusSystemTypeEnum.WAIT_REVIEW
+
     const budgetUsage = useMemo(() => {
         if (!job?.incomeCost || job.incomeCost === 0) return 0
         return Math.min(
@@ -121,16 +139,6 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
             100
         )
     }, [job])
-
-    const handleSaveDescription = async (content?: string) => {
-        const finalContent = content ?? descContent
-        if (!job?.id) return
-        await updateJobMutation.mutateAsync({
-            jobId: job.id,
-            data: { description: finalContent },
-        })
-        setIsEditable(false)
-    }
 
     return (
         <>
@@ -160,8 +168,15 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
                 />
             )}
 
-            <HeroDrawer isOpen={Boolean(jobNo) && isOpen} onClose={onClose}>
-                <HeroDrawerContent className="min-w-[calc(100vw-16px)] lg:min-w-0 lg:max-w-225 xl:max-w-225">
+            {/* MAIN DRAWER */}
+            <HeroDrawer
+                isOpen={isOpen}
+                onClose={onClose}
+                classNames={{
+                    base: 'min-w-[calc(100vw-16px)] md:min-w-0 md:max-w-270',
+                }}
+            >
+                <HeroDrawerContent>
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center h-full gap-4">
                             <Spinner
@@ -172,122 +187,391 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
                     ) : (
                         <>
                             {/* HEADER */}
-                            <HeroDrawerHeader className="flex flex-col gap-2">
-                                <div className="flex items-center justify-between w-full">
+                            <HeroDrawerHeader className="flex flex-col pb-2.5!">
+                                <div className="flex items-center justify-between w-full pr-5">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-small font-semibold tracking-wider font-mono">
+                                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
                                             #{job.no}
                                         </span>
                                         <HeroCopyButton textValue={job.no} />
-                                        <JobStatusChip data={job.status} />
-                                        <PaidChip
-                                            status={
-                                                job.isPaid ? 'paid' : 'unpaid'
-                                            }
-                                        />
                                     </div>
-                                    <HeroButton
-                                        startContent={
-                                            <SquareArrowOutUpRight size={14} />
-                                        }
-                                        variant="ghost"
-                                        size="sm"
-                                        onPress={() =>
-                                            window.open(
-                                                INTERNAL_URLS.getJobDetailUrl(
-                                                    job.no
-                                                ),
-                                                '_blank'
-                                            )
-                                        }
-                                    >
-                                        Open detail
-                                    </HeroButton>
+                                    <div className="flex items-center gap-2">
+                                        <HeroButton
+                                            size="sm"
+                                            variant="light"
+                                            className="border-1"
+                                            startContent={
+                                                <ExpandIcon size={14} />
+                                            }
+                                            onPress={() =>
+                                                router.navigate({
+                                                    href: INTERNAL_URLS.getJobDetailUrl(
+                                                        job.no
+                                                    ),
+                                                })
+                                            }
+                                        >
+                                            Open Full View
+                                        </HeroButton>
+                                        <Dropdown
+                                            placement="bottom-end"
+                                            classNames={{
+                                                content:
+                                                    'border border-divider shadow-xl min-w-[220px] p-1',
+                                            }}
+                                        >
+                                            <DropdownTrigger>
+                                                <Button
+                                                    variant="flat"
+                                                    size="sm"
+                                                    className="font-bold h-8 text-[11px] bg-default-100 hover:bg-default-200"
+                                                    endContent={
+                                                        <ChevronRight
+                                                            size={14}
+                                                            className="rotate-90"
+                                                        />
+                                                    }
+                                                >
+                                                    Actions
+                                                </Button>
+                                            </DropdownTrigger>
+
+                                            <DropdownMenu
+                                                aria-label="Project Actions"
+                                                variant="flat"
+                                                disabledKeys={['payout-locked']}
+                                            >
+                                                {/* NHÓM QUẢN LÝ CHÍNH */}
+                                                <DropdownSection
+                                                    title="General"
+                                                    showDivider
+                                                >
+                                                    <DropdownItem
+                                                        key="pin"
+                                                        startContent={
+                                                            <PinIcon
+                                                                size={16}
+                                                            />
+                                                        }
+                                                    >
+                                                        Pin to Dashboard
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        key="copy-link"
+                                                        startContent={
+                                                            <LinkIcon
+                                                                size={16}
+                                                            />
+                                                        }
+                                                    >
+                                                        Copy Project Link
+                                                    </DropdownItem>
+                                                </DropdownSection>
+
+                                                {/* NHÓM DỮ LIỆU & BÁO CÁO */}
+                                                <DropdownSection
+                                                    title="Data & Audit"
+                                                    showDivider
+                                                >
+                                                    <DropdownItem
+                                                        key="history"
+                                                        startContent={
+                                                            <Clock
+                                                                size={16}
+                                                                className="text-default-400"
+                                                            />
+                                                        }
+                                                        description="View all activity logs"
+                                                    >
+                                                        Activity History
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        key="audit"
+                                                        startContent={
+                                                            <Wallet
+                                                                size={16}
+                                                                className="text-primary"
+                                                            />
+                                                        }
+                                                        description="Review financial details"
+                                                    >
+                                                        Financial Audit
+                                                    </DropdownItem>
+                                                </DropdownSection>
+
+                                                {/* NHÓM NGUY HIỂM */}
+                                                <DropdownSection title="Danger Zone">
+                                                    <DropdownItem
+                                                        key="archive"
+                                                        startContent={
+                                                            <AlertCircle
+                                                                size={16}
+                                                            />
+                                                        }
+                                                    >
+                                                        Archive Project
+                                                    </DropdownItem>
+                                                    <DropdownItem
+                                                        key="delete"
+                                                        className="text-danger"
+                                                        color="danger"
+                                                        startContent={
+                                                            <AlertCircle
+                                                                size={16}
+                                                            />
+                                                        }
+                                                    >
+                                                        Delete Permanently
+                                                    </DropdownItem>
+                                                </DropdownSection>
+                                            </DropdownMenu>
+                                        </Dropdown>
+                                    </div>
                                 </div>
-                                <h1 className="text-2xl font-bold mt-2">
+                                <h1 className="mt-2 mb-4 text-xl font-bold">
                                     {job.displayName}
                                 </h1>
-                                <div className="flex gap-4 text-tiny text-default-500 items-center">
-                                    <span className="flex items-center gap-1">
-                                        <UserRound size={14} /> {job.clientName}
-                                    </span>
+                                <div className="flex gap-3 text-xs text-text-subdued items-center">
+                                    <p className="flex items-center gap-1.5 font-medium">
+                                        <UserRound size={14} />
+                                        {job.client.name}
+                                    </p>
                                     <Divider
                                         orientation="vertical"
                                         className="h-3"
                                     />
-                                    <span className="flex items-center gap-1">
-                                        <LibraryBig size={14} />{' '}
+                                    <p className="flex items-center gap-1.5 font-medium">
+                                        <LibraryBig size={14} />
                                         {job.type?.displayName}
-                                    </span>
+                                    </p>
                                     <Divider
                                         orientation="vertical"
                                         className="h-3"
                                     />
-                                    <span className="flex items-center gap-1 text-primary">
+                                    <p className="flex items-center gap-1.5 font-medium">
                                         <CalendarDays size={14} />
                                         {isJobCompleted ? (
-                                            `Finished: ${dateFormatter(job.completedAt, { format: 'full' })}`
+                                            `Completed`
+                                        ) : isJobFinished ? (
+                                            `Finish`
                                         ) : (
-                                            <CountdownTimer
-                                                targetDate={dayjs(job.dueAt)}
-                                                mode="text"
-                                                hiddenUnits={['second']}
-                                            />
+                                            <span className="flex items-center justify-start gap-1">
+                                                Due on:
+                                                <CountdownTimer
+                                                    targetDate={dayjs(
+                                                        job.dueAt
+                                                    )}
+                                                    mode="text"
+                                                    hiddenUnits={['second']}
+                                                    className="font-semibold! text-text-7! dark:text-text-subdued!"
+                                                />
+                                            </span>
                                         )}
-                                    </span>
+                                    </p>
                                 </div>
                             </HeroDrawerHeader>
 
-                            <Divider />
+                            <Divider className="mb-2" />
 
                             <HeroDrawerBody className="py-6">
                                 <div className="flex flex-col gap-6">
                                     {/* ACTION BAR */}
-                                    <div className="flex items-center justify-between p-3 bg-default-50 rounded-2xl border border-divider">
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                size="sm"
-                                                color="primary"
-                                                className="font-bold"
-                                                startContent={
-                                                    <CheckCircle2 size={16} />
-                                                }
-                                                onPress={
-                                                    deliverJobDisclosure.onOpen
-                                                }
-                                            >
-                                                Deliver Work
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="flat"
-                                                color="danger"
-                                                startContent={
-                                                    <AlertCircle size={16} />
-                                                }
-                                            >
-                                                Issue
-                                            </Button>
-                                        </div>
-                                        <div className="px-4 border-l border-divider text-right">
-                                            <p className="text-[10px] font-black text-default-400 uppercase">
-                                                Logged Time
-                                            </p>
-                                            <p className="text-xs font-bold flex items-center gap-1">
-                                                <Clock size={12} /> 0h 0m
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <HeroCard className="border-border-muted shadow-xs">
+                                        <HeroCardBody className="w-full flex justify-between">
+                                            <div className="flex justify-between">
+                                                {/* SECTION 1: CORE PROGRESS STATUS */}
+                                                <div className="flex flex-col gap-1">
+                                                    {/* Status Label & Dot */}
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            className="w-2 h-2 rounded-full animate-pulse"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    job.status
+                                                                        .hexColor,
+                                                            }}
+                                                        />
+                                                        <span className="text-[10px] font-black text-text-subdued uppercase tracking-widest leading-none">
+                                                            Status
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-end gap-4">
+                                                        <JobStatusChip
+                                                            data={job.status}
+                                                            classNames={{
+                                                                base: 'min-w-30! text-center!',
+                                                            }}
+                                                        />
+
+                                                        {/* DYNAMIC TIMELINE PROGRESS */}
+                                                        <div className="h-full flex flex-col justify-center border-l-1 border-border-default pl-4 py-0.5">
+                                                            {job.finishedAt ? (
+                                                                <>
+                                                                    <div
+                                                                        className="flex items-center gap-1"
+                                                                        style={{
+                                                                            color: job
+                                                                                .status
+                                                                                .hexColor,
+                                                                        }}
+                                                                    >
+                                                                        <Clock
+                                                                            size={
+                                                                                12
+                                                                            }
+                                                                            strokeWidth={
+                                                                                2.3
+                                                                            }
+                                                                        />
+                                                                        <span className="text-[11px] font-semibold leading-4">
+                                                                            Finished{' '}
+                                                                            {dateFormatter(
+                                                                                job.finishedAt,
+                                                                                {
+                                                                                    format: 'longDate',
+                                                                                }
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-[10px] text-text-subdued italic">
+                                                                        Approved
+                                                                        at
+                                                                        <span className="pl-1">
+                                                                            {job.completedAt
+                                                                                ? dateFormatter(
+                                                                                      job.completedAt,
+                                                                                      {
+                                                                                          format: 'longDate',
+                                                                                      }
+                                                                                  )
+                                                                                : 'Unknown date'}
+                                                                        </span>
+                                                                    </span>
+                                                                </>
+                                                            ) : job.completedAt ? (
+                                                                <>
+                                                                    <div
+                                                                        className="flex items-center gap-1"
+                                                                        style={{
+                                                                            color: job
+                                                                                .status
+                                                                                .hexColor,
+                                                                        }}
+                                                                    >
+                                                                        <Clock
+                                                                            size={
+                                                                                12
+                                                                            }
+                                                                            strokeWidth={
+                                                                                2.3
+                                                                            }
+                                                                        />
+                                                                        <span className="text-[10px] font-semibold leading-4">
+                                                                            Completed{' '}
+                                                                            {dateFormatter(
+                                                                                job.completedAt,
+                                                                                {
+                                                                                    format: 'longDate',
+                                                                                }
+                                                                            )}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-[10px] text-text-subdued italic">
+                                                                        Waiting
+                                                                        for
+                                                                        payouts
+                                                                    </span>
+                                                                </>
+                                                            ) : isJobWaitReview ? (
+                                                                <>
+                                                                    <div
+                                                                        className="flex items-center gap-1"
+                                                                        style={{
+                                                                            color: job
+                                                                                .status
+                                                                                .hexColor,
+                                                                        }}
+                                                                    >
+                                                                        <TruckElectricIcon
+                                                                            size={
+                                                                                16
+                                                                            }
+                                                                            strokeWidth={
+                                                                                2.3
+                                                                            }
+                                                                        />
+                                                                        <span className="text-xs font-semibold leading-4">
+                                                                            Delivering{' '}
+                                                                        </span>
+                                                                    </div>
+                                                                    <span className="text-[10px] text-text-subdued italic">
+                                                                        Waiting
+                                                                        for
+                                                                        approve
+                                                                    </span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <span className="text-[11px] font-bold text-default-600">
+                                                                        Active
+                                                                        Workflow
+                                                                    </span>
+                                                                    <span className="text-[10px] text-text-subdued italic">
+                                                                        Started{' '}
+                                                                        {dayjs(
+                                                                            job.startedAt
+                                                                        ).fromNow()}
+                                                                    </span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* SECTION 2: ACTIONS */}
+                                                <div className="flex items-center gap-2">
+                                                    {isJobCompleted ||
+                                                    isJobFinished ||
+                                                    isJobWaitReview ? (
+                                                        <></>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="solid"
+                                                            color="primary"
+                                                            startContent={
+                                                                <CheckCircle2
+                                                                    size={16}
+                                                                />
+                                                            }
+                                                            onPress={
+                                                                deliverJobDisclosure.onOpen
+                                                            }
+                                                        >
+                                                            Deliver Job
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        size="sm"
+                                                        variant="light"
+                                                        color="danger"
+                                                        isIconOnly
+                                                    >
+                                                        <AlertCircle
+                                                            size={16}
+                                                        />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </HeroCardBody>
+                                    </HeroCard>
 
                                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                         <div className="lg:col-span-2">
                                             <Tabs
                                                 variant="underlined"
                                                 color="primary"
-                                                fullWidth
-                                                classNames={{
-                                                    tab: 'font-bold',
-                                                }}
                                             >
                                                 {/* TAB 1: OVERVIEW */}
                                                 <Tab
@@ -303,10 +587,13 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
                                                         </div>
                                                     }
                                                 >
-                                                    <div className="space-y-6 pt-4">
-                                                        <HeroCard className="p-0! overflow-hidden border-divider shadow-none">
-                                                            <HeroCardHeader className="justify-between bg-default-50/50 py-2">
-                                                                <span className="text-xs font-bold uppercase tracking-widest text-default-500 px-2">
+                                                    <div className="space-y-6">
+                                                        <JobAssigneesView
+                                                            data={job}
+                                                        />
+                                                        <HeroCard className="p-0! overflow-hidden border-none shadow-none">
+                                                            <HeroCardHeader className="justify-between py-1 text-text-8">
+                                                                <span className="font-semibold text-xs tracking-wide text-text-default">
                                                                     Description
                                                                 </span>
                                                                 <div className="flex gap-1">
@@ -324,59 +611,10 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
                                                                             }
                                                                         />
                                                                     </HeroButton>
-                                                                    <HeroButton
-                                                                        isIconOnly
-                                                                        size="sm"
-                                                                        variant="light"
-                                                                        onPress={() =>
-                                                                            setIsEditable(
-                                                                                !isEditable
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <Pencil
-                                                                            size={
-                                                                                14
-                                                                            }
-                                                                        />
-                                                                    </HeroButton>
                                                                 </div>
                                                             </HeroCardHeader>
-                                                            <HeroCardBody className="p-4">
-                                                                {isEditable ? (
-                                                                    <div className="space-y-3">
-                                                                        <QuillEditor
-                                                                            value={
-                                                                                descContent
-                                                                            }
-                                                                            onChange={
-                                                                                setDescContent
-                                                                            }
-                                                                        />
-                                                                        <div className="flex justify-end gap-2">
-                                                                            <Button
-                                                                                size="sm"
-                                                                                variant="flat"
-                                                                                onPress={() =>
-                                                                                    setIsEditable(
-                                                                                        false
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                Cancel
-                                                                            </Button>
-                                                                            <Button
-                                                                                size="sm"
-                                                                                color="primary"
-                                                                                onPress={() =>
-                                                                                    handleSaveDescription()
-                                                                                }
-                                                                            >
-                                                                                Save
-                                                                            </Button>
-                                                                        </div>
-                                                                    </div>
-                                                                ) : job.description ? (
+                                                            <HeroCardBody className="py-0! px-3 text-sm text-text-7">
+                                                                {job.description ? (
                                                                     <HtmlReactParser
                                                                         htmlString={
                                                                             job.description
@@ -392,17 +630,12 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
                                                             </HeroCardBody>
                                                         </HeroCard>
 
-                                                        <JobAssigneesView
-                                                            jobId={job.id}
-                                                            jobNo={job.no}
-                                                        />
-
-                                                        <div className="space-y-3">
-                                                            <div className="flex justify-between items-center">
-                                                                <h3 className="text-xs font-black uppercase tracking-widest text-default-500">
+                                                        <HeroCard className="p-0! overflow-hidden border-none shadow-none">
+                                                            <HeroCardHeader className="justify-between py-1 text-text-8">
+                                                                <span className="font-semibold text-xs tracking-wide text-text-default">
                                                                     Activity
                                                                     History
-                                                                </h3>
+                                                                </span>
                                                                 <Button
                                                                     size="sm"
                                                                     variant="light"
@@ -420,13 +653,16 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
                                                                         }
                                                                     />
                                                                 </Button>
-                                                            </div>
-                                                            <JobActivityHistory
-                                                                logs={
-                                                                    activityLogs
-                                                                }
-                                                            />
-                                                        </div>
+                                                            </HeroCardHeader>
+
+                                                            <HeroCardBody>
+                                                                <JobActivityHistory
+                                                                    logs={
+                                                                        activityLogs
+                                                                    }
+                                                                />
+                                                            </HeroCardBody>
+                                                        </HeroCard>
                                                     </div>
                                                 </Tab>
 
@@ -662,102 +898,188 @@ export default function JobDetailDrawer({ jobNo, isOpen, onClose }: Props) {
                                             </Tabs>
                                         </div>
 
-                                        {/* SIDEBAR */}
+                                        {/* --- SIDEBAR AREA --- */}
                                         <div className="space-y-4">
-                                            <HeroCard className="border-divider shadow-none">
-                                                <HeroCardHeader className="justify-between py-2 border-b border-divider">
-                                                    <span className="text-xs font-black uppercase tracking-widest text-default-400">
-                                                        Financials
-                                                    </span>
-                                                    {isAdmin && (
-                                                        <HeroButton
-                                                            isIconOnly
-                                                            size="sm"
-                                                            variant="light"
-                                                            onPress={
-                                                                financialModal.onOpen
-                                                            }
-                                                        >
-                                                            <Pencil size={12} />
-                                                        </HeroButton>
-                                                    )}
+                                            {/* 1. STATUS & FINANCIAL CARD (Mới: Gộp Status vào đây) */}
+                                            <HeroCard className="border-divider shadow-none overflow-hidden">
+                                                {/* Dải màu trạng thái chạy dọc bên trái để nhấn mạnh */}
+                                                <div
+                                                    className="absolute left-0 top-0 bottom-0 w-1"
+                                                    style={{
+                                                        backgroundColor:
+                                                            job.isPaid
+                                                                ? PAID_STATUS_COLOR
+                                                                      .paid
+                                                                      .hexColor
+                                                                : PAID_STATUS_COLOR
+                                                                      .unpaid
+                                                                      .hexColor,
+                                                    }}
+                                                />
+
+                                                <HeroCardHeader className="justify-between py-3 border-b border-divider bg-default-50/30">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="flex items-center gap-2 text-xs font-medium text-text-subdued">
+                                                            Payment status
+                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <div
+                                                                className="w-2 h-2 rounded-full animate-pulse"
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        job.isPaid
+                                                                            ? PAID_STATUS_COLOR
+                                                                                  .paid
+                                                                                  .hexColor
+                                                                            : PAID_STATUS_COLOR
+                                                                                  .unpaid
+                                                                                  .hexColor,
+                                                                }}
+                                                            />
+                                                            <span
+                                                                className="text-sm font-bold"
+                                                                style={{
+                                                                    color: job.isPaid
+                                                                        ? PAID_STATUS_COLOR
+                                                                              .paid
+                                                                              .hexColor
+                                                                        : PAID_STATUS_COLOR
+                                                                              .unpaid
+                                                                              .hexColor,
+                                                                }}
+                                                            >
+                                                                {job.isPaid
+                                                                    ? 'Paid'
+                                                                    : 'Unpaid'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <PaidChip
+                                                        status={
+                                                            job.isPaid
+                                                                ? 'paid'
+                                                                : 'unpaid'
+                                                        }
+                                                    />
                                                 </HeroCardHeader>
-                                                <HeroCardBody className="text-sm space-y-3 pt-3">
-                                                    {isAdmin && (
-                                                        <div className="flex justify-between">
-                                                            <span>Income</span>
-                                                            <span className="font-bold text-foreground">
+
+                                                <HeroCardBody className="text-sm space-y-4 pt-4">
+                                                    {/* Financial Info */}
+                                                    <div className="space-y-3">
+                                                        {isAdmin && (
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-text-subdued text-xs">
+                                                                    Income cost
+                                                                </span>
+                                                                <span className="font-semibold text-text-default">
+                                                                    {currencyFormatter(
+                                                                        job.incomeCost
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex justify-between items-center text-primary">
+                                                            <span className="text-text-subdued text-xs">
+                                                                Staff cost
+                                                            </span>
+                                                            <span className="font-semibold text-text-default">
                                                                 {currencyFormatter(
-                                                                    job.incomeCost
+                                                                    job.totalStaffCost ||
+                                                                        job.staffCost
                                                                 )}
                                                             </span>
                                                         </div>
-                                                    )}
-                                                    <div className="flex justify-between text-primary">
-                                                        <span>
-                                                            Total Payout
-                                                        </span>
-                                                        <span className="font-black">
-                                                            {currencyFormatter(
-                                                                job.totalStaffCost ||
-                                                                    job.staffCost
-                                                            )}
-                                                        </span>
                                                     </div>
+
                                                     <Divider />
-                                                    <div className="flex justify-between text-[10px] opacity-60 uppercase font-bold tracking-tighter">
-                                                        <span>Account</span>
-                                                        <span>
-                                                            {job.paymentChannel
-                                                                ?.displayName ||
-                                                                '-'}
+
+                                                    {/* Account Info */}
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-text-subdued text-xs">
+                                                            Payment via
                                                         </span>
+                                                        <Chip
+                                                            size="sm"
+                                                            variant="dot"
+                                                            classNames={{
+                                                                base: 'border-none bg-default-100',
+                                                                content:
+                                                                    'font-bold text-[10px]',
+                                                            }}
+                                                        >
+                                                            {
+                                                                job
+                                                                    .paymentChannel
+                                                                    ?.displayName
+                                                            }
+                                                        </Chip>
                                                     </div>
                                                 </HeroCardBody>
                                             </HeroCard>
 
-                                            <HeroCard className="bg-zinc-900 text-white border-none p-4 gap-4 shadow-none">
-                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase opacity-40">
-                                                    <CirclePlus size={14} />{' '}
-                                                    Metadata
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar
-                                                        src={
-                                                            job.createdBy.avatar
-                                                        }
-                                                        size="sm"
-                                                        className="ring-1 ring-white/20"
-                                                    />
-                                                    <div>
-                                                        <p className="text-xs font-bold">
-                                                            {
+                                            {/* 2. CREATOR & TIME METADATA CARD (Dark Version) */}
+                                            <HeroCard className="bg-background-muted text-text-default p-5 shadow-none relative overflow-hidden">
+                                                {/* Glow effect theo màu status ở góc card */}
+                                                <div
+                                                    className="absolute -top-10 -right-10 w-32 h-32 opacity-50 blur-3xl rounded-full"
+                                                    style={{
+                                                        backgroundColor:
+                                                            job.status.hexColor,
+                                                    }}
+                                                />
+
+                                                <div className="flex flex-col gap-4 relative z-10">
+                                                    <div className="flex items-center gap-2 text-xs font-medium text-text-subdued">
+                                                        <CirclePlus size={14} />
+                                                        Created By
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar
+                                                            src={
                                                                 job.createdBy
-                                                                    .displayName
+                                                                    .avatar
                                                             }
-                                                        </p>
-                                                        <p className="text-[10px] opacity-40">
-                                                            {dateFormatter(
-                                                                job.createdAt,
+                                                            size="md"
+                                                            className="ring-2 ring-white/10"
+                                                            isBordered
+                                                            color="primary"
+                                                        />
+                                                        <div className="flex flex-col">
+                                                            <p className="text-sm font-semibold">
                                                                 {
-                                                                    format: 'fullShort',
+                                                                    job
+                                                                        .createdBy
+                                                                        .displayName
                                                                 }
-                                                            )}
-                                                        </p>
+                                                            </p>
+                                                            <p className="text-xs flex items-center gap-1.5 mt-0.5 text-text-subdued">
+                                                                <CalendarDays
+                                                                    size={12}
+                                                                />
+                                                                {dateFormatter(
+                                                                    job.createdAt,
+                                                                    {
+                                                                        format: 'fullShort',
+                                                                    }
+                                                                )}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </HeroCard>
 
-                                            <HeroCard className="bg-zinc-900 text-white border-none p-4 text-center space-y-3 shadow-none overflow-hidden">
-                                                <span className="text-[10px] font-black uppercase opacity-40 flex items-center justify-center gap-1">
-                                                    <LinkIcon size={14} />{' '}
-                                                    Project Link
+                                            {/* 3. QUICK ACTIONS / SNIPPET */}
+                                            <HeroCard className="bg-default-50 border-divider p-4 shadow-none space-y-3">
+                                                <span className="flex items-center gap-2 text-xs font-medium text-text-subdued">
+                                                    <LinkIcon size={14} />
+                                                    External Link
                                                 </span>
                                                 <Snippet
                                                     symbol=""
                                                     size="sm"
                                                     variant="flat"
-                                                    className="bg-white/5 text-white w-full overflow-hidden text-xs"
+                                                    className="bg-background text-foreground w-full border border-divider shadow-sm"
                                                 >
                                                     {EXTERNAL_URLS.getJobDetailUrl(
                                                         job.no

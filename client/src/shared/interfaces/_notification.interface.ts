@@ -11,19 +11,19 @@ export interface IUserNotificationResponse {
      * The unique identifier for the notification.
      * @type {string}
      */
-    id: string
+    id?: string
 
     /**
      * The ID of the user who will receive the notification.
      * @type {string}
      */
-    userId: string
+    userId?: string
 
     /**
      * A reference to the User object who is the recipient of the notification.
      * @type {User}
      */
-    user: TUser
+    user?: TUser
 
     /**
      * The title of the notification.
@@ -35,7 +35,7 @@ export interface IUserNotificationResponse {
      * The main content or message of the notification.
      * @type {string}
      */
-    content: string
+    content?: string
 
     /**
      * An optional URL for an image to be displayed in the notification.
@@ -66,23 +66,23 @@ export interface IUserNotificationResponse {
      * The type of the notification (e.g., INFO, WARNING, JOB_UPDATE).
      * @type {NotificationTypeEnum}
      */
-    type: NotificationTypeEnum
+    type?: NotificationTypeEnum
 
     /**
      * The current status of the notification (e.g., SEEN, UNSEEN).
      * @type {NotificationStatusEnum}
      */
-    status: NotificationStatusEnum
+    status?: NotificationStatusEnum
 
     /**
      * The timestamp when the notification was created.
      * @type {Date}
      */
-    createdAt: Date
+    createdAt?: Date
 
     /**
      * The timestamp when the notification was last updated.
      * @type {Date}
      */
-    updatedAt: Date
+    updatedAt?: Date
 }

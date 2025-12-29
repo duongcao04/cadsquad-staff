@@ -1,6 +1,6 @@
 import type { IJobActivityLogResponse } from '../interfaces'
 
 export type TJobActivityLog = Omit<
-    IJobActivityLogResponse,
+    Required<IJobActivityLogResponse>,
     'jobId' | 'modifiedById'
 >

@@ -4,56 +4,81 @@ import queryString from 'query-string'
 
 import { jobApi, jobStatusApi } from '@/lib/api'
 import { TJobQueryInput } from '@/lib/validationSchemas'
-import { ProjectCenterTabEnum } from '@/shared/enums'
-import { IJobResponse } from '@/shared/interfaces'
-import { TJob } from '@/shared/types'
+import { ActivityTypeEnum, ProjectCenterTabEnum } from '@/shared/enums'
+import { IJobActivityLogResponse, IJobResponse } from '@/shared/interfaces'
+import { TJob, TJobActivityLog } from '@/shared/types'
 
+import { COLORS, IMAGES, toDate, toNullableDate } from '../../utils'
+import { mapClient } from './client-queries'
+import { mapJobStatus } from './job-status-queries'
+import { mapJobType } from './job-type-queries'
+import { mapPaymentChannel } from './payment-channel-queries'
 import { mapUser } from './user-queries'
 
 // --- Mappers (Chuyển đổi dữ liệu) ---
-export const mapJob = (item: IJobResponse): TJob => ({
-    no: item.no,
-    displayName: item.displayName || 'Untitled Job',
-    assignments: item.assignments ?? [],
-    activityLog: item.activityLog ?? [],
-    attachmentUrls: item.attachmentUrls ?? [],
-    clientName: item.clientName ?? '',
-    createdBy: item.createdBy,
-    files: item.files,
-    id: item.id,
-    comments: item.comments ?? [],
-    jobDeliveries: item.jobDeliveries ?? [],
+export const mapJob = (item?: IJobResponse): TJob => ({
+    id: item?.id ?? 'N/A',
+    no: item?.no ?? 'UNKNOWN',
+    displayName: item?.displayName || 'Untitled Job',
+    assignments: item?.assignments ?? [],
+    activityLog: item?.activityLog ?? [],
+    attachmentUrls: item?.attachmentUrls ?? [],
+    createdBy: mapUser(item?.createdBy),
+    files: item?.files ?? [],
+    client: mapClient(item?.client),
+    comments: item?.comments ?? [],
+    jobDeliveries: item?.jobDeliveries ?? [],
     incomeCost:
-        typeof item.incomeCost === 'number'
-            ? item.incomeCost
-            : parseFloat(item.incomeCost),
+        typeof item?.incomeCost === 'number'
+            ? item?.incomeCost
+            : parseFloat(item?.incomeCost ?? ''),
     staffCost:
-        typeof item.staffCost === 'number'
-            ? item.staffCost
-            : parseFloat(item.staffCost),
+        typeof item?.staffCost === 'number'
+            ? item?.staffCost
+            : parseFloat(item?.staffCost ?? ''),
     totalStaffCost:
-        typeof item.totalStaffCost === 'number'
-            ? item.totalStaffCost
-            : parseFloat(item.totalStaffCost),
-    isPaid: Boolean(item.isPaid),
-    isPinned: Boolean(item.isPinned),
-    isPublished: Boolean(item.isPublished),
-    paymentChannel: item.paymentChannel,
-    priority: item.priority,
-    status: item.status,
-    thumbnailUrl: item.thumbnailUrl,
-    description: item.description,
-    paidAt: item.paidAt,
-    type: item.type,
-    updatedAt: new Date(item.updatedAt),
-    finishedAt: item.finishedAt ? new Date(item.finishedAt) : null,
-    createdAt: new Date(item.createdAt),
-    dueAt: new Date(item.dueAt),
-    completedAt: item.completedAt ? new Date(item.completedAt) : null,
-    deletedAt: item.deletedAt ? new Date(item.deletedAt) : null,
-    startedAt: new Date(item.startedAt),
+        typeof item?.totalStaffCost === 'number'
+            ? item?.totalStaffCost
+            : parseFloat(item?.totalStaffCost ?? ''),
+    isPaid: Boolean(item?.isPaid),
+    isPinned: Boolean(item?.isPinned),
+    isPublished: Boolean(item?.isPublished),
+    paymentChannel: item?.paymentChannel
+        ? mapPaymentChannel(item?.paymentChannel)
+        : {
+              displayName: 'Not Set',
+              cardNumber: 'Unknown',
+              id: 'N/A',
+              hexColor: COLORS.white,
+              jobs: [],
+              logoUrl: IMAGES.loadingPlaceholder,
+              ownerName: 'Unknown',
+          },
+    status: mapJobStatus(item?.status),
+    description: item?.description ?? null,
+    paidAt: toNullableDate(item?.paidAt),
+    type: mapJobType(item?.type),
+    finishedAt: item?.finishedAt ? toDate(item?.finishedAt) : null,
+    createdAt: toDate(item?.createdAt ?? ''),
+    dueAt: toDate(item?.dueAt ?? ''),
+    completedAt: toNullableDate(item?.completedAt),
+    deletedAt: toNullableDate(item?.deletedAt),
+    startedAt: toDate(item?.startedAt),
+    updatedAt: toDate(item?.updatedAt),
 })
 
+export const mapJobActivityLog = (
+    item?: IJobActivityLogResponse
+): TJobActivityLog => ({
+    id: item?.id ?? 'N/A',
+    activityType: item?.activityType ?? ActivityTypeEnum.UpdateInformation,
+    previousValue: item?.previousValue ?? null,
+    currentValue: item?.currentValue ?? null,
+    fieldName: item?.fieldName ?? 'Unknown field',
+    modifiedBy: mapUser(item?.modifiedBy),
+    notes: item?.notes ?? null,
+    modifiedAt: toDate(item?.modifiedAt),
+})
 // --- Query Options ---
 
 // 1. Danh sách Jobs

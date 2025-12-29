@@ -9,13 +9,13 @@ export interface IDepartmentResponse {
      * The unique identifier for the department.
      * @type {string}
      */
-    id: string
+    id?: string
 
     /**
      * The human-readable name of the department (e.g., "Human Resources", "Engineering").
      * @type {string}
      */
-    displayName: string
+    displayName?: string
 
     /**
      * Optional notes or a description for the department.
@@ -27,7 +27,7 @@ export interface IDepartmentResponse {
      * A unique code or abbreviation for the department (e.g., "HR", "ENG").
      * @type {string}
      */
-    code: string
+    code?: string
 
     /**
      * A color for department. Hex code like #000000
@@ -39,17 +39,17 @@ export interface IDepartmentResponse {
      * A list of users who are members of this department.
      * @type {TUser[]}
      */
-    users: TUser[]
+    users?: TUser[]
 
     /**
      * The timestamp when the department was created.
      * @type {Date}
      */
-    createdAt: Date
+    createdAt?: Date | string
 
     /**
      * The timestamp when the department was last updated.
      * @type {Date}
      */
-    updatedAt: Date
+    updatedAt?: Date | string
 }

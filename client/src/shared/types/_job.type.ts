@@ -1,4 +1,5 @@
 import type { IJobResponse } from '../interfaces'
+import { TUser } from './_user.type'
 
 export type JobColumnKey =
     | 'thumbnailUrl'
@@ -22,8 +23,16 @@ export type JobColumnKey =
     | 'action'
 
 export type TJob = Omit<
-    IJobResponse,
+    Required<IJobResponse>,
     'typeId' | 'createdById' | 'paymentChannelId' | 'statusId'
 >
 
 export type JobUpdateResponse = { id: string; no: string }
+
+export type TJobAssignment = {
+    id: string
+    job: TJob
+    user: TUser
+    staffCost: number
+    assignedAt: Date | string
+}

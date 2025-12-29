@@ -1,3 +1,3 @@
 import type { IPaymentChannelResponse } from '../interfaces'
 
-export type TPaymentChannel = Omit<IPaymentChannelResponse, ''>
+export type TPaymentChannel = Required<IPaymentChannelResponse>
