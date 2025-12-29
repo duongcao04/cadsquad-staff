@@ -257,7 +257,7 @@ export class JobFiltersBuilder {
     // 4. Assignee (Relation -> List)
     if (filters.assignee?.length) {
       // Note: Using 'some' assuming Assignee is a List relation (Job has many Assignees)
-      where.assignee = { some: { username: { in: filters.assignee } } }
+      where.assignments = { some: { user: { username: { in: filters.assignee } } } }
     }
 
     // 5. Payment Channel (Relation)

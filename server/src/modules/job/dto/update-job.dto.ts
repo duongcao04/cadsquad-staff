@@ -4,10 +4,8 @@ import { IsArray, IsOptional, IsString } from 'class-validator'
 
 export class UpdateJobDto extends PartialType(
     OmitType(CreateJobDto, [
-        'assigneeIds',
         'no',
         'attachmentUrls',
-        'priority',
     ] as const)
 ) {
     @ApiProperty({

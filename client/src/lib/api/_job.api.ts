@@ -36,7 +36,11 @@ export const jobApi = {
                 startedAt: new Date(data.startedAt).toISOString(),
                 dueAt: new Date(data.dueAt).toISOString(),
                 incomeCost: data.incomeCost.toString(),
-                staffCost: data.staffCost.toString(),
+                totalStaffCost: data.totalStaffCost.toString(),
+                jobAssignments: data.jobAssignments?.map(item => ({
+                    ...item,
+                    staffCost: item.staffCost.toString()
+                }))
             })
             .then((res) => res.data)
     },
@@ -198,7 +202,6 @@ export const jobApi = {
             .patch<ApiResponse<JobUpdateResponse>>(`/v1/jobs/${id}`, {
                 ...data,
                 incomeCost: data.incomeCost?.toString(),
-                staffCost: data.staffCost?.toString(),
             })
             .then((res) => res.data)
     },

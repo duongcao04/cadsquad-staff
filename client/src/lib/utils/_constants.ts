@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 
 import { envConfig } from '@/lib/config'
-import type { JobColumn, JobColumnKey } from '@/shared/types'
+import type { JobColumnKey } from '@/shared/types'
 
 import { RoleEnum } from '../../shared/enums'
 
@@ -40,12 +40,12 @@ export const INTERNAL_URLS = {
     helpCenter: '/' + 'help-center',
     /**
      * AUTH ROUTES
-    */
+     */
     auth: '/' + 'auth',
     login: '/' + 'login',
     /**
      * SETTINGS ROUTES
-    */
+     */
     settings: '/' + 'settings',
     accountSettings: '/' + 'settings/my-profile',
     loginAndSecurity: '/' + 'settings/login-and-security',
@@ -61,18 +61,20 @@ export const INTERNAL_URLS = {
     appearance: '/' + 'settings/appearance',
     fileDocs: '/' + 'admin/mgmt/file-docs',
     staffDirectory: '/' + 'admin/mgmt/staff-directory',
-    editStaffDetails: (username: string) => '/' + 'admin/mgmt/staff-directory/' + username + '/edit',
+    editStaffDetails: (username: string) =>
+        '/' + 'admin/mgmt/staff-directory/' + username + '/edit',
     inviteMember: '/' + 'admin/mgmt/invite-member',
     revenueReports: '/' + 'admin/mgmt/revenue',
     teamManage: '/' + 'admin/mgmt/staff-directory',
     jobManage: '/' + 'admin/mgmt/jobs',
     departmentsManage: '/' + 'admin/departments',
-    departmentItemManage: (departmentCode: string) => '/' + 'admin/departments/' + departmentCode,
+    departmentItemManage: (departmentCode: string) =>
+        '/' + 'admin/departments/' + departmentCode,
     editJob: (jobNo: string) => '/' + 'admin/mgmt/jobs/' + jobNo,
     paymentManage: '/' + 'admin/mgmt/payments',
     /**
      * FINANCIAL ROUTES
-    */
+     */
     payment: '/' + 'financial/payment',
     invoiceTemplates: '/' + 'financial/invoice-templates',
     pendingPayouts: '/' + 'financial/pending-payouts',
@@ -83,10 +85,17 @@ export const INTERNAL_URLS = {
     /**
      * COMMUNITIES
      */
-    communities: "/" + 'communities',
-    getCommunityUrl: (communityCode: string) => "/" + 'communities/' + communityCode,
-    getCommunityTopicUrl: (communityCode: string, topicCode: string) => "/" + 'communities/' + communityCode + '/' + topicCode,
-    getPostDetailUrl: (communityCode: string, topicCode: string, postSlug: string) => "/" + 'communities/' + communityCode + '/' + topicCode + '/' + postSlug
+    communities: '/' + 'communities',
+    getCommunityUrl: (communityCode: string) =>
+        '/' + 'communities/' + communityCode,
+    getCommunityTopicUrl: (communityCode: string, topicCode: string) =>
+        '/' + 'communities/' + communityCode + '/' + topicCode,
+    getPostDetailUrl: (
+        communityCode: string,
+        topicCode: string,
+        postSlug: string
+    ) =>
+        '/' + 'communities/' + communityCode + '/' + topicCode + '/' + postSlug,
 }
 
 export const WEB_PAGES = [
@@ -154,37 +163,9 @@ export const IMAGES = {
         'https://res.cloudinary.com/dqx1guyc0/image/upload/v1762496668/.temp/empty_avatar_wai3iw.webp',
 } as const
 
-const allJobColumns: JobColumn[] = [
-    'no',
-    'type',
-    'thumbnail',
-    'displayName',
-    'description',
-    'attachmentUrls',
-    'clientName',
-    'incomeCost',
-    'staffCost',
-    'assignee',
-    'paymentChannel',
-    'status',
-    'isPaid',
-    'dueAt',
-    'completedAt',
-    'createdAt',
-    'updatedAt',
-    'action',
-]
-
 export const USER_CONFIG_KEYS = {
     jobShowColumns: 'job-show-columns',
     hideFinishItems: 'project-center-activeTab-hide-finish-items',
-}
-
-export const USER_CONFIG_VALUES = {
-    allJobColumns: {
-        user: allJobColumns.filter((item) => item !== 'incomeCost'),
-        admin: allJobColumns,
-    },
 }
 
 export const STORAGE_DEFAULTS = {
@@ -267,117 +248,6 @@ export const PAID_STATUS_ARRAY = Object.entries(PAID_STATUS_COLOR).map(
         ...value,
     })
 )
-
-export const JOB_COLUMNS: {
-    displayName: string
-    uid: JobColumnKey
-    sortable: boolean
-    description?: string
-}[] = [
-        {
-            displayName: 'Thumbnail',
-            uid: 'thumbnailUrl',
-            sortable: false,
-            description: 'Preview image representing the project.',
-        },
-        {
-            displayName: 'Client',
-            uid: 'clientName',
-            sortable: false,
-            description: 'Name of the client associated with the project.',
-        },
-        {
-            displayName: 'Job type',
-            uid: 'type',
-            sortable: true,
-            description: 'Category or type of the job.',
-        },
-        {
-            displayName: 'Job no',
-            uid: 'no',
-            sortable: true,
-            description: 'Unique job or project number identifier.',
-        },
-        {
-            displayName: 'Job name',
-            uid: 'displayName',
-            sortable: true,
-            description: 'Official name or title of the job or project.',
-        },
-        {
-            displayName: 'Income',
-            uid: 'incomeCost',
-            sortable: true,
-            description: 'Total income or revenue generated from the project.',
-        },
-        {
-            displayName: 'Staff Cost',
-            uid: 'staffCost',
-            sortable: true,
-            description: 'Total cost associated with staff working on the project.',
-        },
-        {
-            displayName: 'Status',
-            uid: 'status',
-            sortable: false,
-            description: 'Current status of the project (e.g., Active, Completed).',
-        },
-        {
-            displayName: 'Due on',
-            uid: 'dueAt',
-            sortable: true,
-            description: 'Deadline or due date for the project.',
-        },
-        {
-            displayName: 'Attachments',
-            uid: 'attachmentUrls',
-            sortable: false,
-            description:
-                'List of attached files or documents related to the project.',
-        },
-        {
-            displayName: 'Assignee',
-            uid: 'assignee',
-            sortable: false,
-            description: 'Person or team assigned to handle the project.',
-        },
-        {
-            displayName: 'Payment status',
-            uid: 'isPaid',
-            sortable: true,
-            description: 'Indicates whether the project has been paid for.',
-        },
-        {
-            displayName: 'Payment channel',
-            uid: 'paymentChannel',
-            sortable: false,
-            description: 'Payment method or channel used (e.g., Bank, Cash).',
-        },
-        {
-            displayName: 'Completed at',
-            uid: 'completedAt',
-            sortable: true,
-            description: 'Date and time when the project was completed.',
-        },
-        {
-            displayName: 'Created at',
-            uid: 'createdAt',
-            sortable: true,
-            description: 'Date and time when the project record was created.',
-        },
-        {
-            displayName: 'Modified at',
-            uid: 'updatedAt',
-            sortable: true,
-            description: 'Date and time of the most recent modification.',
-        },
-        {
-            displayName: 'Actions',
-            uid: 'action',
-            sortable: false,
-            description: 'Available actions such as view, edit, or delete.',
-        },
-    ]
 
 export const USER_COLUMNS = [
     {

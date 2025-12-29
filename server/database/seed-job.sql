@@ -1,61 +1,82 @@
 DO $$
 DECLARE
-    v_type RECORD;
-    v_status RECORD;
-    v_creator RECORD;
-    v_payment RECORD;
-    v_client RECORD;
-    v_job_id UUID;
-    v_job_no TEXT;
-    v_user RECORD;
-    v_num_assignees INT;
+    v_creator_id TEXT := '2d17d7c3-1b1f-4b3b-9551-f1cdbdb69b70'; -- ch.duong
+    v_status_id TEXT := 'f6db8c15-94cb-47d4-9d73-3b72c0dd19a7';  -- in-progress
+    
+    v_type_record RECORD;
+    v_job_id TEXT;
     v_income FLOAT;
+    v_job_no TEXT;
+    
+    v_total_to_create INT := 100;
+    v_jobs_per_type INT;
+    v_current_count INT := 0;
+    v_type_sequence INT;
+    v_assign_count INT;
 BEGIN
-    FOR i IN 1..50 LOOP
-        -- Select random relations
-        SELECT * INTO v_type FROM "JobType" ORDER BY random() LIMIT 1;
-        SELECT * INTO v_status FROM "JobStatus" ORDER BY random() LIMIT 1;
-        SELECT * INTO v_creator FROM "User" ORDER BY random() LIMIT 1;
-        SELECT * INTO v_payment FROM "PaymentChannel" ORDER BY random() LIMIT 1;
-        SELECT * INTO v_client FROM "Client" ORDER BY random() LIMIT 1;
+    v_jobs_per_type := ceil(v_total_to_create / 3.0);
 
-        v_job_id := gen_random_uuid();
-        
-        -- Generate Job No (Type.000i)
-        v_job_no := v_type.code || '.' || LPAD(i::text, 4, '0');
-        v_income := (500 + floor(random() * 5000));
+    FOR v_type_record IN SELECT id, code FROM "JobType" LOOP
+        v_type_sequence := 1; 
 
-        -- 1. Insert the Job
-        INSERT INTO "Job" (
-            id, no, "typeId", "clientId", "displayName", "incomeCost", 
-            "statusId", "createdById", "paymentChannelId", "priority",
-            "dueAt", "createdAt", "updatedAt"
-        )
-        VALUES (
-            v_job_id, v_job_no, v_type.id, v_client.id, 
-            (ARRAY['Design','Analysis','Consulting','Repair','Dev'])[1 + floor(random() * 5)::int] || ' for ' || v_client.name,
-            v_income, v_status.id, v_creator.id, v_payment.id,
-            (ARRAY['LOW','MEDIUM','HIGH','URGENT'])[1 + floor(random() * 4)::int]::"JobPriority",
-            NOW() + (floor(random() * 30 + 1) || ' days')::interval,
-            NOW(), NOW()
-        );
+        FOR i IN 1..v_jobs_per_type LOOP
+            EXIT WHEN v_current_count >= v_total_to_create;
+            
+            v_job_id := gen_random_uuid()::TEXT;
+            v_job_no := v_type_record.code || '.26' || LPAD(v_type_sequence::text, 4, '0');
+            v_income := floor(random() * (1000 - 500 + 1) + 500);
+            v_assign_count := floor(random() * (4 - 2 + 1) + 2);
 
-        -- 2. Seed JobAssignment (Each assignee has their own staffCost)
-        v_num_assignees := 1 + floor(random() * 3)::int;
-        FOR v_user IN (SELECT id FROM "User" ORDER BY random() LIMIT v_num_assignees) LOOP
-            INSERT INTO "JobAssignment" (id, "jobId", "userId", "staffCost", "assignedAt")
-            VALUES (
-                gen_random_uuid(),
-                v_job_id,
-                v_user.id,
-                (100 + random() * 300), -- Unique cost per staff
+            -- 1. Insert Job (Initially set sumStaffCost to 0, we update it after assignments)
+            INSERT INTO "Job" (
+                id, no, "typeId", "displayName", "description", 
+                "incomeCost", "sumStaffCost", "createdById", "statusId", 
+                priority, "dueAt", "createdAt", "updatedAt"
+            ) VALUES (
+                v_job_id, 
+                v_job_no, 
+                v_type_record.id, 
+                'Project ' || v_job_no || ' Task', 
+                'Automated creation with individual staff costs for ' || v_type_record.code,
+                v_income, 
+                0, -- Placeholder
+                v_creator_id, 
+                v_status_id, 
+                (ARRAY['LOW', 'MEDIUM', 'HIGH', 'URGENT'])[floor(random()*4)+1]::"JobPriority",
+                NOW() + (random() * 20 + 5) * INTERVAL '1 day',
+                NOW(), 
                 NOW()
             );
+
+            -- 2. Insert Random Assignments with UNIQUE individual costs
+            -- Each row in the SELECT gets its own random calculation
+            INSERT INTO "JobAssignment" ("id", "jobId", "userId", "staffCost", "assignedAt")
+            SELECT 
+                gen_random_uuid()::TEXT, 
+                v_job_id, 
+                id, 
+                -- Individual cost: (Income * random 15-25%) * 25,400 rate
+                floor((v_income * (random() * (0.25 - 0.15) + 0.15)) * 25400),
+                NOW()
+            FROM "User"
+            WHERE id::TEXT != v_creator_id 
+            ORDER BY random()
+            LIMIT v_assign_count;
+
+            -- 3. Update the Job sumStaffCost with the actual sum of assignments
+            UPDATE "Job" 
+            SET "sumStaffCost" = (
+                SELECT SUM("staffCost") 
+                FROM "JobAssignment" 
+                WHERE "jobId" = v_job_id
+            )
+            WHERE id = v_job_id;
+
+            -- 4. Update Counters
+            v_type_sequence := v_type_sequence + 1;
+            v_current_count := v_current_count + 1;
         END LOOP;
-
-        -- 3. Seed JobStatusHistory (Initial entry)
-        INSERT INTO "JobStatusHistory" (id, "jobId", "statusId", "changedById", "startedAt", "createdAt", "updatedAt")
-        VALUES (gen_random_uuid(), v_job_id, v_status.id, v_creator.id, NOW(), NOW(), NOW());
-
     END LOOP;
+
+    RAISE NOTICE 'Seeded % jobs with unique staff costs successfully.', v_current_count;
 END $$;

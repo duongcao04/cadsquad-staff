@@ -1,15 +1,12 @@
-import { addToast, Divider } from '@heroui/react'
+import { addToast, Divider, User } from '@heroui/react'
 import dayjs from 'dayjs'
 import { useFormik } from 'formik'
-import { useMemo, useState } from 'react'
-
-import {
-    useCreateJobMutation,
-    useJobTypes,
-    usePaymentChannels,
-    useUsers,
-} from '@/lib/queries'
+import { useEffect, useMemo, useState } from 'react'
+import { currencyFormatter, optimizeCloudinary } from '@/lib'
+import { useJobTypes, usePaymentChannels, useUsers } from '@/lib/queries'
 import { CreateJobSchema, type TCreateJobInput } from '@/lib/validationSchemas'
+import lodash, { after } from 'lodash'
+import { BriefcaseIcon, CircleAlertIcon } from 'lucide-react'
 import AssignMemberField from '../form-fields/AssignMemberField'
 import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { JobNoField } from '../form-fields/JobNoField'
@@ -19,20 +16,22 @@ import { HeroDateRangePicker } from '../ui/hero-date-picker'
 import { HeroInput } from '../ui/hero-input'
 import { HeroNumberInput } from '../ui/hero-number-input'
 import HeroRowsStep from '../ui/hero-rows-steps'
+import { HeroTooltip } from '../ui/hero-tooltip'
 import { ScrollArea, ScrollBar } from '../ui/scroll-area'
-import lodash from 'lodash'
 
 type CreateJobFormProps = {
-    onSubmit?: () => void
+    onSubmit?: (values: TCreateJobInput) => void
+    afterSubmit?: (values?: TCreateJobInput) => void
+    isSubmitting?: boolean
 }
-export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
-    /**
-     * Keep your original Fetching logic
-     */
+export default function CreateJobForm({
+    onSubmit,
+    isSubmitting = false,
+    afterSubmit,
+}: CreateJobFormProps) {
     const { data: users = [] } = useUsers()
     const { data: jobTypes = [] } = useJobTypes()
     const { data: paymentChannels = [] } = usePaymentChannels()
-    const createJobMutation = useCreateJobMutation()
 
     const [currentStep, setCurrentStep] = useState(0)
 
@@ -54,14 +53,10 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
             'dueAt',
         ],
         ['attachmentUrls'],
-        ['assigneeIds', 'assignments'], // assignments is the new hidden helper
+        ['jobAssignments'], // Fixed field name
     ]
 
-    const formik = useFormik<
-        TCreateJobInput & {
-            assignments: { userId: string; staffCost: number }[]
-        }
-    >({
+    const formik = useFormik<TCreateJobInput & { totalStaffCost: number }>({
         initialValues: {
             clientName: '',
             typeId: '',
@@ -69,35 +64,41 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
             displayName: '',
             attachmentUrls: [],
             startedAt: dayjs().toISOString(),
-            dueAt: '',
-            assigneeIds: ['c4d35f1b-9b37-4a3f-804b-373f7b0e1a24'],
-            assignments: [
+            dueAt: dayjs().add(7, 'days').toISOString(),
+            jobAssignments: [
                 {
                     userId: 'c4d35f1b-9b37-4a3f-804b-373f7b0e1a24',
                     staffCost: 0,
                 },
             ],
-            sumStaffCost: 0,
-            incomeCost: null as unknown as number,
+            totalStaffCost: 0, // Initialize with 0
+            incomeCost: 0,
             paymentChannelId: null,
         },
         validationSchema: CreateJobSchema,
         onSubmit: async (values) => {
-            // Before submitting, we can ensure staffCost is the sum of all assignments
-            const totalStaffCost = values.assignments.reduce(
-                (sum, a) => sum + (a.staffCost || 0),
-                0
-            )
-            const submissionData = { ...values, staffCost: totalStaffCost }
-
-            await createJobMutation.mutateAsync(submissionData, {
-                onSuccess() {
-                    formik.resetForm()
-                    onSubmit?.()
-                },
-            })
+            onSubmit?.(values)
+            if (afterSubmit) {
+                afterSubmit?.(values)
+                formik.resetForm()
+            }
         },
     })
+
+    // Memoized Total Calculation
+    const calculatedTotal = useMemo(
+        () =>
+            formik.values.jobAssignments?.reduce(
+                (sum, a) => sum + (a.staffCost || 0),
+                0
+            ) || 0,
+        [formik.values.jobAssignments]
+    )
+
+    // Sync totalStaffCost to Formik state whenever assignments change
+    useEffect(() => {
+        formik.setFieldValue('totalStaffCost', calculatedTotal)
+    }, [calculatedTotal])
 
     const handleNext = async () => {
         const currentFields = fieldsByStep[currentStep]
@@ -108,8 +109,8 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
         await formik.setTouched({ ...formik.touched, ...touchedFields })
 
         const errors = await formik.validateForm()
-        const stepHasErrors = currentFields.some(
-            (field) => errors[field as keyof typeof errors]
+        const stepHasErrors = currentFields.some((field) =>
+            lodash.get(errors, field)
         )
 
         if (!stepHasErrors) setCurrentStep((prev) => prev + 1)
@@ -117,15 +118,16 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
 
     const handleBack = () => setCurrentStep((prev) => prev - 1)
 
-    // Helper to find selected user objects
     const formikAssignees = useMemo(
-        () => users.filter((u) => formik.values.assigneeIds?.includes(u.id)),
-        [users, formik.values.assigneeIds]
+        () =>
+            users.filter((u) =>
+                formik.values.jobAssignments?.some((a) => a.userId === u.id)
+            ),
+        [users, formik.values.jobAssignments]
     )
 
     return (
         <div className="w-full">
-            {/* 1. Stepper Component */}
             <div className="flex justify-center">
                 <HeroRowsStep
                     currentStep={currentStep}
@@ -206,8 +208,6 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                                             : dayjs(),
                                     }}
                                     onValueChange={(range) => {
-                                        console.log(range.start.toISOString())
-
                                         formik.setFieldValue(
                                             'startedAt',
                                             range.start.toISOString()
@@ -250,12 +250,14 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                                             placeholder="0"
                                             type="number"
                                             labelPlacement="outside"
-                                            maxValue={999999999999999}
+                                            allowNegative={false}
+                                            notNull
+                                            hideStepper
                                             value={formik.values.incomeCost}
                                             onChange={(value) =>
                                                 formik.setFieldValue(
                                                     'incomeCost',
-                                                    Number(value)
+                                                    value
                                                 )
                                             }
                                             startContent={
@@ -324,24 +326,17 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                             </div>
                         )}
 
-                        {/* STEP 2: ASSIGN MEMBER & INDIVIDUAL COSTS */}
+                        {/* STEP 2: ASSIGNEES & COSTS */}
                         {currentStep === 2 && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                                 <AssignMemberField
                                     users={users}
                                     assignees={formikAssignees}
                                     onSelectMember={(userIds) => {
-                                        // 1. Update your original field
-                                        formik.setFieldValue(
-                                            'assigneeIds',
-                                            userIds
-                                        )
-
-                                        // 2. Sync your cost helper array
                                         const updatedAssignments = userIds.map(
                                             (id) => {
                                                 const existing =
-                                                    formik.values.assignments.find(
+                                                    formik.values.jobAssignments?.find(
                                                         (a) => a.userId === id
                                                     )
                                                 return (
@@ -353,7 +348,7 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                                             }
                                         )
                                         formik.setFieldValue(
-                                            'assignments',
+                                            'jobAssignments',
                                             updatedAssignments
                                         )
                                     }}
@@ -363,7 +358,7 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                                     <p className="text-sm font-semibold text-default-600">
                                         Cost Distribution
                                     </p>
-                                    {formik.values.assignments.map(
+                                    {formik.values.jobAssignments?.map(
                                         (assignment, index) => {
                                             const user = users.find(
                                                 (u) =>
@@ -372,50 +367,142 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                                             return (
                                                 <div
                                                     key={assignment.userId}
-                                                    className="flex items-center gap-4 p-3 bg-default-50 rounded-xl border border-divider"
+                                                    className="flex items-center gap-4 p-3 bg-default-50 rounded-xl border border-divider group"
                                                 >
                                                     <div className="flex-1">
-                                                        <p className="text-sm font-bold">
-                                                            {user?.displayName}
-                                                        </p>
-                                                        <p className="text-xs text-default-500">
-                                                            {user?.role}
-                                                        </p>
-                                                    </div>
-                                                    <div className="w-32">
-                                                        <HeroNumberInput
-                                                            size="sm"
-                                                            placeholder="Cost"
-                                                            value={
-                                                                assignment.staffCost
+                                                        <User
+                                                            avatarProps={{
+                                                                src: optimizeCloudinary(
+                                                                    user?.avatar ??
+                                                                        '',
+                                                                    {
+                                                                        width: 256,
+                                                                        height: 256,
+                                                                    }
+                                                                ),
+                                                            }}
+                                                            name={
+                                                                <p className="text-sm font-bold">
+                                                                    {
+                                                                        user?.displayName
+                                                                    }
+                                                                </p>
                                                             }
-                                                            onValueChange={(
-                                                                val
-                                                            ) =>
-                                                                formik.setFieldValue(
-                                                                    `assignments[${index}].staffCost`,
-                                                                    val
-                                                                )
-                                                            }
-                                                            startContent={
-                                                                <span className="text-tiny text-default-400">
-                                                                    $
-                                                                </span>
+                                                            description={
+                                                                <div className="flex items-center justify-start gap-1 text-text-subdued">
+                                                                    <BriefcaseIcon
+                                                                        size={
+                                                                            14
+                                                                        }
+                                                                    />
+                                                                    <p className="text-xs">
+                                                                        {
+                                                                            user
+                                                                                ?.department
+                                                                                ?.displayName
+                                                                        }
+                                                                    </p>
+                                                                </div>
                                                             }
                                                         />
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-32">
+                                                            <HeroNumberInput
+                                                                size="sm"
+                                                                label="Cost"
+                                                                labelPlacement={
+                                                                    'inside'
+                                                                }
+                                                                value={
+                                                                    assignment.staffCost
+                                                                }
+                                                                onValueChange={(
+                                                                    val
+                                                                ) => {
+                                                                    formik.setFieldValue(
+                                                                        `jobAssignments[${index}].staffCost`,
+                                                                        val
+                                                                    )
+                                                                }}
+                                                                endContent={
+                                                                    <span className="text-text-subdued">
+                                                                        đ
+                                                                    </span>
+                                                                }
+                                                                allowNegative={
+                                                                    false
+                                                                }
+                                                                notNull
+                                                                hideStepper
+                                                            />
+                                                        </div>
+
+                                                        {/* ADD THIS BUTTON HERE */}
+                                                        <HeroButton
+                                                            isIconOnly
+                                                            size="sm"
+                                                            variant="flat"
+                                                            color="danger"
+                                                            className="opacity-0 group-hover:opacity-100 transition-opacity" // Show on hover
+                                                            onPress={() => {
+                                                                if (
+                                                                    formik
+                                                                        .values
+                                                                        .jobAssignments
+                                                                        .length <=
+                                                                    1
+                                                                ) {
+                                                                    addToast({
+                                                                        title: 'At least one member is required',
+                                                                        color: 'warning',
+                                                                    })
+                                                                    return
+                                                                }
+                                                                const remaining =
+                                                                    formik.values.jobAssignments?.filter(
+                                                                        (
+                                                                            _,
+                                                                            i
+                                                                        ) =>
+                                                                            i !==
+                                                                            index
+                                                                    )
+                                                                formik.setFieldValue(
+                                                                    'jobAssignments',
+                                                                    remaining
+                                                                )
+                                                            }}
+                                                        >
+                                                            <span className="text-lg">
+                                                                ×
+                                                            </span>
+                                                        </HeroButton>
                                                     </div>
                                                 </div>
                                             )
                                         }
                                     )}
+
+                                    <div className="mt-6 p-4 bg-primary-50 rounded-xl border border-primary-100 flex justify-between items-center">
+                                        <p className="text-sm font-bold text-primary-700">
+                                            Total Staff Cost
+                                        </p>
+                                        <p className="text-lg font-bold text-primary">
+                                            {currencyFormatter(
+                                                formik.values.totalStaffCost,
+                                                'Vietnamese'
+                                            )}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
                     </div>
                 </ScrollArea>
 
-                {/* 3. Footer / Action Buttons */}
-                <div className="bg-background flex items-center justify-between pr-7 pt-4 pb-2">
+                <div className="bg-background flex items-center justify-between px-7 pt-4 pb-2">
                     <HeroButton
                         variant="light"
                         color="default"
@@ -438,7 +525,7 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
                         <HeroButton
                             color="primary"
                             type="submit"
-                            isLoading={createJobMutation.isPending}
+                            isLoading={isSubmitting}
                         >
                             Create Job
                         </HeroButton>
@@ -448,22 +535,27 @@ export default function CreateJobForm({ onSubmit }: CreateJobFormProps) {
         </div>
     )
 }
-
 type DeliveryFieldProps = {
     value:
         | {
               start: string | dayjs.Dayjs
+
               end: dayjs.Dayjs | string
           }
         | null
         | undefined
+
     onValueChange: (range: { start: dayjs.Dayjs; end: dayjs.Dayjs }) => void
+
     isInvalid?: {
         startedAt?: boolean
+
         dueAt?: boolean
     }
+
     errorMessages?: {
         startedAt?: string
+
         dueAt?: string
     }
 }
@@ -473,29 +565,46 @@ function DeliveryField({
     isInvalid,
     errorMessages,
 }: DeliveryFieldProps) {
-    console.log(errorMessages)
-
     return (
         <HeroDateRangePicker
-            label="Project Timeline (Start to Deadline)"
+            label={
+                <div className="flex items-center justify-start w-fit gap-2">
+                    <div className="relative pr-2.5">
+                        <p className="absolute top-0 right-0 text-danger">*</p>
+                        <p>Project Timeline (Start to Deadline)</p>
+                    </div>
+                    <HeroTooltip content="The default project timeline is set to 7 days.">
+                        <HeroButton isIconOnly size="xs" variant="light">
+                            <CircleAlertIcon
+                                size={12}
+                                className="text-text-subdued"
+                            />
+                        </HeroButton>
+                    </HeroTooltip>
+                </div>
+            }
             labelPlacement="outside"
             value={value}
             variant="bordered"
-            classNames={{
-                inputWrapper: 'bg-background',
-            }}
             isInvalid={isInvalid?.startedAt || isInvalid?.dueAt}
-            onChange={(range) => {
-                if (lodash.isNull(range)) {
-                    addToast({
-                        title: 'Have error',
-                        color: 'danger',
-                    })
-                } else {
-                    onValueChange(range)
-                }
-            }}
-            isRequired
+            errorMessage={
+                isInvalid?.startedAt || isInvalid?.dueAt ? (
+                    <div>
+                        {errorMessages?.startedAt && (
+                            <p>{errorMessages.startedAt}</p>
+                        )}
+                        {errorMessages?.dueAt && <p>{errorMessages.dueAt}</p>}
+                    </div>
+                ) : undefined
+            }
+            onChange={(range) =>
+                range
+                    ? onValueChange(range)
+                    : addToast({
+                          title: 'Error selecting date',
+                          color: 'danger',
+                      })
+            }
         />
     )
 }

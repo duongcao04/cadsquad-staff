@@ -1,243 +1,171 @@
-import { addToast } from '@heroui/react'
-import {
-    BlockquotePlugin,
-    BoldPlugin,
-    H1Plugin,
-    H2Plugin,
-    H3Plugin,
-    HeadingPlugin,
-    ItalicPlugin,
-    UnderlinePlugin,
-} from '@platejs/basic-nodes/react'
-import { Pencil } from 'lucide-react'
-import { type Value } from 'platejs'
-import { Plate, usePlateEditor } from 'platejs/react'
-import { serializeHtml } from 'platejs/static'
-import { useMemo, useState } from 'react'
-
+import { addToast, useDisclosure } from '@heroui/react'
+import { Pencil, Maximize2, X, Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useProfile, useUpdateJobMutation } from '@/lib/queries'
 import type { TJob } from '@/shared/types'
-
-import { BlockquoteElement } from '../ui/blockquote-node'
-import { Editor, EditorContainer } from '../ui/editor'
-import { FixedToolbar } from '../ui/fixed-toolbar'
-import { H1Element, H2Element, H3Element } from '../ui/heading-node'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import HtmlReactParser from '../ui/html-react-parser'
-import { MarkToolbarButton } from '../ui/mark-toolbar-button'
-import { ToolbarButton } from '../ui/toolbar'
+import JobDescriptionModal from './JobDescriptionModal'
+import QuillEditor from '../editor-quill/QuillEditor'
 
 type JobDescriptionViewProps = {
-    job: TJob
+    data: TJob
 }
-export default function JobDescriptionView({ job }: JobDescriptionViewProps) {
+export default function JobDescriptionView({ data }: JobDescriptionViewProps) {
+    const { isAdmin } = useProfile()
+    const [isEditable, setIsEditable] = useState(false)
+    const [content, setContent] = useState(data?.description || '')
+
+    // Controls the "Full View" Modal
+    const fullViewDisclosure = useDisclosure()
+
     const updateJobMutation = useUpdateJobMutation((res) => {
         addToast({
             title: 'Description updated',
-            description: `The description for job ${res.result?.no} has been successfully updated.`,
+            // description: `Job #${res.result?.no} updated successfully.`,
             color: 'success',
         })
+        setIsEditable(false)
     })
 
-    const [isEditable, setIsEditable] = useState(false)
-
-    const [inputValue, setInputValue] = useState<Value | undefined>(undefined)
-
-    const { isAdmin } = useProfile()
-    const canEdit = useMemo(() => isAdmin && isEditable, [isEditable, isAdmin])
-
-    const editor = usePlateEditor({
-        plugins: [
-            HeadingPlugin,
-            BoldPlugin,
-            ItalicPlugin,
-            UnderlinePlugin,
-            H1Plugin.withComponent(H1Element),
-            H2Plugin.withComponent(H2Element),
-            H3Plugin.withComponent(H3Element),
-            BlockquotePlugin.withComponent(BlockquoteElement),
-        ],
-        value: inputValue,
-        handlers: {
-            onChange: (ctx) => {
-                setInputValue(ctx.value)
-            },
-        },
-    })
+    // Reset local state if the job prop changes externally
+    useEffect(() => {
+        setContent(data?.description || '')
+    }, [data?.description])
 
     const onSave = async () => {
-        const isEmpty = editor.api.isEmpty()
-        if (isEmpty) {
+        if (!content || content === '<p><br></p>') {
             addToast({
-                title: 'Vui lòng nhập ít nhất 1 từ khoá',
+                title: 'Description cannot be empty',
                 color: 'danger',
             })
             return
         }
-        const html = await serializeHtml(editor)
-        await updateJobMutation.mutateAsync(
-            {
-                jobId: job.id,
-                data: { description: html },
-            },
-            {
-                onSuccess: () => {
-                    setInputValue(undefined)
-                    setIsEditable(false)
-                },
-            }
-        )
+
+        await updateJobMutation.mutateAsync({
+            jobId: data.id,
+            data: { description: content },
+        })
     }
 
     return (
-        <HeroCard className='p-0!'>
-            {/* Description */}
-            <HeroCardHeader className="justify-between py-1 bg-background-muted">
-                <span className="text-small font-bold text-default-600 uppercase tracking-wider">
-                    Description
-                </span>
-                {isAdmin ? (
-                    <>
-                        {isEditable ? (
-                            <div className="flex items-center justify-end gap-2">
-                                <HeroButton
-                                    size="sm"
-                                    onPress={() => {
-                                        setIsEditable(false)
-                                    }}
-                                    variant="light"
-                                    color="default"
-                                >
-                                    Cancel
-                                </HeroButton>
-                                <HeroButton
-                                    color="blue"
-                                    size="sm"
-                                    onPress={onSave}
-                                >
-                                    Save
-                                </HeroButton>
-                            </div>
-                        ) : (
-                            <HeroTooltip content="Edit">
-                                <HeroButton
-                                    isIconOnly
-                                    className="size-8.5! aspect-square!"
-                                    variant="light"
-                                    onPress={() => {
-                                        setIsEditable(true)
-                                        if (inputValue) {
-                                            if (job.description) {
-                                                const slateValue =
-                                                    editor.api.html.deserialize(
-                                                        {
-                                                            element:
-                                                                job.description,
-                                                        }
-                                                    )
-                                                setInputValue(
-                                                    slateValue as Value
-                                                )
-                                                editor.tf.setValue(
-                                                    slateValue as Value
-                                                )
-                                            }
-                                        }
-                                    }}
-                                >
-                                    <Pencil
-                                        size={14}
-                                        className="text-text-subdued"
-                                    />
-                                </HeroButton>
-                            </HeroTooltip>
-                        )}
-                    </>
-                ) : (
-                    <></>
-                )}
-            </HeroCardHeader>
-            <HeroCardBody className="gap-6">
-                {canEdit ? (
-                    <Plate editor={editor}>
-                        <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-                            <ToolbarButton
-                                onClick={() => editor.tf.h1.toggle()}
-                            >
-                                H1
-                            </ToolbarButton>
-                            <ToolbarButton
-                                onClick={() => editor.tf.h2.toggle()}
-                            >
-                                H2
-                            </ToolbarButton>
-                            <ToolbarButton
-                                onClick={() => editor.tf.h3.toggle()}
-                            >
-                                H3
-                            </ToolbarButton>
-                            <ToolbarButton
-                                onClick={() => editor.tf.blockquote.toggle()}
-                            >
-                                Quote
-                            </ToolbarButton>
-                            <MarkToolbarButton
-                                nodeType="bold"
-                                tooltip="Bold (⌘+B)"
-                            >
-                                B
-                            </MarkToolbarButton>
-                            <MarkToolbarButton
-                                nodeType="italic"
-                                tooltip="Italic (⌘+I)"
-                            >
-                                I
-                            </MarkToolbarButton>
-                            <MarkToolbarButton
-                                nodeType="underline"
-                                tooltip="Underline (⌘+U)"
-                            >
-                                U
-                            </MarkToolbarButton>
-                        </FixedToolbar>
-                        {/* Provides editor context */}
-                        <EditorContainer>
-                            {/* Styles the editor area */}
-                            <Editor
-                                style={{
-                                    padding: '8px 20px',
-                                    minHeight: '100px',
-                                }}
-                                placeholder="Type your amazing comment here..."
-                            />
-                        </EditorContainer>
-                    </Plate>
-                ) : (
-                    <>
-                        {job.description ? (
-                            <HtmlReactParser htmlString={job.description} />
-                        ) : (
-                            <div className="flex flex-col items-center gap-0 pb-8">
-                                <p className="text-text-subdued text-sm whitespace-pre-line leading-relaxed text-center">
-                                    No description provided.
-                                </p>
-                                {isAdmin && (
-                                    <p
-                                        className="text-text-subdued text-sm underline underline-offset-2 hover:text-text-default cursor-pointer w-fit"
-                                        onClick={() => {
-                                            setIsEditable(true)
+        <>
+            {/* 1. FULL VIEW MODAL */}
+            <JobDescriptionModal
+                isOpen={fullViewDisclosure.isOpen}
+                onClose={fullViewDisclosure.onClose}
+                value={content}
+                onChange={setContent}
+                // onSave={onSave}
+                title={`Editing Description: #${data.no}`}
+            />
+
+            <HeroCard className="p-0!">
+                <HeroCardHeader className="justify-between py-1 bg-background-muted">
+                    <span className="text-small font-bold text-default-600 uppercase tracking-wider">
+                        Description
+                    </span>
+
+                    {isAdmin && (
+                        <div className="flex items-center gap-1">
+                            {isEditable ? (
+                                <div className="flex items-center gap-1">
+                                    <HeroButton
+                                        isIconOnly
+                                        size="sm"
+                                        variant="light"
+                                        onPress={() => {
+                                            setIsEditable(false)
+                                            setContent(data?.description || '') // Revert
                                         }}
                                     >
-                                        Write anything
+                                        <X size={16} className="text-danger" />
+                                    </HeroButton>
+                                    <HeroButton
+                                        isIconOnly
+                                        size="sm"
+                                        variant="light"
+                                        isLoading={updateJobMutation.isPending}
+                                        onPress={onSave}
+                                    >
+                                        <Check
+                                            size={16}
+                                            className="text-success"
+                                        />
+                                    </HeroButton>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Trigger Full View Modal */}
+                                    <HeroTooltip content="Expand to Full View">
+                                        <HeroButton
+                                            isIconOnly
+                                            className="size-8.5!"
+                                            variant="light"
+                                            onPress={fullViewDisclosure.onOpen}
+                                        >
+                                            <Maximize2
+                                                size={14}
+                                                className="text-text-subdued"
+                                            />
+                                        </HeroButton>
+                                    </HeroTooltip>
+
+                                    {/* Standard Inline Edit Toggle */}
+                                    <HeroTooltip content="Inline Edit">
+                                        <HeroButton
+                                            isIconOnly
+                                            className="size-8.5!"
+                                            variant="light"
+                                            onPress={() => setIsEditable(true)}
+                                        >
+                                            <Pencil
+                                                size={14}
+                                                className="text-text-subdued"
+                                            />
+                                        </HeroButton>
+                                    </HeroTooltip>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </HeroCardHeader>
+
+                <HeroCardBody className="p-0!">
+                    {isEditable ? (
+                        <div className="border-none">
+                            <QuillEditor
+                                value={content}
+                                onChange={setContent}
+                            />
+                        </div>
+                    ) : (
+                        <div className="p-5 min-h-[100px]">
+                            {data?.description ? (
+                                <HtmlReactParser
+                                    htmlString={data?.description}
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center gap-1 py-4">
+                                    <p className="text-text-subdued text-sm text-center">
+                                        No description provided.
                                     </p>
-                                )}
-                            </div>
-                        )}
-                    </>
-                )}
-            </HeroCardBody>
-        </HeroCard>
+                                    {isAdmin && (
+                                        <button
+                                            className="text-primary text-sm underline underline-offset-4 hover:opacity-80"
+                                            onClick={() => setIsEditable(true)}
+                                        >
+                                            Add project details
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </HeroCardBody>
+            </HeroCard>
+        </>
     )
 }

@@ -1,5 +1,4 @@
 import { Spinner, Switch } from '@heroui/react'
-
 import { JobColumnKey } from '../../types'
 
 type Props = {

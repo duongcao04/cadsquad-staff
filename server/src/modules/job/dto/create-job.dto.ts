@@ -1,12 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger'
+import { Type } from 'class-transformer'
 import {
     IsArray,
     IsBoolean,
+    IsDateString,
+    IsEnum,
     IsNotEmpty,
     IsOptional,
     IsString,
     IsUUID,
+    ValidateNested,
 } from 'class-validator'
+
+export class JobAssignmentDto {
+    @ApiProperty({ description: 'ID of the assigned user', example: 'uuid' })
+    @IsNotEmpty()
+    @IsUUID()
+    userId: string
+
+    @ApiProperty({ description: "Assignee's Staff cost for the job", example: '1000' })
+    @IsNotEmpty()
+    @IsString()
+    staffCost: string
+}
 
 export class CreateJobDto {
     @ApiProperty({ description: 'Job number', example: 'JOB-2024-001' })
@@ -23,91 +39,44 @@ export class CreateJobDto {
     @IsNotEmpty()
     displayName: string
 
-    @ApiProperty({
-        description: 'Detailed description of the job',
-        required: false,
-    })
-    @IsOptional()
-    @IsString()
-    description?: string
-
-    @ApiProperty({
-        description: 'URLs of attachments',
-        type: [String],
-        required: false,
-    })
+    @ApiProperty({ description: 'URLs of attachments', type: [String], required: false })
     @IsOptional()
     @IsArray()
-    attachmentUrls?: string
+    @IsString({ each: true })
+    attachmentUrls?: string[] // Fixed: type was string, should be string[]
 
-    @ApiProperty({ description: 'Name of the client', type: [String] })
+    @ApiProperty({ description: 'Name of the client' })
     @IsString()
     @IsNotEmpty()
     clientName: string
 
-    @ApiProperty({ description: 'Income cost for the job', type: [String] })
+    @ApiProperty({ description: 'Income cost for the job' })
     @IsString()
     incomeCost: string
 
-    @ApiProperty({ description: 'Staff cost for the job', type: [String] })
+    @ApiProperty({ description: 'Total Staff cost for the job' })
     @IsString()
-    staffCost: string
-
-    @ApiProperty({
-        description: 'IDs of the assignees',
-        type: [String],
-        required: false,
-    })
-    @IsOptional()
-    @IsArray()
-    assigneeIds?: string[]
+    totalStaffCost: string
 
     @ApiProperty({ description: 'ID of the payment channel', required: false })
     @IsOptional()
-    paymentChannelId: string
+    @IsString()
+    paymentChannelId?: string
+
+    @ApiProperty({ type: [JobAssignmentDto], required: false })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => JobAssignmentDto)
+    jobAssignments?: JobAssignmentDto[]
 
     @ApiProperty({ description: 'Start date of the job', required: false })
     @IsOptional()
-    @IsString()
+    @IsDateString() // Better for ISO date strings from JSON
     startedAt?: Date
 
-    @ApiProperty({
-        description: 'Priority of the job (e.g., LOW, MEDIUM, HIGH)',
-        required: false,
-    })
-    @IsOptional()
-    @IsString()
-    priority?: string // Could be validated against an enum (LOW, MEDIUM, HIGH)
-
-    @ApiProperty({ description: 'Whether the job is pinned', required: false })
-    @IsOptional()
-    @IsBoolean()
-    isPinned?: boolean
-
-    @ApiProperty({
-        description: 'Whether the job is published',
-        required: false,
-    })
-    @IsOptional()
-    @IsBoolean()
-    isPublished?: boolean
-
-    @ApiProperty({ description: 'Whether the job is paid', required: false })
-    @IsOptional()
-    @IsBoolean()
-    isPaid?: boolean
 
     @ApiProperty({ description: 'Due date of the job' })
-    @IsString()
+    @IsDateString()
     dueAt: Date
-
-    @ApiProperty({ description: 'Completion date of the job', required: false })
-    @IsOptional()
-    @IsString()
-    completedAt?: Date
-
-    @ApiProperty({ description: 'Deletion date of the job', required: false })
-    @IsOptional()
-    @IsString()
-    deletedAt?: Date
 }

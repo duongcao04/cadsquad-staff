@@ -1,189 +1,260 @@
-import { Button, Input, Skeleton } from '@heroui/react'
-import { type Key, useState } from 'react'
-
-import { EXTERNAL_URLS } from '@/lib'
-import { useProfile, useUsers } from '@/lib/queries'
 import {
-    useAssignMemberMutation,
-    useJobByNo,
-    useRemoveMemberMutation,
-} from '@/lib/queries/useJob'
+    Autocomplete,
+    AutocompleteItem,
+    Avatar,
+    Button,
+    Input,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+} from '@heroui/react'
+import { Trash2, UserPlus, Wallet, Search } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
-import HeroCopyButton from '../ui/hero-copy-button'
-import {
-    HeroModal,
-    HeroModalBody,
-    HeroModalContent,
-    HeroModalHeader,
-} from '../ui/hero-modal'
-import { HeroTooltip } from '../ui/hero-tooltip'
-import AssignMemberCard, { AssignMemberCardSkeleton } from './AssignMemberCard'
-import AssignMemberSelect from './AssignMemberSelect'
+// --- FAKE DATA ---
+const FAKE_USERS = [
+    {
+        id: '1',
+        displayName: 'Chieu Duong',
+        avatar: 'https://i.pravatar.cc/150?u=1',
+    },
+    {
+        id: '2',
+        displayName: 'Minh Hoang',
+        avatar: 'https://i.pravatar.cc/150?u=2',
+    },
+    {
+        id: '3',
+        displayName: 'Thanh Thao',
+        avatar: 'https://i.pravatar.cc/150?u=3',
+    },
+    {
+        id: '4',
+        displayName: 'Quoc Anh',
+        avatar: 'https://i.pravatar.cc/150?u=4',
+    },
+    {
+        id: '5',
+        displayName: 'Gia Bao',
+        avatar: 'https://i.pravatar.cc/150?u=5',
+    },
+]
 
-// TODO: FIX giật
-type AssignMemberModalProps = {
-    jobNo: string
-    isOpen: boolean
-    onClose: () => void
+type AssignedMember = {
+    userId: string
+    displayName: string
+    avatar?: string
+    staffCost: number
 }
+
 export default function AssignMemberModal({
-    jobNo,
+    jobNo = 'F.26001',
     isOpen,
     onClose,
-}: AssignMemberModalProps) {
-    const { job, isLoading: loadingJob } = useJobByNo(jobNo)
-    const { data: users, isLoading: loadingUsers } = useUsers()
+}: {
+    jobNo?: string
+    isOpen: boolean
+    onClose: () => void
+}) {
+    const [assignedMembers, setAssignedMembers] = useState<AssignedMember[]>([])
 
-    const isLoading = !job || loadingJob
+    // --- LOGIC: Filter members ---
+    // This derived state only contains users NOT currently in the assigned list
+    const availableUsers = useMemo(() => {
+        const assignedIds = assignedMembers.map((m) => m.userId)
+        return FAKE_USERS.filter((user) => !assignedIds.includes(user.id))
+    }, [assignedMembers])
 
-    const { isAdmin } = useProfile()
+    const totalStaffCost = useMemo(
+        () => assignedMembers.reduce((sum, m) => sum + m.staffCost, 0),
+        [assignedMembers]
+    )
 
-    const [memberSelected, setMemberSelected] = useState<Key | null>(null)
-    const { mutateAsync: assignMemberMutate } = useAssignMemberMutation()
-    const { mutateAsync: removeMemberMutate } = useRemoveMemberMutation()
+    const handleAddMember = (userId: string | number | null) => {
+        if (!userId) return
 
-    const onAssignMember = async (updateMemberIds: string[]) => {
-        await assignMemberMutate({
-            jobId: String(job?.id),
-            assignMemberInput: {
-                prevMemberIds: JSON.stringify(
-                    job?.assignee.map((mem) => mem.id)
-                ),
-                updateMemberIds: JSON.stringify(updateMemberIds),
+        const user = FAKE_USERS.find((u) => u.id === String(userId))
+        if (!user) return
+
+        setAssignedMembers((prev) => [
+            ...prev,
+            {
+                userId: user.id,
+                displayName: user.displayName,
+                avatar: user.avatar,
+                staffCost: 0,
             },
-        })
+        ])
     }
 
-    const onRemoveMember = async (memberId: string) =>
-        await removeMemberMutate({
-            jobId: job?.id,
-            memberId,
-        })
+    const handleUpdateCost = (userId: string, value: string) => {
+        const numericValue = parseFloat(value) || 0
+        setAssignedMembers((prev) =>
+            prev.map((m) =>
+                m.userId === userId ? { ...m, staffCost: numericValue } : m
+            )
+        )
+    }
 
-    const onSelectMember = (userId: Key | null) => {
-        setMemberSelected(userId)
+    const handleRemoveMember = (userId: string) => {
+        setAssignedMembers((prev) => prev.filter((m) => m.userId !== userId))
     }
 
     return (
-        <HeroModal
-            isOpen={isOpen}
-            onClose={() => {
-                setMemberSelected(null)
-                onClose()
-            }}
-            classNames={{
-                base: 'max-w-[90%] sm:max-w-[80%] md:max-w-[80%] xl:max-w-[50%]',
-            }}
-            placement="center"
-        >
-            <HeroModalContent>
-                <HeroModalHeader>
-                    <div className="size-full">
-                        <p className="text-lg font-semibold mb-2.5">
-                            Assign members to #{job?.no}
-                        </p>
-                        {isAdmin && (
-                            <div className="space-y-1.5">
-                                <p className="font-semibold text-sm text-text-subdued">
-                                    Select member
-                                </p>
-                                <div className="grid grid-cols-[1fr_100px] gap-4">
-                                    {isLoading ? (
-                                        <Skeleton className="w-full h-12 rounded-md" />
-                                    ) : (
-                                        <AssignMemberSelect
-                                            job={job}
-                                            users={users}
-                                            loading={loadingUsers}
-                                            onSelectMember={onSelectMember}
-                                        />
-                                    )}
-                                    <Button
-                                        onPress={async () => {
-                                            if (memberSelected) {
-                                                const newAssignee =
-                                                    job?.assignee?.map(
-                                                        (mem) => mem.id
-                                                    ) || []
-                                                newAssignee.push(
-                                                    memberSelected as string
-                                                )
-                                                await onAssignMember(
-                                                    newAssignee
-                                                )
-                                                setMemberSelected(null)
-                                            }
-                                        }}
-                                        // color="primary"
-                                    >
-                                        Assign
-                                    </Button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </HeroModalHeader>
-                <HeroModalBody className="pb-6">
-                    <hr className="text-text-muted" />
-                    <div>
-                        <div className="space-y-2.5 min-h-[40vh] max-h-[60vh]">
-                            <div className="font-medium">
-                                <span>Members assigned</span>
-                                <Skeleton
-                                    className="ml-1 inline-block w-8 h-5 rounded-md"
-                                    isLoaded={!loadingJob}
-                                >
-                                    <span>({job?.assignee?.length})</span>
-                                </Skeleton>
-                            </div>
-                            <div className="space-y-1.5 max-h-107.5 overflow-y-auto -mx-2">
-                                {loadingJob &&
-                                    new Array(6).fill(0).map((_, idx) => {
-                                        return (
-                                            <AssignMemberCardSkeleton
-                                                key={idx}
-                                            />
-                                        )
-                                    })}
-                                {!loadingJob && job?.assignee?.length === 0 && (
-                                    <p className="my-8 text-center text-text-subdued">
-                                        No members have been assigned yet.
-                                    </p>
-                                )}
-                                {!loadingJob &&
-                                    job?.assignee?.map((member) => {
-                                        return (
-                                            <AssignMemberCard
-                                                key={member.username}
-                                                data={member}
-                                                onRemoveMember={onRemoveMember}
-                                            />
-                                        )
-                                    })}
-                            </div>
-                        </div>
-                        <hr className="mb-2 text-text-muted" />
-                        <div className="flex items-center justify-start gap-4">
-                            <p className="font-medium text-nowrap h-full">
-                                Copy link
-                            </p>
-                            <Input
-                                value={EXTERNAL_URLS.getJobDetailUrl(jobNo)}
-                                className="opacity-70!"
-                                endContent={
-                                    <HeroTooltip content="Copy">
-                                        <HeroCopyButton
-                                            textValue={EXTERNAL_URLS.getJobDetailUrl(
-                                                jobNo
-                                            )}
-                                        />
-                                    </HeroTooltip>
+        <Modal isOpen={isOpen} onClose={onClose} size="2xl" backdrop="blur">
+            <ModalContent>
+                <ModalHeader className="flex flex-col gap-1 border-b border-divider">
+                    <span>Assign Members</span>
+                    <span className="text-xs font-normal text-default-400">
+                        Project #{jobNo}
+                    </span>
+                </ModalHeader>
+                <ModalBody className="py-6">
+                    <div className="flex flex-col gap-6">
+                        {/* 1. Selection with filter logic */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-default-700">
+                                Add Staff Member
+                            </label>
+                            <Autocomplete
+                                placeholder="Search by name..."
+                                variant="bordered"
+                                allowsCustomValue={false}
+                                onSelectionChange={handleAddMember}
+                                startContent={
+                                    <Search
+                                        size={18}
+                                        className="text-default-400"
+                                    />
                                 }
-                            />
+                                // Use the filtered list here
+                                items={availableUsers}
+                                // Prevent item from appearing if list is empty
+                                emptyContent="No more members available to add"
+                            >
+                                {(user) => (
+                                    <AutocompleteItem
+                                        key={user.id}
+                                        textValue={user.displayName}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Avatar
+                                                size="sm"
+                                                src={user.avatar}
+                                            />
+                                            <span className="text-small">
+                                                {user.displayName}
+                                            </span>
+                                        </div>
+                                    </AutocompleteItem>
+                                )}
+                            </Autocomplete>
+                        </div>
+
+                        {/* 2. Assigned List */}
+                        <div className="space-y-3">
+                            <p className="text-xs font-bold text-default-400 uppercase px-1 tracking-wider">
+                                Assigned List ({assignedMembers.length})
+                            </p>
+
+                            <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+                                {assignedMembers.length === 0 ? (
+                                    <div className="py-8 text-center border-2 border-dashed border-divider rounded-2xl text-default-400 text-sm">
+                                        Use the search above to add members.
+                                    </div>
+                                ) : (
+                                    assignedMembers.map((member) => (
+                                        <div
+                                            key={member.userId}
+                                            className="flex items-center gap-4 p-3 bg-default-50 rounded-2xl border border-default-100 transition-all hover:border-primary-300"
+                                        >
+                                            <div className="flex items-center gap-3 flex-1">
+                                                <Avatar
+                                                    src={member.avatar}
+                                                    size="sm"
+                                                    isBordered
+                                                    color="primary"
+                                                />
+                                                <span className="text-sm font-semibold">
+                                                    {member.displayName}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <Input
+                                                    type="number"
+                                                    variant="flat"
+                                                    size="sm"
+                                                    placeholder="0"
+                                                    value={member.staffCost.toString()}
+                                                    onValueChange={(val) =>
+                                                        handleUpdateCost(
+                                                            member.userId,
+                                                            val
+                                                        )
+                                                    }
+                                                    className="w-36"
+                                                    endContent={
+                                                        <span className="text-[10px] font-bold text-default-400">
+                                                            VND
+                                                        </span>
+                                                    }
+                                                />
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    color="danger"
+                                                    onPress={() =>
+                                                        handleRemoveMember(
+                                                            member.userId
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2 size={16} />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
-                </HeroModalBody>
-            </HeroModalContent>
-        </HeroModal>
+                </ModalBody>
+
+                {/* 3. Footer with Summary */}
+                <ModalFooter className="flex-col items-stretch gap-4 border-t border-divider">
+                    <div className="flex justify-between items-center bg-primary-50 p-4 rounded-2xl border border-primary-100">
+                        <div className="flex items-center gap-2 text-primary font-bold">
+                            <Wallet size={20} />
+                            <span>Total Staff Cost</span>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-xl font-black text-primary">
+                                {totalStaffCost.toLocaleString()}
+                            </span>
+                            <span className="ml-1 text-xs font-bold text-primary">
+                                VND
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                        <Button variant="flat" onPress={onClose}>
+                            Cancel
+                        </Button>
+                        <Button
+                            color="primary"
+                            className="font-bold px-10"
+                            onPress={() => onClose()}
+                        >
+                            Save Assignments
+                        </Button>
+                    </div>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
     )
 }

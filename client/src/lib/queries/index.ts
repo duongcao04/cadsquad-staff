@@ -1,5 +1,6 @@
 export * from './helper';
 export * from './options/analytics-queries';
+export * from './options/community-queries';
 export * from './options/department-queries';
 export * from './options/job-queries';
 export * from './options/job-status-queries';

@@ -14,7 +14,7 @@ import { mapUser } from './user-queries'
 export const mapJob = (item: IJobResponse): TJob => ({
     no: item.no,
     displayName: item.displayName || 'Untitled Job',
-    assignee: item.assignee ?? [],
+    assignments: item.assignments ?? [],
     activityLog: item.activityLog ?? [],
     attachmentUrls: item.attachmentUrls ?? [],
     clientName: item.clientName ?? '',
@@ -26,11 +26,15 @@ export const mapJob = (item: IJobResponse): TJob => ({
     incomeCost:
         typeof item.incomeCost === 'number'
             ? item.incomeCost
-            : parseInt(item.incomeCost),
+            : parseFloat(item.incomeCost),
     staffCost:
         typeof item.staffCost === 'number'
             ? item.staffCost
-            : parseInt(item.staffCost),
+            : parseFloat(item.staffCost),
+    totalStaffCost:
+        typeof item.totalStaffCost === 'number'
+            ? item.totalStaffCost
+            : parseFloat(item.totalStaffCost),
     isPaid: Boolean(item.isPaid),
     isPinned: Boolean(item.isPinned),
     isPublished: Boolean(item.isPublished),
@@ -91,7 +95,6 @@ export const jobsListOptions = (
     })
 }
 
-
 // 1. Danh sách Jobs
 export const workbenchDataOptions = (
     params: Omit<TJobQueryInput, 'tab' | 'isAll' | 'hideFinishItems'> = {
@@ -100,8 +103,7 @@ export const workbenchDataOptions = (
         sort: ['displayName:asc'],
     }
 ) => {
-    const { page, limit, search, sort, ...filters } =
-        params
+    const { page, limit, search, sort, ...filters } = params
 
     return queryOptions({
         queryKey: [
@@ -116,7 +118,7 @@ export const workbenchDataOptions = (
             const newParams = lodash.omitBy(params, lodash.isUndefined)
             return jobApi.workbenchData({
                 ...newParams,
-                hideFinishItems: '1'
+                hideFinishItems: '1',
             })
         },
         // ✅ Select & Map data ngay tại đây
@@ -128,7 +130,6 @@ export const workbenchDataOptions = (
         }),
     })
 }
-
 
 // 2. Tìm kiếm Jobs
 export const jobsSearchOptions = (keywords?: string) =>
@@ -176,9 +177,7 @@ export const jobsDueOnDateOptions = (isoDate: string) =>
         queryFn: () => jobApi.getJobsDueOnDate(isoDate),
         enabled: !!isoDate,
         select: (res) => {
-            return Array.isArray(res.result)
-                ? res.result.map(mapJob)
-                : []
+            return Array.isArray(res.result) ? res.result.map(mapJob) : []
         },
     })
 
@@ -238,7 +237,9 @@ export const jobDetailOptions = (id?: string) =>
 // 11. Activity Logs
 export const jobActivityLogsOptions = (jobId: string) =>
     queryOptions({
-        queryKey: jobId ? ['job-activity-log', 'id', jobId] : ['jobActivityLog'],
+        queryKey: jobId
+            ? ['job-activity-log', 'id', jobId]
+            : ['jobActivityLog'],
         queryFn: () => jobApi.getJobActivityLog(jobId),
         select: (res) => {
             const logs = res?.result

@@ -15,431 +15,164 @@ import {
     RoleEnum,
 } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
-import { IMAGES, NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
-import { renderTemplate } from '../../utils/_string'
+import slugify from 'slugify'
+import dayjs from 'dayjs'
+import lodash from 'lodash'
+
 import { PaginationMeta } from '../../common/interfaces/pagination-meta.interface'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { UserConfigService } from '../user-config/user-config.service'
-import { CreateNotificationDto } from '../notification/dto/create-notification.dto'
 import { NotificationService } from '../notification/notification.service'
-import { UserService } from '../user/user.service'
-import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
-import { ChangeStatusDto } from './dto/change-status.dto'
-import { CreateJobDto } from './dto/create-job.dto'
-import { DeliverJobDto } from './dto/deliver-job.dto'
 import { JobFiltersBuilder } from './dto/job-filters.dto'
 import { JobQueryBuilder, JobQueryDto } from './dto/job-query.dto'
-import { JobResponseDto, JobStaffResponseDto } from './dto/job-response.dto'
+import { JobResponseDto } from './dto/job-response.dto'
 import { JobSortBuilder } from './dto/job-sort.dto'
-import { RescheduleJobDto } from './dto/reschedule-job.dto'
-import { UpdateJobMembersDto } from './dto/update-job-members.dto'
+import { DeliverJobDto } from './dto/deliver-job.dto'
+import { ChangeStatusDto } from './dto/change-status.dto'
+import { CreateJobDto } from './dto/create-job.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
-import dayjs from 'dayjs'
+import { UpdateJobMembersDto } from './dto/update-job-members.dto'
+import { RescheduleJobDto } from './dto/reschedule-job.dto'
+import { NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
+import { renderTemplate } from '../../utils/_string'
 
 @Injectable()
 export class JobService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly userService: UserService,
-        private readonly userConfigService: UserConfigService,
-        private readonly notificationService: NotificationService
-    ) { }
     private readonly logger = new Logger(JobService.name)
 
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly notificationService: NotificationService
+    ) {}
+
     /**
-     * Create a new job.
+     * PRIVATE HELPER: Handles data privacy.
+     * Members see personal 'staffCost'. Admins see 'incomeCost' and 'totalStaffCost'.
      */
-    async create(createdById: string, data: CreateJobDto): Promise<Job> {
-        const { assigneeIds, ...jobData } = data
-        try {
-            const result = await this.prisma.$transaction(async (tx) => {
-                const statusId = await tx.jobStatus
-                    .findUnique({ where: { order: 1 } })
-                    .then((res) => res?.id ?? '')
-
-                // 1. Create Job
-                const job = await tx.job.create({
-                    data: {
-                        ...jobData,
-                        createdById: createdById,
-                        createdAt: new Date(),
-                        incomeCost: parseFloat(data.incomeCost),
-                        priority: jobData.priority as Job['priority'],
-                        statusId: statusId,
-                        assignee: assigneeIds?.length
-                            ? {
-                                connect: assigneeIds.map((id) => ({ id })),
-                            }
-                            : undefined,
-                        attachmentUrls: jobData.attachmentUrls
-                            ? Array.isArray(jobData.attachmentUrls)
-                                ? jobData.attachmentUrls
-                                : [jobData.attachmentUrls]
-                            : undefined,
-                    },
-                    include: {
-                        type: true,
-                        assignee: true,
-                        createdBy: true,
-                        paymentChannel: true,
-                        status: true,
-                    },
-                })
-
-                // 2. Log Activity: CreateJob
-                await tx.jobActivityLog.create({
-                    data: {
-                        jobId: job.id,
-                        modifiedById: createdById,
-                        fieldName: 'Job Created',
-                        activityType: ActivityType.CreateJob,
-                        currentValue: job.no,
-                        previousValue: '',
-                    },
-                })
-
-                // 3. Send Notifications
-                if (data.assigneeIds && data.assigneeIds.length > 0) {
-                    await Promise.all(
-                        data.assigneeIds.map(async (assigneeId) => {
-                            const notification: CreateNotificationDto = {
-                                userId: assigneeId,
-                                title:
-                                    'You have been assigned to job ' + job.no,
-                                content:
-                                    'Please review the job details and start working on it.',
-                                type: NotificationType.JOB_UPDATE,
-                                redirectUrl: renderTemplate(
-                                    NOTIFICATION_CONTENT_TEMPLATES.jobDetailUrl,
-                                    { jobNo: job.no }
-                                ),
-                                imageUrl: IMAGES.NOTIFICATION_DEFAULT_IMAGE,
-                            }
-
-                            return this.notificationService.send(notification)
-                        })
-                    )
-                }
-
-                return job
-            })
-
-            return plainToInstance(JobResponseDto, result, {
-                excludeExtraneousValues: true,
-            }) as unknown as Job
-        } catch (error) {
-            this.logger.error(
-                'User ',
-                createdById,
-                ' - Create job failed',
-                error.stack
-            )
-            throw new InternalServerErrorException('Create job failed')
-        }
-    }
-
-    async togglePin(userId: string, jobId: string) {
-        const existingPin = await this.prisma.pinnedJob.findUnique({
-            where: {
-                userId_jobId: { userId, jobId },
-            },
-        })
-
-        if (existingPin) {
-            await this.prisma.pinnedJob.delete({
-                where: { userId_jobId: { userId, jobId } },
-            })
-            return { isPinned: false, message: 'Unpinned successfully' }
-        } else {
-            await this.prisma.pinnedJob.create({
-                data: { userId, jobId },
-            })
-            return { isPinned: true, message: 'Pinned successfully' }
-        }
-    }
-
-    async getWorkbenchData(
+    private mapRoleBasedData(
+        rawData: any[],
         userId: string,
-        userRole: RoleEnum,
-        {
-            tab,
-            hideFinishItems,
-            page = 1,
-            limit: take = 10,
-            search,
-            sort = ['displayName:asc'],
-            isAll,
-            ...filters
-        }: JobQueryDto
-    ): Promise<{ data: Job[]; paginate: PaginationMeta }> {
-        try {
-            const jobInclude: Prisma.JobInclude = {
-                type: { select: { displayName: true } },
-                assignee: {
-                    select: {
-                        avatar: true,
-                        displayName: true,
-                        username: true,
-                    },
-                },
-                status: {
-                    select: {
-                        displayName: true,
-                        thumbnailUrl: true,
-                        order: true,
-                        systemType: true,
-                        nextStatusOrder: true,
-                        prevStatusOrder: true,
-                        allowedRolesToSet: true,
-                        code: true,
-                        hexColor: true,
-                    },
-                },
-                paymentChannel: { select: { displayName: true } },
-            }
+        userRole: RoleEnum
+    ) {
+        const isAdminOrAccountant =
+            userRole === RoleEnum.ADMIN || userRole === RoleEnum.ACCOUNTING
 
-            const tabQuery = JobQueryBuilder.buildQueryTab(tab)
-            const orderBy = JobSortBuilder.build(sort)
-            const filtersQuery = JobFiltersBuilder.build(filters)
-            const searchQuery = JobQueryBuilder.buildSearch(search, [
-                'no',
-                'displayName',
-            ])
-
-            const queryBuilder: Prisma.JobWhereInput = {
-                AND: [
-                    hideFinishItems
-                        ? { status: { isNot: { systemType: 'TERMINATED' } } }
-                        : {},
-                    this.buildPermission(userRole, userId),
-                    tabQuery,
-                    filtersQuery,
-                    searchQuery,
-                ],
-            }
-
-            const userPinnedData = await this.prisma.pinnedJob.findMany({
-                where: { userId },
-                select: { jobId: true },
-            })
-            const pinnedJobIds = userPinnedData.map((item) => item.jobId)
-
-            let resultData = []
-
-            if (page === 1 && pinnedJobIds.length > 0) {
-                const pinnedJobs = await this.prisma.job.findMany({
-                    where: {
-                        id: { in: pinnedJobIds },
-                        ...queryBuilder,
-                    },
-                    include: jobInclude,
-                    orderBy: { no: 'desc' },
-                })
-
-                const pinnedWithFlag = pinnedJobs.map((job) => ({
-                    ...job,
-                    isPinned: true,
-                }))
-                resultData = resultData.concat(pinnedWithFlag as never)
-            }
-
-            const regularTake =
-                page === 1 && pinnedJobIds.length > 0
-                    ? Math.max(0, take - pinnedJobIds.length)
-                    : take
-            const pinnedOffset = pinnedJobIds.length
-            const regularSkip = isAll
-                ? undefined
-                : Math.max(0, (page - 1) * take - pinnedOffset)
-
-            const [unpinnedJobs, totalUnpinnedJobs] = await Promise.all([
-                this.prisma.job.findMany({
-                    where: {
-                        id: { notIn: pinnedJobIds },
-                        ...queryBuilder,
-                    },
-                    orderBy,
-                    take: isAll ? undefined : regularTake,
-                    skip: regularSkip,
-                    include: jobInclude,
-                }),
-                this.prisma.job.count({
-                    where: {
-                        id: { notIn: pinnedJobIds },
-                        ...queryBuilder,
-                    },
-                }),
-            ])
-
-            const regularWithFlag = unpinnedJobs.map((job) => ({
-                ...job,
-                isPinned: false,
-            }))
-            resultData = resultData.concat(regularWithFlag as never)
+        return rawData.map((job) => {
+            const personalCost = job.assignments?.find(
+                (a: any) => a.userId === userId || a.user?.id === userId
+            )?.staffCost
 
             return {
-                data: plainToInstance(
-                    this.responseSchema(userRole),
-                    resultData,
-                    {
-                        excludeExtraneousValues: true,
-                    }
-                ) as unknown as Job[],
-                paginate: {
-                    limit: isAll
-                        ? totalUnpinnedJobs + pinnedJobIds.length
-                        : take,
-                    page: isAll ? 1 : page,
-                    total: totalUnpinnedJobs + pinnedJobIds.length,
-                    totalPages: isAll
-                        ? 1
-                        : Math.ceil(
-                            (totalUnpinnedJobs + pinnedJobIds.length) / take
-                        ),
-                },
+                ...job,
+                totalStaffCost: isAdminOrAccountant
+                    ? job.sumStaffCost
+                    : undefined,
+                staffCost: !isAdminOrAccountant
+                    ? (personalCost ?? 0)
+                    : undefined,
+                assignments: job.assignments?.map((asm: any) => ({
+                    ...asm,
+                    staffCost: isAdminOrAccountant ? asm.staffCost : undefined,
+                    user: asm.user
+                        ? {
+                              id: asm.user.id,
+                              displayName: asm.user.displayName,
+                              username: asm.user.username,
+                              avatar: asm.user.avatar,
+                          }
+                        : undefined,
+                })),
             }
-        } catch (error) {
-            this.logger.error(
-                `Error finding jobs for user ${userId}`,
-                error.stack
-            )
-            throw new InternalServerErrorException('Get jobs failed')
-        }
+        })
     }
+
+    // -------------------------------------------------------------------------
+    // READ METHODS
+    // -------------------------------------------------------------------------
 
     async findAll(
         userId: string,
         userRole: RoleEnum,
         query: JobQueryDto
     ): Promise<{ data: Job[]; paginate: PaginationMeta }> {
-        try {
-            const {
-                tab,
-                hideFinishItems,
-                page = 1,
-                limit: take = 10,
-                search,
-                sort = 'isPinned:asc',
-                isAll,
-                ...filters
-            } = query
+        const {
+            tab,
+            hideFinishItems,
+            page = 1,
+            limit = 10,
+            search,
+            sort = 'createdAt:desc',
+            isAll,
+            ...filters
+        } = query
 
-            const filtersQuery = JobFiltersBuilder.build(filters)
-            const orderBy = JobSortBuilder.build(sort)
-            const tabQuery = JobQueryBuilder.buildQueryTab(tab)
-            const searchQuery = JobQueryBuilder.buildSearch(search, [
-                'no',
-                'displayName',
-            ])
+        const filtersQuery = JobFiltersBuilder.build(filters)
+        const orderBy = JobSortBuilder.build(sort)
+        const tabQuery = JobQueryBuilder.buildQueryTab(tab)
+        const searchQuery = JobQueryBuilder.buildSearch(search, [
+            'no',
+            'displayName',
+        ])
 
-            const queryBuilder: Prisma.JobWhereInput = {
-                AND: [
-                    this.buildPermission(userRole, userId),
-                    hideFinishItems
-                        ? { status: { isNot: { systemType: 'TERMINATED' } } }
-                        : {},
-                    tabQuery,
-                    filtersQuery,
-                    searchQuery,
-                ],
-            }
+        const queryBuilder: Prisma.JobWhereInput = {
+            AND: [
+                this.buildPermission(userRole, userId),
+                hideFinishItems
+                    ? { status: { isNot: { systemType: 'TERMINATED' } } }
+                    : {},
+                tabQuery,
+                filtersQuery,
+                searchQuery,
+            ],
+        }
 
-            const [data, total] = await Promise.all([
-                this.prisma.job.findMany({
-                    where: queryBuilder,
-                    orderBy,
-                    take: isAll ? undefined : take,
-                    skip: isAll ? undefined : (page - 1) * take,
-                    include: {
-                        type: { select: { displayName: true } },
-                        assignee: {
-                            select: {
-                                avatar: true,
-                                displayName: true,
-                                username: true,
-                            },
-                        },
-                        status: {
-                            select: {
-                                displayName: true,
-                                thumbnailUrl: true,
-                                order: true,
-                                systemType: true,
-                                nextStatusOrder: true,
-                                prevStatusOrder: true,
-                                allowedRolesToSet: true,
-                                code: true,
-                                hexColor: true,
-                            },
-                        },
-                        paymentChannel: { select: { displayName: true } },
-                    },
-                }),
-                this.prisma.job.count({ where: queryBuilder }),
-            ])
+        const [rawData, total] = await Promise.all([
+            this.prisma.job.findMany({
+                where: queryBuilder,
+                orderBy,
+                take: isAll ? undefined : Number(limit),
+                skip: isAll ? undefined : (Number(page) - 1) * Number(limit),
+                include: {
+                    type: true,
+                    status: true,
+                    paymentChannel: true,
+                    assignments: { include: { user: true } },
+                },
+            }),
+            this.prisma.job.count({ where: queryBuilder }),
+        ])
 
-            if (data.length == 0) {
-                this.logger.warn(`No jobs found for user ${userId}`)
-            }
-
-            const paginateResults = isAll
-                ? {
-                    limit: 0,
-                    page: 1,
-                    total: total ?? 0,
-                    totalPages: Math.ceil(total / Number(take ?? 10)),
-                }
-                : {
-                    limit: take ?? 10,
-                    page: page ?? 1,
-                    total: total ?? 0,
-                    totalPages: Math.ceil(total / Number(take ?? 10)),
-                }
-            return {
-                data: plainToInstance(this.responseSchema(userRole), data, {
-                    excludeExtraneousValues: true,
-                }) as unknown as Job[],
-                paginate: paginateResults,
-            }
-        } catch (error) {
-            this.logger.error(
-                `Error finding jobs for user ${userId}`,
-                error.stack
-            )
-            throw new InternalServerErrorException('Get jobs failed')
+        const mappedData = this.mapRoleBasedData(rawData, userId, userRole)
+        return {
+            data: plainToInstance(JobResponseDto, mappedData, {
+                excludeExtraneousValues: true,
+                groups: [userRole as string],
+            }) as unknown as Job[],
+            paginate: {
+                limit: Number(limit),
+                page: Number(page),
+                total,
+                totalPages: Math.ceil(total / Number(limit)),
+            },
         }
     }
 
-    async search(
+    async getWorkbenchData(
         userId: string,
         userRole: RoleEnum,
-        keywords?: string
-    ): Promise<Job[]> {
-        try {
-            const searchQuery = JobQueryBuilder.buildSearch(keywords, [
-                'no',
-                'displayName',
-            ])
-            const queryBuilder: Prisma.JobWhereInput = {
-                AND: [this.buildPermission(userRole, userId), searchQuery],
-            }
+        query: JobQueryDto
+    ) {
+        const pinned = await this.prisma.pinnedJob.findMany({
+            where: { userId },
+            select: { jobId: true },
+        })
+        const pinnedIds = pinned.map((p) => p.jobId)
 
-            const jobs = this.prisma.job.findMany({
-                where: queryBuilder,
-                orderBy: { displayName: 'asc' },
-                include: { status: true },
-            })
-
-            return plainToInstance(this.responseSchema(userRole), jobs, {
-                excludeExtraneousValues: true,
-            }) as unknown as Job[]
-        } catch (error) {
-            this.logger.error(
-                `Error finding jobs for user ${userId}`,
-                error.stack
-            )
-            throw new InternalServerErrorException('Get jobs failed')
-        }
+        const result = await this.findAll(userId, userRole, query)
+        result.data = result.data.map((job) => ({
+            ...job,
+            isPinned: pinnedIds.includes(job.id),
+        }))
+        return result
     }
 
     async findByJobNo(
@@ -447,74 +180,33 @@ export class JobService {
         userRole: RoleEnum,
         jobNo: string
     ): Promise<Job> {
-        if (!jobNo) {
-            throw new BadRequestException('Job no is invalid')
-        }
-        try {
-            const job = await this.prisma.job.findFirst({
-                where: {
-                    AND: [
-                        { no: jobNo },
-                        this.buildPermission(userRole, userId),
-                    ],
+        const job = await this.prisma.job.findFirst({
+            where: { no: jobNo, AND: [this.buildPermission(userRole, userId)] },
+            include: {
+                type: true,
+                assignments: { include: { user: true } },
+                createdBy: true,
+                paymentChannel: true,
+                status: true,
+                comments: {
+                    include: { user: true },
+                    orderBy: { createdAt: 'desc' },
                 },
-                include: {
-                    type: true,
-                    assignee: true,
-                    createdBy: true,
-                    paymentChannel: true,
-                    status: true,
-                    comments: {
-                        include: {
-                            user: {
-                                select: {
-                                    username: true,
-                                    displayName: true,
-                                    avatar: true,
-                                },
-                            },
-                        },
-                    },
-                    activityLog: {
-                        include: { modifiedBy: true },
-                    },
+                activityLog: {
+                    include: { modifiedBy: true },
+                    orderBy: { modifiedAt: 'desc' },
                 },
-            })
-
-            if (!job) throw new NotFoundException('Job not found')
-
-            return plainToInstance(this.responseSchema(userRole), job, {
+            },
+        })
+        if (!job) throw new NotFoundException('Job not found')
+        return plainToInstance(
+            JobResponseDto,
+            this.mapRoleBasedData([job], userId, userRole)[0],
+            {
                 excludeExtraneousValues: true,
-            }) as unknown as Job
-        } catch (error) {
-            this.logger.error(
-                `Error finding jobs for user ${userId}`,
-                error.stack
-            )
-            throw new InternalServerErrorException('Get job by no failed')
-        }
-    }
-
-    async getJobDeliver(jobId: string): Promise<JobDelivery[]> {
-        if (!jobId) {
-            throw new BadRequestException('Job id is invalid')
-        }
-        try {
-            const jobDeliveries = await this.prisma.jobDelivery.findMany({
-                where: { job: { id: jobId } },
-                include: { user: true },
-            })
-
-            if (!jobDeliveries) throw new NotFoundException('Job not found')
-
-            return jobDeliveries
-        } catch (error) {
-            this.logger.error(
-                `Error finding job deliveries for user ${jobId}`,
-                error.stack
-            )
-            throw new InternalServerErrorException('Get job deliveries failed')
-        }
+                groups: [userRole as string],
+            }
+        ) as unknown as Job
     }
 
     async findJobsDueAt(
@@ -522,60 +214,88 @@ export class JobService {
         userRole: RoleEnum,
         isoDate: string
     ): Promise<Job[]> {
-        if (!isoDate) {
-            throw new BadRequestException('ISO date invalid')
-        }
+        const startOfDay = dayjs(isoDate).startOf('day').toDate()
+        const endOfDay = dayjs(isoDate).endOf('day').toDate()
+        const rawData = await this.prisma.job.findMany({
+            where: {
+                AND: [
+                    { dueAt: { gte: startOfDay, lte: endOfDay } },
+                    { deletedAt: null },
+                    this.buildPermission(userRole, userId),
+                ],
+            },
+            include: {
+                status: true,
+                type: true,
+                assignments: { include: { user: true } },
+            },
+        })
+        return plainToInstance(
+            JobResponseDto,
+            this.mapRoleBasedData(rawData, userId, userRole),
+            { excludeExtraneousValues: true, groups: [userRole as string] }
+        ) as unknown as Job[]
+    }
 
-        const date = new Date(isoDate)
-        const startOfDayUtc = new Date(
-            Date.UTC(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate(),
-                0,
-                0,
-                0,
-                0
-            )
-        )
-        const endOfDayUtc = new Date(
-            Date.UTC(
-                date.getUTCFullYear(),
-                date.getUTCMonth(),
-                date.getUTCDate(),
-                23,
-                59,
-                59,
-                999
-            )
-        )
-        try {
-            const result = await this.prisma.job.findMany({
-                where: {
-                    AND: [
-                        { dueAt: { gte: startOfDayUtc, lt: endOfDayUtc } },
-                        this.buildPermission(userRole, userId),
-                    ],
-                },
-                include: {
-                    type: true,
-                    assignee: { select: { avatar: true } },
-                    createdBy: true,
-                    paymentChannel: true,
-                    status: true,
-                    comments: true,
-                    activityLog: { include: { modifiedBy: true } },
-                },
-            })
+    async getDueInMonth(
+        month: number,
+        year: number,
+        userId: string,
+        userRole: RoleEnum
+    ): Promise<Job[]> {
+        const startOfMonth = dayjs()
+            .year(year)
+            .month(month - 1)
+            .startOf('month')
+            .toDate()
+        const endOfMonth = dayjs()
+            .year(year)
+            .month(month - 1)
+            .endOf('month')
+            .toDate()
+        const rawData = await this.prisma.job.findMany({
+            where: {
+                AND: [
+                    { dueAt: { gte: startOfMonth, lte: endOfMonth } },
+                    { deletedAt: null },
+                    this.buildPermission(userRole, userId),
+                ],
+            },
+            include: {
+                status: true,
+                type: true,
+                assignments: { include: { user: true } },
+            },
+            orderBy: { dueAt: 'asc' },
+        })
+        return plainToInstance(
+            JobResponseDto,
+            this.mapRoleBasedData(rawData, userId, userRole),
+            { excludeExtraneousValues: true, groups: [userRole as string] }
+        ) as unknown as Job[]
+    }
 
-            if (!result) throw new NotFoundException('Jobs not found')
-
-            return plainToInstance(this.responseSchema(userRole), result, {
-                excludeExtraneousValues: true,
-            }) as unknown as Job[]
-        } catch (error) {
-            throw new InternalServerErrorException('Get job by no failed')
-        }
+    async getPendingDeliverJobs(userId: string, userRole: RoleEnum) {
+        const rawData = await this.prisma.job.findMany({
+            where: {
+                AND: [
+                    this.buildPermission(userRole, userId),
+                    { status: { code: { in: ['in-progress', 'revision'] } } },
+                    { deletedAt: null },
+                ],
+            },
+            orderBy: { dueAt: 'asc' },
+            include: {
+                status: true,
+                type: true,
+                assignments: { include: { user: true } },
+            },
+        })
+        return plainToInstance(
+            JobResponseDto,
+            this.mapRoleBasedData(rawData, userId, userRole),
+            { excludeExtraneousValues: true, groups: [userRole as string] }
+        ) as unknown as Job[]
     }
 
     async getPendingPaymentJobs() {
@@ -586,128 +306,19 @@ export class JobService {
                 deletedAt: null,
             },
             include: {
-                status: {
-                    select: {
-                        id: true,
-                        displayName: true,
-                        code: true,
-                        hexColor: true,
-                    },
-                },
-                type: { select: { displayName: true, code: true } },
-                assignee: {
-                    select: {
-                        id: true,
-                        displayName: true,
-                        avatar: true,
-                        username: true,
-                    },
-                },
+                status: true,
+                type: true,
+                assignments: { include: { user: true } },
             },
-            orderBy: { completedAt: 'asc' }, // Oldest first (pay them first!)
+            orderBy: { completedAt: 'asc' },
         })
     }
 
-    async getPendingDeliverJobs(userId: string, userRole: RoleEnum) {
-        return this.prisma.job.findMany({
-            where: {
-                AND: [
-                    this.buildPermission(userRole, userId),
-                    {
-                        status: {
-                            code: { in: ['in-progress', 'revision'] },
-                        },
-                    },
-                    { deletedAt: null },
-                ],
-            },
-            orderBy: { dueAt: 'asc' },
-            include: {
-                status: {
-                    select: {
-                        id: true,
-                        displayName: true,
-                        code: true,
-                        hexColor: true,
-                    },
-                },
-                type: { select: { displayName: true, code: true } },
-                assignee: {
-                    select: {
-                        id: true,
-                        displayName: true,
-                        avatar: true,
-                        username: true,
-                    },
-                },
-            },
-        })
-    }
-
-    async deliverJob(userId: string, jobId: string, dto: DeliverJobDto) {
-        return this.prisma.$transaction(async (tx) => {
-            const reviewStatus = await tx.jobStatus.findFirst({
-                where: { systemType: 'WAIT_REVIEW' },
-            })
-            if (!reviewStatus)
-                throw new Error("System Status 'WAIT_REVIEW' missing")
-
-            const currentJob = await tx.job.findUnique({
-                where: { id: jobId },
-                include: { status: true },
-            })
-
-            // 1. Create Delivery
-            const delivery = await tx.jobDelivery.create({
-                data: {
-                    jobId,
-                    userId,
-                    note: dto.note,
-                    link: dto.link,
-                    files: dto.files,
-                    status: 'PENDING',
-                },
-            })
-
-            // 2. Update Job
-            const jobUpdated = await tx.job.update({
-                where: { id: jobId },
-                data: { statusId: reviewStatus.id },
-                include: { status: true },
-            })
-
-            // 3. Log Activity: DeliverJob
-            await tx.jobActivityLog.create({
-                data: {
-                    jobId: jobId,
-                    modifiedById: userId,
-                    fieldName: 'Delivery',
-                    activityType: ActivityType.DeliverJob,
-                    previousValue: currentJob?.status.code,
-                    currentValue: reviewStatus.code,
-                    notes: 'Job delivered by staff',
-                },
-            })
-
-            // 4. Notifications
-            const admins = await tx.user.findMany({ where: { role: 'ADMIN' } })
-            if (admins.length > 0) {
-                await tx.notification.createMany({
-                    data: admins.map((admin) => ({
-                        userId: admin.id,
-                        senderId: userId,
-                        title: 'New Job Delivery',
-                        content: `Staff member has delivered job. Check delivery #${jobUpdated.no}`,
-                        type: 'JOB_UPDATE',
-                        redirectUrl: `/admin/mgmt/jobs/${jobUpdated.no}?tab=deliveries`,
-                    })),
-                })
-            }
-
-            return delivery
-        })
-    }
-
+    /**
+     * Admin reviews a staff delivery.
+     * If approved: Job moves to 'completed'.
+     * If rejected: Job moves to 'revision'.
+     */
     async reviewDeliveryActions(
         adminId: string,
         deliveryId: string,
@@ -715,30 +326,42 @@ export class JobService {
         feedback?: string
     ) {
         return this.prisma.$transaction(async (tx) => {
+            // 1. Update the delivery status
             const delivery = await tx.jobDelivery.update({
                 where: { id: deliveryId },
                 data: {
                     status: isApproved ? 'APPROVED' : 'REJECTED',
                     adminFeedback: feedback,
                 },
-                include: { job: { include: { status: true } } },
+                include: {
+                    job: { include: { status: true } },
+                    user: true, // The staff who delivered
+                },
             })
 
-            let nextStatusCode = isApproved ? 'completed' : 'revision'
+            // 2. Determine the next job status based on approval
+            const nextStatusCode = isApproved ? 'completed' : 'revision'
             const nextStatus = await tx.jobStatus.findUnique({
                 where: { code: nextStatusCode },
             })
 
+            if (!nextStatus) {
+                throw new NotFoundException(
+                    `Status code '${nextStatusCode}' not found in DB`
+                )
+            }
+
+            // 3. Update the Job
             const jobUpdated = await tx.job.update({
                 where: { id: delivery.jobId },
                 data: {
-                    statusId: nextStatus?.id,
+                    statusId: nextStatus.id,
                     completedAt: isApproved ? new Date() : undefined,
                 },
-                select: { no: true },
+                select: { no: true, displayName: true },
             })
 
-            // Log Activity: ChangeStatus
+            // 4. Log the activity
             await tx.jobActivityLog.create({
                 data: {
                     jobId: delivery.jobId,
@@ -753,292 +376,50 @@ export class JobService {
                 },
             })
 
-            if (isApproved) {
-                // Notify Accounting
-                const accountants = await tx.user.findMany({
-                    where: { role: 'ACCOUNTING' },
-                })
-                await tx.notification.createMany({
-                    data: accountants.map((acc) => ({
-                        userId: acc.id,
-                        title: 'Payment Pending',
-                        content: `Job #${jobUpdated.no} is completed. Please verify payment.`,
-                        type: 'JOB_UPDATE',
-                        redirectUrl: `/financial/pending-payouts`,
-                    })),
-                })
-            }
-
-            await tx.notification.create({
-                data: {
-                    userId: delivery.userId,
-                    senderId: adminId,
-                    title: isApproved
-                        ? 'Delivery Approved'
-                        : 'Delivery Rejected',
-                    content: isApproved
-                        ? `Great job! Your delivery for ${delivery.job.displayName} was approved.`
-                        : `Delivery rejected. Feedback: ${feedback}`,
-                    type: isApproved ? 'SUCCESS' : 'WARNING',
-                    redirectUrl: `/jobs/${jobUpdated.no}`,
-                },
+            // 5. Send real-time notifications
+            // Notification for the staff member
+            await this.notificationService.send({
+                userId: delivery.userId,
+                senderId: adminId,
+                title: isApproved
+                    ? 'Delivery Approved! ✅'
+                    : 'Revision Required ✍️',
+                content: isApproved
+                    ? `Your delivery for ${jobUpdated.displayName} was approved.`
+                    : `Your delivery was rejected. Feedback: ${feedback}`,
+                type: isApproved
+                    ? NotificationType.SUCCESS
+                    : NotificationType.WARNING,
+                redirectUrl: `/jobs/${jobUpdated.no}`,
             })
+
+            // If approved, notify Accounting to prepare payout
+            if (isApproved) {
+                const accountants = await tx.user.findMany({
+                    where: { role: RoleEnum.ACCOUNTING },
+                })
+
+                if (accountants.length > 0) {
+                    await this.notificationService.sendMany(
+                        accountants.map((acc) => ({
+                            userId: acc.id,
+                            title: 'New Payout Pending',
+                            content: `Job #${jobUpdated.no} is completed and ready for payment.`,
+                            type: NotificationType.JOB_UPDATE,
+                            redirectUrl: `/financial/pending-payouts`,
+                        }))
+                    )
+                }
+            }
 
             return delivery
         })
     }
 
-    async findById(jobId: string): Promise<Job> {
-        try {
-            const job = await this.prisma.job.findUnique({
-                where: { id: jobId },
-                include: {
-                    type: true,
-                    assignee: true,
-                    createdBy: true,
-                    paymentChannel: true,
-                    status: true,
-                },
-            })
-
-            if (!job) throw new NotFoundException('Job not found')
-
-            return plainToInstance(JobResponseDto, job, {
-                excludeExtraneousValues: true,
-            }) as unknown as Job
-        } catch (error) {
-            throw new InternalServerErrorException('Get job by id failed')
-        }
-    }
-
-    async update(
-        modifierId: string,
-        jobId: string,
-        data: UpdateJobDto
-    ): Promise<{ id: string; no: string }> {
-        try {
-            const {
-                typeId,
-                paymentChannelId,
-                incomeCost,
-                staffCost,
-                attachmentUrls,
-                ...cleanData
-            } = data
-
-            const updated = await this.prisma.$transaction(async (tx) => {
-                const currentJob = await tx.job.findUnique({
-                    where: { id: jobId },
-                })
-
-                if (!currentJob) throw new NotFoundException('Job not found')
-
-                const updateJob = await tx.job.update({
-                    where: { id: jobId },
-                    data: {
-                        ...cleanData,
-                        incomeCost:
-                            incomeCost !== undefined
-                                ? Number(incomeCost)
-                                : undefined,
-                        typeId: typeId,
-                        paymentChannelId: paymentChannelId,
-                        attachmentUrls: attachmentUrls
-                            ? Array.isArray(attachmentUrls)
-                                ? attachmentUrls
-                                : [attachmentUrls]
-                            : undefined,
-                    },
-                    select: { id: true, no: true },
-                })
-
-                // Log Activity: UpdateInformation
-                await tx.jobActivityLog.create({
-                    data: {
-                        jobId: jobId,
-                        previousValue: JSON.stringify({
-                            incomeCost: currentJob.incomeCost,
-                            paymentChannelId: currentJob.paymentChannelId,
-                            displayName: currentJob.displayName,
-                        }),
-                        currentValue: JSON.stringify(data),
-                        modifiedById: modifierId,
-                        fieldName: 'Job Information',
-                        activityType: ActivityType.UpdateInformation,
-                    },
-                })
-
-                return updateJob.no
-            })
-
-            return { id: jobId, no: updated }
-        } catch (error) {
-            console.error('Update Job Error:', error)
-            if (error instanceof NotFoundException) throw error
-            throw new InternalServerErrorException('Update job failed')
-        }
-    }
-    async markPaid(
-        jobId: string,
-        modifierId: string
-    ): Promise<{ id: string; no: string }> {
-        if (!jobId) throw new BadRequestException('Job ID invalid')
-
-        return await this.prisma.$transaction(async (tx) => {
-            // 1. Fetch Job and Modifier (User) in parallel or combined to save time
-            const [job, modifier] = await Promise.all([
-                tx.job.findUnique({
-                    where: { id: jobId },
-                    select: {
-                        id: true,
-                        no: true,
-                        isPaid: true,
-                        assignee: { select: { id: true } },
-                        status: { select: { systemType: true } },
-                    },
-                }),
-                tx.user.findUnique({
-                    where: { id: modifierId },
-                    select: { displayName: true },
-                }),
-            ])
-
-            if (!job) throw new NotFoundException('Job not found')
-            if (job.isPaid)
-                throw new BadRequestException('Job has already been paid')
-            if (!modifier)
-                throw new NotFoundException('Modifier user not found')
-
-            // 2. Get the "Finished" status ID
-            // Using findFirst because systemType is an enum, not a unique ID
-            const finishStatus = await tx.jobStatus.findFirst({
-                where: { systemType: JobStatusSystemType.TERMINATED },
-                select: { id: true },
-            })
-
-            if (!finishStatus) {
-                throw new InternalServerErrorException(
-                    'System status TERMINATED not configured in database'
-                )
-            }
-
-            // 3. Prepare Update Data
-            // If job is in COMPLETED (Staff done), move to TERMINATED (Paid & Archive)
-            // If job is in any other status, just mark as paid but stay in current status
-            const now = new Date()
-            const updateData: Prisma.JobUpdateInput = {
-                isPaid: true,
-                paidAt: now,
-            }
-
-            if (job.status.systemType === JobStatusSystemType.COMPLETED) {
-                updateData.status = { connect: { id: finishStatus.id } }
-                updateData.finishedAt = now
-            }
-
-            // 4. Execute Job Update
-            const updatedJob = await tx.job.update({
-                where: { id: jobId },
-                data: updateData,
-                select: { id: true, no: true },
-            })
-
-            // 5. Log Activity
-            await tx.jobActivityLog.create({
-                data: {
-                    jobId: jobId,
-                    previousValue: 'Unpaid',
-                    currentValue: 'Paid',
-                    modifiedById: modifierId,
-                    fieldName: 'Payment Status',
-                    activityType: ActivityType.MarkPaid,
-                    notes: `Payment confirmed by ${modifier.displayName}`,
-                },
-            })
-
-            // 6. Notify Assignees (Non-blocking notification send)
-            if (job.assignee?.length > 0) {
-                const notifications = job.assignee.map((assignee) => {
-                    const dto: CreateNotificationDto = {
-                        userId: assignee.id,
-                        title: renderTemplate(
-                            NOTIFICATION_CONTENT_TEMPLATES
-                                .notifyAssigneeWhenPaid.title,
-                            { jobNo: job.no }
-                        ),
-                        content: renderTemplate(
-                            NOTIFICATION_CONTENT_TEMPLATES
-                                .notifyAssigneeWhenPaid.content,
-                            {
-                                jobNo: job.no,
-                                paidBy: modifier.displayName,
-                            }
-                        ),
-                        type: NotificationType.JOB_UPDATE,
-                        redirectUrl: renderTemplate(
-                            NOTIFICATION_CONTENT_TEMPLATES
-                                .notifyAssigneeWhenPaid.url,
-                            { jobNo: job.no }
-                        ),
-                        imageUrl: IMAGES.NOTIFICATION_DEFAULT_IMAGE,
-                    }
-                    return this.notificationService.send(dto)
-                })
-
-                // We don't necessarily need to await these inside the transaction
-                // if your notification service is async/queue-based,
-                // but for consistency we keep them in the flow.
-                await Promise.all(notifications)
-            }
-
-            return { id: updatedJob.id, no: updatedJob.no }
-        })
-    }
-
-    async getDueInMonth(
-        month: number,
-        year: number,
-        userId: string,
-        userRole: RoleEnum
-    ) {
-        // 1. Create a Day.js object for the start of the month
-        // Note: Day.js months are 0-indexed (0 = Jan), so we subtract 1
-        const startOfMonth = dayjs()
-            .year(year)
-            .month(month - 1)
-            .startOf('month')
-        const endOfMonth = startOfMonth.endOf('month')
-
-        return this.prisma.job.findMany({
-            where: {
-                AND: [
-                    // Permission check: Staff only see their own, Admins see all
-                    this.buildPermission(userRole, userId),
-                    {
-                        dueAt: {
-                            gte: startOfMonth.toDate(),
-                            lte: endOfMonth.toDate(),
-                        },
-                    },
-                    { deletedAt: null }, // Exclude deleted jobs
-                ],
-            },
-            include: {
-                status: true,
-                type: true,
-                assignee: {
-                    select: {
-                        displayName: true,
-                        avatar: true,
-                    },
-                },
-            },
-            orderBy: {
-                dueAt: 'asc',
-            },
-        })
-    }
-
+    /**
+     * Manually changes a job status.
+     * Handles logic for system types like COMPLETED and TERMINATED.
+     */
     async changeStatus(
         jobId: string,
         modifierId: string,
@@ -1047,9 +428,10 @@ export class JobService {
         if (!jobId) throw new BadRequestException('Job ID invalid')
 
         return await this.prisma.$transaction(async (tx) => {
+            // 1. Fetch current job and the target status
             const job = await tx.job.findUnique({
                 where: { id: jobId },
-                include: { status: true },
+                include: { status: true, assignments: true },
             })
             if (!job) throw new NotFoundException('Job not found')
 
@@ -1059,336 +441,343 @@ export class JobService {
             if (!targetStatus)
                 throw new NotFoundException('Target status not found')
 
-            const getUpdateData = () => {
-                let base = { statusId: targetStatus.id }
-                if (targetStatus.systemType === JobStatusSystemType.COMPLETED) {
-                    return Object.assign(base, { completedAt: new Date() })
-                }
-                if (
-                    targetStatus.systemType === JobStatusSystemType.TERMINATED
-                ) {
-                    if (
-                        job.status.systemType !== JobStatusSystemType.COMPLETED
-                    ) {
-                        return Object.assign(base, {
-                            completedAt: new Date(),
-                            finishedAt: new Date(),
-                            isPaid: true,
-                        })
-                    } else {
-                        return Object.assign(base, {
-                            finishedAt: new Date(),
-                            isPaid: true,
-                        })
-                    }
-                }
-                return base
+            // 2. Prepare logic based on System Type
+            const now = new Date()
+            const updateData: Prisma.JobUpdateInput = {
+                status: { connect: { id: targetStatus.id } },
             }
 
-            const updateData = getUpdateData()
-            const updateJob = await tx.job.update({
+            // If moving to a COMPLETED system type (e.g., "Done", "Review Passed")
+            if (targetStatus.systemType === JobStatusSystemType.COMPLETED) {
+                updateData.completedAt = now
+            }
+
+            // If moving to a TERMINATED system type (e.g., "Finished", "Cancelled")
+            if (targetStatus.systemType === JobStatusSystemType.TERMINATED) {
+                updateData.finishedAt = now
+                // Auto-mark as paid if it's being terminated (optional logic)
+                updateData.isPaid = true
+                if (!job.paidAt) updateData.paidAt = now
+            }
+
+            // 3. Update the Job record
+            const updatedJob = await tx.job.update({
                 where: { id: jobId },
                 data: updateData,
             })
 
-            // Log Activity: ChangeStatus
+            // 4. Log the activity history
             await tx.jobActivityLog.create({
                 data: {
                     jobId: jobId,
-                    previousValue: data.currentStatus,
-                    currentValue: data.newStatus,
                     modifiedById: modifierId,
                     fieldName: 'status',
                     activityType: ActivityType.ChangeStatus,
+                    previousValue: job.status.code,
+                    currentValue: data.newStatus,
                 },
             })
 
-            const assignees = await tx.job.findUnique({
-                where: { id: jobId },
-                select: { assignee: true },
-            })
-
-            if (assignees && assignees.assignee.length > 0) {
-                await Promise.all(
-                    assignees.assignee.map(async (assignee) => {
-                        const notification: CreateNotificationDto = {
-                            userId: assignee.id,
-                            title: 'Job Status Changed',
-                            content: renderTemplate(
-                                NOTIFICATION_CONTENT_TEMPLATES
-                                    .notifyAssigneeWhenChangeStatus.content,
-                                {
-                                    jobNo: job.no,
-                                    newStatus: targetStatus.displayName,
-                                }
-                            ),
-                            type: NotificationType.JOB_UPDATE,
-                            redirectUrl: renderTemplate(
-                                NOTIFICATION_CONTENT_TEMPLATES
-                                    .notifyAssigneeWhenChangeStatus.url,
-                                { jobNo: job.no }
-                            ),
-                            imageUrl: targetStatus.thumbnailUrl ?? undefined,
+            // 5. Notify all assigned staff about the status change
+            if (job.assignments && job.assignments.length > 0) {
+                const notifications = job.assignments.map((assignee) => ({
+                    userId: assignee.userId,
+                    senderId: modifierId,
+                    title: 'Job Status Updated',
+                    content: renderTemplate(
+                        NOTIFICATION_CONTENT_TEMPLATES
+                            .notifyAssigneeWhenChangeStatus.content,
+                        {
+                            jobNo: job.no,
+                            newStatus: targetStatus.displayName,
                         }
-                        return this.notificationService.send(notification)
-                    })
-                )
+                    ),
+                    type: NotificationType.STATUS_CHANGE,
+                    redirectUrl: `/jobs/${job.no}`,
+                }))
+
+                await this.notificationService.sendMany(notifications)
             }
-            return { id: jobId, no: updateJob.no }
+
+            return { id: jobId, no: updatedJob.no }
         })
     }
 
-    async bulkChangeStatus(
-        modifierId: string,
-        data: BulkChangeStatusDto
-    ): Promise<{ jobIds: string }> {
-        try {
-            await Promise.all(
-                data.jobIds.map(async (jobId) => {
-                    const job = await this.prisma.job.findUnique({
-                        where: { id: jobId },
-                        select: { statusId: true },
-                    })
+    // -------------------------------------------------------------------------
+    // WRITE / ACTION METHODS
+    // -------------------------------------------------------------------------
 
-                    return this.changeStatus(jobId, modifierId, {
-                        currentStatus: job?.statusId ?? '',
-                        newStatus: data.toStatusId,
-                    })
-                })
-            )
-            return { jobIds: data.jobIds.toString() }
-        } catch (error) {
-            throw new InternalServerErrorException('Bulk change status failed')
-        }
+    async create(createdById: string, data: CreateJobDto): Promise<Job> {
+        return await this.prisma.$transaction(async (tx) => {
+            const defaultStatus = await tx.jobStatus.findUnique({
+                where: { order: 1 },
+            })
+            if (!defaultStatus)
+                throw new InternalServerErrorException(
+                    'Initial status order 1 not found'
+                )
+
+            const {
+                jobAssignments,
+                clientName,
+                typeId,
+                paymentChannelId,
+                incomeCost,
+                totalStaffCost,
+                attachmentUrls,
+                ...jobData
+            } = data
+
+            const job = await tx.job.create({
+                data: {
+                    ...jobData,
+                    status: { connect: { id: defaultStatus.id } },
+                    createdBy: { connect: { id: createdById } },
+                    type: { connect: { id: typeId } },
+                    paymentChannel: paymentChannelId
+                        ? { connect: { id: paymentChannelId } }
+                        : undefined,
+                    incomeCost: parseFloat(incomeCost) || 0,
+                    sumStaffCost: parseFloat(totalStaffCost) || 0,
+                    client: {
+                        connectOrCreate: {
+                            where: { name: clientName },
+                            create: {
+                                name: clientName,
+                                code: slugify(clientName, { lower: true }),
+                            },
+                        },
+                    },
+                    attachmentUrls: Array.isArray(attachmentUrls)
+                        ? attachmentUrls
+                        : [],
+                    assignments: {
+                        create:
+                            jobAssignments?.map((asgn) => ({
+                                user: { connect: { id: asgn.userId } },
+                                staffCost: parseFloat(asgn.staffCost) || 0,
+                            })) || [],
+                    },
+                },
+                include: {
+                    status: true,
+                    assignments: { include: { user: true } },
+                },
+            })
+
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId: job.id,
+                    modifiedById: createdById,
+                    fieldName: 'Job Created',
+                    activityType: ActivityType.CreateJob,
+                    currentValue: job.no,
+                },
+            })
+            return plainToInstance(JobResponseDto, job, {
+                excludeExtraneousValues: true,
+            }) as unknown as Job
+        })
+    }
+
+    async update(modifierId: string, jobId: string, data: UpdateJobDto) {
+        return await this.prisma.$transaction(async (tx) => {
+            const current = await tx.job.findUnique({ where: { id: jobId } })
+            if (!current) throw new NotFoundException('Job not found')
+
+            const updated = await tx.job.update({
+                where: { id: jobId },
+                data: {
+                    ...lodash.omit(data, ['incomeCost', 'attachmentUrls']),
+                    incomeCost: data.incomeCost
+                        ? Number(data.incomeCost)
+                        : undefined,
+                    attachmentUrls: data.attachmentUrls
+                        ? Array.isArray(data.attachmentUrls)
+                            ? data.attachmentUrls
+                            : [data.attachmentUrls]
+                        : undefined,
+                },
+            })
+
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'Information',
+                    activityType: ActivityType.UpdateInformation,
+                    currentValue: JSON.stringify(data),
+                },
+            })
+            return { id: updated.id, no: updated.no }
+        })
     }
 
     async updateMembers(
         jobId: string,
         modifierId: string,
         data: UpdateJobMembersDto
-    ): Promise<{ id: string }> {
-        if (!jobId) throw new BadRequestException('Job ID invalid')
-        try {
-            return await this.prisma.$transaction(async (tx) => {
-                const job = await tx.job.findUnique({
-                    where: { id: jobId },
-                    select: { statusId: true, no: true },
-                })
-                if (!job) throw new NotFoundException('Job not found')
-
-                const updatedJob = await tx.job.update({
-                    where: { id: jobId },
-                    include: { status: true },
-                    data: {
-                        ...(data.updateMemberIds &&
-                            JSON.parse(data.updateMemberIds).length > 0 && {
-                            assignee: {
-                                connect: JSON.parse(
-                                    data.updateMemberIds
-                                ).map((id: string) => ({ id })),
-                            },
-                        }),
-                    },
-                })
-
-                // Log Activity: AssignMember
-                await tx.jobActivityLog.create({
-                    data: {
-                        activityType: ActivityType.AssignMember,
-                        previousValue: data.prevMemberIds,
-                        currentValue: data.updateMemberIds,
-                        fieldName: 'Assignee',
-                        modifiedById: modifierId,
-                        jobId,
-                    },
-                })
-
-                const updateMemberIdsArr: string[] = data.updateMemberIds
-                    ? JSON.parse(data.updateMemberIds)
-                    : []
-                if (updateMemberIdsArr.length > 0) {
-                    await Promise.all(
-                        updateMemberIdsArr.map(async (assigneeId) => {
-                            const notification: CreateNotificationDto = {
-                                userId: assigneeId,
-                                title:
-                                    'You have been assigned to job ' + job.no,
-                                content:
-                                    'Please review the job details and start working on it.',
-                                type: NotificationType.JOB_UPDATE,
-                                redirectUrl: renderTemplate(
-                                    NOTIFICATION_CONTENT_TEMPLATES.jobDetailUrl,
-                                    { jobNo: job.no }
-                                ),
-                                imageUrl:
-                                    updatedJob.status.thumbnailUrl ??
-                                    IMAGES.NOTIFICATION_DEFAULT_IMAGE,
-                            }
-                            return this.notificationService.send(notification)
-                        })
-                    )
-                }
-                return { id: jobId, no: updatedJob.no }
-            })
-        } catch (error) {
-            throw new InternalServerErrorException('Update members failed')
-        }
-    }
-
-    async rescheduleJob(
-        jobId: string,
-        modifierId: string,
-        data: RescheduleJobDto
     ) {
-        if (!jobId) throw new Error('Job ID invalid')
-        try {
-            return await this.prisma.$transaction(async (tx) => {
-                const job = await tx.job.findUnique({
-                    where: { id: jobId },
-                    select: { dueAt: true },
-                })
-                if (!job) throw new NotFoundException('Job not found')
-
-                const updatedJob = await tx.job.update({
-                    where: { id: jobId },
-                    data: { dueAt: data.toDate },
-                })
-
-                // Log Activity: UpdateInformation
-                await tx.jobActivityLog.create({
-                    data: {
-                        activityType: ActivityType.UpdateInformation,
-                        previousValue: data.fromDate,
-                        currentValue: data.toDate,
-                        fieldName: 'Due to',
-                        modifiedById: modifierId,
-                        jobId,
-                    },
-                })
-
-                return { id: jobId, no: updatedJob.no }
-            })
-        } catch (error) {
-            throw new InternalServerErrorException('Reschedule job failed')
-        }
-    }
-
-    async removeMember(
-        jobId: string,
-        modifierId: string,
-        memberId: string
-    ): Promise<{ id: string }> {
-        if (!jobId) throw new BadRequestException('Job ID invalid')
-        if (!memberId) throw new BadRequestException('Member ID invalid')
-        try {
-            return await this.prisma.$transaction(async (tx) => {
-                const job = await tx.job.findUnique({
-                    where: { id: jobId },
-                    select: {
-                        statusId: true,
-                        assignee: { select: { id: true } },
-                    },
-                })
-                if (!job) throw new NotFoundException('Job not found')
-
-                const prevMemberIds = job.assignee.map((m) => m.id)
-                if (!prevMemberIds.includes(memberId)) {
-                    throw new NotFoundException(
-                        'Member not assigned to this job'
-                    )
-                }
-
-                const updated = await tx.job.update({
-                    where: { id: jobId },
-                    data: {
-                        assignee: { disconnect: { id: memberId } },
-                    },
-                })
-
-                const updatedMemberIds = prevMemberIds.filter(
-                    (id) => id !== memberId
-                )
-
-                // Log Activity: UnassignMember
-                await tx.jobActivityLog.create({
-                    data: {
-                        activityType: ActivityType.UnassignMember,
-                        previousValue: JSON.stringify(prevMemberIds),
-                        currentValue: JSON.stringify(updatedMemberIds),
-                        fieldName: 'Assignee',
-                        modifiedById: modifierId,
-                        jobId,
-                    },
-                })
-
-                return { id: jobId, no: updated.no }
-            })
-        } catch (error) {
-            throw new InternalServerErrorException('Remove member failed')
-        }
-    }
-
-    async getAssignee(jobId: string) {
-        if (!jobId) {
-            throw new BadRequestException('Job ID invalid')
-        }
-        try {
-            const job = await this.prisma.job.findUnique({
+        return await this.prisma.$transaction(async (tx) => {
+            const job = await tx.job.findUnique({
                 where: { id: jobId },
-                select: {
-                    assignee: true,
+                select: { no: true },
+            })
+            const memberIds: string[] = JSON.parse(data.updateMemberIds || '[]')
+
+            const updatedJob = await tx.job.update({
+                where: { id: jobId },
+                data: {
+                    assignments: {
+                        deleteMany: {},
+                        create: memberIds.map((id) => ({
+                            user: { connect: { id } },
+                            staffCost: 0,
+                        })),
+                    },
                 },
             })
-            if (!job) throw new NotFoundException('Job not found')
-            return {
-                assignees: job.assignee,
-                totalAssignees: job.assignee.length,
-            }
-        } catch (error) {
-            throw new InternalServerErrorException('Remove member failed')
-        }
+
+            await this.notificationService.sendMany(
+                memberIds.map((id) => ({
+                    userId: id,
+                    title: `Job Assignment`,
+                    content: `Assigned to ${updatedJob.no}`,
+                    type: NotificationType.JOB_UPDATE,
+                    redirectUrl: `/jobs/${updatedJob.no}`,
+                }))
+            )
+            return { id: jobId, no: updatedJob.no }
+        })
     }
 
-    /**
-     * Delete job by ID (soft delete: set deletedAt).
-     */
-    async delete(jobId: string, modifierId: string): Promise<{ id: string }> {
-        try {
-            return await this.prisma.$transaction(async (tx) => {
-                const job = await tx.job.findUnique({ where: { id: jobId } })
-                if (!job) throw new NotFoundException('Job not found')
-
-                const deleted = await tx.job.update({
-                    where: { id: jobId },
-                    data: { deletedAt: new Date() },
-                })
-
-                // Log Activity: DeleteJob
-                await tx.jobActivityLog.create({
-                    data: {
-                        jobId: jobId,
-                        modifiedById: modifierId,
-                        fieldName: 'Deleted',
-                        activityType: ActivityType.DeleteJob,
-                        previousValue: 'Active',
-                        currentValue: 'Deleted',
-                    },
-                })
-
-                return { id: deleted.id }
+    async deliverJob(userId: string, jobId: string, dto: DeliverJobDto) {
+        return this.prisma.$transaction(async (tx) => {
+            const reviewStatus = await tx.jobStatus.findFirst({
+                where: { systemType: 'WAIT_REVIEW' },
             })
-        } catch (error) {
-            if (error instanceof NotFoundException) throw error
-            throw new InternalServerErrorException('Delete job failed')
-        }
+            if (!reviewStatus)
+                throw new BadRequestException('WAIT_REVIEW status missing')
+
+            const delivery = await tx.jobDelivery.create({
+                data: { jobId, userId, ...dto, status: 'PENDING' },
+            })
+            const job = await tx.job.update({
+                where: { id: jobId },
+                data: { statusId: reviewStatus.id },
+            })
+
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId,
+                    modifiedById: userId,
+                    fieldName: 'Delivery',
+                    activityType: ActivityType.DeliverJob,
+                    currentValue: reviewStatus.code,
+                },
+            })
+
+            const admins = await tx.user.findMany({
+                where: { role: RoleEnum.ADMIN },
+            })
+            await this.notificationService.sendMany(
+                admins.map((admin) => ({
+                    userId: admin.id,
+                    senderId: userId,
+                    title: 'Job Delivered',
+                    content: `Job #${job.no} needs review.`,
+                    type: NotificationType.JOB_UPDATE,
+                    redirectUrl: `/admin/mgmt/jobs/${job.no}?tab=deliveries`,
+                }))
+            )
+            return delivery
+        })
     }
 
-    private responseSchema(
-        userRole: RoleEnum
-    ): typeof JobResponseDto | typeof JobStaffResponseDto {
-        return userRole === RoleEnum.ADMIN
-            ? JobResponseDto
-            : JobStaffResponseDto
+    async markPaid(jobId: string, modifierId: string) {
+        return await this.prisma.$transaction(async (tx) => {
+            const job = await tx.job.findUnique({
+                where: { id: jobId },
+                include: { status: true, assignments: true },
+            })
+            if (!job || job.isPaid)
+                throw new BadRequestException('Job already paid or not found')
+
+            const finishStatus = await tx.jobStatus.findFirst({
+                where: { systemType: 'TERMINATED' },
+            })
+            const now = new Date()
+            const updateData: Prisma.JobUpdateInput = {
+                isPaid: true,
+                paidAt: now,
+            }
+
+            if (job.status.systemType === 'COMPLETED') {
+                updateData.status = { connect: { id: finishStatus?.id } }
+                updateData.finishedAt = now
+            }
+
+            const updated = await tx.job.update({
+                where: { id: jobId },
+                data: updateData,
+            })
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'Payment',
+                    activityType: ActivityType.MarkPaid,
+                    currentValue: 'Paid',
+                },
+            })
+
+            await this.notificationService.sendMany(
+                job.assignments.map((a) => ({
+                    userId: a.userId,
+                    title: 'Payment Confirmed',
+                    content: `Job #${job.no} paid.`,
+                    type: NotificationType.JOB_UPDATE,
+                    redirectUrl: `/jobs/${job.no}`,
+                }))
+            )
+            return { id: updated.id, no: updated.no }
+        })
+    }
+
+    // -------------------------------------------------------------------------
+    // UTILS
+    // -------------------------------------------------------------------------
+
+    async togglePin(userId: string, jobId: string) {
+        const existing = await this.prisma.pinnedJob.findUnique({
+            where: { userId_jobId: { userId, jobId } },
+        })
+        if (existing) {
+            await this.prisma.pinnedJob.delete({
+                where: { userId_jobId: { userId, jobId } },
+            })
+            return { isPinned: false }
+        }
+        await this.prisma.pinnedJob.create({ data: { userId, jobId } })
+        return { isPinned: true }
+    }
+
+    async delete(jobId: string, modifierId: string) {
+        const updated = this.prisma.$transaction(async (tx) => {
+            await tx.job.update({
+                where: { id: jobId },
+                data: { deletedAt: new Date() },
+            })
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'Deleted',
+                    activityType: ActivityType.DeleteJob,
+                },
+            })
+        })
+        return { id: jobId }
     }
 
     private buildPermission(
@@ -1396,8 +785,6 @@ export class JobService {
         userId: string
     ): Prisma.JobWhereInput {
         if (userRole === RoleEnum.ADMIN) return {}
-        return {
-            assignee: { some: { id: userId } },
-        }
+        return { assignments: { some: { userId } } }
     }
 }

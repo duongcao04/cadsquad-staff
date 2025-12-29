@@ -24,9 +24,8 @@ import { useProfile } from '@/lib'
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import {
     currencyFormatter,
+    getAllowedJobColumns,
     IMAGES,
-    INTERNAL_URLS,
-    JOB_COLUMNS,
     TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
 import { JobColumnKey, TJob } from '@/shared/types'
@@ -53,11 +52,13 @@ import { WorkbenchTableViewProps } from './WorkbenchTableView'
 type Options = {
     fillContainerHeight?: boolean
 }
+
 type Props = WorkbenchTableViewProps & {
     options?: Options
     onViewDetail: (jobNo: string) => void
     onAssignMember: (jobNo: string) => void
 }
+
 export default function WorkbenchTable({
     isDataLoading = false,
     data,
@@ -73,13 +74,14 @@ export default function WorkbenchTable({
     onLimitChange,
     options = { fillContainerHeight: false },
 }: Props) {
-    const { isAdmin } = useProfile()
-    const hasSearchFilter = Boolean(search)
+    const { userRole, isAdmin, isAccounting } = useProfile()
+    const isAdminOrAccounting = isAdmin || isAccounting
 
     const selectedKeys = useStore(
         pCenterTableStore,
         (state) => state.selectedKeys
     )
+
     const setSelectedKeys = (keys: Selection) => {
         pCenterTableStore.setState((state) => ({
             ...state,
@@ -88,26 +90,26 @@ export default function WorkbenchTable({
         }))
     }
 
+    // 1. Centralized Header Logic using Security Helper
     const headerColumns = useMemo(() => {
-        const allColumns = isAdmin
-            ? JOB_COLUMNS
-            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
-        const visibleColumns = [
+        // Filter master list by role permissions
+        const allowed = getAllowedJobColumns(userRole, 'all')
+
+        // Define specific set for Workbench view
+        const workbenchUids = [
             'thumbnailUrl',
             'no',
             'displayName',
-            'staffCost',
-            'assignee',
+            isAdminOrAccounting ? 'totalStaffCost' : 'staffCost', // Role-based dynamic UID
+            'assignments',
             'isPaid',
             'dueAt',
             'status',
             'action',
         ]
 
-        return allColumns.filter((column) =>
-            Array.from(visibleColumns ?? []).includes(column.uid)
-        )
-    }, [])
+        return allowed.filter((col) => workbenchUids.includes(col.uid))
+    }, [userRole, isAdminOrAccounting])
 
     const topContent = useMemo(() => {
         return (
@@ -122,140 +124,40 @@ export default function WorkbenchTable({
                     }}
                     variant="bordered"
                     size="sm"
-                    placeholder="Search by job no, job name"
+                    placeholder="Search by job no, job name..."
                     startContent={
-                        <div className="w-4 flex items-center justify-center">
-                            <SearchIcon
-                                className="text-small text-text-6"
-                                size={14}
-                            />
-                        </div>
+                        <SearchIcon className="text-text-6" size={14} />
                     }
                     value={search}
                     onClear={() => onSearchChange(undefined)}
                     onValueChange={(value) => onSearchChange(value)}
                 />
                 <div className="w-px mx-3 h-5 bg-text-muted"></div>
-                <div className="flex gap-3">
-                    <Button
-                        startContent={
-                            <RotateCcw className="text-small" size={14} />
-                        }
-                        variant="bordered"
-                        size="sm"
-                        className="hover:shadow-SM border-border-default border"
-                        onPress={onRefresh}
-                    >
-                        <span className="font-medium">Refresh</span>
-                    </Button>
-                </div>
-
-                <div className="w-px mx-3 h-5 bg-text-muted"></div>
-
-                <div className="flex gap-3">
-                    {/* <HeroSelect
-                        selectionMode="multiple"
-                        className="min-w-32.5"
-                        classNames={{
-                            trigger:
-                                'hover:shadow-SM border-border-default border-1 cursor-pointer',
-                            popoverContent: 'w-[200px]!',
-                        }}
-                        placeholder="Status"
-                        isClearable
-                        onSelectionChange={(value) => {
-                            const arrayToString = Array.from(value).join(',')
-                            onFiltersChange?.({
-                                ...filters,
-                                status: arrayToString,
-                            })
-                        }}
-                        renderValue={(selectedItems) => {
-                            return (
-                                <p className="text-text-7">
-                                    {selectedItems.length} status
-                                    {selectedItems.length > 1 ? 'es' : ''}
-                                </p>
-                            )
-                        }}
-                    >
-                        {jobStatuses.map((jobStatus) => {
-                            return (
-                                <HeroSelectItem key={jobStatus.code}>
-                                    <div className="flex items-center justify-start gap-2">
-                                        <div
-                                            className="size-2 rounded-full"
-                                            style={{
-                                                backgroundColor:
-                                                    jobStatus.hexColor
-                                                        ? jobStatus.hexColor
-                                                        : '#000000',
-                                            }}
-                                        />
-                                        <p>{jobStatus.displayName}</p>
-                                    </div>
-                                </HeroSelectItem>
-                            )
-                        })}
-                    </HeroSelect> */}
-
-                    {/* <HeroSelect
-                        className="min-w-32.5"
-                        classNames={{
-                            trigger:
-                                'hover:shadow-SM border-border-default border-1 cursor-pointer',
-                            popoverContent: 'w-[200px]!',
-                        }}
-                        placeholder="Due in"
-                        isClearable
-                        onSelectionChange={(value) => {
-                            console.log(value.currentKey)
-                            const { dueAtFrom, dueAtTo } = getDueDateRange(
-                                value.currentKey
-                            )
-                            onFiltersChange?.({
-                                ...filters,
-                                dueAtFrom,
-                                dueAtTo,
-                            })
-                        }}
-                        renderValue={(selectedItems) => {
-                            return (
-                                <p className="text-text-7">
-                                    {selectedItems[0]?.textValue}
-                                </p>
-                            )
-                        }}
-                    >
-                        {DUE_DATE_PRESETS.map((dueIn) => {
-                            return (
-                                <HeroSelectItem key={dueIn.key}>
-                                    {dueIn.label}
-                                </HeroSelectItem>
-                            )
-                        })}
-                    </HeroSelect> */}
-                </div>
+                <Button
+                    startContent={<RotateCcw size={14} />}
+                    variant="bordered"
+                    size="sm"
+                    className="hover:shadow-SM border-border-default border"
+                    onPress={onRefresh}
+                >
+                    Refresh
+                </Button>
             </div>
         )
-    }, [data.length, hasSearchFilter, selectedKeys, search, isDataLoading])
+    }, [search, onRefresh, onSearchChange])
 
     const bottomContent = useMemo(() => {
         return (
-            <div className="py-2 px-2 grid grid-cols-3 gap-5">
+            <div className="py-2 px-2 flex justify-between items-center">
                 <Select
                     className="w-40"
                     label="Rows per page"
                     variant="bordered"
-                    classNames={{
-                        trigger: 'shadow-SM',
-                    }}
                     size="sm"
-                    selectionMode="single"
-                    defaultSelectedKeys={[pagination.limit.toString()]}
-                    onSelectionChange={(keys) => {
-                        onLimitChange(Number(keys.currentKey))
-                    }}
+                    selectedKeys={[pagination.limit.toString()]}
+                    onSelectionChange={(keys) =>
+                        onLimitChange(Number(Array.from(keys)[0]))
+                    }
                 >
                     {TABLE_ROW_PER_PAGE_OPTIONS.map((opt) => (
                         <SelectItem key={opt.value}>
@@ -263,45 +165,40 @@ export default function WorkbenchTable({
                         </SelectItem>
                     ))}
                 </Select>
-                <div className="flex items-center justify-center">
-                    <Pagination
-                        isCompact
-                        showControls
-                        showShadow
-                        color="primary"
-                        page={pagination.page}
-                        total={pagination.totalPages}
-                        onChange={onPageChange}
-                    />
-                </div>
-                <div className="hidden sm:flex w-[30%] justify-end gap-2"></div>
+                <Pagination
+                    isCompact
+                    showControls
+                    color="primary"
+                    page={pagination.page}
+                    total={pagination.totalPages}
+                    onChange={onPageChange}
+                />
+                <div className="w-40" />
             </div>
         )
-    }, [selectedKeys, data.length, pagination, hasSearchFilter, onLimitChange])
+    }, [pagination, onPageChange, onLimitChange])
 
-    const renderCell: (data: TJob, columnKey: JobColumnKey) => ReactNode =
-        // eslint-disable-next-line react-hooks/preserve-manual-memoization
-        useCallback((data: TJob, columnKey: JobColumnKey) => {
-            const cellValue = lodash.has(data, columnKey)
-                ? (data[columnKey] as string)
-                : ''
+    // 2. Cell Rendering Logic
+    const renderCell = useCallback(
+        (item: TJob, columnKey: JobColumnKey): ReactNode => {
+            const cellValue = lodash.get(item, columnKey, '')
 
             switch (columnKey) {
                 case 'thumbnailUrl':
                     return (
                         <div className="flex items-center justify-center">
-                            <div className="overflow-hidden rounded-full size-10">
+                            <div className="overflow-hidden rounded-full size-10 border border-border">
                                 <Image
                                     src={
-                                        data.status.thumbnailUrl
+                                        item.status.thumbnailUrl
                                             ? optimizeCloudinary(
-                                                  data.status.thumbnailUrl,
-                                                  { width: 120, height: 120 }
+                                                  item.status.thumbnailUrl,
+                                                  { width: 80, height: 80 }
                                               )
                                             : IMAGES.loadingPlaceholder
                                     }
-                                    alt="image"
-                                    className="object-cover rounded-full size-full"
+                                    alt="thumb"
+                                    className="object-cover size-full"
                                     preview={false}
                                 />
                             </div>
@@ -309,130 +206,96 @@ export default function WorkbenchTable({
                     )
                 case 'no':
                     return (
-                        <div className="flex items-center justify-between gap-2 group size-full">
-                            <span className="uppercase">{data.no}</span>
-                            <HeroTooltip content="Copy">
-                                <HeroCopyButton
-                                    textValue={data.no}
-                                    className="opacity-70!"
-                                />
-                            </HeroTooltip>
+                        <div className="flex items-center justify-between gap-2 group w-full">
+                            <span className="uppercase font-mono text-xs">
+                                {item.no}
+                            </span>
+                            <HeroCopyButton
+                                textValue={item.no}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            />
                         </div>
                     )
                 case 'displayName':
                     return (
-                        <div className="w-62.5 flex items-center justify-start gap-4">
+                        <div className="flex items-center gap-2">
                             <p className="line-clamp-1 font-medium">
-                                {data.displayName}
+                                {item.displayName}
                             </p>
-                            {data.isPinned && (
+                            {item.isPinned && (
                                 <PinIcon
-                                    className="text-text-subdued"
-                                    size={14}
+                                    className="text-primary fill-primary"
+                                    size={12}
                                 />
                             )}
                         </div>
                     )
-                case 'staffCost':
+                case 'totalStaffCost':
+                case 'staffCost': {
+                    // Determine value based on role vs dynamic column key
+                    const cost = isAdminOrAccounting
+                        ? item.totalStaffCost
+                        : item.staffCost
                     return (
-                        <p className="font-bold text-right text-currency">
-                            {currencyFormatter(data.staffCost)}
+                        <p className="font-bold text-right text-primary">
+                            {currencyFormatter(cost ?? 0, 'Vietnamese')}
                         </p>
                     )
-                case 'clientName':
-                    return <p className="line-clamp-1">{data.clientName}</p>
-                case 'type':
-                    return (
-                        <p className="line-clamp-1">{data.type.displayName}</p>
-                    )
-                case 'incomeCost':
-                    return (
-                        <p className="font-bold text-right text-currency">
-                            {currencyFormatter(data.incomeCost)}
-                        </p>
-                    )
-                case 'assignee':
-                    return !data.assignee.length ? (
-                        <div className="size-full flex items-center justify-center">
+                }
+                case 'assignments':
+                    return !item.assignments?.length ? (
+                        <div className="flex justify-center">
                             <HeroTooltip content="Assign members">
                                 <Button
                                     isIconOnly
                                     variant="light"
                                     size="sm"
-                                    className="size-8! flex items-center justify-center"
-                                    onPress={() => onAssignMember(data.no)}
+                                    onPress={() => onAssignMember(item.no)}
                                 >
-                                    <p className="inline-flex items-center leading-none">
-                                        <UserRoundPlus
-                                            size={16}
-                                            className="opacity-60"
-                                        />
-                                    </p>
+                                    <UserRoundPlus
+                                        size={16}
+                                        className="opacity-60"
+                                    />
                                 </Button>
                             </HeroTooltip>
                         </div>
                     ) : (
-                        <div
-                            onClick={() => {}}
-                            className="cursor-pointer w-fit"
-                        >
-                            <Avatar.Group
-                                max={{
-                                    count: 4,
-                                    style: {
-                                        color: 'var(--color-primary)',
-                                        backgroundColor:
-                                            'var(--color-primary-50)',
-                                    },
-                                    popover: {
-                                        styles: {
-                                            body: {
-                                                borderRadius: '16px',
-                                            },
-                                        },
-                                    },
-                                }}
-                            >
-                                {data.assignee.map((member) => (
-                                    <Avatar
-                                        key={member.id}
-                                        src={optimizeCloudinary(member.avatar)}
-                                    />
-                                ))}
-                            </Avatar.Group>
-                        </div>
+                        <Avatar.Group max={{ count: 3 }}>
+                            {item.assignments.map((ass) => (
+                                <Avatar
+                                    key={ass.id}
+                                    src={optimizeCloudinary(ass.user.avatar)}
+                                />
+                            ))}
+                        </Avatar.Group>
                     )
                 case 'isPaid':
                     return (
                         <PaymentStatusDropdown
-                            jobData={data}
+                            jobData={item}
                             afterChangeStatus={onRefresh}
                         />
                     )
                 case 'dueAt': {
-                    const isCompleted =
-                        data.status.systemType ===
-                        JobStatusSystemTypeEnum.COMPLETED
-                    const isFinish =
-                        data.status.systemType ===
-                        JobStatusSystemTypeEnum.TERMINATED
-
-                    const isPaused = isCompleted || isFinish
-                    const targetDate = dayjs(data.dueAt)
-
+                    const sysType = item.status.systemType
+                    const isFinished =
+                        sysType === JobStatusSystemTypeEnum.COMPLETED ||
+                        sysType === JobStatusSystemTypeEnum.TERMINATED
                     return (
-                        <div className="w-full">
-                            {isPaused ? (
+                        <div className="w-full flex justify-end">
+                            {isFinished ? (
                                 <JobFinishChip
                                     status={
-                                        isCompleted ? 'completed' : 'finish'
+                                        sysType ===
+                                        JobStatusSystemTypeEnum.COMPLETED
+                                            ? 'completed'
+                                            : 'finish'
                                     }
                                 />
                             ) : (
                                 <CountdownTimer
-                                    targetDate={targetDate}
+                                    targetDate={dayjs(item.dueAt)}
                                     hiddenUnits={['second', 'year']}
-                                    paused={isPaused}
                                     className="text-right!"
                                 />
                             )}
@@ -441,81 +304,68 @@ export default function WorkbenchTable({
                 }
                 case 'status':
                     return (
-                        <div className="flex items-center justify-center z-0">
+                        <div className="flex justify-center">
                             <JobStatusDropdown
-                                jobData={data}
-                                statusData={data.status}
+                                jobData={item}
+                                statusData={item.status}
                                 afterChangeStatus={onRefresh}
                             />
                         </div>
                     )
                 case 'action':
                     return (
-                        <div className="flex items-center justify-end gap-2">
-                            <HeroTooltip content={'View details'}>
+                        <div className="flex items-center justify-end gap-1">
+                            <HeroTooltip content="View detail">
                                 <Button
                                     isIconOnly
                                     variant="light"
                                     size="sm"
-                                    className="size-8! flex items-center justify-center"
-                                    onPress={() => onViewDetail(data.no)}
+                                    onPress={() => onViewDetail(item.no)}
                                 >
-                                    <p className="inline-flex items-center leading-none">
-                                        <EyeIcon
-                                            size={18}
-                                            className="opacity-60"
-                                        />
-                                    </p>
+                                    <EyeIcon size={18} className="opacity-60" />
                                 </Button>
                             </HeroTooltip>
-                            <HeroTooltip content="Copy link">
-                                <HeroCopyButton
-                                    className="size-8! flex items-center justify-center"
-                                    iconSize={16}
-                                    iconClassName="opacity-60"
-                                    textValue={INTERNAL_URLS.getJobDetailUrl(
-                                        data.no
-                                    )}
-                                />
-                            </HeroTooltip>
-                            <WorkbenchTableQuickActions data={data} />
+                            <WorkbenchTableQuickActions data={item} />
                         </div>
                     )
                 default:
-                    return cellValue
+                    return cellValue as ReactNode
             }
-        }, [])
+        },
+        [isAdminOrAccounting, onRefresh, onViewDetail, onAssignMember]
+    )
 
     return (
         <HeroTable
-            key="no"
             isHeaderSticky
-            aria-label="Project center table"
+            aria-label="Workbench table"
             bottomContent={bottomContent}
-            sortString={sort ?? undefined}
+            sortString={sort}
             onSortStringChange={onSortChange}
-            bottomContentPlacement="outside"
             selectedKeys={selectedKeys}
             selectionMode="multiple"
             topContent={topContent}
-            topContentPlacement="outside"
-            selectionBehavior="replace"
             onSelectionChange={setSelectedKeys}
-            onDoubleClick={() => {
-                const jobNoValue = Array.from(selectedKeys)[0]
-                onViewDetail(jobNoValue)
-                setSelectedKeys(new Set())
-            }}
+            onRowAction={(key) => onViewDetail(key as string)}
             classNames={{
                 base: `${options.fillContainerHeight ? 'h-full' : ''}`,
                 table: 'relative',
             }}
         >
-            <HeroTableHeader columns={headerColumns} suppressHydrationWarning>
+            <HeroTableHeader columns={headerColumns}>
                 {(column) => (
                     <HeroTableColumn
                         key={column.uid}
-                        align={column.uid === 'action' ? 'center' : 'start'}
+                        align={
+                            [
+                                'action',
+                                'dueAt',
+                                'totalStaffCost',
+                                'staffCost',
+                            ].includes(column.uid)
+                                ? 'end'
+                                : 'start'
+                        }
                         allowsSorting={column.sortable}
                     >
                         {column.displayName}
@@ -523,10 +373,10 @@ export default function WorkbenchTable({
                 )}
             </HeroTableHeader>
             <HeroTableBody
-                emptyContent={'No items found'}
+                emptyContent="No jobs found on your workbench."
                 items={isDataLoading ? [] : data}
-                loadingContent={<TableLoadingFallback />}
                 isLoading={isDataLoading}
+                loadingContent={<Spinner label="Loading workbench..." />}
             >
                 {(item) => (
                     <HeroTableRow key={item.no}>
@@ -539,13 +389,5 @@ export default function WorkbenchTable({
                 )}
             </HeroTableBody>
         </HeroTable>
-    )
-}
-
-function TableLoadingFallback() {
-    return (
-        <div className="flex w-full flex-col items-center justify-center gap-4 rounded-xl bg-content1/50">
-            <Spinner size="lg" color="primary" label="Loading data..." />
-        </div>
     )
 }

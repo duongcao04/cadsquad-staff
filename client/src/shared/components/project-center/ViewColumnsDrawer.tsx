@@ -16,37 +16,40 @@ import {
     Paperclip,
     Text,
     UsersRound,
+    Wallet,
 } from 'lucide-react'
-
-import { JOB_COLUMNS } from '@/lib/utils'
+import { useMemo } from 'react'
 import type { JobColumnKey } from '@/shared/types'
-
 import { useProfile } from '../../../lib'
 import { pCenterTableStore, toggleJobColumns } from '../../stores'
 import { ViewColumnSwitch } from './ViewColumnSwitch'
+import { getAllowedJobColumns } from '../../../lib/utils'
 
 type Props = { isOpen: boolean; onClose: () => void }
 
 export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
-    const { isAdmin, isAccounting } = useProfile()
+    const { userRole } = useProfile() // Destructure role directly
 
-    const JOB_COLUMNS_FINAL =
-        isAdmin || isAccounting
-            ? JOB_COLUMNS
-            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
+    // 1. Use the helper to get only the columns this specific role is allowed to see/toggle
+    const AVAILABLE_COLUMNS = useMemo(() => {
+        return getAllowedJobColumns(userRole, 'all')
+    }, [userRole])
 
     const visibleColumns = useStore(
         pCenterTableStore,
         (state) => state.jobColumns
     )
 
-    const columnMeta: Record<
-        JobColumnKey,
-        { title: string; icon?: React.ReactNode }
+    const columnMeta: Partial<
+        Record<JobColumnKey, { title: string; icon?: React.ReactNode }>
     > = {
         no: {
             title: 'Job no',
-            icon: <p className="font-bold text-lg text-text-subdued">#</p>,
+            icon: (
+                <p className="font-bold text-lg text-text-subdued leading-none">
+                    #
+                </p>
+            ),
         },
         type: {
             title: 'Type',
@@ -76,11 +79,19 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
             title: 'Income cost',
             icon: <DollarSign size={20} className="text-text-subdued" />,
         },
-        staffCost: {
-            title: 'Staff cost',
-            icon: <p className="font-semibold text-lg text-text-subdued">đ</p>,
+        totalStaffCost: {
+            title: 'Total Staff Cost',
+            icon: <Wallet size={20} className="text-text-subdued" />,
         },
-        assignee: {
+        staffCost: {
+            title: 'Your Cost',
+            icon: (
+                <p className="font-semibold text-lg text-text-subdued leading-none">
+                    đ
+                </p>
+            ),
+        },
+        assignments: {
             title: 'Assignees',
             icon: <UsersRound size={20} className="text-text-subdued" />,
         },
@@ -118,49 +129,53 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
         },
     }
 
+    // 2. Pass the role to the toggle function to ensure restricted keys aren't saved
     const handleSwitch = (key: JobColumnKey, isVisible: boolean) =>
-        toggleJobColumns(key, isVisible)
+        toggleJobColumns(key, isVisible, userRole)
 
     return (
         <Drawer
             open={isOpen}
             title="View columns"
-            width={450}
+            width={400}
             maskClosable
             closeIcon={<ArrowLeft size={16} />}
-            mask={true}
             onClose={onClose}
             classNames={{
                 body: '!py-3 !px-5',
             }}
         >
-            <div className="relative size-full">
-                <div className="flex items-center justify-between">
-                    <p className="font-medium text-text-subdued">
-                        Show columns
+            <div className="flex flex-col gap-1">
+                <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium text-text-subdued text-xs uppercase tracking-wider">
+                        Available Columns
                     </p>
                 </div>
-                <div className="mt-2">
-                    {JOB_COLUMNS_FINAL?.map((col, idx) => {
+
+                <div className="divide-y divide-border/50">
+                    {AVAILABLE_COLUMNS.map((col) => {
                         const isSelected =
                             visibleColumns === 'all'
                                 ? true
-                                : visibleColumns?.includes(
-                                      col.uid as JobColumnKey
-                                  )
+                                : visibleColumns?.includes(col.uid)
 
                         return (
                             <div
-                                key={idx}
-                                className="flex items-center justify-between"
+                                key={col.uid}
+                                className="flex items-center justify-between py-3 hover:bg-content2/50 px-2 -mx-2 rounded-lg transition-colors group"
                             >
-                                <div className="py-2.5 flex items-center justify-start gap-3">
-                                    <p className="text-text-7">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 flex justify-center group-hover:scale-110 transition-transform">
                                         {columnMeta[col.uid]?.icon}
-                                    </p>
-                                    <p className="text-sm font-medium text-text-7">
-                                        {col.displayName}
-                                    </p>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <p className="text-sm font-medium text-text-default">
+                                            {col.displayName}
+                                        </p>
+                                        <p className="text-[10px] text-text-subdued font-mono">
+                                            ID: {col.uid}
+                                        </p>
+                                    </div>
                                 </div>
                                 <ViewColumnSwitch
                                     colKey={col.uid}

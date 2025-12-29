@@ -4,15 +4,15 @@ import { Divider } from '@heroui/react'
 import { useRef, useState } from 'react'
 import ReactQuill from 'react-quill-new'
 
-import { EditorToolbar, formats,modules } from './EditorToolbar'
+import { EditorToolbar, formats, modules } from './EditorToolbar'
 import { FloatingToolbar } from './FloatingToolbar'
 
-interface ModernEditorProps {
+interface QuillEditorProps {
     value: string
     onChange: (value: string) => void
 }
 
-export default function ModernEditor({ value, onChange }: ModernEditorProps) {
+export default function QuillEditor({ value, onChange }: QuillEditorProps) {
     const quillRef = useRef<ReactQuill>(null)
 
     // State for Floating Toolbar (Bubble)

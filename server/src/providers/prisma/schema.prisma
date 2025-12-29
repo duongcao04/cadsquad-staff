@@ -49,7 +49,6 @@ model User {
   isActive            Boolean            @default(true)
   lastLoginAt         DateTime?
   notifications       Notification[]     @relation("UserNotifications")
-  jobsAssigned        Job[]              @relation("UserJobs") // Jobs assigned
   jobsCreated         Job[]              @relation("JobCreator")
   filesCreated        FileSystem[]       @relation("CreatedFiles")
   files               FileSystem[]       @relation("UserFiles")
@@ -249,8 +248,7 @@ model Job {
   clientId       String?
   incomeCost     Float
 
-  sumStaffCost Float  @default(0)
-  assignee     User[] @relation("UserJobs") // Member assigned
+  sumStaffCost Float @default(0)
 
   assignments JobAssignment[]
 
@@ -299,7 +297,7 @@ model JobAssignment {
 
 model Client {
   id   String     @id @default(uuid())
-  name String // Company name
+  name String     @unique // Company name
   code String     @unique // e.g. "CUST-001"
   type ClientType @default(COMPANY)
 

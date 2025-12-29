@@ -1,17 +1,32 @@
 import { Store } from '@tanstack/react-store'
-
-import { JOB_COLUMNS, STORAGE_KEYS } from '../../lib'
 import type { JobColumnKey, TJob } from '../types'
+import { STORAGE_KEYS } from '../../lib'
+import { RoleEnum } from '../enums'
+import { getAllowedJobColumns } from '../../lib/utils'
+
+const DEFAULT_COLUMNS: JobColumnKey[] = [
+    'no',
+    'displayName',
+    'staffCost',
+    'status',
+    'dueAt',
+    'assignments',
+    'isPaid',
+    'action',
+]
 
 const getInitJobColumns = (): JobColumnKey[] | 'all' => {
-    if (typeof window === 'undefined') return ['no','displayName','staffCost','status','dueAt','assignee','isPaid','action']
-
+    if (typeof window === 'undefined') return DEFAULT_COLUMNS
     const stored = localStorage.getItem(STORAGE_KEYS.jobColumns)
+    if (!stored) return DEFAULT_COLUMNS
 
-    if (!stored) {
-        return ['no','displayName','staffCost','status','dueAt','assignee','isPaid','action']
-    } else {
-        return JSON.parse(stored) as JobColumnKey[]
+    try {
+        const parsed = JSON.parse(stored)
+        return Array.isArray(parsed) && parsed.length > 0
+            ? (parsed as JobColumnKey[])
+            : DEFAULT_COLUMNS
+    } catch (e) {
+        return DEFAULT_COLUMNS
     }
 }
 
@@ -31,49 +46,64 @@ export const pCenterTableStore = new Store<{
     jobColumns: getInitJobColumns(),
 })
 
-// 1. Helper to get all keys dynamically from your config
-const ALL_JOB_COLUMN_KEYS = JOB_COLUMNS.map((col) => col.uid)
-
-export const toggleJobColumns = (key: JobColumnKey, isVisible: boolean) => {
+/**
+ * Toggle Column Visibility
+ * Now checks against the Role to ensure restricted columns are handled correctly
+ */
+export const toggleJobColumns = (
+    key: JobColumnKey,
+    isVisible: boolean,
+    role?: RoleEnum
+) => {
     pCenterTableStore.setState((prev) => {
         const currentCols = prev.jobColumns
+
+        // Use helper to get ALL keys the user is actually allowed to see/toggle
+        const allowedKeys = getAllowedJobColumns(role, 'all').map((c) => c.uid)
+
         let newColumns: JobColumnKey[]
 
-        // CASE A: Current state is 'all'
         if (currentCols === 'all') {
+            if (isVisible) return prev
+            newColumns = allowedKeys.filter((k) => k !== key)
+        } else {
             if (isVisible) {
-                // If we are showing 'all', and ask to show one, nothing changes
-                return prev
-            } else {
-                // If hiding one while in 'all' mode:
-                // We take ALL keys and filter out the one we want to hide
-                newColumns = ALL_JOB_COLUMN_KEYS.filter((k) => k !== key)
-            }
-        }
-        // CASE B: Current state is a custom array
-        else {
-            if (isVisible) {
-                // Add key if not present
                 newColumns = currentCols.includes(key)
                     ? currentCols
                     : [...currentCols, key]
             } else {
-                // Remove key
                 newColumns = currentCols.filter((k) => k !== key)
             }
         }
 
-        // Persist to LocalStorage
-        // Note: You might want to remove the item if newColumns.length === ALL_JOB_COLUMN_KEYS.length
-        // to revert to 'all' state, but saving the specific array is safer for consistency.
-        localStorage.setItem(
-            STORAGE_KEYS.jobColumns,
-            JSON.stringify(newColumns)
+        // Final Sanity Check: Ensure no restricted columns leaked in
+        const sanitizedColumns = newColumns.filter((k) =>
+            allowedKeys.includes(k)
         )
 
-        return {
-            ...prev,
-            jobColumns: newColumns,
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(
+                STORAGE_KEYS.jobColumns,
+                JSON.stringify(sanitizedColumns)
+            )
         }
+
+        return { ...prev, jobColumns: sanitizedColumns }
     })
+}
+
+export const resetJobColumns = (role?: RoleEnum) => {
+    // Reset to the default filtered by role
+    const defaultForRole = getAllowedJobColumns(role, DEFAULT_COLUMNS).map(
+        (c) => c.uid
+    )
+
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEYS.jobColumns)
+    }
+
+    pCenterTableStore.setState((prev) => ({
+        ...prev,
+        jobColumns: defaultForRole,
+    }))
 }

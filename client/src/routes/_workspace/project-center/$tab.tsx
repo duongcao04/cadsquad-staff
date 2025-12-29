@@ -14,13 +14,7 @@ import { Suspense, useMemo, useState } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { z } from 'zod'
 
-import {
-    excelApi,
-    getPageTitle,
-    JOB_COLUMNS,
-    jobApi,
-    STORAGE_KEYS,
-} from '@/lib'
+import { excelApi, getPageTitle, jobApi, STORAGE_KEYS } from '@/lib'
 import {
     jobsListOptions,
     jobStatusesListOptions,
@@ -41,7 +35,9 @@ import AssignMemberModal from '@/shared/components/project-center/AssignMemberMo
 import ProjectCenterTable from '@/shared/components/project-center/ProjectCenterTable'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { pCenterTableStore } from '@/shared/stores'
-import { JobColumnKey, TJob } from '@/shared/types'
+import { TJob } from '@/shared/types'
+import { getAllowedJobColumns } from '../../../lib/utils'
+import dayjs from 'dayjs'
 
 const DEFAULT_SORT = 'displayName:asc'
 
@@ -56,9 +52,6 @@ export const projectCenterParamsSchema = z
 
 export type TProjectCenterSearch = z.infer<typeof projectCenterParamsSchema>
 
-// =========================================================
-// 1. ROUTE DEFINITION (Optimized Loader)
-// =========================================================
 export const Route = createFileRoute('/_workspace/project-center/$tab')({
     head: () => ({
         meta: [{ title: getPageTitle('Project Center') }],
@@ -66,16 +59,12 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
     validateSearch: (search) => projectCenterParamsSchema.parse(search),
     parseParams: (params) => {
         const result = z.nativeEnum(ProjectCenterTabEnum).safeParse(params.tab)
-        if (!result.success) {
+        if (!result.success)
             throw redirect({ href: '/project-center/priority' })
-        }
         return { tab: result.data }
     },
     loaderDeps: ({ search }) => ({ search }),
-
     loader: async ({ context, deps, params }) => {
-        // 1. Prefetch STATIC data (Users, Statuses)
-        // We use Promise.all to fetch them in parallel without blocking the UI logic later
         await Promise.all([
             context.queryClient.ensureQueryData(jobStatusesListOptions()),
             context.queryClient.ensureQueryData(jobTypesListOptions()),
@@ -83,18 +72,12 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
             context.queryClient.ensureQueryData(usersListOptions()),
         ])
 
-        // 2. Prefetch DYNAMIC data (The Job List)
-        // We intentionally DO NOT await this.
-        // This allows the page to transition immediately and show a skeleton/spinner
-        // if the data isn't ready, rather than freezing the browser navigation.
         const {
             limit = 10,
             page = 1,
             search,
             sort = DEFAULT_SORT,
         } = deps.search
-
-        // Check local storage for hidden items preference (Server-side safe check)
         let hideFinishItems: '1' | '0' = '1'
         if (typeof window !== 'undefined') {
             const val = localStorage.getItem(
@@ -114,13 +97,9 @@ export const Route = createFileRoute('/_workspace/project-center/$tab')({
             })
         )
     },
-
     component: ProjectCenterPage,
 })
 
-// =========================================================
-// 2. PARENT COMPONENT
-// =========================================================
 export function ProjectCenterPage() {
     const search = Route.useSearch()
     const navigate = Route.useNavigate()
@@ -131,54 +110,34 @@ export function ProjectCenterPage() {
         false
     )
 
-    // Navigation: Using 'replace' prevents history stack pollution
     const updateParams = (newParams: Partial<TProjectCenterSearch>) => {
-        navigate({
-            search: (old) => ({ ...old, ...newParams }),
-            replace: true,
-        })
-    }
-
-    const handleTabChange = (newTab: ProjectCenterTabEnum) => {
-        navigate({
-            to: '/project-center/$tab',
-            params: { tab: newTab },
-            search: (old) => ({ ...old, page: 1 }),
-            replace: true,
-        })
-    }
-
-    const handleApplyFilters = (newFilters: TJobFilters) => {
-        navigate({
-            search: (prev) => ({ ...prev, ...newFilters }),
-            replace: true,
-        })
+        navigate({ search: (old) => ({ ...old, ...newParams }), replace: true })
     }
 
     return (
         <div className="size-full space-y-5">
-            <ProjectCenterTabs onTabChange={handleTabChange} defaultTab={tab} />
-
-            {/* Optimization:
-          We wrap the content in Suspense, but inside the content 
-          we use `useQuery` with `keepPreviousData` for the list.
-          This ensures the Table header/structure stays visible during pagination.
-      */}
+            <ProjectCenterTabs
+                onTabChange={(t: ProjectCenterTabEnum) =>
+                    navigate({
+                        to: '/project-center/$tab',
+                        params: { tab: t },
+                        search: (old) => ({ ...old, page: 1 }),
+                        replace: true,
+                    })
+                }
+                defaultTab={tab}
+            />
             <Suspense fallback={<TableLoadingFallback />}>
                 <ProjectCenterTableContent
                     tab={tab}
                     search={search}
                     localShowFinishItems={localShowFinishItems}
                     setLocalShowFinishItems={setLocalShowFinishItems}
-                    onFiltersChange={handleApplyFilters}
-                    onPageChange={(p: number) => updateParams({ page: p })}
-                    onSortChange={(s?: string) =>
-                        updateParams({ sort: s, page: 1 })
-                    }
-                    onLimitChange={(l: number) =>
-                        updateParams({ limit: l, page: 1 })
-                    }
-                    onSearchChange={(s?: string) =>
+                    onFiltersChange={(f) => updateParams({ ...f })}
+                    onPageChange={(p) => updateParams({ page: p })}
+                    onSortChange={(s) => updateParams({ sort: s, page: 1 })}
+                    onLimitChange={(l) => updateParams({ limit: l, page: 1 })}
+                    onSearchChange={(s) =>
                         updateParams({ search: s || undefined, page: 1 })
                     }
                 />
@@ -187,9 +146,6 @@ export function ProjectCenterPage() {
     )
 }
 
-// =========================================================
-// 3. OPTIMIZED DATA COMPONENT
-// =========================================================
 function ProjectCenterTableContent({
     tab,
     search,
@@ -211,10 +167,9 @@ function ProjectCenterTableContent({
     onSearchChange: (s?: string) => void
     onFiltersChange: (newFilters: TJobFilters) => void
 }) {
+    const { userRole } = useProfile()
     const [selectedJob, setSelectedJob] = useState<string | null>(null)
 
-    // 1. Main Job List Query (SWITCHED TO useQuery)
-    // `useQuery` + `placeholderData: keepPreviousData` = No Lag/Flash during pagination
     const { data, isFetching, refetch } = useQuery({
         ...jobsListOptions({
             ...search,
@@ -224,7 +179,6 @@ function ProjectCenterTableContent({
         placeholderData: keepPreviousData,
     })
 
-    // Memoize pagination to prevent unnecessary re-renders of child components
     const pagination = useMemo(
         () => ({
             limit: data?.paginate?.limit ?? 10,
@@ -235,120 +189,58 @@ function ProjectCenterTableContent({
         [data?.paginate]
     )
 
-    const filters: TJobFilters = {
-        assignee: search.assignee,
-        status: search.status,
-        clientName: search.clientName,
-        completedAtFrom: search.completedAtFrom,
-        completedAtTo: search.completedAtTo,
-        createdAtFrom: search.createdAtFrom,
-        createdAtTo: search.createdAtTo,
-        dueAtFrom: search.dueAtFrom,
-        dueAtTo: search.dueAtTo,
-        finishedAtFrom: search.finishedAtFrom,
-        finishedAtTo: search.finishedAtTo,
-        incomeCostMax: search.incomeCostMax,
-        incomeCostMin: search.incomeCostMin,
-        paymentChannel: search.paymentChannel,
-        staffCostMax: search.staffCostMax,
-        staffCostMin: search.staffCostMin,
-        type: search.type,
-    }
+    // Integrate our security helper to filter columns in the table
+    const storedColumns = useStore(
+        pCenterTableStore,
+        (state) => state.jobColumns
+    )
+    const headerColumns = useMemo(() => {
+        return getAllowedJobColumns(userRole, storedColumns)
+    }, [userRole, storedColumns])
 
-    const jobColumns = useStore(pCenterTableStore, (state) => state.jobColumns)
-
-    // -- Modal Management (Cleaned up) --
-    const viewColDisclosure = useDisclosure({ id: 'ViewColumnDrawer' })
-    const jobDetailDisclosure = useDisclosure({ id: 'JobDetailDrawer' })
-    const assignMemberDisclosure = useDisclosure({ id: 'AssignMemberModal' })
-    const attachmentsDisclosure = useDisclosure({ id: 'AddAttachmentsModal' })
-
-    const handleAssignMember = (jobNo: string) => {
-        setSelectedJob(jobNo)
-        assignMemberDisclosure.onOpen()
-    }
-
-    const handleAddAttachments = (jobNo: string) => {
-        setSelectedJob(jobNo)
-        attachmentsDisclosure.onOpen()
-    }
-
-    const handleOpenDetail = (jobNo: string) => {
-        // Assuming you need this
-        setSelectedJob(jobNo)
-        jobDetailDisclosure.onOpen()
-    }
+    const viewColDisclosure = useDisclosure()
+    const jobDetailDisclosure = useDisclosure()
+    const assignMemberDisclosure = useDisclosure()
+    const attachmentsDisclosure = useDisclosure()
 
     const handleExport = async () => {
-        const showColumns: JobColumnKey[] = [
-            'no',
-            'displayName',
-            'clientName',
-            'assignee',
-            'incomeCost',
-            'staffCost',
-            'type',
-            'status',
-            'dueAt',
-            'completedAt',
-            'createdAt',
-            'updatedAt',
-            'isPaid',
-            'paymentChannel',
-        ]
+        // Filter columns for export based on role permissions
+        const exportColumns = getAllowedJobColumns(userRole, 'all').filter(
+            (c) => c.uid !== 'action'
+        )
 
         try {
-            const data = (await jobApi
-                .findAll({
-                    ...search,
-                    tab,
-                    isAll: '1',
-                })
-                .then((res) => res.result?.data)) as TJob[]
+            const res = await jobApi.findAll({ ...search, tab, isAll: '1' })
+            const jobs = (res.result?.data as TJob[]) || []
 
             const payload: TDownloadExcelInput = {
-                columns: JOB_COLUMNS.filter((item) =>
-                    showColumns.includes(item.uid)
-                ).map((col) => ({
+                columns: exportColumns.map((col) => ({
                     header: col.displayName,
                     key: col.uid,
                 })),
-
-                data: data.map((item) => {
-                    return {
-                        no: item.no,
-                        displayName: item.displayName,
-                        clientName: item.clientName,
-                        assignee: item.assignee
-                            .map((item) => item.displayName)
-                            .join(', '),
-                        incomeCost: item.incomeCost,
-                        staffCost: item.staffCost,
-                        type: item.type.displayName,
-                        status: item.status.displayName,
-                        dueAt: item.dueAt,
-                        completedAt: item.completedAt,
-                        createdAt: item.createdAt,
-                        updatedAt: item.updatedAt,
-                        isPaid: item.isPaid ? 'Yes' : 'No',
-                        paymentChannel: item.paymentChannel?.displayName,
-                    }
-                }),
+                data: jobs.map((item) => ({
+                    ...item,
+                    assignments: item.assignments
+                        .map((a) => a.user.displayName)
+                        .join(', '),
+                    isPaid: item.isPaid ? 'Yes' : 'No',
+                    paymentChannel: item.paymentChannel?.displayName,
+                    type: item.type?.displayName,
+                    status: item.status?.displayName,
+                })),
             }
 
             const response = await excelApi.download(payload)
-
-            // Create a URL for the blob and trigger download
             const url = window.URL.createObjectURL(new Blob([response.data]))
-
             const link = document.createElement('a')
             link.href = url
-            link.setAttribute('download', 'export_data.xlsx') // Filename
+            link.setAttribute(
+                'download',
+                `ProjectCenter_Export_${dayjs().format('YYYYMMDD')}.xlsx`
+            )
             document.body.appendChild(link)
             link.click()
-
-            // Cleanup
-            link.parentNode?.removeChild(link)
+            link.remove()
             window.URL.revokeObjectURL(url)
         } catch (error) {
             console.error('Download failed', error)
@@ -357,74 +249,66 @@ function ProjectCenterTableContent({
 
     return (
         <>
-            {/* Drawers & Modals: Only render if open to save resources */}
             {viewColDisclosure.isOpen && (
-                <ViewColumnsDrawer
-                    isOpen={true}
-                    onClose={viewColDisclosure.onClose}
-                />
+                <ViewColumnsDrawer isOpen onClose={viewColDisclosure.onClose} />
             )}
-
             {jobDetailDisclosure.isOpen && selectedJob && (
                 <JobDetailDrawer
                     jobNo={selectedJob}
-                    isOpen={true}
+                    isOpen
                     onClose={jobDetailDisclosure.onClose}
                 />
             )}
-
             {assignMemberDisclosure.isOpen && selectedJob && (
                 <AssignMemberModal
                     jobNo={selectedJob}
-                    isOpen={true}
+                    isOpen
                     onClose={assignMemberDisclosure.onClose}
                 />
             )}
-
             {attachmentsDisclosure.isOpen && selectedJob && (
                 <AddAttachmentsModal
                     jobNo={selectedJob}
-                    isOpen={true}
+                    isOpen
                     onClose={attachmentsDisclosure.onClose}
                 />
             )}
 
             <ProjectCenterTable
-                // Data Props
                 data={data?.jobs ?? []}
                 isLoadingData={isFetching}
                 pagination={pagination}
                 searchKeywords={search.search}
                 sort={search.sort}
-                visibleColumns={jobColumns}
+                visibleColumns={headerColumns.map((c) => c.uid)} // Pass filtered keys
                 showFinishItems={localShowFinishItems}
-                // Actions
                 onRefresh={refetch}
                 onDownloadCsv={handleExport}
-                // Modal Triggers
                 openViewColDrawer={viewColDisclosure.onOpen}
-                openJobDetailDrawer={handleOpenDetail} // Updated to set selectedJob
-                onAssignMember={handleAssignMember}
-                onAddAttachments={handleAddAttachments}
+                openJobDetailDrawer={(no) => {
+                    setSelectedJob(no)
+                    jobDetailDisclosure.onOpen()
+                }}
+                onAssignMember={(no) => {
+                    setSelectedJob(no)
+                    assignMemberDisclosure.onOpen()
+                }}
+                onAddAttachments={(no) => {
+                    setSelectedJob(no)
+                    attachmentsDisclosure.onOpen()
+                }}
                 onShowFinishItemsChange={setLocalShowFinishItems}
-                // Navigation / Filter Actions
                 onFiltersChange={onFiltersChange}
                 onPageChange={onPageChange}
                 onSearchKeywordsChange={onSearchChange}
                 onSortChange={onSortChange}
                 onLimitChange={onLimitChange}
-                // Pass the static data if your table needs it for dropdowns
-                // users={users}
-                // statuses={jobStatuses}
-                filters={filters}
+                filters={search as TJobFilters}
             />
         </>
     )
 }
 
-// =========================================================
-// 4. UI HELPERS (Unchanged)
-// =========================================================
 function TableLoadingFallback() {
     return (
         <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-divider bg-content1/50">

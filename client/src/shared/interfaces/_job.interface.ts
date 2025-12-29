@@ -2,6 +2,7 @@ import { JobPriorityEnum } from '@/shared/enums'
 
 import type {
     TComment,
+    TJob,
     TJobActivityLog,
     TJobStatus,
     TJobType,
@@ -70,8 +71,8 @@ export interface IJobResponse {
     incomeCost: number
 
     /**
-    * @type {IJobDelivery}
-    */
+     * @type {IJobDelivery}
+     */
     jobDeliveries: IJobDelivery[]
 
     /**
@@ -93,10 +94,16 @@ export interface IJobResponse {
     staffCost: number
 
     /**
-     * A list of users assigned to work on the job.
-     * @type {User[]}
+     * The total cost associated with the staffs working on the job.
+     * @type {number}
      */
-    assignee: TUser[]
+    totalStaffCost: number
+
+    /**
+     * A list of users assigned to work on the job.
+     * @type {IJobAssignment[]}
+     */
+    assignments: IJobAssignment[]
 
     /**
      * The user who created the job.
@@ -232,15 +239,23 @@ export enum DeliveryStatus {
 
 // 2. Define the Interface
 export interface IJobDelivery {
-    id: string;
-    jobId: string;
-    userId: string;
-    note: string | null;
-    link: string | null;
-    files: string[];
-    status: DeliveryStatus;
-    adminFeedback: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    user?: TUser;
+    id: string
+    jobId: string
+    userId: string
+    note: string | null
+    link: string | null
+    files: string[]
+    status: DeliveryStatus
+    adminFeedback: string | null
+    createdAt: Date
+    updatedAt: Date
+    user?: TUser
+}
+
+export type IJobAssignment = {
+    id: string
+    job: TJob
+    user: TUser
+    staffCost: number
+    assignedAt: Date | string
 }

@@ -1,3 +1,4 @@
+import { useCreateJobMutation } from '../../../lib'
 import CreateJobForm from '../forms/CreateJobForm'
 import {
     HeroModal,
@@ -11,6 +12,8 @@ type Props = {
     onClose: () => void
 }
 export function CreateJobModal({ isOpen, onClose }: Props) {
+    const createJobMutation = useCreateJobMutation()
+
     return (
         <HeroModal
             isOpen={isOpen}
@@ -26,7 +29,14 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                     </div>
                 </HeroModalHeader>
                 <HeroModalBody className="px-0 pt-0">
-                    <CreateJobForm onSubmit={onClose} />
+                    <CreateJobForm
+                        isSubmitting={createJobMutation.isPending}
+                        onSubmit={async (values) => {
+                            await createJobMutation.mutateAsync(values)
+                            console.log(values)
+                        }}
+                        afterSubmit={onClose}
+                    />
                 </HeroModalBody>
             </HeroModalContent>
         </HeroModal>

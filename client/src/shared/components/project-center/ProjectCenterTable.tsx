@@ -40,9 +40,9 @@ import { useJobStatuses } from '@/lib/queries'
 import {
     currencyFormatter,
     DUE_DATE_PRESETS,
+    getAllowedJobColumns,
     IMAGES,
     INTERNAL_URLS,
-    JOB_COLUMNS,
     TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
 import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
@@ -157,7 +157,7 @@ export default function ProjectCenterTable({
     onPageChange,
     onAddAttachments,
 }: ProjectCenterTableProps) {
-    const { isAdmin } = useProfile()
+    const { userRole } = useProfile()
     const { data: jobStatuses } = useJobStatuses()
 
     const hasSearchFilter = Boolean(searchKeywords)
@@ -180,16 +180,11 @@ export default function ProjectCenterTable({
         }))
     }
 
-    const headerColumns = useMemo(() => {
-        const allColumns = isAdmin
-            ? JOB_COLUMNS
-            : JOB_COLUMNS.filter((item) => item.uid !== 'incomeCost')
-        if (visibleColumns === 'all') return allColumns
-
-        return allColumns.filter((column) =>
-            Array.from(visibleColumns ?? []).includes(column.uid)
-        )
-    }, [visibleColumns])
+    // Role-based header logic
+    const headerColumns = useMemo(
+        () => getAllowedJobColumns(userRole, visibleColumns),
+        [visibleColumns, userRole]
+    )
 
     // eslint-disable-next-line react-hooks/preserve-manual-memoization
     const topContent = useMemo(() => {
@@ -619,10 +614,23 @@ export default function ProjectCenterTable({
                             {currencyFormatter(data.incomeCost)}
                         </p>
                     )
-                case 'staffCost':
+                case 'totalStaffCost': // Total cost for Admin
                     return (
-                        <p className="font-bold text-right text-currency">
-                            {currencyFormatter(data.staffCost, 'Vietnamese')}
+                        <p className="font-bold text-right text-text-default">
+                            {currencyFormatter(
+                                data.totalStaffCost,
+                                'Vietnamese'
+                            )}
+                        </p>
+                    )
+
+                case 'staffCost': // Individual cost for User
+                    return (
+                        <p className="font-bold text-right text-primary">
+                            {currencyFormatter(
+                                data.staffCost ?? 0,
+                                'Vietnamese'
+                            )}
                         </p>
                     )
                 case 'status':
@@ -691,8 +699,8 @@ export default function ProjectCenterTable({
                             x{data.attachmentUrls.length}
                         </p>
                     )
-                case 'assignee':
-                    return !data.assignee.length ? (
+                case 'assignments':
+                    return !data.assignments.length ? (
                         <div className="size-full flex items-center justify-center">
                             <HeroTooltip content="Assign members">
                                 <Button
@@ -728,10 +736,12 @@ export default function ProjectCenterTable({
                                     },
                                 }}
                             >
-                                {data.assignee.map((member) => (
+                                {data.assignments.map((ass) => (
                                     <Avatar
-                                        key={member.id}
-                                        src={optimizeCloudinary(member.avatar)}
+                                        key={ass.id}
+                                        src={optimizeCloudinary(
+                                            ass.user.avatar
+                                        )}
                                     />
                                 ))}
                             </Avatar.Group>

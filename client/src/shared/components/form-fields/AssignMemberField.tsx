@@ -1,15 +1,14 @@
-import { Autocomplete, AutocompleteItem, Avatar, Chip } from '@heroui/react'
+import { Autocomplete, AutocompleteItem, Avatar } from '@heroui/react'
 import { SearchIcon } from 'lucide-react'
-import { type Key, memo, useMemo, useState } from 'react'
+import { type Key, memo, useMemo, useState, useEffect } from 'react'
 
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import type { TUser } from '@/shared/types'
 
 interface Props {
     users: TUser[]
-    assignees?: TUser[] // Đây chính là "selectedUser" state được truyền từ cha vào
-    onSelectMember: (userId: string[]) => void
-    onRemoveMember?: (userId: string) => void // Thêm function để xóa user
+    assignees?: TUser[] // Current members from Formik
+    onSelectMember: (userIds: string[]) => void
     loading?: boolean
 }
 
@@ -17,42 +16,40 @@ const AssignMemberField = memo(function AssignMemberField({
     users,
     assignees = [],
     onSelectMember,
-    onRemoveMember,
     loading = false,
 }: Props) {
     const [inputValue, setInputValue] = useState('')
 
-    // Tối ưu 1: Map Assignees -> Set ID
+    // 1. Map current assignees to a Set of IDs for O(1) lookup
     const assignedUserIds = useMemo(() => {
         const safeAssignees = Array.isArray(assignees) ? assignees : []
         return new Set(safeAssignees.map((u) => u.id))
     }, [assignees])
 
+    // 2. Internal state to track selected users for the Autocomplete logic
     const [selectedUsers, setSelectedUsers] =
         useState<Set<string>>(assignedUserIds)
 
-    // Tối ưu 2: Filter Available Users
+    // 3. FIX: Sync state when parent removes a member
+    useEffect(() => {
+        setSelectedUsers(assignedUserIds)
+    }, [assignedUserIds])
+
+    // 4. Filter users that haven't been assigned yet
     const availableUsers = useMemo(() => {
         if (!Array.isArray(users)) return []
 
         const search = inputValue.trim().toLowerCase()
         const results: TUser[] = []
 
-        // Case A: No search
-        if (!search) {
-            for (const user of users) {
-                if (results.length >= 20) break
-                if (!selectedUsers.has(user.id)) {
-                    results.push(user)
-                }
-            }
-            return results
-        }
-
-        // Case B: Has search
         for (const user of users) {
-            if (results.length >= 50) break
-            if (selectedUsers.has(user.id)) continue
+            if (results.length >= 50) break // Performance cap
+            if (selectedUsers.has(user.id)) continue // Skip already assigned
+
+            if (!search) {
+                results.push(user)
+                continue
+            }
 
             const fullText = `${user.displayName} ${user.email} ${
                 user.username
@@ -67,19 +64,14 @@ const AssignMemberField = memo(function AssignMemberField({
 
     const handleSelectionChange = (key: Key | null) => {
         if (!key) return
-
         const newKey = String(key)
 
-        // 1. Tính toán danh sách mới trước (để tránh stale state)
-        // Lưu ý: convert Set sang Array để spread
+        // Add to the set and propagate to Formik
         const newSelectedUsers = new Set([...selectedUsers, newKey])
-
-        // 2. Cập nhật State nội bộ
         setSelectedUsers(newSelectedUsers)
-
-        // 3. Gửi danh sách MỚI NHẤT lên cha (convert Set -> Array)
         onSelectMember(Array.from(newSelectedUsers))
 
+        // Reset search input
         setTimeout(() => {
             setInputValue('')
         }, 0)
@@ -87,7 +79,6 @@ const AssignMemberField = memo(function AssignMemberField({
 
     return (
         <div className="flex flex-col gap-3">
-            {/* 1. INPUT AREA */}
             <Autocomplete
                 aria-label="Select member"
                 classNames={{
@@ -122,7 +113,7 @@ const AssignMemberField = memo(function AssignMemberField({
                                 alt={user.displayName}
                                 className="shrink-0"
                                 size="sm"
-                                src={optimizeCloudinary(user.avatar)}
+                                src={optimizeCloudinary(user.avatar ?? '')}
                             />
                             <div className="flex flex-col">
                                 <span className="text-small font-medium">
@@ -136,39 +127,6 @@ const AssignMemberField = memo(function AssignMemberField({
                     </AutocompleteItem>
                 )}
             </Autocomplete>
-
-            {/* 2. SELECTED USERS DISPLAY (Show selectedUser by array) */}
-            {users.filter((user) => selectedUsers.has(user.id)).length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                    {users
-                        .filter((user) => selectedUsers.has(user.id))
-                        .map((user) => (
-                            <Chip
-                                key={user.id}
-                                variant="flat"
-                                color="primary"
-                                avatar={
-                                    <Avatar
-                                        name={user.displayName}
-                                        src={optimizeCloudinary(user.avatar)}
-                                    />
-                                }
-                                // Chỉ hiện nút xóa nếu có truyền hàm onRemoveMember
-                                onClose={
-                                    onRemoveMember
-                                        ? () => onRemoveMember(user.id)
-                                        : undefined
-                                }
-                                classNames={{
-                                    base: 'pl-1 h-8', // Chỉnh padding để Avatar đẹp hơn
-                                    content: 'font-medium text-small pr-1',
-                                }}
-                            >
-                                {user.displayName}
-                            </Chip>
-                        ))}
-                </div>
-            )}
         </div>
     )
 })

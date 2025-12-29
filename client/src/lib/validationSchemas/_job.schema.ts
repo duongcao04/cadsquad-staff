@@ -1,4 +1,4 @@
-import { isValid, parseISO } from 'date-fns'
+import { isAfter, isValid, parseISO } from 'date-fns'
 import * as yup from 'yup'
 import { z } from 'zod'
 
@@ -13,54 +13,57 @@ export const CreateJobSchema = yup.object({
         .required('Job type is required'),
     displayName: yup.string().required('Display name is required'),
     description: yup.string().optional(),
-    attachmentUrls: yup.array(yup.string().required()).optional(),
+
+    // Arrays should default to empty arrays to match DTO logic
+    attachmentUrls: yup.array().of(yup.string().required()).default([]),
+
     clientName: yup.string().required('Client name is required'),
-    incomeCost: yup.number().required('Income cost is required'),
-    sumStaffCost: yup.number().optional(),
-    assigneeIds: yup.array().of(yup.string().required()).optional(),
-    paymentChannelId: yup.string().nullable(),
-    priority: yup
-        .string()
-        .oneOf(
-            ['LOW', 'MEDIUM', 'HIGH', 'URGENT'],
-            'Priority must be one of: LOW, MEDIUM, HIGH, URGENT'
-        )
-        .optional(),
-    isPinned: yup.boolean().optional(),
-    isPublished: yup.boolean().optional(),
-    isPaid: yup.boolean().optional(),
+
+    // Cost fields: In DTO they are strings (from input) but validated as numbers here
+    incomeCost: yup
+        .number()
+        .min(1, "Income must be greater than $1")
+        .typeError('Income cost must be a number')
+        .required('Income cost is required'),
+
+    totalStaffCost: yup
+        .number()
+        .typeError('Total staff cost must be a number')
+        .optional()
+        .default(0),
+
+    jobAssignments: yup.array().of(
+        yup.object({
+            userId: yup.string().required('User ID is required'),
+            staffCost: yup.number().typeError('Staff cost must be a number').required()
+        })
+    ).min(1, 'At least one member is required').required(),
+
+    paymentChannelId: yup.string().uuid().nullable().optional(),
+
     startedAt: yup
         .string()
         .required('Started at is required')
         .test('is-iso-string', 'Date must be a valid ISO string', (value) => {
-            // If the field is empty or null, other validations (like .required()) handle it
-            if (!value) return true
-
-            const parsedDate = parseISO(value)
-            // Check if it's a valid date object after parsing
-            return isValid(parsedDate)
+            return !value || isValid(parseISO(value));
         }),
+
     dueAt: yup
         .string()
         .required('Due date is required')
         .test('is-iso-string', 'Date must be a valid ISO string', (value) => {
-            if (!value) return true
-            const parsedDate = parseISO(value)
-            return isValid(parsedDate)
+            return !value || isValid(parseISO(value));
         })
-        .test('is-future', 'Due date cannot be in the past', (value) => {
-            if (!value) return true
-            const parsedDate = parseISO(value)
-
-            // If the date is invalid, we return true here so the 'is-iso-string'
-            // error shows instead of this one.
-            if (!isValid(parsedDate)) return true
-
-            // Check if date is in the future
-            return parsedDate > new Date()
+        .test('is-after-start', 'Due date must be after start date', function (value) {
+            const { startedAt } = this.parent;
+            if (!value || !startedAt) return true;
+            const start = parseISO(startedAt);
+            const end = parseISO(value);
+            return isValid(start) && isValid(end) && isAfter(end, start);
         }),
-})
-export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>
+});
+
+export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>;
 
 export const UpdateJobSchema = CreateJobSchema.partial()
 export type TUpdateJobInput = yup.InferType<typeof UpdateJobSchema>

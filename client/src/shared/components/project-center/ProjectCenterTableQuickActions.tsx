@@ -12,6 +12,7 @@ import {
     CircleCheck,
     CircleDollarSign,
     EllipsisVerticalIcon,
+    Paperclip,
     SquareArrowOutUpRight,
     Trash,
     UserPlus,
@@ -28,232 +29,192 @@ import type { TJob } from '@/shared/types'
 import { INTERNAL_URLS } from '../../../lib'
 import { queryClient } from '../../../main'
 import AssignMemberModal from './AssignMemberModal'
+import AddAttachmentsModal from './AddAttachmentsModal'
 import UpdateCostModal from './UpdateCostModal'
 
 type ProjectCenterTableQuickActionsProps = {
     data: TJob
 }
+
 export function ProjectCenterTableQuickActions({
     data,
 }: ProjectCenterTableQuickActionsProps) {
     const { isAdmin, isAccounting } = useProfile()
 
+    // --- Mutations ---
     const markAsPaidMutation = useUpdateJobMutation((res) => {
         addToast({
-            title: 'Mark as paid successfully',
-            description: `#${res.result?.no ?? data?.no} has been marked as paid`,
+            title: 'Payment Status Updated',
+            description: `#${res.result?.no ?? data?.no} marked as paid`,
             color: 'success',
         })
-        queryClient.invalidateQueries({
-            queryKey: ['jobs'],
-        })
+        queryClient.invalidateQueries({ queryKey: ['jobs'] })
     })
 
-    const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
-        useDeleteJobMutation()
+    const { mutateAsync: deleteJobMutation, isPending: isDeleting } = useDeleteJobMutation()
 
-    const {
-        isOpen: isOpenAssignModal,
-        onOpen: onOpenAssignModal,
-        onClose: onCloseAssignModal,
-    } = useDisclosure({
-        id: 'AssignMemberModal',
-    })
-    const {
-        isOpen: isOpenModal,
-        onOpen: onOpenModal,
-        onClose: onCloseModal,
-    } = useDisclosure({
-        id: 'ConfirmDeleteModal',
-    })
+    // --- Modal Controllers ---
+    const assignModal = useDisclosure()
+    const deleteModal = useDisclosure()
+    const paidConfirmModal = useDisclosure()
+    const updateCostModal = useDisclosure()
+    const attachmentModal = useDisclosure()
 
-    const {
-        isOpen: isOpenMAPModal,
-        onOpen: onOpenMAPModal,
-        onClose: onCloseMAPModal,
-    } = useDisclosure({
-        id: 'MarkAsPaidModal',
-    })
-
-    const {
-        isOpen: isOpenUCostModal,
-        onOpen: onOpenUCostModal,
-        onClose: onCloseUCostModal,
-    } = useDisclosure({
-        id: 'UpdateCostModal',
-    })
-
+    // --- Handlers ---
     const onDeleteJob = async () => {
         await deleteJobMutation(data?.id, {
-            onSuccess: () => {
-                onCloseModal()
-            },
+            onSuccess: () => deleteModal.onClose(),
         })
     }
 
     const handleOpenMarkAsPaidModal = () => {
         if (data.isPaid) {
             addToast({
-                title: `#${data.no} is already paid`,
-                color: 'danger',
+                title: 'Action redundant',
+                description: `#${data.no} is already paid`,
+                color: 'warning',
             })
         } else {
-            onOpenMAPModal()
+            paidConfirmModal.onOpen()
         }
     }
 
     const handleMarkAsPaid = async () => {
-        if (data?.id) {
-            await markAsPaidMutation.mutateAsync(
-                {
-                    jobId: data?.id,
-                    data: {
-                        isPaid: true,
-                    },
-                },
-                {
-                    onSuccess: () => {
-                        onCloseMAPModal()
-                    },
-                }
-            )
-        }
+        if (!data?.id) return
+        await markAsPaidMutation.mutateAsync(
+            {
+                jobId: data.id,
+                data: { isPaid: true },
+            },
+            {
+                onSuccess: () => paidConfirmModal.onClose(),
+            }
+        )
     }
 
     return (
         <>
-            {isOpenModal && (
+            {/* 1. Assignment Modal (Member selection + Cost input) */}
+            <AssignMemberModal
+                isOpen={assignModal.isOpen}
+                onClose={assignModal.onClose}
+                jobNo={data.no}
+            />
+
+            {/* 2. Attachment Modal (URL / File links) */}
+            <AddAttachmentsModal
+                isOpen={attachmentModal.isOpen}
+                onClose={attachmentModal.onClose}
+                jobNo={data.no}
+            />
+
+            {/* 3. Delete Confirmation */}
+            {deleteModal.isOpen && (
                 <ConfirmDeleteModal
-                    isOpen={isOpenModal}
-                    onClose={onCloseModal}
+                    isOpen={deleteModal.isOpen}
+                    onClose={deleteModal.onClose}
                     onConfirm={onDeleteJob}
-                    title={'Delete job'}
-                    description={`#${data?.no}`}
+                    title="Delete Job"
+                    description={`Are you sure you want to permanently delete job #${data?.no}?`}
                     isLoading={isDeleting}
-                    style={{
-                        zIndex: 9999999999,
-                    }}
                 />
             )}
-            {isOpenUCostModal && (
-                <UpdateCostModal
-                    isOpen={isOpenUCostModal}
-                    onClose={onCloseUCostModal}
-                    data={data}
-                />
-            )}
-            {isOpenMAPModal && (
+
+            {/* 4. Payment Confirmation */}
+            {paidConfirmModal.isOpen && (
                 <ConfirmDeleteModal
-                    isOpen={isOpenMAPModal}
-                    onClose={onCloseMAPModal}
+                    isOpen={paidConfirmModal.isOpen}
+                    onClose={paidConfirmModal.onClose}
                     onConfirm={handleMarkAsPaid}
-                    title={`Mark #${data.no} as paid`}
-                    description={`Are you sure you want to mark #${data.no} as paid? This action cannot be undone.`}
-                    confirmText="Yes"
+                    title={`Mark #${data.no} as Paid`}
+                    description="This confirms the project is settled. Staff will be notified."
+                    confirmText="Confirm Payment"
                     isLoading={markAsPaidMutation.isPending}
-                    style={{
-                        zIndex: 9999999999,
-                    }}
                     color="primary"
                 />
             )}
 
-            <AssignMemberModal
-                isOpen={isOpenAssignModal}
-                onClose={onCloseAssignModal}
-                jobNo={data.no}
-            />
+            {/* 5. Update Cost Modal */}
+            {updateCostModal.isOpen && (
+                <UpdateCostModal
+                    isOpen={updateCostModal.isOpen}
+                    onClose={updateCostModal.onClose}
+                    data={data}
+                />
+            )}
 
-            <Dropdown>
+            {/* --- DROPDOWN TRIGGER --- */}
+            <Dropdown placement="bottom-end" backdrop="blur">
                 <DropdownTrigger>
-                    <Button isIconOnly variant="light" size="sm">
-                        <EllipsisVerticalIcon size={16} />
+                    <Button isIconOnly variant="light" size="sm" radius="full">
+                        <EllipsisVerticalIcon size={18} className="text-default-400" />
                     </Button>
                 </DropdownTrigger>
-                <DropdownMenu aria-label="Job menu actions">
-                    <DropdownSection key="feature_actions" title="View">
+                <DropdownMenu 
+                    aria-label="Action menu" 
+                    variant="flat"
+                    disabledKeys={data.isPaid ? ['markAsPaid'] : []}
+                >
+                    {/* General Section: Visible to All */}
+                    <DropdownSection title="General">
                         <DropdownItem
-                            key="openInNewTab"
-                            startContent={
-                                <SquareArrowOutUpRight
-                                    className="text-text-subdued"
-                                    size={14}
-                                />
-                            }
-                            onPress={() =>
-                                window.open(
-                                    INTERNAL_URLS.getJobDetailUrl(data.no),
-                                    '_blank'
-                                )
-                            }
+                            key="openDetail"
+                            startContent={<SquareArrowOutUpRight size={16} />}
+                            onPress={() => window.open(INTERNAL_URLS.getJobDetailUrl(data.no), '_blank')}
                         >
-                            Open in new tab
+                            Open detail
+                        </DropdownItem>
+                        <DropdownItem
+                            key="attachments"
+                            startContent={<Paperclip size={16} />}
+                            onPress={attachmentModal.onOpen}
+                        >
+                            Add attachments
                         </DropdownItem>
                     </DropdownSection>
-                    <DropdownSection key="job_actions" title="Job">
-                        <DropdownItem
-                            key="assignReassign"
-                            style={{
-                                display: isAdmin ? 'flex' : 'none',
-                            }}
-                            startContent={
-                                <UserPlus
-                                    size={14}
-                                    className="text-text-subdued"
-                                />
-                            }
-                            onPress={() => onOpenAssignModal()}
-                        >
-                            Assign / Reassign
-                        </DropdownItem>
-                        <DropdownItem
-                            key="deleteJob"
-                            style={{
-                                display: isAdmin ? 'flex' : 'none',
-                            }}
-                            startContent={
-                                <Trash
-                                    size={14}
-                                    className="text-text-subdued"
-                                />
-                            }
-                            onPress={() => onOpenModal()}
-                        >
-                            Delete
-                        </DropdownItem>
-                    </DropdownSection>
-                    <DropdownSection
-                        key="payment_actions"
-                        title="Payment"
-                        style={{
-                            display: isAdmin || isAccounting ? 'block' : 'none',
-                        }}
-                    >
-                        <DropdownItem
-                            key="updateCost"
-                            startContent={
-                                <CircleDollarSign
-                                    size={14}
-                                    className="text-text-subdued"
-                                />
-                            }
-                            onPress={() => onOpenUCostModal()}
-                        >
-                            Update Cost
-                        </DropdownItem>
-                        <DropdownItem
-                            key="markAsPaid"
-                            startContent={
-                                <CircleCheck
-                                    size={14}
-                                    className="text-text-subdued"
-                                />
-                            }
-                            onPress={() => handleOpenMarkAsPaidModal()}
-                        >
-                            Mark as Paid
-                        </DropdownItem>
-                    </DropdownSection>
+
+                    {/* Admin Section: Management */}
+                    {isAdmin && (
+                        <DropdownSection title="Management">
+                            <DropdownItem
+                                key="assign"
+                                startContent={<UserPlus size={16} />}
+                                onPress={assignModal.onOpen}
+                            >
+                                Assign / Reassign
+                            </DropdownItem>
+                            <DropdownItem
+                                key="delete"
+                                color="danger"
+                                className="text-danger"
+                                startContent={<Trash size={16} />}
+                                onPress={deleteModal.onOpen}
+                            >
+                                Delete job
+                            </DropdownItem>
+                        </DropdownSection>
+                    )}
+
+                    {/* Financial Section: Admin & Accounting Only */}
+                    {(isAdmin || isAccounting) && (
+                        <DropdownSection title="Accounting">
+                            <DropdownItem
+                                key="updateCost"
+                                startContent={<CircleDollarSign size={16} />}
+                                onPress={updateCostModal.onOpen}
+                            >
+                                Update project cost
+                            </DropdownItem>
+                            <DropdownItem
+                                key="markAsPaid"
+                                color="primary"
+                                startContent={<CircleCheck size={16} />}
+                                onPress={handleOpenMarkAsPaidModal}
+                            >
+                                Mark as paid
+                            </DropdownItem>
+                        </DropdownSection>
+                    )}
                 </DropdownMenu>
             </Dropdown>
         </>

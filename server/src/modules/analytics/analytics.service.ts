@@ -65,9 +65,11 @@ export class AnalyticsService {
 			where: {
 				isActive: true,
 				// Only consider users who actually finished jobs in this period
-				jobsAssigned: {
+				jobAssignments: {
 					some: {
-						finishedAt: { gte: performerStartDate.toDate() },
+						job: {
+							finishedAt: { gte: performerStartDate.toDate() }
+						},
 						// TODO: Chỉ lấy job đã hoàn thành
 						// status: { systemType: 'COMPLETED' }
 					}
@@ -79,25 +81,35 @@ export class AnalyticsService {
 				email: true,
 				avatar: true,
 				// Fetch only the relevant completed jobs to count them accurately for this period
-				jobsAssigned: {
+				jobAssignments: {
 					where: {
-						finishedAt: { gte: performerStartDate.toDate() },
-						status: { systemType: 'COMPLETED' }
+						job: {
+							AND: [
+								{ finishedAt: { gte: performerStartDate.toDate() } },
+								{ status: { systemType: 'COMPLETED' } }
+							]
+						},
 					},
-					select: { incomeCost: true }
+					select: {
+						job: {
+							select: {
+								incomeCost: true
+							}
+						}
+					}
 				}
 			}
 		});
 
 		const topPerformers = performers.map(user => {
-			const totalIncome = user.jobsAssigned.reduce((sum, job) => sum + job.incomeCost, 0);
+			const totalIncome = user.jobAssignments.reduce((sum, ass) => sum + ass.job.incomeCost, 0);
 			return {
 				id: user.id,
 				displayName: user.displayName,
 				email: user.email,
 				avatar: user.avatar,
 				totalIncome,
-				jobsCount: user.jobsAssigned.length, // This is the "assignee number" for this period
+				jobsCount: user.jobAssignments.length, // This is the "assignee number" for this period
 			};
 		})
 			// CHANGED: Sort by jobsCount descending (Highest number of finished jobs first)
@@ -184,7 +196,7 @@ export class AnalyticsService {
 	): Prisma.JobWhereInput {
 		if (userRole === RoleEnum.ADMIN) return {}
 		return {
-			assignee: { some: { id: userId } },
+			assignments: { some: { id: userId } },
 		}
 	}
 }
