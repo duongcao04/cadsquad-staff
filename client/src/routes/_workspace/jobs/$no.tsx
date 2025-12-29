@@ -5,79 +5,78 @@ import {
     Chip,
     Divider,
     Progress,
-    Skeleton,
     Snippet,
-    Spacer,
+    Spinner,
     Tab,
     Tabs,
     useDisclosure,
 } from '@heroui/react'
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
-    Banknote,
-    Briefcase,
     CalendarDays,
     ChevronLeft,
-    CircleDollarSign,
     CirclePlus,
     FileText,
-    Flag,
-    House,
     LibraryBig,
     LinkIcon,
     Maximize2,
     MessageSquare,
     Pencil,
     RotateCcw,
-    Trash2,
     UserRound,
     Users,
     Wallet,
     TrendingDown,
-    Calculator,
     ChevronRight,
+    AlertCircle,
+    CheckCircle2,
+    Clock,
+    TruckElectricIcon,
 } from 'lucide-react'
-import React, { useMemo, useState, useEffect } from 'react'
-
+import { useMemo, useState, useEffect } from 'react'
 import {
     ApiResponse,
     dateFormatter,
     EXTERNAL_URLS,
-    formatCurrencyVND,
     getPageTitle,
     INTERNAL_URLS,
-    optimizeCloudinary,
     PAID_STATUS_COLOR,
     useUpdateJobMutation,
     useProfile,
+    currencyFormatter,
 } from '@/lib'
 import { jobActivityLogsOptions, jobByNoOptions } from '@/lib/queries'
 import { TJob } from '@/shared/types'
-
 import {
+    DeliverJobModal,
     HeroButton,
     HeroCard,
     HeroCardBody,
     HeroCardHeader,
     JobActivityHistory,
+    JobStatusChip,
     ScrollArea,
     ScrollBar,
-} from '../../../shared/components'
-import JobAttachmentsField from '../../../shared/components/form-fields/JobAttachmentsField'
-import JobAssigneesView from '../../../shared/components/job-detail/JobAssigneesView'
-import JobCommentsView from '../../../shared/components/job-detail/JobCommentsView'
-import JobDescriptionView from '../../../shared/components/job-detail/JobDescriptionView'
-import CountdownTimer from '../../../shared/components/ui/countdown-timer'
+} from '@/shared/components'
+import JobAttachmentsField from '@/shared/components/form-fields/JobAttachmentsField'
+import JobAssigneesView from '@/shared/components/job-detail/JobAssigneesView'
+import JobCommentsView from '@/shared/components/job-detail/JobCommentsView'
 import Timmer from '@/shared/components/layouts/PageHeading/Timmer'
-import UpdateCostModal from '../../../shared/components/project-center/UpdateCostModal'
+import UpdateCostModal from '@/shared/components/project-center/UpdateCostModal'
+import { JobStatusSystemTypeEnum } from '../../../shared/enums'
+import JobDescriptionModal from '../../../shared/components/job-detail/JobDescriptionModal'
+import HtmlReactParser from '../../../shared/components/ui/html-react-parser'
+import CountdownTimer from '../../../shared/components/ui/countdown-timer'
 
 export const Route = createFileRoute('/_workspace/jobs/$no')({
     head: (ctx) => {
         const response = ctx.loaderData as unknown as ApiResponse<TJob>
         return {
-            meta: [{ title: getPageTitle(response?.result?.displayName ?? 'Job') }],
+            meta: [
+                { title: getPageTitle(response?.result?.displayName ?? 'Job') },
+            ],
         }
     },
     loader({ context, params }) {
@@ -90,234 +89,721 @@ export const Route = createFileRoute('/_workspace/jobs/$no')({
 
 function JobDetailPage() {
     const { no } = Route.useParams()
+    // 1. TOP-LEVEL HOOKS
     const { isAdmin } = useProfile()
-    const financialModal = useDisclosure()
 
-    // 1. Fetch Data
-    const { data: job, isFetching: isLoading } = useSuspenseQuery({
+    const deliverJobDisclosure = useDisclosure()
+    const financialModal = useDisclosure()
+    const fullEditorDisclosure = useDisclosure()
+
+    const { data: job } = useQuery({
         ...jobByNoOptions(no),
+        enabled: !!no,
     })
 
     const {
         data: activityLogs,
-        refetch,
-        isFetching: isActivityLogLoading,
+        refetch: refetchLogs,
+        isFetching: isLogsLoading,
     } = useQuery({
         ...jobActivityLogsOptions(job?.id ?? ''),
         enabled: !!job?.id,
     })
 
-    // 2. Mutations
-    const updateAttachmentMutation = useUpdateJobMutation(() => {
-        addToast({ title: 'Attachments updated', color: 'success' })
+    const updateJobMutation = useUpdateJobMutation(() => {
+        addToast({ title: 'Success', color: 'success' })
     })
 
-    // 3. Derived Logic
-    const isJobCompleted = job?.completedAt !== null
-    const profit = useMemo(() => (job?.incomeCost || 0) - (job?.totalStaffCost || 0), [job])
+    const [descContent, setDescContent] = useState('')
+
+    useEffect(() => {
+        if (job?.description) setDescContent(job.description)
+    }, [job?.description])
+
+    const isJobCompleted =
+        job?.status?.systemType === JobStatusSystemTypeEnum.COMPLETED
+
+    const isJobFinished =
+        job?.status?.systemType === JobStatusSystemTypeEnum.TERMINATED
+
+    const isJobWaitReview =
+        job?.status?.systemType === JobStatusSystemTypeEnum.WAIT_REVIEW
+
     const budgetUsage = useMemo(() => {
         if (!job?.incomeCost || job.incomeCost === 0) return 0
-        return Math.min(Math.round(((job.totalStaffCost || 0) / job.incomeCost) * 100), 100)
+        return Math.min(
+            Math.round(((job.totalStaffCost || 0) / job.incomeCost) * 100),
+            100
+        )
     }, [job])
 
-    if (!job) return null
+    if (!job) {
+        return <Spinner />
+    }
 
     return (
         <div className="size-full">
-            {financialModal.isOpen && (
+            {/* MODALS */}
+            {deliverJobDisclosure.isOpen && job && (
+                <DeliverJobModal
+                    isOpen={deliverJobDisclosure.isOpen}
+                    onClose={deliverJobDisclosure.onClose}
+                    defaultJob={job.id}
+                />
+            )}
+            {financialModal.isOpen && job && (
                 <UpdateCostModal
                     data={job}
                     isOpen={financialModal.isOpen}
                     onClose={financialModal.onClose}
                 />
             )}
+            {fullEditorDisclosure.isOpen && job && (
+                <JobDescriptionModal
+                    isOpen={fullEditorDisclosure.isOpen}
+                    onClose={fullEditorDisclosure.onClose}
+                    value={descContent}
+                    onChange={setDescContent}
+                    // onSave={() => handleSaveDescription(descContent)}
+                    title={`Editor: #${job.no}`}
+                />
+            )}
 
             {/* --- Header Area --- */}
             <div className="py-4 px-4 flex items-start justify-between bg-background/50 backdrop-blur-md sticky top-0 z-10 border-b border-divider">
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2">
+                <div className="space-y-5">
+                    <div className="flex items-center gap-4">
                         <Link to={INTERNAL_URLS.projectCenter}>
-                            <Button isIconOnly variant="light" size="sm"><ChevronLeft size={20} /></Button>
+                            <Button isIconOnly variant="light" size="sm">
+                                <ChevronLeft size={20} />
+                            </Button>
                         </Link>
-                        <h1 className="text-2xl font-bold tracking-tight">{job.displayName}</h1>
-                        <PaidChip status={job.isPaid ? 'paid' : 'unpaid'} />
+                        <h1 className="text-2xl font-bold tracking-tight">
+                            {job.displayName}
+                        </h1>
                     </div>
-                    <div className="flex gap-4 text-tiny text-default-500 items-center">
-                        <span className="font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">#{job.no}</span>
+                    <div className="flex gap-3 text-xs text-text-subdued items-center">
+                        <span className="font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
+                            #{job.no}
+                        </span>
                         <Divider orientation="vertical" className="h-3" />
-                        <span className="flex items-center gap-1"><UserRound size={14} /> {job.clientName}</span>
+                        <p className="flex items-center gap-1.5 font-medium">
+                            <UserRound size={14} />
+                            {job.client.name}
+                        </p>
                         <Divider orientation="vertical" className="h-3" />
-                        <span className="flex items-center gap-1"><LibraryBig size={14} /> {job.type?.displayName}</span>
+                        <p className="flex items-center gap-1.5 font-medium">
+                            <LibraryBig size={14} />
+                            {job.type?.displayName}
+                        </p>
+                        <Divider orientation="vertical" className="h-3" />
+                        <p className="flex items-center gap-1.5 font-medium">
+                            <CalendarDays size={14} />
+                            {isJobCompleted ? (
+                                `Completed`
+                            ) : isJobFinished ? (
+                                `Finish`
+                            ) : (
+                                <span className="flex items-center justify-start gap-1">
+                                    Due on:
+                                    <CountdownTimer
+                                        targetDate={dayjs(job.dueAt)}
+                                        mode="text"
+                                        hiddenUnits={['second']}
+                                        className="font-semibold! text-text-7! dark:text-text-subdued!"
+                                    />
+                                </span>
+                            )}
+                        </p>
                     </div>
                 </div>
                 <Timmer />
             </div>
 
             {/* --- Main Content --- */}
-            <ScrollArea className="w-full h-[calc(100vh-120px)]">
-                <div className="px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
-                    
-                    {/* LEFT COLUMN - 4 TABS */}
-                    <div className="lg:col-span-2 flex flex-col gap-4">
-                        <Tabs aria-label="Job Detail Tabs" variant="underlined" color="primary" classNames={{ tab: "font-bold" }}>
-                            
-                            {/* TAB 1: OVERVIEW */}
-                            <Tab key="overview" title={<div className="flex items-center gap-2"><FileText size={16} /><span>Overview</span></div>}>
-                                <div className="space-y-8 pt-4">
-                                    {/* <JobDescriptionView job={job} /> */}
-                                    <JobAssigneesView jobId={job.id} jobNo={job.no} />
-                                    
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <h3 className="text-xs font-black uppercase tracking-widest text-default-400">Activity Timeline</h3>
-                                            <HeroButton isIconOnly variant="light" size="sm" onPress={() => refetch()} isLoading={isActivityLogLoading}><RotateCcw size={14} /></HeroButton>
-                                        </div>
-                                        <JobActivityHistory logs={activityLogs} />
+            <ScrollArea className="mt-4 w-full h-[calc(100vh-120px)] space-y-6 px-4">
+                <ScrollBar orientation="vertical" />
+                <ScrollBar orientation="horizontal" />
+                {/* ACTION BAR */}
+                <HeroCard className="bg-background-muted border-border-muted shadow-xs">
+                    <HeroCardBody className="w-full flex justify-between">
+                        <div className="flex justify-between py-3">
+                            {/* SECTION 1: CORE PROGRESS STATUS */}
+                            <div className="flex flex-col gap-1">
+                                {/* Status Label & Dot */}
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="w-2 h-2 rounded-full animate-pulse"
+                                        style={{
+                                            backgroundColor:
+                                                job.status.hexColor,
+                                        }}
+                                    />
+                                    <span className="text-[10px] font-black text-text-subdued uppercase tracking-widest leading-none">
+                                        Status
+                                    </span>
+                                </div>
+
+                                <div className="flex items-end gap-4">
+                                    <JobStatusChip
+                                        data={job.status}
+                                        classNames={{
+                                            base: 'min-w-30! text-center!',
+                                        }}
+                                    />
+
+                                    {/* DYNAMIC TIMELINE PROGRESS */}
+                                    <div className="h-full flex flex-col justify-center border-l-1 border-border-default pl-4 py-0.5">
+                                        {job.finishedAt ? (
+                                            <>
+                                                <div
+                                                    className="flex items-center gap-1"
+                                                    style={{
+                                                        color: job.status
+                                                            .hexColor,
+                                                    }}
+                                                >
+                                                    <Clock
+                                                        size={12}
+                                                        strokeWidth={2.3}
+                                                    />
+                                                    <span className="text-[11px] font-semibold leading-4">
+                                                        Finished{' '}
+                                                        {dateFormatter(
+                                                            job.finishedAt,
+                                                            {
+                                                                format: 'longDate',
+                                                            }
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <span className="text-[10px] text-text-subdued italic">
+                                                    Approved at
+                                                    <span className="pl-1">
+                                                        {job.completedAt
+                                                            ? dateFormatter(
+                                                                  job.completedAt,
+                                                                  {
+                                                                      format: 'longDate',
+                                                                  }
+                                                              )
+                                                            : 'Unknown date'}
+                                                    </span>
+                                                </span>
+                                            </>
+                                        ) : job.completedAt ? (
+                                            <>
+                                                <div
+                                                    className="flex items-center gap-1"
+                                                    style={{
+                                                        color: job.status
+                                                            .hexColor,
+                                                    }}
+                                                >
+                                                    <Clock
+                                                        size={12}
+                                                        strokeWidth={2.3}
+                                                    />
+                                                    <span className="text-[10px] font-semibold leading-4">
+                                                        Completed{' '}
+                                                        {dateFormatter(
+                                                            job.completedAt,
+                                                            {
+                                                                format: 'longDate',
+                                                            }
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <span className="text-[10px] text-text-subdued italic">
+                                                    Waiting for payouts
+                                                </span>
+                                            </>
+                                        ) : isJobWaitReview ? (
+                                            <>
+                                                <div
+                                                    className="flex items-center gap-1"
+                                                    style={{
+                                                        color: job.status
+                                                            .hexColor,
+                                                    }}
+                                                >
+                                                    <TruckElectricIcon
+                                                        size={16}
+                                                        strokeWidth={2.3}
+                                                    />
+                                                    <span className="text-xs font-semibold leading-4">
+                                                        Delivering{' '}
+                                                    </span>
+                                                </div>
+                                                <span className="text-[10px] text-text-subdued italic">
+                                                    Waiting for approve
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="text-[11px] font-bold text-default-600">
+                                                    Active Workflow
+                                                </span>
+                                                <span className="text-[10px] text-text-subdued italic">
+                                                    Started{' '}
+                                                    {dayjs(
+                                                        job.startedAt
+                                                    ).fromNow()}
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* SECTION 2: ACTIONS */}
+                            <div className="flex items-center gap-2">
+                                {isJobCompleted ||
+                                isJobFinished ||
+                                isJobWaitReview ? (
+                                    <></>
+                                ) : (
+                                    <Button
+                                        size="sm"
+                                        variant="solid"
+                                        color="primary"
+                                        startContent={
+                                            <CheckCircle2 size={16} />
+                                        }
+                                        onPress={deliverJobDisclosure.onOpen}
+                                    >
+                                        Deliver Job
+                                    </Button>
+                                )}
+                                <Button
+                                    size="sm"
+                                    variant="light"
+                                    color="danger"
+                                    isIconOnly
+                                >
+                                    <AlertCircle size={16} />
+                                </Button>
+                            </div>
+                        </div>
+                    </HeroCardBody>
+                </HeroCard>
+
+                <div className="my-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                        <Tabs variant="underlined" color="primary">
+                            {/* TAB 1: OVERVIEW */}
+                            <Tab
+                                key="overview"
+                                title={
+                                    <div className="flex items-center gap-2">
+                                        <FileText size={16} />
+                                        <span>Overview</span>
+                                    </div>
+                                }
+                            >
+                                <div className="space-y-6">
+                                    <JobAssigneesView data={job} />
+                                    <HeroCard className="bg-background-muted px-0! overflow-hidden border-none shadow-none">
+                                        <HeroCardHeader className="justify-between py-1 text-text-8">
+                                            <span className="font-semibold text-xs tracking-wide text-text-default">
+                                                Description
+                                            </span>
+                                            <div className="flex gap-1">
+                                                <HeroButton
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    onPress={
+                                                        fullEditorDisclosure.onOpen
+                                                    }
+                                                >
+                                                    <Maximize2 size={14} />
+                                                </HeroButton>
+                                            </div>
+                                        </HeroCardHeader>
+                                        <HeroCardBody className="py-0! px-3 text-sm text-text-7">
+                                            {job.description ? (
+                                                <HtmlReactParser
+                                                    htmlString={job.description}
+                                                />
+                                            ) : (
+                                                <p className="text-default-400 italic text-center py-4">
+                                                    No description provided.
+                                                </p>
+                                            )}
+                                        </HeroCardBody>
+                                    </HeroCard>
+
+                                    <HeroCard className="bg-background-muted px-0! overflow-hidden border-none shadow-none">
+                                        <HeroCardHeader className="justify-between py-1 text-text-8">
+                                            <span className="font-semibold text-xs tracking-wide text-text-default">
+                                                Activity History
+                                            </span>
+                                            <Button
+                                                size="sm"
+                                                variant="light"
+                                                isIconOnly
+                                                onPress={() => refetchLogs()}
+                                                isLoading={isLogsLoading}
+                                            >
+                                                <RotateCcw size={14} />
+                                            </Button>
+                                        </HeroCardHeader>
+
+                                        <HeroCardBody>
+                                            <JobActivityHistory
+                                                logs={activityLogs}
+                                            />
+                                        </HeroCardBody>
+                                    </HeroCard>
                                 </div>
                             </Tab>
 
                             {/* TAB 2: ATTACHMENTS */}
-                            <Tab key="attachments" title={<div className="flex items-center gap-2"><LinkIcon size={16} /><span>Attachments</span><Chip size="sm" variant="flat">{job.attachmentUrls?.length || 0}</Chip></div>}>
+                            <Tab
+                                key="attachments"
+                                title={
+                                    <div className="flex items-center gap-2">
+                                        <LinkIcon size={16} />
+                                        <span>Attachments</span>
+                                        <Chip size="sm" variant="flat">
+                                            {job.attachmentUrls?.length || 0}
+                                        </Chip>
+                                    </div>
+                                }
+                            >
                                 <div className="pt-4">
-                                    <JobAttachmentsField 
-                                        defaultAttachments={job.attachmentUrls} 
-                                        onChange={(urls) => updateAttachmentMutation.mutate({ jobId: job.id, data: { attachmentUrls: urls } })} 
+                                    <JobAttachmentsField
+                                        defaultAttachments={job.attachmentUrls}
+                                        onChange={(urls) =>
+                                            updateJobMutation.mutate({
+                                                jobId: job.id,
+                                                data: {
+                                                    attachmentUrls: urls,
+                                                },
+                                            })
+                                        }
                                     />
                                 </div>
                             </Tab>
 
-                            {/* TAB 3: ASSIGNMENTS (Beautiful Financial View) */}
-                            <Tab key="assignments" title={<div className="flex items-center gap-2"><Users size={16} /><span>Assignments</span></div>}>
+                            {/* TAB 3: ASSIGNMENTS (Beautiful Version) */}
+                            <Tab
+                                key="assignments"
+                                title={
+                                    <div className="flex items-center gap-2">
+                                        <Users size={16} />
+                                        <span>Assignments</span>
+                                    </div>
+                                }
+                            >
                                 <div className="flex flex-col gap-6 py-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <HeroCard className="bg-primary/5 border-primary/20 shadow-none">
                                             <HeroCardBody className="flex-row items-center gap-4 p-4">
-                                                <div className="p-2.5 bg-primary rounded-xl text-white"><Wallet size={20} /></div>
-                                                <div className="flex flex-col flex-1">
-                                                    <span className="text-[10px] uppercase font-black text-primary/60">Total Payout</span>
-                                                    <span className="text-xl font-black text-primary">{formatCurrencyVND(job.totalStaffCost || 0)}</span>
+                                                <div className="p-2.5 bg-primary rounded-xl text-white">
+                                                    <Wallet size={20} />
                                                 </div>
-                                                {isAdmin && <Button size="sm" color="primary" variant="flat" onPress={financialModal.onOpen}><Pencil size={14}/></Button>}
+                                                <div className="flex flex-col flex-1">
+                                                    <span className="text-[10px] uppercase font-black text-primary/60">
+                                                        Total Staff Payout
+                                                    </span>
+                                                    <span className="text-xl font-black text-primary">
+                                                        {currencyFormatter(
+                                                            job.totalStaffCost ||
+                                                                0
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {isAdmin && (
+                                                    <Button
+                                                        size="sm"
+                                                        color="primary"
+                                                        variant="flat"
+                                                        onPress={
+                                                            financialModal.onOpen
+                                                        }
+                                                    >
+                                                        <Pencil size={14} />
+                                                    </Button>
+                                                )}
                                             </HeroCardBody>
                                         </HeroCard>
                                         <HeroCard className="bg-default-50 border-divider shadow-none">
                                             <HeroCardBody className="p-4 gap-2">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-[10px] uppercase font-black text-default-400">Budget Usage</span>
-                                                    <span className="text-xs font-bold">{budgetUsage}%</span>
+                                                    <span className="text-[10px] uppercase font-black text-default-400">
+                                                        Budget Usage
+                                                    </span>
+                                                    <span className="text-xs font-bold">
+                                                        {budgetUsage}%
+                                                    </span>
                                                 </div>
-                                                <Progress size="sm" value={budgetUsage} color={budgetUsage > 80 ? "danger" : "primary"} />
+                                                <Progress
+                                                    size="sm"
+                                                    value={budgetUsage}
+                                                    color={
+                                                        budgetUsage > 80
+                                                            ? 'danger'
+                                                            : 'primary'
+                                                    }
+                                                />
                                             </HeroCardBody>
                                         </HeroCard>
                                     </div>
 
                                     <div className="space-y-2">
                                         {job.assignments?.map((asgn) => (
-                                            <div key={asgn.id} className="group flex items-center justify-between p-3 bg-background hover:bg-default-50 rounded-2xl border border-divider transition-all">
+                                            <div
+                                                key={asgn.id}
+                                                className="group flex items-center justify-between p-3 bg-background hover:bg-default-50 rounded-2xl border border-divider transition-all"
+                                            >
                                                 <div className="flex items-center gap-3">
-                                                    <Avatar src={asgn.user.avatar} size="sm" isBordered color="primary" />
+                                                    <Avatar
+                                                        src={asgn.user.avatar}
+                                                        size="sm"
+                                                        isBordered
+                                                        color="primary"
+                                                    />
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-bold">{asgn.user.displayName}</span>
-                                                        <span className="text-[10px] uppercase text-default-400 font-bold">Project Partner</span>
+                                                        <span className="text-sm font-bold">
+                                                            {
+                                                                asgn.user
+                                                                    .displayName
+                                                            }
+                                                        </span>
+                                                        <span className="text-[10px] uppercase text-default-400 font-bold">
+                                                            Partner
+                                                        </span>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-4">
                                                     <div className="text-right">
-                                                        <p className="text-[10px] uppercase font-bold text-default-400">Payout</p>
-                                                        <p className="text-sm font-black text-primary">{isAdmin ? formatCurrencyVND(asgn.staffCost || 0) : '••••••'}</p>
+                                                        <p className="text-[10px] uppercase font-bold text-default-400">
+                                                            Payout
+                                                        </p>
+                                                        <p className="text-sm font-black text-primary">
+                                                            {isAdmin
+                                                                ? currencyFormatter(
+                                                                      asgn.staffCost ||
+                                                                          0
+                                                                  )
+                                                                : '••••••'}
+                                                        </p>
                                                     </div>
-                                                    <ChevronRight size={16} className="text-default-300 group-hover:text-primary transition-all" />
+                                                    <ChevronRight
+                                                        size={16}
+                                                        className="text-default-300 group-hover:text-primary transition-all"
+                                                    />
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                     <div className="p-4 rounded-2xl bg-warning-50 border border-warning-100 flex gap-3 items-start">
-                                        <TrendingDown className="text-warning-500 shrink-0 mt-0.5" size={16} />
-                                        <p className="text-tiny text-warning-700">Staff costs impact project margins. Verify accuracy before marking as paid.</p>
+                                        <TrendingDown
+                                            className="text-warning-500 shrink-0 mt-0.5"
+                                            size={16}
+                                        />
+                                        <p className="text-tiny text-warning-700">
+                                            Staff costs are deducted from
+                                            income. Ensure accuracy before
+                                            marking as paid.
+                                        </p>
                                     </div>
                                 </div>
                             </Tab>
 
                             {/* TAB 4: COMMENTS */}
-                            <Tab key="comments" title={<div className="flex items-center gap-2"><MessageSquare size={16} /><span>Comments</span><Chip size="sm" variant="flat">{job.comments?.length || 0}</Chip></div>}>
-                                <div className="pt-4"><JobCommentsView job={job} /></div>
+                            <Tab
+                                key="comments"
+                                title={
+                                    <div className="flex items-center gap-2">
+                                        <MessageSquare size={16} />
+                                        <span>Comments</span>
+                                        <Chip size="sm" variant="flat">
+                                            {job.comments?.length || 0}
+                                        </Chip>
+                                    </div>
+                                }
+                            >
+                                <div className="pt-4">
+                                    <JobCommentsView job={job} />
+                                </div>
                             </Tab>
                         </Tabs>
                     </div>
 
-                    {/* RIGHT COLUMN - SIDEBAR */}
-                    <div className="flex flex-col gap-6">
-                        {/* Financial Card */}
-                        <HeroCard className="border border-default-200 shadow-none">
-                            <HeroCardHeader className="justify-between py-2 border-b border-divider">
-                                <span className="text-xs font-black uppercase tracking-widest text-default-400">Financials</span>
-                                {isAdmin && <HeroButton isIconOnly size="sm" variant="light" onPress={financialModal.onOpen}><Pencil size={12}/></HeroButton>}
+                    {/* --- SIDEBAR AREA --- */}
+                    <div className="space-y-4">
+                        {/* 1. STATUS & FINANCIAL CARD (Mới: Gộp Status vào đây) */}
+                        <HeroCard className="border-divider shadow-none overflow-hidden">
+                            {/* Dải màu trạng thái chạy dọc bên trái để nhấn mạnh */}
+                            <div
+                                className="absolute left-0 top-0 bottom-0 w-1"
+                                style={{
+                                    backgroundColor: job.isPaid
+                                        ? PAID_STATUS_COLOR.paid.hexColor
+                                        : PAID_STATUS_COLOR.unpaid.hexColor,
+                                }}
+                            />
+
+                            <HeroCardHeader className="justify-between py-3 border-b border-divider bg-default-50/30">
+                                <div className="flex flex-col gap-1">
+                                    <span className="flex items-center gap-2 text-xs font-medium text-text-subdued">
+                                        Payment status
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <div
+                                            className="w-2 h-2 rounded-full animate-pulse"
+                                            style={{
+                                                backgroundColor: job.isPaid
+                                                    ? PAID_STATUS_COLOR.paid
+                                                          .hexColor
+                                                    : PAID_STATUS_COLOR.unpaid
+                                                          .hexColor,
+                                            }}
+                                        />
+                                        <span
+                                            className="text-sm font-bold"
+                                            style={{
+                                                color: job.isPaid
+                                                    ? PAID_STATUS_COLOR.paid
+                                                          .hexColor
+                                                    : PAID_STATUS_COLOR.unpaid
+                                                          .hexColor,
+                                            }}
+                                        >
+                                            {job.isPaid ? 'Paid' : 'Unpaid'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <PaidChip
+                                    status={job.isPaid ? 'paid' : 'unpaid'}
+                                />
                             </HeroCardHeader>
-                            <HeroCardBody className="text-sm space-y-3 pt-3">
-                                {isAdmin && <div className="flex justify-between text-default-500"><span>Income</span><span className="font-bold text-foreground">{formatCurrencyVND(job.incomeCost)}</span></div>}
-                                <div className="flex justify-between text-primary"><span>Total Payout</span><span className="font-black">{formatCurrencyVND(job.totalStaffCost || job.staffCost)}</span></div>
+
+                            <HeroCardBody className="text-sm space-y-4 pt-4">
+                                {/* Financial Info */}
+                                <div className="space-y-3">
+                                    {isAdmin && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-text-subdued text-xs">
+                                                Income cost
+                                            </span>
+                                            <span className="font-semibold text-text-default">
+                                                {currencyFormatter(
+                                                    job.incomeCost
+                                                )}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center text-primary">
+                                        <span className="text-text-subdued text-xs">
+                                            Staff cost
+                                        </span>
+                                        <span className="font-semibold text-text-default">
+                                            {currencyFormatter(
+                                                job.totalStaffCost ||
+                                                    job.staffCost
+                                            )}
+                                        </span>
+                                    </div>
+                                </div>
+
                                 <Divider />
-                                <div className="flex justify-between text-[10px] opacity-60 uppercase font-bold"><span>Channel</span><span>{job.paymentChannel?.displayName || '-'}</span></div>
+
+                                {/* Account Info */}
+                                <div className="flex justify-between items-center">
+                                    <span className="text-text-subdued text-xs">
+                                        Payment via
+                                    </span>
+                                    <Chip
+                                        size="sm"
+                                        variant="dot"
+                                        classNames={{
+                                            base: 'border-none bg-default-100',
+                                            content: 'font-bold text-[10px]',
+                                        }}
+                                    >
+                                        {job.paymentChannel?.displayName}
+                                    </Chip>
+                                </div>
                             </HeroCardBody>
                         </HeroCard>
 
-                        {/* Timeline Sidebar Card */}
-                        <HeroCard className="border border-default-200 shadow-none">
-                            <HeroCardHeader className="bg-default-50 pb-2"><span className="text-xs font-bold uppercase text-default-500">Project Timeline</span></HeroCardHeader>
-                            <HeroCardBody className="space-y-4">
-                                <DateRow label="Due Date" date={job.dueAt} highlight />
-                                <DateRow label="Created" date={job.createdAt} isSecondary />
-                                {job.completedAt && <DateRow label="Completed" date={job.completedAt} />}
-                            </HeroCardBody>
-                        </HeroCard>
+                        {/* 2. CREATOR & TIME METADATA CARD (Dark Version) */}
+                        <HeroCard className="bg-background-muted text-text-default p-5 shadow-none relative overflow-hidden">
+                            {/* Glow effect theo màu status ở góc card */}
+                            <div
+                                className="absolute -top-10 -right-10 w-32 h-32 opacity-50 blur-3xl rounded-full"
+                                style={{
+                                    backgroundColor: job.status.hexColor,
+                                }}
+                            />
 
-                        {/* Metadata Card */}
-                        <HeroCard className="bg-zinc-900 text-white border-none p-4 shadow-none">
-                            <div className="flex items-center gap-2 text-[10px] font-black uppercase opacity-40 mb-4"><CirclePlus size={14} /> Created By</div>
-                            <div className="flex items-center gap-3">
-                                <Avatar src={job.createdBy.avatar} size="sm" className="ring-1 ring-white/20" />
-                                <div>
-                                    <p className="text-xs font-bold">{job.createdBy.displayName}</p>
-                                    <p className="text-[10px] opacity-40">{dateFormatter(job.createdAt, { format: 'fullShort' })}</p>
+                            <div className="flex flex-col gap-4 relative z-10">
+                                <div className="flex items-center gap-2 text-xs font-medium text-text-subdued">
+                                    <CirclePlus size={14} />
+                                    Created By
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <Avatar
+                                        src={job.createdBy.avatar}
+                                        size="md"
+                                        className="ring-2 ring-white/10"
+                                        isBordered
+                                        color="primary"
+                                    />
+                                    <div className="flex flex-col">
+                                        <p className="text-sm font-semibold">
+                                            {job.createdBy.displayName}
+                                        </p>
+                                        <p className="text-xs flex items-center gap-1.5 mt-0.5 text-text-subdued">
+                                            <CalendarDays size={12} />
+                                            {dateFormatter(job.createdAt, {
+                                                format: 'fullShort',
+                                            })}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </HeroCard>
 
-                        {/* Share Card */}
-                        <HeroCard className="bg-zinc-900 text-white border-none p-5 text-center shadow-none overflow-hidden">
-                            <span className="text-[10px] font-black uppercase opacity-40 flex items-center justify-center gap-1 mb-3"><LinkIcon size={14} /> Project Link</span>
-                            <Snippet symbol="" size="sm" variant="flat" className="bg-white/5 text-white w-full overflow-hidden text-xs">{EXTERNAL_URLS.getJobDetailUrl(job.no)}</Snippet>
+                        {/* 3. QUICK ACTIONS / SNIPPET */}
+                        <HeroCard className="bg-default-50 border-divider p-4 shadow-none space-y-3">
+                            <span className="flex items-center gap-2 text-xs font-medium text-text-subdued">
+                                <LinkIcon size={14} />
+                                External Link
+                            </span>
+                            <Snippet
+                                symbol=""
+                                size="sm"
+                                variant="flat"
+                                className="bg-background text-foreground w-full border border-divider shadow-sm"
+                            >
+                                {EXTERNAL_URLS.getJobDetailUrl(job.no)}
+                            </Snippet>
                         </HeroCard>
                     </div>
                 </div>
-                <ScrollBar orientation="vertical" />
             </ScrollArea>
         </div>
     )
 }
 
-// --- Helper Components ---
-
-const DateRow = ({ label, date, highlight = false, isSecondary = false }: { label: string; date: string | Date; highlight?: boolean; isSecondary?: boolean }) => (
-    <div className="flex justify-between items-center">
-        <span className={`text-tiny ${isSecondary ? 'text-default-400' : 'text-default-600 font-medium'}`}>{label}</span>
-        <span className={`text-tiny font-bold ${highlight ? 'text-danger' : 'text-foreground'}`}>
-            {date ? dayjs(date).format('MMM DD, YYYY') : '--'}
-        </span>
-    </div>
-)
-
 const PaidChip = ({ status }: { status: 'paid' | 'unpaid' }) => (
     <Chip
         size="sm"
         variant="flat"
-        classNames={{ content: "flex items-center gap-2 font-bold" }}
+        classNames={{ content: 'flex items-center gap-2 font-bold' }}
     >
-        <div 
-            className="size-2 rounded-full" 
-            style={{ backgroundColor: PAID_STATUS_COLOR[status].hexColor }} 
+        <div
+            className="size-2 rounded-full"
+            style={{ backgroundColor: PAID_STATUS_COLOR[status].hexColor }}
         />
-        <span style={{ color: PAID_STATUS_COLOR[status].hexColor }}>{status.toUpperCase()}</span>
+        <span style={{ color: PAID_STATUS_COLOR[status].hexColor }}>
+            {status.toUpperCase()}
+        </span>
     </Chip>
 )

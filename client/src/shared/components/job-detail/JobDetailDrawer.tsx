@@ -61,7 +61,7 @@ import { JobStatusChip } from '../chips/JobStatusChip'
 import { PaidChip } from '../chips/PaidChip'
 import JobAttachmentsField from '../form-fields/JobAttachmentsField'
 import { DeliverJobModal } from '../modals/DeliverJobModal'
-import UpdateProjectFinancialModal from '../project-center/UpdateCostModal'
+import UpdateCostModal from '../project-center/UpdateCostModal'
 import CountdownTimer from '../ui/countdown-timer'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
@@ -151,7 +151,7 @@ export default function JobDetailDrawer({
                 />
             )}
             {financialModal.isOpen && job && (
-                <UpdateProjectFinancialModal
+                <UpdateCostModal
                     data={job}
                     isOpen={financialModal.isOpen}
                     onClose={financialModal.onClose}

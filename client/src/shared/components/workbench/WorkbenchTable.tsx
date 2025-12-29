@@ -113,7 +113,7 @@ export default function WorkbenchTable({
 
     const topContent = useMemo(() => {
         return (
-            <div className="flex items-center justify-start gap-2">
+            <div className="flex items-center justify-start gap-2 mb-5">
                 <Input
                     isClearable
                     classNames={{

@@ -12,8 +12,6 @@ import {
     DropdownMenu,
     DropdownTrigger,
     Input,
-    Select,
-    SelectItem,
     Switch,
     Tab,
     Tabs,
@@ -183,13 +181,6 @@ const JOB_DATA = {
         },
     ],
 }
-
-const PRIORITY_OPTIONS = [
-    { key: 'LOW', label: 'Low' },
-    { key: 'MEDIUM', label: 'Medium' },
-    { key: 'HIGH', label: 'High' },
-    { key: 'URGENT', label: 'Urgent' },
-]
 
 // --- VALIDATION SCHEMA ---
 const JobValidationSchema = Yup.object().shape({
@@ -365,7 +356,7 @@ function JobEditPage() {
                     onClose={onCloseManageAccessModal}
                     jobId={data.id}
                     jobTitle={data.no}
-                    currentMembers={data.assignee}
+                    currentMembers={[]}
                 />
             )}
             {isAssignOpen && data?.id && (
@@ -373,7 +364,7 @@ function JobEditPage() {
                     isOpen={isAssignOpen}
                     onClose={onCloseAssignModal}
                     jobId={data.id}
-                    currentAssignees={data.assignee}
+                    currentAssignees={[]}
                 />
             )}
 
@@ -1130,16 +1121,18 @@ function JobEditPage() {
                                                     </Button>
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {data?.assignee.map(
-                                                        (user: TUser) => (
+                                                    {data?.assignments.map(
+                                                        (ass) => (
                                                             <div
-                                                                key={user.id}
+                                                                key={ass.id}
                                                                 className="flex items-center justify-between p-3 border border-border-default rounded-xl hover:border-primary transition-colors cursor-pointer group"
                                                             >
                                                                 <div className="flex items-center gap-3">
                                                                     <Avatar
                                                                         src={optimizeCloudinary(
-                                                                            user.avatar,
+                                                                            ass
+                                                                                .user
+                                                                                .avatar,
                                                                             {
                                                                                 width: 256,
                                                                                 height: 256,
@@ -1149,19 +1142,23 @@ function JobEditPage() {
                                                                     <div>
                                                                         <p className="font-bold text-sm text-text-subdued">
                                                                             {
-                                                                                user.displayName
+                                                                                ass
+                                                                                    .user
+                                                                                    .displayName
                                                                             }
                                                                         </p>
                                                                         <p className="text-xs text-text-subdued">
                                                                             @
                                                                             {
-                                                                                user.username
+                                                                                ass
+                                                                                    .user
+                                                                                    .username
                                                                             }
                                                                         </p>
                                                                     </div>
                                                                 </div>
                                                                 <HeroTooltip
-                                                                    content={`Remove @${user.username}`}
+                                                                    content={`Remove @${ass.user.username}`}
                                                                 >
                                                                     <Button
                                                                         isIconOnly
@@ -1171,9 +1168,9 @@ function JobEditPage() {
                                                                         className="opacity-0 group-hover:opacity-100"
                                                                         onPress={() => {
                                                                             onOpenConfirmRemoveAssigneeModal()
-                                                                            setSelectedMember(
-                                                                                user
-                                                                            )
+                                                                            // setSelectedMember(
+                                                                            //     user
+                                                                            // )
                                                                         }}
                                                                     >
                                                                         <Trash2
@@ -1399,7 +1396,7 @@ function JobEditPage() {
                                         Assign more team members to speed up
                                         this job.
                                     </p>
-                                    {data?.assignee.length ? (
+                                    {data?.assignments.length ? (
                                         <AvatarGroup
                                             isBordered
                                             max={4}
@@ -1407,11 +1404,11 @@ function JobEditPage() {
                                             className="justify-start mb-3"
                                             isDisabled
                                         >
-                                            {data?.assignee.map((as) => {
+                                            {data?.assignments.map((ass) => {
                                                 return (
                                                     <Avatar
                                                         src={optimizeCloudinary(
-                                                            as.avatar
+                                                            ass.user.avatar
                                                         )}
                                                         classNames={{
                                                             base: 'opacity-100!',

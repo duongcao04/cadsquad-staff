@@ -228,6 +228,7 @@ export default function ProjectCenterTable({
                                         }`}
                                     />
                                 }
+                                className="border-1"
                                 variant="bordered"
                                 size="sm"
                                 onPress={onRefresh}
@@ -238,6 +239,7 @@ export default function ProjectCenterTable({
                             <FilterBuilder
                                 defaultFilters={filters}
                                 onApply={onFiltersChange}
+                                className="border-1"
                             />
 
                             <Dropdown placement="bottom-start">
@@ -251,6 +253,7 @@ export default function ProjectCenterTable({
                                         }
                                         variant="bordered"
                                         size="sm"
+                                        className="border-1"
                                     >
                                         <span className="font-medium">
                                             View
@@ -315,6 +318,7 @@ export default function ProjectCenterTable({
                                         variant="bordered"
                                         size="sm"
                                         isIconOnly
+                                        className="border-1"
                                     >
                                         <EllipsisVertical
                                             className="text-small"
@@ -610,7 +614,7 @@ export default function ProjectCenterTable({
                     )
                 case 'totalStaffCost': // Total cost for Admin
                     return (
-                        <p className="font-bold text-right text-text-default">
+                        <p className="font-bold text-right text-currency">
                             {currencyFormatter(
                                 data.totalStaffCost,
                                 'Vietnamese'
@@ -620,7 +624,7 @@ export default function ProjectCenterTable({
 
                 case 'staffCost': // Individual cost for User
                     return (
-                        <p className="font-bold text-right text-primary">
+                        <p className="font-bold text-right text-currency">
                             {currencyFormatter(
                                 data.staffCost ?? 0,
                                 'Vietnamese'
