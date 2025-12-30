@@ -60,6 +60,14 @@ export class JobController {
     // READ OPERATIONS
     // -------------------------------------------------------------------------
 
+    @Get(':id/deliveries')
+    @UseGuards(JwtGuard) // Staff and Admins might need to see this
+    @ResponseMessage('Get job deliveries successfully')
+    @ApiOperation({ summary: 'Get all delivery attempts for a specific job' })
+    async getJobDeliveries(@Param('id') id: string) {
+        return this.jobService.getJobDeliveries(id)
+    }
+
     @Get()
     @ApiOperation({ summary: 'Get list of jobs with pagination' })
     async findAll(@Req() request: Request, @Query() query: JobQueryDto) {

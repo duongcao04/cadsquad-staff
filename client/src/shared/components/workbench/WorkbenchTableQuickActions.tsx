@@ -17,6 +17,7 @@ import {
     PinOff,
     SquareArrowOutUpRight,
     Trash,
+    TruckElectricIcon,
     UserPlus,
 } from 'lucide-react'
 
@@ -27,12 +28,12 @@ import {
     useTogglePinJobMutation,
 } from '@/lib/queries'
 import type { TJob } from '@/shared/types'
-
 import { INTERNAL_URLS } from '../../../lib'
 import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import ConfirmModal from '../ui/confirm-modal'
+import { DeliverJobModal } from '../modals/DeliverJobModal'
 
 type WorkbenchTableQuickActionsProps = {
     data: TJob
@@ -89,6 +90,10 @@ export function WorkbenchTableQuickActions({
         id: 'UpdateCostModal',
     })
 
+    const deliverJobModal = useDisclosure({
+        id: 'DeliverJobModal',
+    })
+
     const onDeleteJob = async () => {
         await deleteJobMutation(data?.id, {
             onSuccess: () => {
@@ -139,6 +144,14 @@ export function WorkbenchTableQuickActions({
                     isLoading={isDeleting}
                 />
             )}
+            {deliverJobModal.isOpen && (
+                <DeliverJobModal
+                    isOpen={deliverJobModal.isOpen}
+                    onClose={deliverJobModal.onClose}
+                    onConfirm={() => {}}
+                    defaultJob={data.id}
+                />
+            )}
             {isOpenUCostModal && (
                 <UpdateCostModal
                     isOpen={isOpenUCostModal}
@@ -182,12 +195,26 @@ export function WorkbenchTableQuickActions({
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Job menu actions">
+                    <DropdownSection key="quick_action" title="Quick actions">
+                        <DropdownItem
+                            key="openInNewTab"
+                            startContent={
+                                <TruckElectricIcon
+                                    className="text-text-default"
+                                    size={14}
+                                />
+                            }
+                            onPress={deliverJobModal.onOpen}
+                        >
+                            Deliver Job
+                        </DropdownItem>
+                    </DropdownSection>
                     <DropdownSection key="feature_actions" title="View">
                         <DropdownItem
                             key="openInNewTab"
                             startContent={
                                 <SquareArrowOutUpRight
-                                    className="text-text-subdued"
+                                    className="text-text-default"
                                     size={14}
                                 />
                             }
@@ -208,12 +235,12 @@ export function WorkbenchTableQuickActions({
                                 jobPinned ? (
                                     <PinOff
                                         size={14}
-                                        className="text-text-subdued"
+                                        className="text-text-default"
                                     />
                                 ) : (
                                     <PinIcon
                                         size={14}
-                                        className="text-text-subdued"
+                                        className="text-text-default"
                                     />
                                 )
                             }
@@ -229,7 +256,7 @@ export function WorkbenchTableQuickActions({
                             startContent={
                                 <UserPlus
                                     size={14}
-                                    className="text-text-subdued"
+                                    className="text-text-default"
                                 />
                             }
                             onPress={() => onOpenAssignModal()}
@@ -244,7 +271,7 @@ export function WorkbenchTableQuickActions({
                             startContent={
                                 <CalendarClock
                                     size={14}
-                                    className="text-text-subdued"
+                                    className="text-text-default"
                                 />
                             }
                             onPress={() => onOpenRescheduleModal()}
@@ -259,7 +286,7 @@ export function WorkbenchTableQuickActions({
                             startContent={
                                 <Trash
                                     size={14}
-                                    className="text-text-subdued"
+                                    className="text-text-default"
                                 />
                             }
                             onPress={() => onOpenModal()}
@@ -279,7 +306,7 @@ export function WorkbenchTableQuickActions({
                             startContent={
                                 <CircleDollarSign
                                     size={14}
-                                    className="text-text-subdued"
+                                    className="text-text-default"
                                 />
                             }
                             onPress={() => onOpenUCostModal()}
@@ -291,7 +318,7 @@ export function WorkbenchTableQuickActions({
                             startContent={
                                 <CircleCheck
                                     size={14}
-                                    className="text-text-subdued"
+                                    className="text-text-default"
                                 />
                             }
                             onPress={() => handleOpenMarkAsPaidModal()}

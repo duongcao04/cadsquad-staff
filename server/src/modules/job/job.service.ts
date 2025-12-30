@@ -829,6 +829,30 @@ export class JobService {
         })
     }
 
+    async getJobDeliveries(jobId: string) {
+        // Check if job exists first
+        const job = await this.prisma.job.findUnique({
+            where: { id: jobId },
+        })
+
+        if (!job) throw new NotFoundException('Job not found')
+
+        return this.prisma.jobDelivery.findMany({
+            where: { jobId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        displayName: true,
+                        avatar: true,
+                        username: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' }, // Latest delivery first
+        })
+    }
+
     async updateRevenue(
         modifierId: string,
         jobId: string,

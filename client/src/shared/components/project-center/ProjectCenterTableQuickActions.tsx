@@ -1,3 +1,6 @@
+import { useDeleteJobMutation, useProfile } from '@/lib/queries'
+import { ConfirmDeleteModal } from '@/shared/components'
+import type { TJob } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -17,19 +20,9 @@ import {
     Trash,
     UserPlus,
 } from 'lucide-react'
-
-import {
-    useDeleteJobMutation,
-    useProfile,
-    useUpdateJobMutation,
-} from '@/lib/queries'
-import { ConfirmDeleteModal } from '@/shared/components'
-import type { TJob } from '@/shared/types'
-
 import { INTERNAL_URLS } from '../../../lib'
-import { queryClient } from '../../../main'
-import AssignMemberModal from './AssignMemberModal'
 import AddAttachmentsModal from './AddAttachmentsModal'
+import AssignMemberModal from './AssignMemberModal'
 import UpdateCostModal from './UpdateCostModal'
 
 type ProjectCenterTableQuickActionsProps = {
@@ -40,16 +33,6 @@ export function ProjectCenterTableQuickActions({
     data,
 }: ProjectCenterTableQuickActionsProps) {
     const { isAdmin, isAccounting } = useProfile()
-
-    // --- Mutations ---
-    const markAsPaidMutation = useUpdateJobMutation((res) => {
-        addToast({
-            title: 'Payment Status Updated',
-            description: `#${res.result?.no ?? data?.no} marked as paid`,
-            color: 'success',
-        })
-        queryClient.invalidateQueries({ queryKey: ['jobs'] })
-    })
 
     const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
         useDeleteJobMutation()
@@ -80,19 +63,6 @@ export function ProjectCenterTableQuickActions({
         }
     }
 
-    const handleMarkAsPaid = async () => {
-        if (!data?.id) return
-        await markAsPaidMutation.mutateAsync(
-            {
-                jobId: data.id,
-                data: { isPaid: true },
-            },
-            {
-                onSuccess: () => paidConfirmModal.onClose(),
-            }
-        )
-    }
-
     return (
         <>
             {/* 1. Assignment Modal (Member selection + Cost input) */}
@@ -118,20 +88,6 @@ export function ProjectCenterTableQuickActions({
                     title="Delete Job"
                     description={`Are you sure you want to permanently delete job #${data?.no}?`}
                     isLoading={isDeleting}
-                />
-            )}
-
-            {/* 4. Payment Confirmation */}
-            {paidConfirmModal.isOpen && (
-                <ConfirmDeleteModal
-                    isOpen={paidConfirmModal.isOpen}
-                    onClose={paidConfirmModal.onClose}
-                    onConfirm={handleMarkAsPaid}
-                    title={`Mark #${data.no} as Paid`}
-                    description="This confirms the project is settled. Staff will be notified."
-                    confirmText="Confirm Payment"
-                    isLoading={markAsPaidMutation.isPending}
-                    color="primary"
                 />
             )}
 
