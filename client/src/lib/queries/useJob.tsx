@@ -11,11 +11,9 @@ import {
     type TJobQueryInput,
     type TRescheduleJob,
     type TUpdateJobInput,
-    type TUpdateJobMembersInput,
     TUpdateJobRevenue,
 } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
-
 import { queryClient } from '../../main'
 import { JobUpdateResponse } from '../../shared/types'
 import type { ApiResponse } from '../axios'

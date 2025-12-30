@@ -3,7 +3,6 @@ import lodash from 'lodash'
 import { useMemo } from 'react'
 
 import { authApi } from '@/lib/api'
-import { type ApiError } from '@/lib/axios'
 import { cookie } from '@/lib/cookie'
 import { COOKIES, IMAGES } from '@/lib/utils'
 import type { TLoginInput } from '@/lib/validationSchemas'
@@ -11,6 +10,7 @@ import { RoleEnum } from '@/shared/enums'
 import type { TUser } from '@/shared/types'
 
 import { queryClient } from '../../main'
+import { onErrorToast } from './helper'
 
 function parseExpires(expiresAt: string | number) {
     if (typeof expiresAt === 'number') {
@@ -34,8 +34,8 @@ export const useLogin = () => {
                 expires: parseExpires(expiresAt),
             })
         },
-        onError: (error: ApiError) => {
-            console.log(error)
+        onError: (err) => {
+            onErrorToast(err, (err as unknown as { error: string }).error)
         },
     })
     return {
@@ -84,7 +84,6 @@ export function useProfile() {
             filesCreated: data?.filesCreated ?? [],
             isActive: data?.isActive ?? false,
             jobActivityLog: data?.jobActivityLog ?? [],
-            jobsAssigned: data?.jobsAssigned ?? [],
             jobsCreated: data?.jobsCreated ?? [],
             notifications: data?.notifications ?? [],
             sendedNotifications: data?.sendedNotifications ?? [],

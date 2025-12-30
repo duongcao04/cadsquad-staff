@@ -14,13 +14,15 @@ import {
 import { queryClient } from '../../main'
 import type { ICommentResponse } from '../../shared/interfaces'
 import type { TComment } from '../../shared/types'
+import { mapUser } from './options/user-queries'
+import { toDate } from '../utils'
 
 const mapItem: (item: ICommentResponse) => TComment = (item) => ({
+    id: item.id ?? 'N/A',
     content: item.content ?? '',
-    user: item.user ?? null,
-    id: item.id,
-    updatedAt: new Date(item.updatedAt),
-    createdAt: new Date(item.createdAt),
+    user: mapUser(item.user),
+    updatedAt: toDate(item.updatedAt),
+    createdAt: toDate(item.createdAt),
 })
 export const useComments = (jobId: string) => {
     const { data, isFetching, isLoading } = useQuery({

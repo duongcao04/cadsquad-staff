@@ -221,6 +221,10 @@ export class UserService {
         try {
             const userData = await this.prismaService.user.findUnique({
                 where: { username: username },
+                include: {
+                    department: true,
+                    jobTitle: true,
+                },
             })
             const userRes = plainToInstance(UserResponseDto, userData, {
                 excludeExtraneousValues: true,

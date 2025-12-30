@@ -14,10 +14,17 @@ import {
     RotateCcw,
     UploadCloud,
 } from 'lucide-react'
-import React, { useCallback,useEffect, useRef, useState } from 'react'
-import type { Area,Point } from 'react-easy-crop'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import type { Area, Point } from 'react-easy-crop'
 import Cropper from 'react-easy-crop'
 import { z } from 'zod'
+import {
+    HeroModal,
+    HeroModalContent,
+    HeroModalHeader,
+    HeroModalBody,
+    HeroModalFooter,
+} from '../ui/hero-modal'
 
 // --- Configuration ---
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -192,25 +199,20 @@ export const UploadAvatarModal = ({
     }
 
     return (
-        <Modal
+        <HeroModal
             isOpen={isOpen}
             onClose={onClose}
             size={imageSrc ? 'lg' : 'md'}
-            backdrop="blur"
             hideCloseButton={isUploading}
-            classNames={{
-                header: 'border-b border-border-default',
-                footer: 'border-t border-border-default',
-            }}
         >
-            <ModalContent>
+            <HeroModalContent>
                 {(close) => (
                     <>
-                        <ModalHeader className="flex flex-col gap-1">
+                        <HeroModalHeader className="flex flex-col gap-1">
                             Change Profile Picture
-                        </ModalHeader>
+                        </HeroModalHeader>
 
-                        <ModalBody className="py-6">
+                        <HeroModalBody className="py-6">
                             {/* --- VIEW 1: UPLOAD AREA --- */}
                             {!imageSrc ? (
                                 <>
@@ -309,9 +311,9 @@ export const UploadAvatarModal = ({
                                     <span>{error}</span>
                                 </div>
                             )}
-                        </ModalBody>
+                        </HeroModalBody>
 
-                        <ModalFooter>
+                        <HeroModalFooter>
                             <Button
                                 variant="light"
                                 onPress={close}
@@ -337,10 +339,10 @@ export const UploadAvatarModal = ({
                                       ? 'Crop & Save'
                                       : 'Save'}
                             </Button>
-                        </ModalFooter>
+                        </HeroModalFooter>
                     </>
                 )}
-            </ModalContent>
-        </Modal>
+            </HeroModalContent>
+        </HeroModal>
     )
 }

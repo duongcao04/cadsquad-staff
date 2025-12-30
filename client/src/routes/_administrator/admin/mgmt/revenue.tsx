@@ -41,10 +41,6 @@ export const Route = createFileRoute('/_administrator/admin/mgmt/revenue')({
     component: RevenueReports,
 })
 
-function RouteComponent() {
-    return <div>Hello "/admin/mgmt/revenue"!</div>
-}
-
 // --- Mock Data ---
 const MONTHLY_DATA = [
     { month: 'Jan', income: 12500, expense: 8400 },

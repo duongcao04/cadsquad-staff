@@ -4,14 +4,14 @@ import {
     House,
     LifeBuoy,
     Settings,
+    ShieldCheck,
     SquareUser,
     SwatchBook,
+    UserCircle,
     UsersRound,
+    Wallet,
 } from 'lucide-react'
-
 import { envConfig } from '@/lib/config'
-import type { JobColumnKey } from '@/shared/types'
-
 import { RoleEnum } from '../../shared/enums'
 
 export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const
@@ -351,10 +351,15 @@ export const DUE_DATE_PRESETS = [
 
 export type DueDatePresetKey = (typeof DUE_DATE_PRESETS)[number]['key']
 
-export const ROLES_LIST = Object.entries(RoleEnum).map((i) => {
+export const RoleIcons = {
+    [RoleEnum.USER]: UserCircle,
+    [RoleEnum.ACCOUNTING]: Wallet,
+    [RoleEnum.ADMIN]: ShieldCheck,
+}
+export const ROLES_LIST = Object.entries(RoleEnum).map(([key, value]) => {
     return {
-        ...i,
-        label: capitalize(i[1].toLowerCase().replaceAll('_', ' ')),
-        value: i[0],
+        label: capitalize(value.toLowerCase().replaceAll('_', ' ')),
+        value: key,
+        icon: RoleIcons[value as keyof typeof RoleIcons], // Attach the component
     }
 })

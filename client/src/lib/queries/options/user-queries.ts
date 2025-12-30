@@ -1,9 +1,10 @@
 import { queryOptions } from '@tanstack/react-query'
-
 import { IUserResponse } from '../../../shared/interfaces'
-import { TDepartment, TUser } from '../../../shared/types'
+import { TUser } from '../../../shared/types'
 import { authApi, IProfileOverview, userApi } from '../../api'
 import { IMAGES, toDate, toNullableDate } from '../../utils'
+import { mapDepartment } from './department-queries'
+import { mapJobTitle } from './job-title-queries'
 
 export const mapUser: (item?: IUserResponse) => TUser = (item) => {
     return {
@@ -13,8 +14,8 @@ export const mapUser: (item?: IUserResponse) => TUser = (item) => {
         email: item?.email ?? 'unknown@cadsquad.vn',
         username: item?.username ?? 'unknown',
         phoneNumber: item?.phoneNumber ?? 'Unknown phone number',
-        department: item?.department ?? ({} as TDepartment),
-        jobTitle: item?.jobTitle ?? null,
+        department: mapDepartment(item?.department ?? undefined) ?? null,
+        jobTitle: mapJobTitle(item?.jobTitle ?? undefined) ?? null,
         isActive: Boolean(item?.isActive),
         role: item?.role ?? 'USER',
         files: item?.files ?? [],

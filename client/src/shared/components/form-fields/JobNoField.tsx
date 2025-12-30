@@ -117,7 +117,7 @@ export function JobNoField({
                                     alt={jobItem.displayName}
                                     className="shrink-0"
                                     size="sm"
-                                    name={jobItem.displayName.charAt(0)}
+                                    name={jobItem.code}
                                     style={{
                                         backgroundColor:
                                             jobItem.hexColor || undefined,

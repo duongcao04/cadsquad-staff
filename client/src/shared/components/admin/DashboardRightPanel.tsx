@@ -1,3 +1,11 @@
+import {
+    dateFormatter,
+    getGradientColor,
+    INTERNAL_URLS,
+    lightenHexColor,
+    optimizeCloudinary,
+} from '@/lib'
+import { jobsDueOnDateOptions } from '@/lib/queries'
 import { Avatar, AvatarGroup } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -8,16 +16,6 @@ import {
     RefreshCw,
 } from 'lucide-react'
 import { useState } from 'react'
-
-import {
-    dateFormatter,
-    getGradientColor,
-    INTERNAL_URLS,
-    lightenHexColor,
-    optimizeCloudinary,
-} from '@/lib'
-import { jobsDueOnDateOptions } from '@/lib/queries'
-
 import { toggleAdminRightSidebar } from '../../stores'
 import { HeroButton } from '../ui/hero-button'
 import WeekCalendar from './WeekCalendar'
@@ -195,14 +193,19 @@ export const DashboardRightPanel = ({
                                                             max={3}
                                                             size="sm"
                                                         >
-                                                            {item.assignee.map(
-                                                                (i, index) => (
+                                                            {item.assignments.map(
+                                                                (
+                                                                    ass,
+                                                                    index
+                                                                ) => (
                                                                     <Avatar
                                                                         key={
                                                                             index
                                                                         }
                                                                         src={optimizeCloudinary(
-                                                                            i.avatar
+                                                                            ass
+                                                                                .user
+                                                                                .avatar
                                                                         )}
                                                                         classNames={{
                                                                             base: 'size-7! opacity-100!',

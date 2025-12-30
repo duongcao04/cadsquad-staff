@@ -1,12 +1,12 @@
-import {
-    Button,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
-} from '@heroui/react'
+import { Button } from '@heroui/react'
 import { AlertTriangle } from 'lucide-react'
+import {
+    HeroModal,
+    HeroModalContent,
+    HeroModalHeader,
+    HeroModalBody,
+    HeroModalFooter,
+} from '../ui/hero-modal'
 
 interface ApproveDeliveryModalProps {
     isOpen: boolean
@@ -22,21 +22,20 @@ export default function ApproveDeliveryModal({
     isLoading = false,
 }: ApproveDeliveryModalProps) {
     return (
-        <Modal
+        <HeroModal
             isOpen={isOpen}
             onClose={onClose}
-            backdrop="blur"
             hideCloseButton={isLoading}
             isDismissable={!isLoading}
         >
-            <ModalContent>
+            <HeroModalContent>
                 {() => (
                     <>
-                        <ModalHeader className="flex flex-col gap-1">
+                        <HeroModalHeader className="flex flex-col gap-1">
                             Confirm Approval
-                        </ModalHeader>
+                        </HeroModalHeader>
 
-                        <ModalBody>
+                        <HeroModalBody>
                             <div className="flex items-center gap-4 p-4 bg-primary-50 rounded-lg text-primary-600 dark:bg-primary-900/20">
                                 <AlertTriangle className="size-6 shrink-0" />
                                 <div className="text-sm">
@@ -53,9 +52,9 @@ export default function ApproveDeliveryModal({
                             <p className="text-default-500 text-sm mt-2">
                                 Are you sure you want to approve this delivery?
                             </p>
-                        </ModalBody>
+                        </HeroModalBody>
 
-                        <ModalFooter>
+                        <HeroModalFooter>
                             <Button
                                 variant="light"
                                 onPress={onClose}
@@ -70,10 +69,10 @@ export default function ApproveDeliveryModal({
                             >
                                 Approve Delivery
                             </Button>
-                        </ModalFooter>
+                        </HeroModalFooter>
                     </>
                 )}
-            </ModalContent>
-        </Modal>
+            </HeroModalContent>
+        </HeroModal>
     )
 }

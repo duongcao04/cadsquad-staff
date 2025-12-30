@@ -38,13 +38,6 @@ export function LoginForm() {
                             href: '/',
                         })
                     },
-                    onError(error) {
-                        addToast({
-                            title: error.error,
-                            description: `Error: ${error.message}`,
-                            color: 'danger',
-                        })
-                    },
                 }
             )
         },

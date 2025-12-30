@@ -79,7 +79,7 @@ function SchedulePage() {
     const filteredJobs = useMemo(() => {
         if (selectedMember === 'all') return jobsSchedule
         return jobsSchedule.filter((job) =>
-            job.assignee?.some((a: any) => a.id === selectedMember)
+            job.assignments?.some((a: any) => a.id === selectedMember)
         )
     }, [jobsSchedule, selectedMember])
 

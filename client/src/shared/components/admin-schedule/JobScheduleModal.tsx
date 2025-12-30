@@ -1,3 +1,5 @@
+import { dateFormatter, INTERNAL_URLS } from '@/lib'
+import { jobByNoOptions } from '@/lib/queries'
 import {
     Avatar,
     AvatarGroup,
@@ -12,9 +14,6 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
 import { Clock, Plus } from 'lucide-react'
-
-import { dateFormatter, INTERNAL_URLS } from '@/lib'
-import { jobByNoOptions } from '@/lib/queries'
 
 type JobScheduleModalProps = {
     isOpen: boolean
@@ -66,7 +65,7 @@ export default function JobScheduleModal({
                                     {job?.status.displayName}
                                 </Chip>
                                 <span className="text-sm text-text-subdued">
-                                    for <strong>{job?.clientName}</strong>
+                                    for <strong>{job?.client.name}</strong>
                                 </span>
                             </div>
 
@@ -76,11 +75,11 @@ export default function JobScheduleModal({
                                 </p>
                                 <div className="flex items-center gap-3">
                                     <AvatarGroup max={3} isBordered>
-                                        {job?.assignee.map((a, i) => (
+                                        {job?.assignments.map((ass, i) => (
                                             <Avatar
                                                 key={i}
-                                                src={a.avatar}
-                                                name={a.displayName}
+                                                src={ass.user.avatar}
+                                                name={ass.user.displayName}
                                             />
                                         ))}
                                     </AvatarGroup>

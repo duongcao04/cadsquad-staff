@@ -1,4 +1,34 @@
 import {
+    ApiResponse,
+    dateFormatter,
+    editUserSchema,
+    getPageTitle,
+    INTERNAL_URLS,
+    optimizeCloudinary,
+    RoleIcons,
+    ROLES_LIST,
+    TEditUser,
+    toFormikValidate,
+    useUpdateAvatarMutation,
+    useUpdateUserMutation,
+    useUploadImageMutation,
+} from '@/lib'
+import { departmentsListOptions } from '@/lib/queries/options/department-queries'
+import { jobTitlesListOptions } from '@/lib/queries/options/job-title-queries'
+import { userOptions } from '@/lib/queries/options/user-queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroButton,
+    HeroTooltip,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import { DeleteUserPermanentlyModal } from '@/shared/components/modals/DeleteUserPermanentlyModal'
+import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
+import { UploadAvatarModal } from '@/shared/components/modals/UploadAvatarModal'
+import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
+import { TUser } from '@/shared/types'
+import {
     addToast,
     Avatar,
     Button,
@@ -15,76 +45,29 @@ import {
     Tabs,
     useDisclosure,
 } from '@heroui/react'
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { useQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import {
     AlertCircle,
     ArrowLeft,
+    AtSignIcon,
     Briefcase,
     Building,
     Calendar,
-    Github,
+    Info,
+    InfoIcon,
     KeyRound,
-    Linkedin,
     Mail,
     Phone,
     Save,
     Shield,
+    ShieldAlertIcon,
     Trash2,
     Upload,
     User,
 } from 'lucide-react'
 import { useState } from 'react'
-import { z } from 'zod'
-
-import {
-    ApiResponse,
-    dateFormatter,
-    editUserSchema,
-    EditUserValues,
-    getPageTitle,
-    INTERNAL_URLS,
-    optimizeCloudinary,
-    ROLES_LIST,
-    useUpdateAvatarMutation,
-    useUpdateUserMutation,
-    useUploadImageMutation,
-} from '@/lib'
-import { departmentsListOptions } from '@/lib/queries/options/department-queries'
-import { jobTitlesListOptions } from '@/lib/queries/options/job-title-queries'
-import { userOptions } from '@/lib/queries/options/user-queries'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroButton,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import { DeleteUserPermanentlyModal } from '@/shared/components/modals/DeleteUserPermanentlyModal'
-import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
-import { UploadAvatarModal } from '@/shared/components/modals/UploadAvatarModal'
-import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
-
-import { TUser } from '../../../../../../shared/types'
-
-// --- Helper to connect Zod to Formik without extra deps ---
-const toFormikValidate = <T extends z.ZodType<any, any>>(schema: T) => {
-    return (values: any) => {
-        const result = schema.safeParse(values)
-        if (!result.success) {
-            // Convert Zod error structure to Formik error structure
-            const errors: Record<string, string> = {}
-            result.error.issues.forEach((issue) => {
-                const path = issue.path[0]
-                if (path) {
-                    errors[path.toString()] = issue.message
-                }
-            })
-            return errors
-        }
-        return {}
-    }
-}
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/$username/edit'
@@ -93,7 +76,11 @@ export const Route = createFileRoute(
         const loader = ctx.loaderData as unknown as ApiResponse<TUser>
         return {
             meta: [
-                { title: getPageTitle(loader?.result?.displayName ?? 'Job') },
+                {
+                    title: getPageTitle(
+                        loader?.result?.displayName ?? 'User management'
+                    ),
+                },
             ],
         }
     },
@@ -113,16 +100,7 @@ function EditStaffPage() {
     const options = userOptions(username)
     const { data: user } = useSuspenseQuery(options)
 
-    const { data: departments } = useQuery({
-        ...departmentsListOptions(),
-    })
-
-    const { data: jobTitles } = useQuery({
-        ...jobTitlesListOptions(),
-    })
-
     const [activeTab, setActiveTab] = useState('profile')
-    const updateUserMutation = useUpdateUserMutation()
 
     const {
         isOpen: isOpenResetPasswordModal,
@@ -144,37 +122,6 @@ function EditStaffPage() {
         onClose: onCloseDeleteUserPermanentlyModal,
     } = useDisclosure({
         id: 'DeleteUserPermanentlyModal',
-    })
-
-    // 2. Initialize Formik
-    const formik = useFormik<EditUserValues>({
-        initialValues: {
-            displayName: user.displayName || '',
-            username: user.username || '',
-            email: user.email || '',
-            phoneNumber: user.phoneNumber || '',
-            github: '',
-            linkedin: '',
-            bio: user.bio || '', // Assuming bio exists on user, otherwise ''
-            departmentId: user.department?.id || '',
-            jobTitleId: user.jobTitle?.id || '',
-            role: (user.role as 'ADMIN' | 'USER' | 'ACCOUNTING') || 'USER',
-            isActive: user.isActive ?? true,
-        },
-        validate: toFormikValidate(editUserSchema),
-        onSubmit: async (values) => {
-            console.log('Submitting validated data:', values)
-            try {
-                // Call your mutation here
-                await updateUserMutation.mutateAsync({
-                    // Adjust according to what your mutation expects (e.g., username + body)
-                    username: user.username,
-                    data: values,
-                })
-            } catch (error) {
-                console.error('Failed to update user', error)
-            }
-        },
     })
 
     const handleAvatarSave = async (imageFile: File) => {
@@ -277,11 +224,7 @@ function EditStaffPage() {
                         <HeroButton
                             color="primary"
                             size="sm"
-                            startContent={
-                                !formik.isSubmitting && <Save size={18} />
-                            }
-                            isLoading={formik.isSubmitting}
-                            onPress={() => formik.handleSubmit()}
+                            startContent={<Save size={18} />}
                         >
                             Save Changes
                         </HeroButton>
@@ -314,22 +257,20 @@ function EditStaffPage() {
                                 </div>
 
                                 <h2 className="text-xl font-bold text-slate-900">
-                                    {formik.values.displayName}
+                                    {user.displayName}
                                 </h2>
                                 <p className="text-sm text-slate-500 mb-4">
-                                    @{formik.values.username}
+                                    @{user.username}
                                 </p>
 
                                 <Chip
                                     color={
-                                        formik.values.isActive
-                                            ? 'success'
-                                            : 'default'
+                                        user.isActive ? 'success' : 'default'
                                     }
                                     variant="flat"
                                     className="mb-6"
                                 >
-                                    {formik.values.isActive
+                                    {user.isActive
                                         ? 'Active Account'
                                         : 'Inactive'}
                                 </Chip>
@@ -351,7 +292,7 @@ function EditStaffPage() {
                                             <Shield size={14} /> Role
                                         </span>
                                         <span className="font-semibold text-text-default">
-                                            {formik.values.role}
+                                            {user.role}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-sm">
@@ -389,10 +330,10 @@ function EditStaffPage() {
                                     </span>
                                     <Switch
                                         color="success"
-                                        isSelected={formik.values.isActive}
-                                        onValueChange={(v) =>
-                                            formik.setFieldValue('isActive', v)
-                                        }
+                                        isSelected={user.isActive}
+                                        // onValueChange={(v) =>
+                                        //     formik.setFieldValue('isActive', v)
+                                        // }
                                     />
                                 </div>
                                 <Button
@@ -458,366 +399,12 @@ function EditStaffPage() {
                             <CardBody className="p-6">
                                 {/* TAB: PERSONAL INFO */}
                                 {activeTab === 'profile' && (
-                                    <div className="space-y-6 animate-in fade-in">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <Input
-                                                label="Full Name"
-                                                labelPlacement="outside"
-                                                placeholder="e.g. Sarah Wilson"
-                                                variant="bordered"
-                                                name="displayName"
-                                                value={
-                                                    formik.values.displayName
-                                                }
-                                                onValueChange={(v) =>
-                                                    formik.setFieldValue(
-                                                        'displayName',
-                                                        v
-                                                    )
-                                                }
-                                                isInvalid={
-                                                    !!formik.errors
-                                                        .displayName &&
-                                                    formik.touched.displayName
-                                                }
-                                                errorMessage={
-                                                    formik.touched
-                                                        .displayName &&
-                                                    formik.errors.displayName
-                                                }
-                                                onBlur={formik.handleBlur}
-                                            />
-                                            <Input
-                                                label="Username"
-                                                labelPlacement="outside"
-                                                placeholder="e.g. sarah_w"
-                                                variant="bordered"
-                                                name="username"
-                                                value={formik.values.username}
-                                                onValueChange={(v) =>
-                                                    formik.setFieldValue(
-                                                        'username',
-                                                        v
-                                                    )
-                                                }
-                                                isInvalid={
-                                                    !!formik.errors.username &&
-                                                    formik.touched.username
-                                                }
-                                                errorMessage={
-                                                    formik.touched.username &&
-                                                    formik.errors.username
-                                                }
-                                                onBlur={formik.handleBlur}
-                                            />
-                                            <Input
-                                                label="Email Address"
-                                                labelPlacement="outside"
-                                                placeholder="sarah@company.com"
-                                                variant="bordered"
-                                                startContent={
-                                                    <Mail
-                                                        className="text-slate-400"
-                                                        size={16}
-                                                    />
-                                                }
-                                                name="email"
-                                                value={formik.values.email}
-                                                onValueChange={(v) =>
-                                                    formik.setFieldValue(
-                                                        'email',
-                                                        v
-                                                    )
-                                                }
-                                                isInvalid={
-                                                    !!formik.errors.email &&
-                                                    formik.touched.email
-                                                }
-                                                errorMessage={
-                                                    formik.touched.email &&
-                                                    formik.errors.email
-                                                }
-                                                onBlur={formik.handleBlur}
-                                            />
-                                            <Input
-                                                label="Phone Number"
-                                                labelPlacement="outside"
-                                                placeholder="+1..."
-                                                variant="bordered"
-                                                startContent={
-                                                    <Phone
-                                                        className="text-slate-400"
-                                                        size={16}
-                                                    />
-                                                }
-                                                name="phoneNumber"
-                                                value={
-                                                    formik.values.phoneNumber
-                                                }
-                                                onValueChange={(v) =>
-                                                    formik.setFieldValue(
-                                                        'phoneNumber',
-                                                        v
-                                                    )
-                                                }
-                                                isInvalid={
-                                                    !!formik.errors
-                                                        .phoneNumber &&
-                                                    formik.touched.phoneNumber
-                                                }
-                                                errorMessage={
-                                                    formik.touched
-                                                        .phoneNumber &&
-                                                    formik.errors.phoneNumber
-                                                }
-                                                onBlur={formik.handleBlur}
-                                            />
-                                            {/* --- SOCIAL PROFILES (Mapped to UserConfig) --- */}
-                                            <div className="md:col-span-2 pt-4 border-t border-border-default mt-2">
-                                                <p className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                                                    Social Profiles{' '}
-                                                    <span className="text-xs font-normal text-slate-400">
-                                                        (Saved in User Config)
-                                                    </span>
-                                                </p>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <Input
-                                                        label="LinkedIn Profile"
-                                                        labelPlacement="outside"
-                                                        placeholder="https://linkedin.com/in/..."
-                                                        variant="bordered"
-                                                        startContent={
-                                                            <Linkedin
-                                                                className="text-blue-600"
-                                                                size={16}
-                                                            />
-                                                        }
-                                                        name="linkedin"
-                                                        value={
-                                                            formik.values
-                                                                .linkedin
-                                                        }
-                                                        onValueChange={(v) =>
-                                                            formik.setFieldValue(
-                                                                'linkedin',
-                                                                v
-                                                            )
-                                                        }
-                                                        isInvalid={
-                                                            !!formik.errors
-                                                                .linkedin &&
-                                                            formik.touched
-                                                                .linkedin
-                                                        }
-                                                        errorMessage={
-                                                            formik.touched
-                                                                .linkedin &&
-                                                            formik.errors
-                                                                .linkedin
-                                                        }
-                                                        onBlur={
-                                                            formik.handleBlur
-                                                        }
-                                                    />
-                                                    <Input
-                                                        label="GitHub Profile"
-                                                        labelPlacement="outside"
-                                                        placeholder="https://github.com/..."
-                                                        variant="bordered"
-                                                        startContent={
-                                                            <Github
-                                                                className="text-slate-700"
-                                                                size={16}
-                                                            />
-                                                        }
-                                                        name="github"
-                                                        value={
-                                                            formik.values.github
-                                                        }
-                                                        onValueChange={(v) =>
-                                                            formik.setFieldValue(
-                                                                'github',
-                                                                v
-                                                            )
-                                                        }
-                                                        isInvalid={
-                                                            !!formik.errors
-                                                                .github &&
-                                                            formik.touched
-                                                                .github
-                                                        }
-                                                        errorMessage={
-                                                            formik.touched
-                                                                .github &&
-                                                            formik.errors.github
-                                                        }
-                                                        onBlur={
-                                                            formik.handleBlur
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <EditProfileTab user={user} />
                                 )}
 
                                 {/* TAB: ORGANIZATION */}
                                 {activeTab === 'organization' && (
-                                    <div className="space-y-6 animate-in fade-in">
-                                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
-                                            <h4 className="text-sm font-bold text-blue-900 mb-1">
-                                                Permissions & Access
-                                            </h4>
-                                            <p className="text-xs text-blue-700">
-                                                Changing the Department or Role
-                                                will immediately affect what
-                                                this user can see.
-                                            </p>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <Select
-                                                label="Department"
-                                                labelPlacement="outside"
-                                                variant="bordered"
-                                                selectedKeys={
-                                                    formik.values.departmentId
-                                                        ? [
-                                                              formik.values
-                                                                  .departmentId,
-                                                          ]
-                                                        : []
-                                                }
-                                                onSelectionChange={(keys) =>
-                                                    formik.setFieldValue(
-                                                        'departmentId',
-                                                        Array.from(keys)[0]
-                                                    )
-                                                }
-                                                startContent={
-                                                    <Building
-                                                        className="text-slate-400"
-                                                        size={16}
-                                                    />
-                                                }
-                                                isInvalid={
-                                                    !!formik.errors
-                                                        .departmentId &&
-                                                    formik.touched.departmentId
-                                                }
-                                                errorMessage={
-                                                    formik.touched
-                                                        .departmentId &&
-                                                    formik.errors.departmentId
-                                                }
-                                            >
-                                                {departments
-                                                    ? departments.map((d) => (
-                                                          <SelectItem
-                                                              key={d.id}
-                                                              value={d.id}
-                                                              textValue={
-                                                                  d.displayName
-                                                              }
-                                                          >
-                                                              {d.displayName}
-                                                          </SelectItem>
-                                                      ))
-                                                    : []}
-                                            </Select>
-
-                                            <Select
-                                                label="Job Title"
-                                                labelPlacement="outside"
-                                                variant="bordered"
-                                                selectedKeys={
-                                                    formik.values.jobTitleId
-                                                        ? [
-                                                              formik.values
-                                                                  .jobTitleId,
-                                                          ]
-                                                        : []
-                                                }
-                                                onSelectionChange={(keys) =>
-                                                    formik.setFieldValue(
-                                                        'jobTitleId',
-                                                        Array.from(keys)[0]
-                                                    )
-                                                }
-                                                startContent={
-                                                    <Briefcase
-                                                        className="text-slate-400"
-                                                        size={16}
-                                                    />
-                                                }
-                                                isInvalid={
-                                                    !!formik.errors
-                                                        .jobTitleId &&
-                                                    formik.touched.jobTitleId
-                                                }
-                                                errorMessage={
-                                                    formik.touched.jobTitleId &&
-                                                    formik.errors.jobTitleId
-                                                }
-                                            >
-                                                {jobTitles
-                                                    ? jobTitles.map((j) => (
-                                                          <SelectItem
-                                                              key={j.id}
-                                                              value={j.id}
-                                                              textValue={
-                                                                  j.displayName
-                                                              }
-                                                          >
-                                                              {j.displayName}
-                                                          </SelectItem>
-                                                      ))
-                                                    : []}
-                                            </Select>
-
-                                            <div className="md:col-span-2">
-                                                <Select
-                                                    label="System Role"
-                                                    labelPlacement="outside"
-                                                    variant="bordered"
-                                                    selectedKeys={[
-                                                        formik.values.role,
-                                                    ]}
-                                                    onSelectionChange={(keys) =>
-                                                        formik.setFieldValue(
-                                                            'role',
-                                                            Array.from(keys)[0]
-                                                        )
-                                                    }
-                                                    startContent={
-                                                        <Shield
-                                                            className="text-slate-400"
-                                                            size={16}
-                                                        />
-                                                    }
-                                                    description="Admins have full access. Accounting sees financial data. Users see assigned jobs."
-                                                    isInvalid={
-                                                        !!formik.errors.role &&
-                                                        formik.touched.role
-                                                    }
-                                                    errorMessage={
-                                                        formik.touched.role &&
-                                                        formik.errors.role
-                                                    }
-                                                >
-                                                    {ROLES_LIST.map((r) => (
-                                                        <SelectItem
-                                                            key={r.value}
-                                                            value={r.value}
-                                                            textValue={r.label}
-                                                        >
-                                                            {r.label}
-                                                        </SelectItem>
-                                                    ))}
-                                                </Select>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <OrganizationDepartment user={user} />
                                 )}
 
                                 {/* TAB: SECURITY */}
@@ -882,5 +469,351 @@ function EditStaffPage() {
                 </div>
             </AdminContentContainer>
         </>
+    )
+}
+
+function EditProfileTab({ user }: { user: TUser }) {
+    const updateUserMutation = useUpdateUserMutation()
+    // 2. Initialize Formik
+    const formik = useFormik<TEditUser>({
+        initialValues: {
+            displayName: user.displayName,
+            username: user.username,
+            email: user.email,
+            phoneNumber: user.phoneNumber || '',
+        },
+        enableReinitialize: true,
+        validate: toFormikValidate(editUserSchema),
+        onSubmit: async (values) => {
+            console.log('Submitting validated data:', values)
+            try {
+                // Call your mutation here
+                await updateUserMutation.mutateAsync({
+                    // Adjust according to what your mutation expects (e.g., username + body)
+                    username: user.username,
+                    data: values,
+                })
+            } catch (error) {
+                console.error('Failed to update user', error)
+            }
+        },
+    })
+    return (
+        <div className="space-y-6 animate-in fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input
+                    label="Full Name"
+                    labelPlacement="outside"
+                    placeholder="e.g. Sarah Wilson"
+                    variant="bordered"
+                    name="displayName"
+                    description="This name will be visible to your teammates across the platform."
+                    value={formik.values.displayName}
+                    onValueChange={(v) =>
+                        formik.setFieldValue('displayName', v)
+                    }
+                    isInvalid={
+                        !!formik.errors.displayName &&
+                        formik.touched.displayName
+                    }
+                    errorMessage={
+                        formik.touched.displayName && formik.errors.displayName
+                    }
+                    onBlur={formik.handleBlur}
+                />
+                <Input
+                    label="Username"
+                    labelPlacement="outside"
+                    placeholder="e.g. sarah_w"
+                    variant="bordered"
+                    name="username"
+                    description="Your unique handle. Only letters, numbers, and underscores allowed."
+                    startContent={
+                        <AtSignIcon size={14} className="text-text-subdued" />
+                    }
+                    value={formik.values.username}
+                    onValueChange={(v) => formik.setFieldValue('username', v)}
+                    isInvalid={
+                        !!formik.errors.username && formik.touched.username
+                    }
+                    errorMessage={
+                        formik.touched.username && formik.errors.username
+                    }
+                    onBlur={formik.handleBlur}
+                />
+                <Input
+                    label="Email Address"
+                    labelPlacement="outside"
+                    placeholder="sarah@company.com"
+                    description="Used for system notifications and secure account login."
+                    variant="bordered"
+                    startContent={
+                        <Mail className="text-text-subdued" size={16} />
+                    }
+                    name="email"
+                    value={formik.values.email}
+                    onValueChange={(v) => formik.setFieldValue('email', v)}
+                    isInvalid={!!formik.errors.email && formik.touched.email}
+                    errorMessage={formik.touched.email && formik.errors.email}
+                    onBlur={formik.handleBlur}
+                />
+                <Input
+                    label="Phone Number"
+                    labelPlacement="outside"
+                    placeholder="+84..."
+                    variant="bordered"
+                    description="Used for direct project coordination via WhatsApp/Phone."
+                    startContent={
+                        <Phone className="text-text-subdued" size={16} />
+                    }
+                    name="phoneNumber"
+                    value={formik.values.phoneNumber}
+                    onValueChange={(v) =>
+                        formik.setFieldValue('phoneNumber', v)
+                    }
+                    isInvalid={
+                        !!formik.errors.phoneNumber &&
+                        formik.touched.phoneNumber
+                    }
+                    errorMessage={
+                        formik.touched.phoneNumber && formik.errors.phoneNumber
+                    }
+                    onBlur={formik.handleBlur}
+                />
+            </div>
+            <div className="flex items-center justify-end">
+                <HeroButton
+                    color="primary"
+                    size="sm"
+                    startContent={!formik.isSubmitting && <Save size={18} />}
+                    isLoading={formik.isSubmitting}
+                    onPress={() => formik.handleSubmit()}
+                >
+                    Save Changes
+                </HeroButton>
+            </div>
+        </div>
+    )
+}
+
+function OrganizationDepartment({ user }: { user: TUser }) {
+    const updateUserMutation = useUpdateUserMutation()
+    const [{ data: departments }, { data: jobTitles }] = useQueries({
+        queries: [
+            {
+                ...departmentsListOptions(),
+            },
+            {
+                ...jobTitlesListOptions(),
+            },
+        ],
+    })
+
+    const formik = useFormik({
+        initialValues: {
+            departmentId: user.department?.id,
+            jobTitleId: user.jobTitle?.id,
+            role: user.role,
+        },
+        enableReinitialize: true,
+        onSubmit: async (values) => {
+            console.log('Submitting validated data:', values)
+            try {
+                // Call your mutation here
+                await updateUserMutation.mutateAsync({
+                    // Adjust according to what your mutation expects (e.g., username + body)
+                    username: user.username,
+                    data: values,
+                })
+            } catch (error) {
+                console.error('Failed to update user', error)
+            }
+        },
+    })
+    return (
+        <div className="space-y-6 animate-in fade-in">
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
+                <h4 className="text-sm font-bold text-blue-900 mb-1">
+                    Permissions & Access
+                </h4>
+                <p className="text-xs text-blue-700">
+                    Changing the Department or Role will immediately affect what
+                    this user can see.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* --- Department Select --- */}
+                <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                        <span className="text-small font-medium">
+                            Department
+                        </span>
+                        <HeroTooltip content="Determines which departmental community hubs the user can join.">
+                            <InfoIcon
+                                size={14}
+                                className="text-text-subdued cursor-help"
+                            />
+                        </HeroTooltip>
+                    </div>
+                    <Select
+                        labelPlacement="outside"
+                        placeholder="Select department"
+                        variant="bordered"
+                        description="Linked to departmental social hubs and reports."
+                        selectedKeys={
+                            formik.values.departmentId
+                                ? [formik.values.departmentId]
+                                : []
+                        }
+                        disallowEmptySelection
+                        onSelectionChange={(keys) =>
+                            formik.setFieldValue(
+                                'departmentId',
+                                Array.from(keys)[0]
+                            )
+                        }
+                        startContent={
+                            <Building className="text-text-subdued" size={16} />
+                        }
+                        isInvalid={
+                            !!formik.errors.departmentId &&
+                            formik.touched.departmentId
+                        }
+                        errorMessage={formik.errors.departmentId}
+                    >
+                        {departments?.map((d) => (
+                            <SelectItem key={d.id} textValue={d.displayName}>
+                                {d.displayName}
+                            </SelectItem>
+                        )) || []}
+                    </Select>
+                </div>
+
+                {/* --- Job Title Select --- */}
+                <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                        <span className="text-small font-medium">
+                            Job Title
+                        </span>
+                        <HeroTooltip content="Formal title used in the company directory and project signatures.">
+                            <Info
+                                size={14}
+                                className="text-text-subdued cursor-help"
+                            />
+                        </HeroTooltip>
+                    </div>
+                    <Select
+                        labelPlacement="outside"
+                        placeholder="Select title"
+                        variant="bordered"
+                        description="Defines the user's professional role in the workspace."
+                        selectedKeys={
+                            formik.values.jobTitleId
+                                ? [formik.values.jobTitleId]
+                                : []
+                        }
+                        disallowEmptySelection
+                        onSelectionChange={(keys) =>
+                            formik.setFieldValue(
+                                'jobTitleId',
+                                Array.from(keys)[0]
+                            )
+                        }
+                        startContent={
+                            <Briefcase
+                                className="text-text-subdued"
+                                size={16}
+                            />
+                        }
+                        isInvalid={
+                            !!formik.errors.jobTitleId &&
+                            formik.touched.jobTitleId
+                        }
+                        errorMessage={formik.errors.jobTitleId}
+                    >
+                        {jobTitles?.map((j) => (
+                            <SelectItem key={j.id} textValue={j.displayName}>
+                                {j.displayName}
+                            </SelectItem>
+                        )) || []}
+                    </Select>
+                </div>
+
+                {/* --- System Role Select --- */}
+                <div className="md:col-span-2 space-y-1">
+                    <div className="flex items-center gap-1">
+                        <span className="text-small font-medium text-danger-600">
+                            Security: System Role
+                        </span>
+                        <HeroTooltip
+                            color="danger"
+                            content="Warning: Escalating a role grants access to restricted billing and user data."
+                        >
+                            <ShieldAlertIcon
+                                size={14}
+                                className="text-danger cursor-help"
+                            />
+                        </HeroTooltip>
+                    </div>
+                    <Select
+                        labelPlacement="outside"
+                        variant="bordered"
+                        selectedKeys={[formik.values.role]}
+                        onSelectionChange={(keys) =>
+                            formik.setFieldValue('role', Array.from(keys)[0])
+                        }
+                        disallowEmptySelection
+                        startContent={(() => {
+                            const SelectedIcon =
+                                RoleIcons[
+                                    formik.values.role as keyof typeof RoleIcons
+                                ]
+                            return SelectedIcon ? (
+                                <SelectedIcon
+                                    size={16}
+                                    className="text-text-subdued"
+                                />
+                            ) : (
+                                <Shield
+                                    size={16}
+                                    className="text-text-subdued"
+                                />
+                            )
+                        })()}
+                        description="Admins manage system settings. Accounting manages finances. Users manage assigned jobs."
+                        isInvalid={!!formik.errors.role && formik.touched.role}
+                        errorMessage={formik.errors.role}
+                    >
+                        {ROLES_LIST.map((r) => (
+                            <SelectItem
+                                key={r.value}
+                                textValue={r.label}
+                                startContent={
+                                    <r.icon
+                                        size={14}
+                                        className="text-text-subdued"
+                                    />
+                                }
+                            >
+                                {r.label}
+                            </SelectItem>
+                        ))}
+                    </Select>
+                </div>
+            </div>
+
+            <div className="flex items-center justify-end">
+                <HeroButton
+                    color="primary"
+                    size="sm"
+                    startContent={!formik.isSubmitting && <Save size={18} />}
+                    isLoading={formik.isSubmitting}
+                    onPress={() => formik.handleSubmit()}
+                >
+                    Save Changes
+                </HeroButton>
+            </div>
+        </div>
     )
 }

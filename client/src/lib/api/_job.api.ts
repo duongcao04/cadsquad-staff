@@ -1,5 +1,3 @@
-import queryString from 'query-string'
-
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import {
     TAssignMember,
@@ -10,7 +8,6 @@ import {
     type TJobQueryInput,
     type TRescheduleJob,
     type TUpdateJobInput,
-    type TUpdateJobMembersInput,
     TUpdateJobRevenue,
 } from '@/lib/validationSchemas'
 import type {
@@ -20,6 +17,7 @@ import type {
     IUserResponse,
 } from '@/shared/interfaces'
 import type { JobColumnKey, JobUpdateResponse } from '@/shared/types'
+import queryString from 'query-string'
 
 import { ProjectCenterTabEnum } from '../../shared/enums'
 
