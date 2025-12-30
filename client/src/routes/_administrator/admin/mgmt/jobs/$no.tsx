@@ -71,11 +71,11 @@ import {
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import AdminDeliveryCard from '@/shared/components/management-jobs/AdminDeliveryCard'
 import { AdminJobManageAccessModal } from '@/shared/components/modals/AdminJobManageAccessModal'
-import AssignMembersModal from '@/shared/components/modals/AssignMembersModal'
 import { ConfirmCancelJobModal } from '@/shared/components/modals/ConfirmCancelJobModal'
 import { ConfirmRemoveAssigneeModal } from '@/shared/components/modals/ConfirmRemoveAssigneeModal'
 import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
 import { TJob, TUser } from '@/shared/types'
+import AssignMemberModal from '../../../../../shared/components/project-center/AssignMemberModal'
 
 export const manageJobDetailParamsSchema = z.object({
     tab: z
@@ -360,11 +360,10 @@ function JobEditPage() {
                 />
             )}
             {isAssignOpen && data?.id && (
-                <AssignMembersModal
+                <AssignMemberModal
                     isOpen={isAssignOpen}
                     onClose={onCloseAssignModal}
-                    jobId={data.id}
-                    currentAssignees={[]}
+                    jobNo={data.no}
                 />
             )}
 

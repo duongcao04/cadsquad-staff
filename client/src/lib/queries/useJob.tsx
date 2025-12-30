@@ -3,6 +3,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { jobApi } from '@/lib/api'
 import {
+    TAssignMember,
     type TBulkChangeStatusInput,
     type TChangeStatusInput,
     type TCreateJobInput,
@@ -11,6 +12,7 @@ import {
     type TRescheduleJob,
     type TUpdateJobInput,
     type TUpdateJobMembersInput,
+    TUpdateJobRevenue,
 } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 
@@ -27,6 +29,7 @@ import {
     jobsDueOnDateOptions,
     jobsListOptions,
     jobsSearchOptions,
+    workbenchDataOptions,
 } from './options/job-queries'
 
 // --- QUERIES ---
@@ -305,27 +308,22 @@ export const useAssignMemberMutation = (
     onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
 ) => {
     return useMutation({
-        mutationKey: ['assignMember', 'job'],
-        mutationFn: ({
-            jobId,
-            assignMemberInput,
-        }: {
-            jobId?: string
-            assignMemberInput: TUpdateJobMembersInput
-        }) => {
-            if (!jobId) throw new Error('jobId is required')
-            return jobApi.assignMember(jobId, assignMemberInput)
-        },
+        mutationKey: ['updateJob', 'assignMember'],
+        mutationFn: ({ jobId, data }: { jobId: string; data: TAssignMember }) =>
+            jobApi.assignMember(jobId, data),
         onSuccess: (res) => {
-            queryClient.invalidateQueries({
-                queryKey: ['jobs'],
+            queryClient.refetchQueries({
+                queryKey: jobsListOptions({}).queryKey,
+            })
+            queryClient.refetchQueries({
+                queryKey: workbenchDataOptions({}).queryKey,
             })
             if (res.result?.no) {
-                queryClient.invalidateQueries({
+                queryClient.refetchQueries({
                     queryKey: jobByNoOptions(res.result?.no).queryKey,
                 })
             }
-            queryClient.invalidateQueries({
+            queryClient.refetchQueries({
                 queryKey: ['jobActivityLog', String(res.result?.id)],
             })
             if (onSuccess) {
@@ -342,31 +340,70 @@ export const useAssignMemberMutation = (
     })
 }
 
+export const useUpdateAssignmentCostMutation = (
+    onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
+) => {
+    return useMutation({
+        mutationKey: ['updateJob', 'assignMember', 'staffCost'],
+        mutationFn: ({
+            jobId,
+            memberId,
+            staffCost,
+        }: {
+            jobId: string
+            memberId: string
+            staffCost: number
+        }) => jobApi.updateAssignmentCost(jobId, memberId, staffCost),
+        onSuccess: (res) => {
+            queryClient.refetchQueries({
+                queryKey: jobsListOptions({}).queryKey,
+            })
+            queryClient.refetchQueries({
+                queryKey: workbenchDataOptions({}).queryKey,
+            })
+            if (res.result?.no) {
+                queryClient.refetchQueries({
+                    queryKey: jobByNoOptions(res.result?.no).queryKey,
+                })
+            }
+            queryClient.refetchQueries({
+                queryKey: ['jobActivityLog', String(res.result?.id)],
+            })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Update member cost successfully',
+                    color: 'success',
+                })
+            }
+        },
+        onError: (err) => onErrorToast(err, 'Failed to update member cost'),
+    })
+}
+
 export const useRemoveMemberMutation = (
     onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
 ) => {
     return useMutation({
-        mutationKey: ['removeMember', 'job'],
+        mutationKey: ['updateJob', 'removeMember'],
         mutationFn: ({
             jobId,
             memberId,
         }: {
-            jobId?: string
+            jobId: string
             memberId: string
-        }) => {
-            if (!jobId) return Promise.reject(new Error('jobId is required'))
-            return jobApi.removeMember(jobId, memberId)
-        },
+        }) => jobApi.removeMember(jobId, memberId),
         onSuccess: (res) => {
-            queryClient.invalidateQueries({
+            queryClient.refetchQueries({
                 queryKey: ['jobs'],
             })
             if (res.result?.no) {
-                queryClient.invalidateQueries({
+                queryClient.refetchQueries({
                     queryKey: jobByNoOptions(res.result?.no).queryKey,
                 })
             }
-            queryClient.invalidateQueries({
+            queryClient.refetchQueries({
                 queryKey: ['jobActivityLog', String(res.result?.id)],
             })
             if (onSuccess) {
@@ -404,6 +441,37 @@ export const useUpdateJobMutation = (
                 queryKey: ['jobs', 'no', res.result?.no],
             })
             queryClient.invalidateQueries({
+                queryKey: ['jobs', 'id', res.result?.id],
+            })
+        },
+    })
+}
+
+export const useUpdateJobRevenueMutation = (
+    onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
+) => {
+    return useMutation({
+        mutationKey: ['updateJob', 'revenue'],
+        mutationFn: ({
+            jobId,
+            data,
+        }: {
+            jobId: string
+            data: TUpdateJobRevenue
+        }) => jobApi.updateRevenue(jobId, data),
+        onSuccess: (res) => {
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Update job revenue successfully',
+                    color: 'success',
+                })
+            }
+            queryClient.refetchQueries({
+                queryKey: ['jobs', 'no', res.result?.no],
+            })
+            queryClient.refetchQueries({
                 queryKey: ['jobs', 'id', res.result?.id],
             })
         },

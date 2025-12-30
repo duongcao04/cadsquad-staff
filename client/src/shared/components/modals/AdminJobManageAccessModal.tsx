@@ -121,7 +121,7 @@ export const AdminJobManageAccessModal = ({
         // 2. API Call
         assignMutation.mutate({
             jobId,
-            assignMemberInput: {
+            data: {
                 prevMemberIds: user.id,
                 updateMemberIds: user.id,
             },

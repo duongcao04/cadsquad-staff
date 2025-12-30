@@ -2,6 +2,7 @@ import queryString from 'query-string'
 
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import {
+    TAssignMember,
     type TBulkChangeStatusInput,
     type TChangeStatusInput,
     type TCreateJobInput,
@@ -10,6 +11,7 @@ import {
     type TRescheduleJob,
     type TUpdateJobInput,
     type TUpdateJobMembersInput,
+    TUpdateJobRevenue,
 } from '@/lib/validationSchemas'
 import type {
     IJobDelivery,
@@ -185,18 +187,36 @@ export const jobApi = {
             .post(`/v1/jobs/bulk/change-status`, data)
             .then((res) => res.data)
     },
-    removeMember: async (id: string, memberId: string) => {
-        return axiosClient
-            .patch<
-                ApiResponse<{ id: string; no: string }>
-            >(`/v1/jobs/${id}/member/${memberId}/remove`)
-            .then((res) => res.data)
-    },
-    assignMember: async (id: string, data: TUpdateJobMembersInput) => {
+    assignMember: async (jobId: string, data: TAssignMember) => {
         return axiosClient
             .patch<
                 ApiResponse<JobUpdateResponse>
-            >(`/v1/jobs/${id}/assign-member`, data)
+            >(`/v1/jobs/${jobId}/assign`, data)
+            .then((res) => res.data)
+    },
+    updateAssignmentCost: async (
+        jobId: string,
+        memberId: string,
+        staffCost: number
+    ) => {
+        return axiosClient
+            .patch<
+                ApiResponse<JobUpdateResponse>
+            >(`/v1/jobs/${jobId}/assignments/${memberId}`, { staffCost })
+            .then((res) => res.data)
+    },
+    removeMember: async (jobId: string, memberId: string) => {
+        return axiosClient
+            .delete<
+                ApiResponse<JobUpdateResponse>
+            >(`/v1/jobs/${jobId}/assignments/${memberId}`)
+            .then((res) => res.data)
+    },
+    updateRevenue: async (id: string, data: TUpdateJobRevenue) => {
+        return axiosClient
+            .patch<
+                ApiResponse<JobUpdateResponse>
+            >(`/v1/jobs/${id}/update-revenue`, { ...data, incomeCost: data.incomeCost?.toString() })
             .then((res) => res.data)
     },
     update: async (id: string, data: TUpdateJobInput) => {

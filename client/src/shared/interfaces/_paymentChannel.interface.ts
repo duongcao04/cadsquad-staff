@@ -25,9 +25,9 @@ export interface IPaymentChannelResponse {
 
     /**
      * An optional URL for the logo of the payment channel.
-     * @type {string | null | undefined}
+     * @type {string | undefined}
      */
-    logoUrl?: string | null
+    logoUrl?: string
 
     /**
      * The name of the account owner.

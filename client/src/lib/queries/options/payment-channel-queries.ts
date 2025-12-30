@@ -3,6 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { IPaymentChannelResponse } from '../../../shared/interfaces'
 import { TPaymentChannel } from '../../../shared/types'
 import { paymentChannelApi } from '../../api'
+import { IMAGES } from '../../utils'
 
 export const mapPaymentChannel: (
     item?: IPaymentChannelResponse
@@ -12,7 +13,7 @@ export const mapPaymentChannel: (
     jobs: item?.jobs ?? [],
     cardNumber: item?.cardNumber ?? null,
     hexColor: item?.hexColor ?? null,
-    logoUrl: item?.logoUrl ?? null,
+    logoUrl: item?.logoUrl ?? IMAGES.loadingPlaceholder,
     ownerName: item?.ownerName ?? null,
 })
 

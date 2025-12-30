@@ -22,7 +22,7 @@ export const CreateJobSchema = yup.object({
     // Cost fields: In DTO they are strings (from input) but validated as numbers here
     incomeCost: yup
         .number()
-        .min(1, "Income must be greater than $1")
+        .min(1, 'Income must be greater than $1')
         .typeError('Income cost must be a number')
         .required('Income cost is required'),
 
@@ -32,12 +32,19 @@ export const CreateJobSchema = yup.object({
         .optional()
         .default(0),
 
-    jobAssignments: yup.array().of(
-        yup.object({
-            userId: yup.string().required('User ID is required'),
-            staffCost: yup.number().typeError('Staff cost must be a number').required()
-        })
-    ).min(1, 'At least one member is required').required(),
+    jobAssignments: yup
+        .array()
+        .of(
+            yup.object({
+                userId: yup.string().required('User ID is required'),
+                staffCost: yup
+                    .number()
+                    .typeError('Staff cost must be a number')
+                    .required(),
+            })
+        )
+        .min(1, 'At least one member is required')
+        .required(),
 
     paymentChannelId: yup.string().uuid().nullable().optional(),
 
@@ -45,28 +52,55 @@ export const CreateJobSchema = yup.object({
         .string()
         .required('Started at is required')
         .test('is-iso-string', 'Date must be a valid ISO string', (value) => {
-            return !value || isValid(parseISO(value));
+            return !value || isValid(parseISO(value))
         }),
 
     dueAt: yup
         .string()
         .required('Due date is required')
         .test('is-iso-string', 'Date must be a valid ISO string', (value) => {
-            return !value || isValid(parseISO(value));
+            return !value || isValid(parseISO(value))
         })
-        .test('is-after-start', 'Due date must be after start date', function (value) {
-            const { startedAt } = this.parent;
-            if (!value || !startedAt) return true;
-            const start = parseISO(startedAt);
-            const end = parseISO(value);
-            return isValid(start) && isValid(end) && isAfter(end, start);
-        }),
-});
+        .test(
+            'is-after-start',
+            'Due date must be after start date',
+            function (value) {
+                const { startedAt } = this.parent
+                if (!value || !startedAt) return true
+                const start = parseISO(startedAt)
+                const end = parseISO(value)
+                return isValid(start) && isValid(end) && isAfter(end, start)
+            }
+        ),
+})
 
-export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>;
+export type TCreateJobInput = yup.InferType<typeof CreateJobSchema>
 
 export const UpdateJobSchema = CreateJobSchema.partial()
 export type TUpdateJobInput = yup.InferType<typeof UpdateJobSchema>
+
+export const UpdateJobRevenueSchema = yup.object({
+    incomeCost: yup.number().optional(),
+    paymentChannelId: yup
+        .string()
+        .uuid('Invalid paymentChannelId format')
+        .optional(),
+})
+
+export type TUpdateJobRevenue = yup.InferType<typeof UpdateJobRevenueSchema>
+
+export const AssignMemberSchema = yup.object({
+    staffCost: yup
+        .number()
+        .min(0, 'Cost must be greater than 0 VND.')
+        .required('Staff cost is required'),
+    memberId: yup
+        .string()
+        .uuid('Invalid memberId format')
+        .required('Member is required'),
+})
+
+export type TAssignMember = yup.InferType<typeof AssignMemberSchema>
 
 // ---------------------------------------------------------------
 // QUERY SCHEMAS

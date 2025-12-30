@@ -42,6 +42,8 @@ import { ChangeStatusDto } from './dto/change-status.dto'
 import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
 import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { RescheduleJobDto } from './dto/reschedule-job.dto'
+import { UpdateRevenueDto } from './dto/update-revenue.dto'
+import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
 
 @ApiTags('Jobs')
 @Controller('jobs')
@@ -197,6 +199,60 @@ export class JobController {
     // UPDATE / PATCH OPERATIONS
     // -------------------------------------------------------------------------
 
+    @Patch(':id/assign')
+    @UseGuards(JwtGuard, AdminGuard)
+    @ResponseMessage('Member assigned successfully')
+    async assignMember(
+        @Req() request: Request,
+        @Param('id') id: string,
+        @Body() dto: AssignMemberDto
+    ) {
+        const user: TokenPayload = request['user']
+        // req.user.id is the admin/manager performing the action
+        return this.jobService.assignMember(user.sub, id, dto)
+    }
+
+    @Patch(':id/assignments/:memberId')
+    @UseGuards(JwtGuard, AdminGuard)
+    @ResponseMessage('Assignment cost updated')
+    async updateAssignment(
+        @Req() request: Request,
+        @Param('id') jobId: string,
+        @Param('memberId') memberId: string,
+        @Body() dto: UpdateAssignmentDto
+    ) {
+        const user: TokenPayload = request['user']
+        return this.jobService.updateAssignmentCost(
+            user.sub,
+            jobId,
+            memberId,
+            dto
+        )
+    }
+
+    @Delete(':id/assignments/:memberId')
+    @UseGuards(JwtGuard, AdminGuard)
+    @ResponseMessage('Member unassigned successfully')
+    async unassignMember(
+        @Req() request: Request,
+        @Param('id') jobId: string,
+        @Param('memberId') memberId: string
+    ) {
+        const user: TokenPayload = request['user']
+        return this.jobService.removeMember(user.sub, jobId, memberId)
+    }
+
+    @Patch(':id/update-revenue')
+    @UseGuards(AdminGuard)
+    async updateRevenue(
+        @Req() request: Request,
+        @Param('id') id: string,
+        @Body() updateRevenueDto: UpdateRevenueDto
+    ) {
+        const user: TokenPayload = request['user']
+        return this.jobService.updateRevenue(user.sub, id, updateRevenueDto)
+    }
+
     @Patch(':id')
     @UseGuards(AdminGuard)
     async update(
@@ -216,17 +272,6 @@ export class JobController {
     ) {
         const user: TokenPayload = request['user']
         return this.jobService.changeStatus(id, user.sub, data)
-    }
-
-    @Patch(':id/assign-member')
-    @UseGuards(AdminGuard)
-    async assignMember(
-        @Req() request: Request,
-        @Param('id') id: string,
-        @Body() data: UpdateJobMembersDto
-    ) {
-        const user: TokenPayload = request['user']
-        return this.jobService.updateMembers(id, user.sub, data)
     }
 
     // -------------------------------------------------------------------------

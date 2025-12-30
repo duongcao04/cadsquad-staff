@@ -19,8 +19,8 @@ export function optimizeCloudinary(url: string, options: CloudinaryOptions = {})
 	if (!url || !url.includes('res.cloudinary.com')) return url || '';
 
 	const {
-		width = 32,
-		height = 32,
+		width = 256,
+		height = 256,
 		quality = 'auto',
 		format = 'auto',
 		crop = 'fill', // Mặc định là fill để lấp đầy khung

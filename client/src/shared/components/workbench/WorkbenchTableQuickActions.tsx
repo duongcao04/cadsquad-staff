@@ -143,7 +143,7 @@ export function WorkbenchTableQuickActions({
                 <UpdateCostModal
                     isOpen={isOpenUCostModal}
                     onClose={onCloseUCostModal}
-                    data={data}
+                    jobNo={data.no}
                 />
             )}
             {isOpenMAPModal && (

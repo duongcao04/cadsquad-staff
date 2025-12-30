@@ -1,6 +1,6 @@
 import { ActivityTypeEnum } from '@/shared/enums'
 
-import type { TJob, TUser } from '../types'
+import type { TUser } from '../types'
 
 /**
  * Represents a log entry for an activity performed on a job.

@@ -34,6 +34,8 @@ import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { RescheduleJobDto } from './dto/reschedule-job.dto'
 import { NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
 import { renderTemplate } from '../../utils/_string'
+import { UpdateRevenueDto } from './dto/update-revenue.dto'
+import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
 
 @Injectable()
 export class JobService {
@@ -623,41 +625,158 @@ export class JobService {
         })
     }
 
-    async updateMembers(
-        jobId: string,
+    async assignMember(
         modifierId: string,
-        data: UpdateJobMembersDto
+        jobId: string,
+        dto: AssignMemberDto
     ) {
+        const { memberId, staffCost } = dto
+
         return await this.prisma.$transaction(async (tx) => {
+            // 1. Check if Job exists
             const job = await tx.job.findUnique({
                 where: { id: jobId },
-                select: { no: true },
+                select: { id: true, no: true },
             })
-            const memberIds: string[] = JSON.parse(data.updateMemberIds || '[]')
+            if (!job) throw new NotFoundException('Job not found')
+
+            // 2. Create the Assignment (@@unique in schema handles duplicates)
+            try {
+                await tx.jobAssignment.create({
+                    data: {
+                        jobId,
+                        userId: memberId,
+                        staffCost,
+                    },
+                })
+            } catch (e) {
+                throw new BadRequestException(
+                    'User is already assigned to this job'
+                )
+            }
+
+            // 3. Recalculate and Update Job's total sumStaffCost
+            const aggregate = await tx.jobAssignment.aggregate({
+                where: { jobId },
+                _sum: { staffCost: true },
+            })
 
             const updatedJob = await tx.job.update({
                 where: { id: jobId },
                 data: {
-                    assignments: {
-                        deleteMany: {},
-                        create: memberIds.map((id) => ({
-                            user: { connect: { id } },
-                            staffCost: 0,
-                        })),
-                    },
+                    sumStaffCost: aggregate._sum.staffCost || 0,
                 },
             })
 
-            await this.notificationService.sendMany(
-                memberIds.map((id) => ({
-                    userId: id,
-                    title: `Job Assignment`,
-                    content: `Assigned to ${updatedJob.no}`,
-                    type: NotificationType.JOB_UPDATE,
-                    redirectUrl: `/jobs/${updatedJob.no}`,
-                }))
-            )
-            return { id: jobId, no: updatedJob.no }
+            // 4. Create Activity Log
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'Member Assignment',
+                    currentValue: memberId,
+                    activityType: ActivityType.Private,
+                    notes: `Assigned with staff cost: ${staffCost}`,
+                },
+            })
+
+            return updatedJob
+        })
+    }
+
+    async updateAssignmentCost(
+        modifierId: string,
+        jobId: string,
+        memberId: string,
+        dto: UpdateAssignmentDto
+    ) {
+        const { staffCost } = dto
+
+        return await this.prisma.$transaction(async (tx) => {
+            // 1. Update the specific assignment
+            const updatedAssignment = await tx.jobAssignment.update({
+                where: {
+                    jobId_userId: {
+                        userId: memberId,
+                        jobId: jobId,
+                    },
+                },
+                data: { staffCost },
+                include: { user: { select: { displayName: true } } },
+            })
+            // 2. Recalculate the total sum for the Job
+            const aggregate = await tx.jobAssignment.aggregate({
+                where: { jobId: updatedAssignment.jobId },
+                _sum: { staffCost: true },
+            })
+
+            await tx.job.update({
+                where: { id: updatedAssignment.jobId },
+                data: { sumStaffCost: aggregate._sum.staffCost || 0 },
+            })
+
+            // 3. Log the financial change
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId: updatedAssignment.jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'Staff Cost Update',
+                    currentValue: staffCost.toString(),
+                    activityType: ActivityType.Private,
+                    notes: `Updated cost for ${updatedAssignment.user.displayName} to ${staffCost}`,
+                },
+            })
+
+            return updatedAssignment
+        })
+    }
+
+    async removeMember(modifierId: string, jobId: string, userId: string) {
+        return await this.prisma.$transaction(async (tx) => {
+            // 1. Check if assignment exists and get user info for the log
+            const assignment = await tx.jobAssignment.findUnique({
+                where: {
+                    jobId_userId: { jobId, userId },
+                },
+                include: { user: { select: { displayName: true } } },
+            })
+
+            if (!assignment) throw new NotFoundException('Assignment not found')
+
+            // 2. Delete the assignment
+            await tx.jobAssignment.delete({
+                where: {
+                    jobId_userId: { jobId, userId },
+                },
+            })
+
+            // 3. Recalculate the total sum for the Job
+            const aggregate = await tx.jobAssignment.aggregate({
+                where: { jobId },
+                _sum: { staffCost: true },
+            })
+
+            await tx.job.update({
+                where: { id: jobId },
+                data: {
+                    sumStaffCost: aggregate._sum.staffCost || 0,
+                },
+            })
+
+            // 4. Log the removal
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'Member Assignment',
+                    previousValue: userId,
+                    currentValue: null,
+                    activityType: ActivityType.Private,
+                    notes: `Removed ${assignment.user.displayName} from the project`,
+                },
+            })
+
+            return { success: true, removedUserId: userId }
         })
     }
 
@@ -701,6 +820,50 @@ export class JobService {
                 }))
             )
             return delivery
+        })
+    }
+
+    async updateRevenue(
+        modifierId: string,
+        jobId: string,
+        dto: UpdateRevenueDto
+    ) {
+        const updateData: Prisma.JobUpdateInput = {}
+        if (
+            lodash.isEmpty(dto) ||
+            (lodash.isEmpty(dto.incomeCost) &&
+                lodash.isEmpty(dto.paymentChannelId))
+        ) {
+            throw new BadRequestException()
+        } else {
+            if (!lodash.isEmpty(dto.paymentChannelId)) {
+                updateData['paymentChannelId'] = dto.paymentChannelId
+            }
+            if (!lodash.isEmpty(dto.incomeCost)) {
+                updateData['incomeCost'] = parseFloat(dto.incomeCost)
+            }
+        }
+
+        return await this.prisma.$transaction(async (tx) => {
+            const job = await tx.job.findUnique({
+                where: { id: jobId },
+            })
+            if (!job) throw new BadRequestException('Job not found')
+
+            const updated = await tx.job.update({
+                where: { id: jobId },
+                data: updateData,
+            })
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'Financial',
+                    activityType: ActivityType.UpdateInformation,
+                    currentValue: 'Paid',
+                },
+            })
+            return { id: updated.id, no: updated.no }
         })
     }
 

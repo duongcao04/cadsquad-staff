@@ -153,7 +153,7 @@ function JobDetailPage() {
             )}
             {financialModal.isOpen && job && (
                 <UpdateCostModal
-                    data={job}
+                    jobNo={job.no}
                     isOpen={financialModal.isOpen}
                     onClose={financialModal.onClose}
                 />

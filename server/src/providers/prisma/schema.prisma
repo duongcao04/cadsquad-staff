@@ -481,7 +481,7 @@ model JobActivityLog {
   modifiedById String
 
   fieldName    String
-  activityType ActivityType
+  activityType ActivityType @default(Private)
   notes        String?
 
   @@index([jobId, modifiedAt])
@@ -490,14 +490,22 @@ model JobActivityLog {
 
 enum ActivityType {
   CreateJob
+  // Job flow
   ChangeStatus
-  AssignMember
-  UnassignMember
-  ChangePaymentChannel
-  UpdateInformation
-  DeleteJob
   DeliverJob
   MarkPaid
+  ReviewJob
+  // Assign member
+  AssignMember
+  UnassignMember
+  // Financial
+  ChangePaymentChannel
+  IncomeCost
+  // General
+  UpdateInformation
+  DeleteJob
+  // Private
+  Private
 }
 
 model Notification {

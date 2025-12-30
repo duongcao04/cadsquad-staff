@@ -222,7 +222,7 @@ export const jobByNoOptions = (jobNo: string) =>
         enabled: !!jobNo,
         select: (res) => {
             const jobData = res?.result
-            return lodash.isEmpty(jobData) ? undefined : mapJob(jobData)
+            return mapJob(jobData)
         },
     })
 

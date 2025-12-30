@@ -1,58 +1,152 @@
 import {
     Button,
-    Input,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
     Select,
     SelectItem,
     Tab,
     Tabs,
     Avatar,
-    Divider,
     Card,
     CardBody,
+    Skeleton,
+    Spinner,
+    addToast,
 } from '@heroui/react'
 import {
     Landmark,
-    Save,
     TrendingUp,
     Users,
     Wallet,
     ReceiptText,
     CheckCircle2,
     DollarSign,
-    Scale,
+    SaveIcon,
+    SquarePenIcon,
+    XIcon,
 } from 'lucide-react'
-import { useMemo, useState, useEffect } from 'react'
-import { toast } from 'sonner'
+import {
+    useMemo,
+    useState,
+    useEffect,
+    Suspense,
+    FormEvent,
+    Dispatch,
+    SetStateAction,
+} from 'react'
+import { HeroCard, HeroCardBody } from '../ui/hero-card'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
+} from '../ui/hero-modal'
+import { TJob, TPaymentChannel } from '../../types'
+import { ErrorBoundary } from 'react-error-boundary'
+import { useSuspenseQueries } from '@tanstack/react-query'
+import { jobByNoOptions, paymentChannelsListOptions } from '@/lib/queries'
+import HeroNumberInput from '../ui/hero-number-input'
+import { Image } from 'antd'
+import { ScrollArea, ScrollBar } from '../ui/scroll-area'
+import {
+    optimizeCloudinary,
+    TUpdateJobRevenue,
+    useUpdateAssignmentCostMutation,
+    useUpdateJobRevenueMutation,
+} from '../../../lib'
+import { HeroButton } from '../ui/hero-button'
+import { HeroTooltip } from '../ui/hero-tooltip'
 
-// --- FAKE DATA ---
-const FAKE_PAYMENT_CHANNELS = [
-    { id: 'ch_1', displayName: 'Techcombank - Main Account' },
-    { id: 'ch_2', displayName: 'Vietcombank - Project Fund' },
-    { id: 'ch_3', displayName: 'Momo Business' },
-]
+type AssignedMember = {
+    userId: string
+    displayName: string
+    avatar: string
+    staffCost: number
+}
 
-export default function UpdateCostModal({ data, isOpen, onClose }: any) {
+type UpdateCostModalProps = {
+    jobNo: string
+    isOpen: boolean
+    onClose: () => void
+}
+export default function UpdateCostModal({
+    jobNo,
+    isOpen,
+    onClose,
+}: UpdateCostModalProps) {
+    return (
+        <HeroModal isOpen={isOpen} onClose={onClose} size="2xl">
+            <HeroModalContent>
+                {/* 1. Bao bọc nội dung bằng ErrorBoundary và Suspense */}
+                <ErrorBoundary
+                    fallback={
+                        <div className="p-10 text-center">Have an error !</div>
+                    }
+                >
+                    <Suspense fallback={<UpdateCostSkeleton />}>
+                        {/* Chỉ kích hoạt fetch khi Modal mở */}
+                        {isOpen && (
+                            <UpdateCostContainer
+                                jobNo={jobNo}
+                                onClose={onClose}
+                                isOpen={isOpen}
+                            />
+                        )}
+                    </Suspense>
+                </ErrorBoundary>
+            </HeroModalContent>
+        </HeroModal>
+    )
+}
+function UpdateCostContainer({ isOpen, onClose, jobNo }: UpdateCostModalProps) {
+    const [
+        { data: job },
+        {
+            data: { paymentChannels },
+        },
+    ] = useSuspenseQueries({
+        queries: [
+            { ...jobByNoOptions(jobNo) },
+            { ...paymentChannelsListOptions() },
+        ],
+    })
+    return (
+        <UpdateCostContent
+            job={job}
+            isOpen={isOpen}
+            onClose={onClose}
+            paymentChannels={paymentChannels}
+        />
+    )
+}
+
+function UpdateCostContent({
+    job,
+    isOpen,
+    onClose,
+    paymentChannels,
+}: {
+    job: TJob
+    isOpen: boolean
+    onClose: () => void
+    paymentChannels: TPaymentChannel[]
+}) {
+    const updateJobRevenue = useUpdateJobRevenueMutation()
     const [selectedTab, setSelectedTab] = useState<string>('revenue')
 
     // Revenue States
-    const [incomeCost, setIncomeCost] = useState<string>('0')
+    const [incomeCost, setIncomeCost] = useState<number | undefined>(undefined)
     const [paymentChannelId, setPaymentChannelId] = useState<string>('')
 
     // Assignment States
-    const [assignedMembers, setAssignedMembers] = useState<any[]>([])
+    const [assignedMembers, setAssignedMembers] = useState<AssignedMember[]>([])
 
     useEffect(() => {
-        if (isOpen && data) {
-            setIncomeCost(data.incomeCost?.toString() || '25000000')
-            setPaymentChannelId(data.paymentChannelId || 'ch_1')
-            if (data.assignments) {
+        if (isOpen && job) {
+            setIncomeCost(job.incomeCost || 25000000)
+            setPaymentChannelId(job?.paymentChannel?.id || 'ch_1')
+            if (job.assignments) {
                 setAssignedMembers(
-                    data.assignments.map((asgn: any) => ({
+                    job.assignments.map((asgn: any) => ({
                         userId: asgn.user.id,
                         displayName: asgn.user.displayName,
                         avatar: asgn.user.avatar,
@@ -61,296 +155,427 @@ export default function UpdateCostModal({ data, isOpen, onClose }: any) {
                 )
             }
         }
-    }, [isOpen, data])
+    }, [isOpen, job])
 
     const totalStaffCost = useMemo(
         () => assignedMembers.reduce((sum, m) => sum + m.staffCost, 0),
         [assignedMembers]
     )
 
-    const profit = useMemo(
-        () => (parseFloat(incomeCost) || 0) - totalStaffCost,
-        [incomeCost, totalStaffCost]
+    const isSameOldData = useMemo(
+        () =>
+            paymentChannelId === job.paymentChannel?.id &&
+            incomeCost === job.incomeCost,
+        [paymentChannelId, incomeCost]
     )
-    const profitMargin = useMemo(() => {
-        const income = parseFloat(incomeCost) || 0
-        return income > 0 ? ((profit / income) * 100).toFixed(1) : '0'
-    }, [profit, incomeCost])
+
+    const handleUpdateRevenue = async (e?: FormEvent<HTMLFormElement>) => {
+        e?.preventDefault()
+        if (isSameOldData) {
+            addToast({
+                title: 'No changes detected',
+                description:
+                    'The information is the same as before. Nothing to update.',
+                color: 'danger',
+            })
+        }
+        const updateValues: TUpdateJobRevenue = {
+            paymentChannelId:
+                paymentChannelId === job.paymentChannel?.id
+                    ? undefined
+                    : paymentChannelId,
+            incomeCost: incomeCost === job.incomeCost ? undefined : incomeCost,
+        }
+        await updateJobRevenue.mutateAsync(
+            {
+                jobId: job.id,
+                data: updateValues,
+            },
+            {
+                onSuccess() {
+                    ;(setIncomeCost(undefined), setPaymentChannelId(''))
+                    onClose()
+                },
+            }
+        )
+    }
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            size="2xl"
-            backdrop="blur"
-            scrollBehavior="inside"
-            classNames={{
-                base: 'bg-background dark:bg-zinc-950 border border-divider shadow-2xl',
-                header: 'border-b border-divider bg-default-50/50',
-                footer: 'bg-default-50/50 border-t border-divider',
-            }}
-        >
-            <ModalContent>
-                <ModalHeader className="flex flex-col gap-1 py-4">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <TrendingUp size={22} className="text-primary" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold">
-                                Financial Workbench
-                            </h3>
-                            <p className="text-tiny font-medium text-default-400">
-                                Managing Records for Project #
-                                {data?.no || 'N/A'}
-                            </p>
-                        </div>
+        <>
+            <HeroModalHeader className="flex flex-col gap-1 py-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <TrendingUp size={22} className="text-primary" />
                     </div>
-                </ModalHeader>
+                    <div>
+                        <span>Financial</span>
+                        <p className="text-xs font-medium text-text-subdued">
+                            Managing Records for Job #{job?.no || 'N/A'}
+                        </p>
+                    </div>
+                </div>
+            </HeroModalHeader>
 
-                <ModalBody className="py-6 px-8">
-                    <Tabs
-                        fullWidth
-                        aria-label="Financial Tabs"
-                        color="primary"
-                        variant="solid"
-                        radius="full"
-                        selectedKey={selectedTab}
-                        onSelectionChange={(k) => setSelectedTab(k as string)}
-                        classNames={{
-                            tabList: 'bg-default-100 p-1',
-                            cursor: 'shadow-sm',
-                            tab: 'h-10',
-                        }}
-                    >
-                        {/* TAB 1: REVENUE */}
-                        <Tab
-                            key="revenue"
-                            title={
-                                <div className="flex items-center gap-2">
-                                    <DollarSign size={16} />
-                                    <span>Income</span>
-                                </div>
-                            }
-                        >
-                            <div className="flex flex-col gap-8 py-6">
-                                <div className="grid grid-cols-1 gap-6">
-                                    <Input
-                                        label="Project Revenue"
-                                        placeholder="0"
-                                        variant="faded"
-                                        type="number"
-                                        labelPlacement="outside"
-                                        size="lg"
-                                        value={incomeCost}
-                                        onValueChange={setIncomeCost}
-                                        startContent={
-                                            <span className="text-default-400 font-semibold">
-                                                ₫
-                                            </span>
-                                        }
-                                        classNames={{
-                                            input: 'font-bold text-lg',
-                                        }}
-                                    />
-                                    <Select
-                                        label="Settlement Account"
-                                        labelPlacement="outside"
-                                        placeholder="Select account channel"
-                                        variant="faded"
-                                        size="lg"
-                                        selectedKeys={[paymentChannelId]}
-                                        onSelectionChange={(keys) =>
-                                            setPaymentChannelId(
-                                                Array.from(keys)[0] as string
-                                            )
-                                        }
-                                        startContent={
-                                            <Landmark
-                                                size={20}
-                                                className="text-primary"
-                                            />
-                                        }
-                                    >
-                                        {FAKE_PAYMENT_CHANNELS.map((c) => (
-                                            <SelectItem key={c.id}>
-                                                {c.displayName}
-                                            </SelectItem>
-                                        ))}
-                                    </Select>
-                                </div>
-
-                                <div className="flex justify-end">
-                                    <Button
-                                        color="primary"
-                                        className="font-bold px-8 shadow-lg shadow-primary/30"
-                                        startContent={
-                                            <CheckCircle2 size={18} />
-                                        }
-                                        onPress={() =>
-                                            toast.success(
-                                                'Income details updated locally'
-                                            )
-                                        }
-                                    >
-                                        Update Revenue
-                                    </Button>
-                                </div>
+            <HeroModalBody className="py-0 px-8">
+                <Tabs
+                    fullWidth
+                    aria-label="Financial Tabs"
+                    color="primary"
+                    variant="solid"
+                    radius="full"
+                    selectedKey={selectedTab}
+                    onSelectionChange={(k) => setSelectedTab(k as string)}
+                    classNames={{
+                        tabList: 'bg-background-muted p-1',
+                        cursor: 'shadow-sm',
+                        tab: 'h-10',
+                    }}
+                >
+                    {/* TAB 1: REVENUE */}
+                    <Tab
+                        key="revenue"
+                        title={
+                            <div className="flex items-center gap-2">
+                                <DollarSign size={16} />
+                                <span>Income</span>
                             </div>
-                        </Tab>
-
-                        {/* TAB 2: STAFF COSTS */}
-                        <Tab
-                            key="assignments"
-                            title={
-                                <div className="flex items-center gap-2">
-                                    <Users size={16} />
-                                    <span>Payouts</span>
-                                </div>
-                            }
+                        }
+                    >
+                        <form
+                            onSubmit={handleUpdateRevenue}
+                            className="flex flex-col gap-8"
                         >
-                            <div className="flex flex-col gap-6 py-6">
-                                <Card
-                                    className="bg-primary-50/30 border-none shadow-none"
-                                    radius="lg"
+                            <div className="grid grid-cols-1 gap-6">
+                                <HeroNumberInput
+                                    label="Income cost"
+                                    placeholder="0"
+                                    type="number"
+                                    labelPlacement="outside"
+                                    size="md"
+                                    allowNegative={false}
+                                    value={incomeCost}
+                                    notNull={false}
+                                    onValueChange={(val) => {
+                                        setIncomeCost(val ?? undefined)
+                                    }}
+                                    startContent={
+                                        <span className="text-text-subdued font-semibold">
+                                            $
+                                        </span>
+                                    }
+                                    classNames={{
+                                        input: 'font-semibold',
+                                    }}
+                                />
+                                <Select
+                                    label="Settlement Account"
+                                    labelPlacement="outside"
+                                    placeholder="Select account channel"
+                                    size="md"
+                                    variant="bordered"
+                                    classNames={{
+                                        trigger: 'border-1!',
+                                    }}
+                                    selectedKeys={[paymentChannelId]}
+                                    onSelectionChange={(keys) =>
+                                        setPaymentChannelId(
+                                            Array.from(keys)[0] as string
+                                        )
+                                    }
+                                    disallowEmptySelection
+                                    startContent={
+                                        <Landmark
+                                            size={20}
+                                            className="text-primary"
+                                        />
+                                    }
                                 >
-                                    <CardBody className="flex-row items-center gap-3 py-3">
-                                        <div className="p-2 bg-primary rounded-full">
-                                            <ReceiptText
-                                                size={16}
-                                                className="text-white"
-                                            />
-                                        </div>
-                                        <p className="text-xs font-medium text-primary-700">
-                                            Adjust individual payouts for
-                                            current team members below.
-                                        </p>
-                                    </CardBody>
-                                </Card>
-
-                                <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {assignedMembers.map((member) => (
-                                        <div
-                                            key={member.userId}
-                                            className="flex items-center justify-between p-4 bg-default-50 rounded-2xl border border-transparent hover:border-primary-200 hover:bg-white dark:hover:bg-zinc-900 transition-all"
+                                    {paymentChannels.map((c) => (
+                                        <SelectItem
+                                            key={c.id}
+                                            textValue={c.displayName}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <Avatar
-                                                    src={member.avatar}
-                                                    className="w-10 h-10 shadow-sm"
+                                            <div className="flex items-center justify-start gap-2">
+                                                <Image
+                                                    src={c.logoUrl}
+                                                    rootClassName="size-8! rounded-full"
+                                                    className="size-full rounded-full object-cover"
+                                                    preview={false}
                                                 />
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold">
-                                                        {member.displayName}
-                                                    </span>
-                                                    <span className="text-[10px] uppercase text-default-400 font-bold">
-                                                        Partner
-                                                    </span>
-                                                </div>
+                                                {c.displayName}
                                             </div>
-                                            <Input
-                                                type="number"
-                                                variant="flat"
-                                                size="sm"
-                                                className="w-44"
-                                                value={member.staffCost.toString()}
-                                                onValueChange={(val) => {
-                                                    const num =
-                                                        parseFloat(val) || 0
-                                                    setAssignedMembers((prev) =>
-                                                        prev.map((m) =>
-                                                            m.userId ===
-                                                            member.userId
-                                                                ? {
-                                                                      ...m,
-                                                                      staffCost:
-                                                                          num,
-                                                                  }
-                                                                : m
-                                                        )
-                                                    )
-                                                }}
-                                                endContent={
-                                                    <span className="text-[10px] font-bold text-default-400">
-                                                        VND
-                                                    </span>
-                                                }
-                                                classNames={{
-                                                    input: 'text-right font-bold',
-                                                }}
-                                            />
-                                        </div>
+                                        </SelectItem>
+                                    ))}
+                                </Select>
+                            </div>
+
+                            <div className="flex justify-end">
+                                <Button
+                                    color="primary"
+                                    className="shadow-md shadow-primary/30"
+                                    startContent={
+                                        updateJobRevenue.isPending ? (
+                                            <Spinner />
+                                        ) : (
+                                            <CheckCircle2 size={18} />
+                                        )
+                                    }
+                                    isDisabled={isSameOldData}
+                                    onPress={() => handleUpdateRevenue()}
+                                >
+                                    Update Revenue
+                                </Button>
+                            </div>
+                        </form>
+                    </Tab>
+
+                    {/* TAB 2: STAFF COSTS */}
+                    <Tab
+                        key="assignments"
+                        title={
+                            <div className="flex items-center gap-2">
+                                <Users size={16} />
+                                <span>Payouts</span>
+                            </div>
+                        }
+                    >
+                        <ScrollArea className="size-full h-100 py-6">
+                            <ScrollBar orientation="horizontal" />
+                            <ScrollBar orientation="vertical" />
+                            <Card
+                                className="bg-background-hovered border-none shadow-none"
+                                radius="lg"
+                            >
+                                <CardBody className="flex-row items-center gap-3 py-3">
+                                    <div className="p-2 bg-primary rounded-full">
+                                        <ReceiptText
+                                            size={16}
+                                            className="text-white"
+                                        />
+                                    </div>
+                                    <p className="text-xs font-medium text-primary">
+                                        Adjust individual payouts for current
+                                        team members below.
+                                    </p>
+                                </CardBody>
+                            </Card>
+                            <div className="flex flex-col gap-6 py-4">
+                                <div className="flex flex-col gap-3">
+                                    {assignedMembers.map((member) => (
+                                        <AssignedMemberCard
+                                            key={member.userId}
+                                            jobId={job.id}
+                                            onAssignedMembersChange={
+                                                setAssignedMembers
+                                            }
+                                            member={member}
+                                        />
                                     ))}
                                 </div>
+                            </div>
+                        </ScrollArea>
+                    </Tab>
+                </Tabs>
+            </HeroModalBody>
 
-                                <div className="flex justify-end">
-                                    <Button
-                                        color="primary"
-                                        className="font-bold px-8 shadow-lg shadow-primary/30"
-                                        startContent={
-                                            <CheckCircle2 size={18} />
-                                        }
-                                        onPress={() =>
-                                            toast.success(
-                                                'Member payout costs adjusted'
-                                            )
-                                        }
-                                    >
-                                        Update Payouts
-                                    </Button>
-                                </div>
-                            </div>
-                        </Tab>
-                    </Tabs>
-                </ModalBody>
+            <HeroModalFooter className="flex-col items-stretch gap-3 px-8">
+                <div className="flex items-center justify-between bg-primary/5 px-4 py-2 rounded-xl gap-1 border border-primary/10">
+                    <div className="flex items-center gap-2 text-primary-500 mb-1">
+                        <Wallet size={22} />
+                        <span className="text-xs uppercase font-black tracking-wider">
+                            Total Expenses
+                        </span>
+                    </div>
+                    <div className="text-xl font-black text-primary">
+                        {totalStaffCost.toLocaleString()}
+                    </div>
+                </div>
+                <div className="flex justify-between items-center">
+                    <p className="text-xs text-text-subdued max-w-[60%]">
+                        * All changes are logged for auditing purposes and will
+                        impact the monthly balance sheet.
+                    </p>
+                    <Button variant="light" onPress={onClose}>
+                        Close
+                    </Button>
+                </div>
+            </HeroModalFooter>
+        </>
+    )
+}
 
-                <ModalFooter className="flex-col items-stretch gap-6 py-6 px-8">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-default-100/50 p-4 rounded-3xl flex flex-col gap-1 border border-divider">
-                            <div className="flex items-center gap-2 text-default-500 mb-1">
-                                <Scale size={14} />
-                                <span className="text-[10px] uppercase font-black tracking-wider">
-                                    Gross Profit
-                                </span>
-                            </div>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-black text-foreground">
-                                    {profit.toLocaleString()}
-                                </span>
-                                <span className="text-xs font-bold text-success-500">
-                                    ({profitMargin}%)
-                                </span>
-                            </div>
+export function UpdateCostSkeleton() {
+    return (
+        <>
+            {/* Header Skeleton */}
+            <div className="p-4 border-b border-divider flex items-center gap-3">
+                <Skeleton className="w-10 h-10 rounded-lg" />
+                <div className="space-y-2">
+                    <Skeleton className="w-32 h-5 rounded-md" />
+                    <Skeleton className="w-48 h-3 rounded-md" />
+                </div>
+            </div>
+
+            <div className="p-8 space-y-6">
+                {/* Tabs Skeleton */}
+                <Skeleton className="w-full h-12 rounded-full" />
+
+                <div className="py-6 space-y-8">
+                    {/* Input Area Skeleton */}
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Skeleton className="w-20 h-4 rounded-md" />
+                            <Skeleton className="w-full h-14 rounded-xl" />
                         </div>
-
-                        <div className="bg-primary/5 p-4 rounded-3xl flex flex-col gap-1 border border-primary/10">
-                            <div className="flex items-center gap-2 text-primary-500 mb-1">
-                                <Wallet size={14} />
-                                <span className="text-[10px] uppercase font-black tracking-wider">
-                                    Total Expenses
-                                </span>
-                            </div>
-                            <span className="text-2xl font-black text-primary">
-                                {totalStaffCost.toLocaleString()}
-                            </span>
+                        <div className="space-y-2">
+                            <Skeleton className="w-20 h-4 rounded-md" />
+                            <Skeleton className="w-full h-14 rounded-xl" />
                         </div>
                     </div>
 
-                    <div className="flex justify-between items-center">
-                        <p className="text-tiny text-default-400 max-w-[240px]">
-                            * All changes are logged for auditing purposes and
-                            will impact the monthly balance sheet.
-                        </p>
+                    <div className="flex justify-end">
+                        <Skeleton className="w-36 h-10 rounded-xl" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Stats Skeleton */}
+            <div className="p-8 border-t border-divider space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                    <HeroCard className="shadow-none border border-divider">
+                        <HeroCardBody className="p-4 gap-2">
+                            <Skeleton className="w-16 h-3 rounded-md" />
+                            <Skeleton className="w-24 h-8 rounded-md" />
+                        </HeroCardBody>
+                    </HeroCard>
+                    <HeroCard className="shadow-none border border-divider">
+                        <HeroCardBody className="p-4 gap-2">
+                            <Skeleton className="w-16 h-3 rounded-md" />
+                            <Skeleton className="w-24 h-8 rounded-md" />
+                        </HeroCardBody>
+                    </HeroCard>
+                </div>
+                <div className="flex justify-between items-center">
+                    <Skeleton className="w-1/2 h-3 rounded-md" />
+                    <Skeleton className="w-24 h-10 rounded-xl" />
+                </div>
+            </div>
+        </>
+    )
+}
+
+function AssignedMemberCard({
+    jobId,
+    member,
+    onAssignedMembersChange,
+}: {
+    jobId: string
+    member: AssignedMember
+    onAssignedMembersChange: Dispatch<SetStateAction<AssignedMember[]>>
+}) {
+    const updateAssignmentCostMutation = useUpdateAssignmentCostMutation()
+
+    const [editable, setEditable] = useState(false)
+    const handleUpdateCost = (userId: string, value: string) => {
+        const numericValue = parseFloat(value) || 0
+        onAssignedMembersChange((prev) =>
+            prev.map((m) =>
+                m.userId === userId ? { ...m, staffCost: numericValue } : m
+            )
+        )
+    }
+
+    const onSave = () => {
+        updateAssignmentCostMutation.mutateAsync(
+            {
+                jobId: jobId,
+                memberId: member.userId,
+                staffCost: member.staffCost,
+            },
+            {
+                onSuccess() {
+                    setEditable(false)
+                },
+            }
+        )
+    }
+
+    return (
+        <div className="flex items-center justify-between p-4 bg-default-50 rounded-2xl border border-transparent hover:border-primary-200 hover:bg-white dark:hover:bg-zinc-900 transition-all">
+            <div className="flex items-center gap-3">
+                <Avatar
+                    src={optimizeCloudinary(member.avatar)}
+                    className="w-10 h-10 shadow-sm"
+                />
+                <div className="flex flex-col">
+                    <span className="text-sm font-bold">
+                        {member.displayName}
+                    </span>
+                    <span className="text-[10px] uppercase text-text-subdued font-bold">
+                        Partner
+                    </span>
+                </div>
+            </div>
+            <div className="flex items-center justify-end gap-3">
+                <HeroNumberInput
+                    hideStepper
+                    size="sm"
+                    placeholder="0"
+                    notNull={true}
+                    allowNegative={false}
+                    isDisabled={!editable}
+                    value={member.staffCost.toString()}
+                    onValueChange={(val) =>
+                        handleUpdateCost(member.userId, val?.toString() ?? '0')
+                    }
+                    className="w-36"
+                    endContent={
+                        <span className="text-[10px] font-bold text-text-subdued">
+                            VND
+                        </span>
+                    }
+                />
+                {!editable && (
+                    <HeroTooltip content="Edit cost" color="warning">
                         <Button
+                            isIconOnly
+                            size="sm"
                             variant="light"
-                            className="font-bold text-default-500 hover:text-foreground"
-                            onPress={onClose}
+                            color="warning"
+                            onPress={() => setEditable(true)}
                         >
-                            Exit Workbench
+                            <SquarePenIcon size={16} />
                         </Button>
-                    </div>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
+                    </HeroTooltip>
+                )}
+                {editable && (
+                    <>
+                        <HeroTooltip content="Save cost">
+                            <HeroButton
+                                isIconOnly
+                                size="sm"
+                                variant="light"
+                                color="blue"
+                                onPress={onSave}
+                            >
+                                <SaveIcon size={16} />
+                            </HeroButton>
+                        </HeroTooltip>
+
+                        <HeroTooltip content="Cancel">
+                            <HeroButton
+                                isIconOnly
+                                size="sm"
+                                variant="light"
+                                color="default"
+                                onPress={() => setEditable(false)}
+                            >
+                                <XIcon size={16} />
+                            </HeroButton>
+                        </HeroTooltip>
+                    </>
+                )}
+            </div>
+        </div>
     )
 }

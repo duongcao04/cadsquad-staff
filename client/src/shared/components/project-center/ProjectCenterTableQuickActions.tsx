@@ -51,7 +51,8 @@ export function ProjectCenterTableQuickActions({
         queryClient.invalidateQueries({ queryKey: ['jobs'] })
     })
 
-    const { mutateAsync: deleteJobMutation, isPending: isDeleting } = useDeleteJobMutation()
+    const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
+        useDeleteJobMutation()
 
     // --- Modal Controllers ---
     const assignModal = useDisclosure()
@@ -139,19 +140,22 @@ export function ProjectCenterTableQuickActions({
                 <UpdateCostModal
                     isOpen={updateCostModal.isOpen}
                     onClose={updateCostModal.onClose}
-                    data={data}
+                    jobNo={data.no}
                 />
             )}
 
             {/* --- DROPDOWN TRIGGER --- */}
-            <Dropdown placement="bottom-end" backdrop="blur">
+            <Dropdown placement="bottom-end">
                 <DropdownTrigger>
                     <Button isIconOnly variant="light" size="sm" radius="full">
-                        <EllipsisVerticalIcon size={18} className="text-default-400" />
+                        <EllipsisVerticalIcon
+                            size={18}
+                            className="text-default-400"
+                        />
                     </Button>
                 </DropdownTrigger>
-                <DropdownMenu 
-                    aria-label="Action menu" 
+                <DropdownMenu
+                    aria-label="Action menu"
                     variant="flat"
                     disabledKeys={data.isPaid ? ['markAsPaid'] : []}
                 >
@@ -160,7 +164,12 @@ export function ProjectCenterTableQuickActions({
                         <DropdownItem
                             key="openDetail"
                             startContent={<SquareArrowOutUpRight size={16} />}
-                            onPress={() => window.open(INTERNAL_URLS.getJobDetailUrl(data.no), '_blank')}
+                            onPress={() =>
+                                window.open(
+                                    INTERNAL_URLS.getJobDetailUrl(data.no),
+                                    '_blank'
+                                )
+                            }
                         >
                             Open detail
                         </DropdownItem>
@@ -174,7 +183,7 @@ export function ProjectCenterTableQuickActions({
                     </DropdownSection>
 
                     {/* Admin Section: Management */}
-                    {isAdmin && (
+                    {isAdmin ? (
                         <DropdownSection title="Management">
                             <DropdownItem
                                 key="assign"
@@ -193,10 +202,10 @@ export function ProjectCenterTableQuickActions({
                                 Delete job
                             </DropdownItem>
                         </DropdownSection>
-                    )}
+                    ) : null}
 
                     {/* Financial Section: Admin & Accounting Only */}
-                    {(isAdmin || isAccounting) && (
+                    {isAdmin || isAccounting ? (
                         <DropdownSection title="Accounting">
                             <DropdownItem
                                 key="updateCost"
@@ -214,7 +223,7 @@ export function ProjectCenterTableQuickActions({
                                 Mark as paid
                             </DropdownItem>
                         </DropdownSection>
-                    )}
+                    ) : null}
                 </DropdownMenu>
             </Dropdown>
         </>
