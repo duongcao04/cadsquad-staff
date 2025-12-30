@@ -2,18 +2,23 @@ import {
     Alert,
     Button,
     Divider,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
+    Listbox,
+    ListboxItem,
     User,
 } from '@heroui/react'
 import dayjs from 'dayjs'
-import { AlertCircle, Banknote, CheckCircle2,CreditCard } from 'lucide-react'
+import { AlertCircle, Banknote, CheckCircle2, CreditCard } from 'lucide-react'
 import React, { useState } from 'react'
-
 import { TJob } from '@/shared/types'
+import { currencyFormatter, IMAGES, optimizeCloudinary } from '../../../lib'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
+} from '../ui/hero-modal'
+import { Image } from 'antd'
 
 interface ConfirmPaymentModalProps {
     isOpen: boolean
@@ -45,28 +50,18 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
     }
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onOpenChange={onOpenChange}
-            backdrop="blur"
-            size="md"
-            classNames={{
-                base: 'border-[#e4e4e7] dark:border-[#3f3f46] border-1',
-                header: 'border-b-[1px] border-[#e4e4e7] dark:border-[#3f3f46]',
-                footer: 'border-t-[1px] border-[#e4e4e7] dark:border-[#3f3f46]',
-            }}
-        >
-            <ModalContent>
+        <HeroModal isOpen={isOpen} onOpenChange={onOpenChange} size="lg">
+            <HeroModalContent>
                 {(onClose) => (
                     <>
-                        <ModalHeader className="flex flex-col gap-1">
+                        <HeroModalHeader className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
                                 <Banknote className="text-success" size={20} />
                                 <span>Confirm Staff Payout</span>
                             </div>
-                        </ModalHeader>
+                        </HeroModalHeader>
 
-                        <ModalBody className="py-6">
+                        <HeroModalBody className="py-6">
                             <div className="flex flex-col gap-4">
                                 {/* Job Info Summary */}
                                 <div className="flex justify-between items-start bg-default-50 p-3 rounded-xl border border-default-100">
@@ -95,18 +90,25 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
                                     <p className="text-xs font-semibold mb-2 text-default-500">
                                         Payable To:
                                     </p>
-                                    <div className="flex flex-col gap-2">
-                                        {job.assignee?.map((user) => (
-                                            <User
-                                                key={user.id}
-                                                name={user.displayName}
-                                                description={`@${user.username}`}
-                                                avatarProps={{
-                                                    src: user.avatar,
-                                                    size: 'sm',
-                                                }}
-                                            />
-                                        ))}
+                                    <div className="flex flex-col items-start gap-2">
+                                        <Listbox aria-label="Assignments">
+                                            {job.assignments.map((ass) => (
+                                                <ListboxItem key={ass.user.id}>
+                                                    <User
+                                                        name={
+                                                            ass.user.displayName
+                                                        }
+                                                        description={`@${ass.user.username}`}
+                                                        avatarProps={{
+                                                            src: optimizeCloudinary(
+                                                                ass.user.avatar
+                                                            ),
+                                                            size: 'sm',
+                                                        }}
+                                                    />
+                                                </ListboxItem>
+                                            ))}
+                                        </Listbox>
                                     </div>
                                 </div>
 
@@ -115,19 +117,31 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
                                 {/* Payment Details */}
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm text-default-500">
-                                            Payment Channel
-                                        </span>
                                         <div className="flex items-center gap-2">
                                             <CreditCard
                                                 size={14}
                                                 className="text-default-400"
                                             />
+                                            <span className="text-sm text-default-500">
+                                                Payment Channel
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
                                             <span className="text-sm font-semibold">
                                                 {job.paymentChannel
                                                     ?.displayName ||
                                                     'Default Method'}
                                             </span>
+                                            <Image
+                                                preview={false}
+                                                src={optimizeCloudinary(
+                                                    job.paymentChannel
+                                                        ?.logoUrl ??
+                                                        IMAGES.loadingPlaceholder
+                                                )}
+                                                rootClassName="size-6! object-cover rounded-full"
+                                                className="size-full object-cover rounded-full"
+                                            />
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center p-3 bg-success-50 rounded-lg">
@@ -135,7 +149,10 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
                                             Total Payout
                                         </span>
                                         <span className="text-xl font-mono font-black text-success-700">
-                                            ${job.staffCost.toLocaleString()}
+                                            {currencyFormatter(
+                                                job.totalStaffCost,
+                                                'Vietnamese'
+                                            )}
                                         </span>
                                     </div>
                                 </div>
@@ -152,9 +169,9 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
                                     cannot be undone.
                                 </Alert>
                             </div>
-                        </ModalBody>
+                        </HeroModalBody>
 
-                        <ModalFooter>
+                        <HeroModalFooter>
                             <Button
                                 variant="light"
                                 onPress={onClose}
@@ -173,10 +190,10 @@ export const ConfirmPaymentModal: React.FC<ConfirmPaymentModalProps> = ({
                             >
                                 Confirm & Pay
                             </Button>
-                        </ModalFooter>
+                        </HeroModalFooter>
                     </>
                 )}
-            </ModalContent>
-        </Modal>
+            </HeroModalContent>
+        </HeroModal>
     )
 }

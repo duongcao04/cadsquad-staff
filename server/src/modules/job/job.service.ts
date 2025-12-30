@@ -311,7 +311,7 @@ export class JobService {
     }
 
     async getPendingPaymentJobs() {
-        return this.prisma.job.findMany({
+        const result = await this.prisma.job.findMany({
             where: {
                 status: { systemType: 'COMPLETED' },
                 isPaid: false,
@@ -320,10 +320,16 @@ export class JobService {
             include: {
                 status: true,
                 type: true,
+                paymentChannel: true,
                 assignments: { include: { user: true } },
             },
             orderBy: { completedAt: 'asc' },
         })
+        const mappedData = result.map((it) => ({
+            ...it,
+            totalStaffCost: it.sumStaffCost,
+        }))
+        return mappedData
     }
 
     /**

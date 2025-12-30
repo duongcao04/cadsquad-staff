@@ -22,6 +22,7 @@ import {
     currencyFormatter,
     getPageTitle,
     INTERNAL_URLS,
+    optimizeCloudinary,
     useMarkPaidMutation,
 } from '../../../lib'
 import { jobsPendingPayoutsOptions } from '../../../lib/queries'
@@ -161,10 +162,12 @@ function PendingPayoutsPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex -space-x-2">
-                                            {job.assignee.map((user) => (
+                                            {job.assignments.map((ass) => (
                                                 <Avatar
-                                                    key={user.id}
-                                                    src={user.avatar}
+                                                    key={ass.user.id}
+                                                    src={optimizeCloudinary(
+                                                        ass.user.avatar
+                                                    )}
                                                     size="sm"
                                                     className="border-2 border-background"
                                                 />
@@ -188,7 +191,7 @@ function PendingPayoutsPage() {
                                     <TableCell>
                                         <span className="font-mono font-bold text-success-600">
                                             {currencyFormatter(
-                                                job.staffCost,
+                                                job.totalStaffCost,
                                                 'Vietnamese'
                                             )}
                                         </span>
@@ -217,9 +220,7 @@ function PendingPayoutsPage() {
                                                 onPress={() =>
                                                     handleOpenModal(job)
                                                 }
-                                                startContent={
-                                                    <X size={16} />
-                                                }
+                                                startContent={<X size={16} />}
                                             >
                                                 Waiting Pay
                                             </Button>

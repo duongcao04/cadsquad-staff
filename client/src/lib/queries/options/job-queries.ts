@@ -179,14 +179,16 @@ export const jobsPendingDeliverOptions = () =>
     queryOptions({
         queryKey: ['jobs', 'pending-deliver'],
         queryFn: () => jobApi.pendingDeliver(),
-        select: (res) => res?.result,
+        select: (res) =>
+            Array.isArray(res.result) ? res.result.map(mapJob) : [],
     })
 
 export const jobsPendingPayoutsOptions = () =>
     queryOptions({
         queryKey: ['jobs', 'pending-payouts'],
         queryFn: () => jobApi.pendingPayouts(),
-        select: (res) => res?.result ?? [],
+        select: (res) =>
+            Array.isArray(res.result) ? res.result.map(mapJob) : [],
     })
 export const jobScheduleOptions = (month: number, year: number) =>
     queryOptions({

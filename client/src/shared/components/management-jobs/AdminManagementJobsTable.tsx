@@ -119,9 +119,9 @@ export default function AdminManagementJobsTable({
                     </div>
                 )
             case 'clientName':
-                return <p className="line-clamp-1">{data.clientName}</p>
+                return <p className="line-clamp-1">{data.client.name}</p>
             case 'assignee':
-                return !data.assignee.length ? (
+                return !data.assignments.length ? (
                     <div className="size-full flex items-center justify-center">
                         <p className="italic text-text-subdued font-medium">
                             Un-assignees
@@ -145,10 +145,10 @@ export default function AdminManagementJobsTable({
                                 },
                             }}
                         >
-                            {data.assignee.map((member) => (
+                            {data.assignments.map((ass) => (
                                 <Avatar
-                                    key={member.id}
-                                    src={optimizeCloudinary(member.avatar)}
+                                    key={ass.user.id}
+                                    src={optimizeCloudinary(ass.user.avatar)}
                                 />
                             ))}
                         </Avatar.Group>
