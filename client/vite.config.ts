@@ -48,6 +48,6 @@ export default defineConfig({
         minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
         // Produce sourcemaps for debug builds
         sourcemap: !!process.env.TAURI_DEBUG,
-        chunkSizeWarningLimit: 1000, // Set limit to 1000kB
+        chunkSizeWarningLimit: 2000, // Increase limit to 2MB to silence warning
     },
 })

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "generate-routes": "tsr generate",
-    "build": "tsr generate && tsc -b && vite build",
+    "build": "tsr generate && vite build",
     "lint": "eslint .",
     "tauri": "tauri",
     "lint:fix": "eslint . --fix",
@@ -73,7 +73,7 @@
     "react-quill-new": "^3.7.0",
     "recharts": "^3.6.0",
     "remove-accents": "^0.5.0",
-    "sooner": "^1.1.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "universal-cookie": "^8.0.1",
     "usehooks-ts": "^3.1.1",

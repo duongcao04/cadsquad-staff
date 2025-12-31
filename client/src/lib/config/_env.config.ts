@@ -47,6 +47,7 @@ function configProject() {
             }
         )
 
+        console.table(config)
         return config
     } catch (error) {
         // 3. Log specific validation errors so you know what to fix

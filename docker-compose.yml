@@ -69,7 +69,7 @@ services:
     # - web_client
     volumes:
       - ./ngrok.yml:/etc/ngrok.yml:ro
-    env_file: ./.env
+    env_file: .env
     command: ['start', '--all', '--config', '/etc/ngrok.yml']
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
@@ -136,17 +136,21 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile # Ensure the Bun Dockerfile is in ./client
+      args:
+        VITE_APP_URL: ${CLIENT_URL:-http://web_client:80}
+        VITE_API_ENDPOINT: '/api'
     container_name: web_client
     restart: always
     ports:
-      - '3000:80' # Map host 3000 to Nginx container 80
+      - '80:80' # Map host 3000 to Nginx container 80
     depends_on:
       - backend
+    env_file: .env
     environment:
       VITE_APP_VERSION: ${CLIENT_VERSION:-0.0.0-release}
       VITE_APP_TITLE: ${APP_TITLE}
-      VITE_APP_URL: ${CLIENT_URL}
-      VITE_API_ENDPOINT: ${API_ENDPOINT}
+      VITE_APP_URL: ${CLIENT_URL:-http://web_client:80}
+      VITE_API_ENDPOINT: "/api"
       VITE_WS_URL: ${WS_URL}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
