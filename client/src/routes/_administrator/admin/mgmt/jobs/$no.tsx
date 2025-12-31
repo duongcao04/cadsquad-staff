@@ -1,49 +1,4 @@
 import {
-    Avatar,
-    AvatarGroup,
-    Button,
-    Card,
-    CardBody,
-    CardHeader,
-    Chip,
-    Divider,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownTrigger,
-    Input,
-    Switch,
-    Tab,
-    Tabs,
-    Textarea,
-    useDisclosure,
-} from '@heroui/react'
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useFormik } from 'formik'
-import {
-    Briefcase,
-    ChevronLeft,
-    Copy,
-    DollarSign,
-    Download,
-    ExternalLink,
-    FileText,
-    MessageSquare,
-    MoreVertical,
-    Package,
-    Paperclip,
-    Printer,
-    Save,
-    Send,
-    Trash2,
-    Users,
-} from 'lucide-react'
-import { useTheme } from 'next-themes'
-import { useState } from 'react'
-import * as Yup from 'yup'
-import { z } from 'zod'
-import {
     ApiResponse,
     darkenHexColor,
     EXTERNAL_URLS,
@@ -65,17 +20,72 @@ import {
 import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
+    HeroDatePicker,
     HeroTooltip,
     JobActivityHistory,
 } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import AdminDeliveryCard from '@/shared/components/management-jobs/AdminDeliveryCard'
-import { AdminJobManageAccessModal } from '@/shared/components/modals/AdminJobManageAccessModal'
 import { ConfirmCancelJobModal } from '@/shared/components/modals/ConfirmCancelJobModal'
 import { ConfirmRemoveAssigneeModal } from '@/shared/components/modals/ConfirmRemoveAssigneeModal'
+import { EditClientModal } from '@/shared/components/modals/EditClientModal'
+import AssignMemberModal from '@/shared/components/project-center/AssignMemberModal'
 import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
 import { TJob, TUser } from '@/shared/types'
-import AssignMemberModal from '../../../../../shared/components/project-center/AssignMemberModal'
+import {
+    addToast,
+    Autocomplete,
+    AutocompleteItem,
+    Avatar,
+    AvatarGroup,
+    Button,
+    Chip,
+    Divider,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+    Input,
+    Switch,
+    Tab,
+    Tabs,
+    Textarea,
+    useDisclosure,
+} from '@heroui/react'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import dayjs from 'dayjs'
+import { useFormik } from 'formik'
+import lodash from 'lodash'
+import {
+    BookUserIcon,
+    Briefcase,
+    ChevronLeft,
+    Copy,
+    DollarSign,
+    Download,
+    ExternalLink,
+    FileText,
+    MessageSquare,
+    MoreVertical,
+    Package,
+    Paperclip,
+    Printer,
+    Save,
+    Send,
+    Trash2,
+    Users,
+} from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useState } from 'react'
+import * as Yup from 'yup'
+import { z } from 'zod'
+import { clientsListOptions } from '../../../../../lib/queries/options/client-queries'
+import { useUpdateJobGeneralInfoMutation } from '../../../../../lib/queries/useJob'
+import { toDate } from '../../../../../lib/utils'
 
 export const manageJobDetailParamsSchema = z.object({
     tab: z
@@ -244,12 +254,6 @@ function JobEditPage() {
         onOpen: onOpenAssignModal,
         onClose: onCloseAssignModal,
     } = useDisclosure({ id: 'AssigneeMembersModal' })
-
-    const {
-        isOpen: isManageAccessOpen,
-        onOpen: onOpenManageAccessModal,
-        onOpenChange: onCloseManageAccessModal,
-    } = useDisclosure({ id: 'AdminManageAccessModal' })
     const {
         isOpen: isOpenConfirmCancelJobModal,
         onOpen: onOpenConfirmCancelJobModal,
@@ -268,7 +272,7 @@ function JobEditPage() {
             // Using fetched data or defaults (ensure JOB_DATA properties exist on data)
             ...data,
             displayName: data?.displayName || '',
-            clientName: data?.client.name || '',
+            clientName: data?.client?.name || '',
             incomeCost: data?.incomeCost || 0,
             staffCost: data?.staffCost || 0,
             dueAt: data?.dueAt || '',
@@ -348,15 +352,6 @@ function JobEditPage() {
                     isOpen={isOpenConfirmCancelJobModal}
                     onOpenChange={onConfirmCancelModalChange}
                     onConfirm={() => {}}
-                />
-            )}
-            {isManageAccessOpen && data?.id && (
-                <AdminJobManageAccessModal
-                    isOpen={isManageAccessOpen}
-                    onClose={onCloseManageAccessModal}
-                    jobId={data.id}
-                    jobTitle={data.no}
-                    currentMembers={[]}
                 />
             )}
             {isAssignOpen && data?.id && (
@@ -523,8 +518,8 @@ function JobEditPage() {
                         {/* --- LEFT COLUMN: MAIN CONTENT --- */}
                         <div className="xl:col-span-2 space-y-6">
                             {/* Status & Progress Bar */}
-                            <Card className="w-full shadow-sm border border-border-default">
-                                <CardBody className="p-6">
+                            <HeroCard className="w-full">
+                                <HeroCardBody className="p-6">
                                     <div className="flex justify-between items-center mb-4">
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-xs font-medium text-text-subdued uppercase">
@@ -590,12 +585,12 @@ function JobEditPage() {
                                         <div className="bg-primary w-[25%] h-full"></div>
                                         <div className="bg-slate-200 w-[50%] h-full"></div>
                                     </div>
-                                </CardBody>
-                            </Card>
+                                </HeroCardBody>
+                            </HeroCard>
 
                             {/* Main Tabs Form */}
-                            <Card className="w-full shadow-sm border border-border-default min-h-150">
-                                <CardHeader className="p-0 border-b border-border-default">
+                            <HeroCard className="w-full min-h-150">
+                                <HeroCardHeader className="p-0 border-b border-border-default">
                                     <Tabs
                                         aria-label="Job Edit Sections"
                                         variant="underlined"
@@ -605,7 +600,7 @@ function JobEditPage() {
                                             cursor: 'w-full bg-primary',
                                             tab: 'max-w-fit px-0 h-10',
                                             tabContent:
-                                                'group-data-[selected=true]:text-primary font-semibold text-text-subdued',
+                                                'group-data-[selected=true]:text-primary text-text-subdued',
                                         }}
                                         selectedKey={activeTab}
                                         onSelectionChange={(k) =>
@@ -658,209 +653,12 @@ function JobEditPage() {
                                             }
                                         />
                                     </Tabs>
-                                </CardHeader>
+                                </HeroCardHeader>
 
-                                <CardBody className="p-6">
+                                <HeroCardBody className="p-6">
                                     {/* --- TAB: DETAILS --- */}
                                     {activeTab === 'details' && (
-                                        <div className="space-y-6 animate-in fade-in">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div className="md:col-span-2">
-                                                    <Input
-                                                        name="displayName"
-                                                        label="Display Name"
-                                                        labelPlacement="outside"
-                                                        placeholder="e.g. Website Redesign"
-                                                        value={
-                                                            formik.values
-                                                                .displayName
-                                                        }
-                                                        onChange={
-                                                            formik.handleChange
-                                                        }
-                                                        isInvalid={
-                                                            !!formik.errors
-                                                                .displayName &&
-                                                            formik.touched
-                                                                .displayName
-                                                        }
-                                                        errorMessage={
-                                                            formik.touched
-                                                                .displayName &&
-                                                            (formik.errors
-                                                                .displayName as string)
-                                                        }
-                                                        variant="bordered"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <Input
-                                                        name="clientName"
-                                                        label="Client Name"
-                                                        labelPlacement="outside"
-                                                        placeholder="Client Company"
-                                                        value={
-                                                            formik.values
-                                                                .clientName
-                                                        }
-                                                        onChange={
-                                                            formik.handleChange
-                                                        }
-                                                        isInvalid={
-                                                            !!formik.errors
-                                                                .clientName &&
-                                                            formik.touched
-                                                                .clientName
-                                                        }
-                                                        errorMessage={
-                                                            formik.touched
-                                                                .clientName &&
-                                                            (formik.errors
-                                                                .clientName as string)
-                                                        }
-                                                        variant="bordered"
-                                                        startContent={
-                                                            <Briefcase
-                                                                size={16}
-                                                                className="text-text-subdued"
-                                                            />
-                                                        }
-                                                    />
-                                                </div>
-                                                <div>
-                                                    {/* <Select
-                                                        name="priority"
-                                                        label="Priority"
-                                                        labelPlacement="outside"
-                                                        placeholder="Select Priority"
-                                                        selectedKeys={
-                                                            new Set([
-                                                                formik.values
-                                                                    .priority,
-                                                            ])
-                                                        }
-                                                        onSelectionChange={(
-                                                            keys
-                                                        ) => {
-                                                            formik.setFieldValue(
-                                                                'priority',
-                                                                Array.from(
-                                                                    keys
-                                                                )[0] as string
-                                                            )
-                                                        }}
-                                                        isInvalid={
-                                                            !!formik.errors
-                                                                .priority &&
-                                                            formik.touched
-                                                                .priority
-                                                        }
-                                                        errorMessage={
-                                                            formik.touched
-                                                                .priority &&
-                                                            (formik.errors
-                                                                .priority as string)
-                                                        }
-                                                        variant="bordered"
-                                                    >
-                                                        {PRIORITY_OPTIONS.map(
-                                                            (p) => (
-                                                                <SelectItem
-                                                                    key={p.key}
-                                                                    textValue={
-                                                                        p.label
-                                                                    }
-                                                                >
-                                                                    {p.label}
-                                                                </SelectItem>
-                                                            )
-                                                        )}
-                                                    </Select> */}
-                                                </div>
-                                                <div>
-                                                    <Input
-                                                        type="date"
-                                                        name="createdAt"
-                                                        label="Start Date"
-                                                        labelPlacement="outside"
-                                                        value={
-                                                            formik.values
-                                                                .startedAt
-                                                        }
-                                                        onChange={
-                                                            formik.handleChange
-                                                        }
-                                                        isInvalid={
-                                                            !!formik.errors
-                                                                .createdAt &&
-                                                            formik.touched
-                                                                .createdAt
-                                                        }
-                                                        errorMessage={
-                                                            formik.touched
-                                                                .createdAt &&
-                                                            (formik.errors
-                                                                .createdAt as string)
-                                                        }
-                                                        variant="bordered"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <Input
-                                                        type="date"
-                                                        name="dueAt"
-                                                        label="Due Date"
-                                                        labelPlacement="outside"
-                                                        value={
-                                                            formik.values.dueAt
-                                                        }
-                                                        onChange={
-                                                            formik.handleChange
-                                                        }
-                                                        isInvalid={
-                                                            !!formik.errors
-                                                                .dueAt &&
-                                                            formik.touched.dueAt
-                                                        }
-                                                        errorMessage={
-                                                            formik.touched
-                                                                .dueAt &&
-                                                            (formik.errors
-                                                                .dueAt as string)
-                                                        }
-                                                        variant="bordered"
-                                                        // Simple color logic based on date
-                                                        color={
-                                                            formik.values
-                                                                .dueAt &&
-                                                            new Date(
-                                                                formik.values
-                                                                    .dueAt
-                                                            ) < new Date()
-                                                                ? 'danger'
-                                                                : 'default'
-                                                        }
-                                                    />
-                                                </div>
-                                                <div className="md:col-span-2">
-                                                    <Textarea
-                                                        name="description"
-                                                        label="Description / Scope of Work"
-                                                        labelPlacement="outside"
-                                                        placeholder="Describe the job details..."
-                                                        minRows={6}
-                                                        value={
-                                                            formik.values
-                                                                .description
-                                                        }
-                                                        onChange={
-                                                            formik.handleChange
-                                                        }
-                                                        variant="bordered"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <GeneralDetails job={data} />
                                     )}
 
                                     {/* --- TAB: DELIVERIES --- */}
@@ -938,8 +736,8 @@ function JobEditPage() {
                                     {activeTab === 'financials' && (
                                         <div className="space-y-6 animate-in fade-in">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <Card className="bg-emerald-50 dark:bg-emerald-50/10 border border-emerald-100 dark:border-emerald-100/50 shadow-none">
-                                                    <CardBody className="p-4">
+                                                <HeroCard className="bg-emerald-50 dark:bg-emerald-50/10 border border-emerald-100 dark:border-emerald-100/50 shadow-none">
+                                                    <HeroCardBody className="p-4">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <label className="text-xs font-bold text-emerald-700 uppercase">
                                                                 Total Income
@@ -988,11 +786,11 @@ function JobEditPage() {
                                                             Amount billable to
                                                             client
                                                         </p>
-                                                    </CardBody>
-                                                </Card>
+                                                    </HeroCardBody>
+                                                </HeroCard>
 
-                                                <Card className="bg-orange-50 dark:bg-orange-50/10 border border-orange-100 dark:border-orange-100/50 shadow-none">
-                                                    <CardBody className="p-4">
+                                                <HeroCard className="bg-orange-50 dark:bg-orange-50/10 border border-orange-100 dark:border-orange-100/50 shadow-none">
+                                                    <HeroCardBody className="p-4">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <label className="text-xs font-bold text-orange-700 uppercase">
                                                                 Staff Cost
@@ -1042,8 +840,8 @@ function JobEditPage() {
                                                             Total payout to
                                                             assignees
                                                         </p>
-                                                    </CardBody>
-                                                </Card>
+                                                    </HeroCardBody>
+                                                </HeroCard>
                                             </div>
 
                                             <Divider />
@@ -1105,19 +903,6 @@ function JobEditPage() {
                                                         <Users size={18} />{' '}
                                                         Assigned Members
                                                     </h3>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="light"
-                                                        color="primary"
-                                                        startContent={
-                                                            <Users size={14} />
-                                                        }
-                                                        onPress={
-                                                            onOpenManageAccessModal
-                                                        }
-                                                    >
-                                                        Manage Access
-                                                    </Button>
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     {data?.assignments.map(
@@ -1309,20 +1094,20 @@ function JobEditPage() {
                                             />
                                         </div>
                                     )}
-                                </CardBody>
-                            </Card>
+                                </HeroCardBody>
+                            </HeroCard>
                         </div>
 
                         {/* --- RIGHT COLUMN: SIDEBAR --- */}
                         <div className="space-y-6">
-                            {/* Meta Info Card */}
-                            <Card className="w-full shadow-sm border border-border-default">
-                                <CardHeader className="bg-background-muted border-b border-border-default px-4 py-3">
+                            {/* Meta Info HeroCard */}
+                            <HeroCard className="w-full">
+                                <HeroCardHeader className="bg-background-muted border-b border-border-default px-4 py-3">
                                     <h3 className="text-sm font-bold text-text-subdued">
                                         Job Information
                                     </h3>
-                                </CardHeader>
-                                <CardBody className="p-4 space-y-4">
+                                </HeroCardHeader>
+                                <HeroCardBody className="p-4 space-y-4">
                                     {data?.no && (
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm text-text-subdued">
@@ -1382,12 +1167,12 @@ function JobEditPage() {
                                             }
                                         />
                                     </div>
-                                </CardBody>
-                            </Card>
+                                </HeroCardBody>
+                            </HeroCard>
 
-                            {/* Quick Assign Card */}
-                            <Card className="w-full shadow-sm border border-border-default bg-primary-50 dark:bg-primary-50/80">
-                                <CardBody className="p-4">
+                            {/* Quick Assign HeroCard */}
+                            <HeroCard className="w-full bg-primary-50 dark:bg-primary-50/80">
+                                <HeroCardBody className="p-4">
                                     <h4 className="font-bold text-primary mb-2 text-sm">
                                         Need help?
                                     </h4>
@@ -1428,12 +1213,12 @@ function JobEditPage() {
                                     >
                                         Assign Members
                                     </Button>
-                                </CardBody>
-                            </Card>
+                                </HeroCardBody>
+                            </HeroCard>
 
                             {/* Danger Zone */}
-                            <Card className="w-full shadow-none border border-danger/10 bg-danger/10">
-                                <CardBody className="p-4">
+                            <HeroCard className="w-full shadow-none border border-danger/10 bg-danger/10">
+                                <HeroCardBody className="p-4">
                                     <h4 className="font-bold text-danger mb-2 text-sm">
                                         Danger Zone
                                     </h4>
@@ -1447,12 +1232,237 @@ function JobEditPage() {
                                     >
                                         Delete this Job
                                     </Button>
-                                </CardBody>
-                            </Card>
+                                </HeroCardBody>
+                            </HeroCard>
                         </div>
                     </div>
                 </form>
             </AdminContentContainer>
         </div>
+    )
+}
+
+const jobGeneralDetailsSchema = Yup.object().shape({
+    displayName: Yup.string()
+        .required('Job name is required')
+        .min(3, 'Job name must be at least 3 characters'),
+    clientName: Yup.string().required('Client name is required'),
+    description: Yup.string().optional(),
+    startedAt: Yup.date().required('Start date is required'),
+    dueAt: Yup.date()
+        .required('Due date is required')
+        .min(Yup.ref('startedAt'), "Due date can't be before start date"),
+})
+export type TJobGeneralDetails = Yup.InferType<typeof jobGeneralDetailsSchema>
+
+function GeneralDetails({ job }: { job: TJob }) {
+    const updateJobGeneralInfoMutation = useUpdateJobGeneralInfoMutation()
+
+    const {
+        data: { clients },
+    } = useSuspenseQuery(clientsListOptions())
+
+    const formik = useFormik<TJobGeneralDetails>({
+        initialValues: {
+            displayName: job?.displayName || '',
+            clientName: job?.client?.name || '',
+            dueAt: toDate(job?.dueAt),
+            startedAt: toDate(job?.startedAt),
+            description: job?.description || '',
+        },
+        enableReinitialize: true,
+        validationSchema: jobGeneralDetailsSchema,
+        onSubmit: async (values) => {
+            await updateJobGeneralInfoMutation.mutateAsync({
+                jobId: job.id,
+                data: {
+                    clientName: values.clientName,
+                    displayName: values.displayName,
+                    dueAt: values.dueAt,
+                    startedAt: values.startedAt,
+                    description: values.description,
+                },
+            })
+        },
+    })
+    console.log(formik.values.clientName)
+
+    const editClientModal = useDisclosure({
+        id: 'EditClientModal',
+    })
+
+    return (
+        <>
+            {editClientModal.isOpen && (
+                <EditClientModal
+                    isOpen={editClientModal.isOpen}
+                    onClose={editClientModal.onClose}
+                    clientName={formik.values.clientName}
+                />
+            )}
+            <div className="space-y-6 animate-in fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                        <Input
+                            name="displayName"
+                            label="Display Name"
+                            labelPlacement="outside"
+                            placeholder="e.g. Website Redesign"
+                            value={formik.values.displayName}
+                            onChange={formik.handleChange}
+                            isInvalid={
+                                !!formik.errors.displayName &&
+                                formik.touched.displayName
+                            }
+                            errorMessage={
+                                formik.touched.displayName &&
+                                (formik.errors.displayName as string)
+                            }
+                            variant="bordered"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <Autocomplete
+                            name="clientName"
+                            label="Client Name"
+                            labelPlacement="outside"
+                            placeholder="Client Company"
+                            value={formik.values.clientName}
+                            // defaultInputValue={formik.values.clientName}
+                            defaultSelectedKey={formik.values.clientName}
+                            onChange={formik.handleChange}
+                            isInvalid={
+                                !!formik.errors.clientName &&
+                                formik.touched.clientName
+                            }
+                            errorMessage={
+                                formik.touched.clientName &&
+                                (formik.errors.clientName as string)
+                            }
+                            variant="bordered"
+                            allowsCustomValue={true} // Crucial: allows typing new names
+                            onSelectionChange={(val) =>
+                                formik.setFieldValue('clientName', val)
+                            }
+                            onInputChange={(val) =>
+                                formik.setFieldValue('clientName', val)
+                            }
+                            startContent={
+                                <Briefcase
+                                    size={16}
+                                    className="text-text-subdued"
+                                />
+                            }
+                            endContent={
+                                <HeroTooltip content="More details">
+                                    <Button
+                                        startContent={
+                                            <BookUserIcon size={16} />
+                                        }
+                                        variant="light"
+                                        size="sm"
+                                        onPress={() => {
+                                            console.log(
+                                                lodash.isEmpty(
+                                                    formik.values.clientName
+                                                )
+                                            )
+
+                                            if (
+                                                lodash.isEmpty(
+                                                    formik.values.clientName
+                                                )
+                                            ) {
+                                                addToast({
+                                                    title: 'Client name is required',
+                                                    color: 'danger',
+                                                })
+                                                return
+                                            }
+
+                                            editClientModal.onOpen()
+                                        }}
+                                        isIconOnly
+                                    ></Button>
+                                </HeroTooltip>
+                            }
+                        >
+                            {clients.map((c) => (
+                                <AutocompleteItem
+                                    key={c.name}
+                                    textValue={c.name}
+                                >
+                                    {c.name}
+                                </AutocompleteItem>
+                            ))}
+                        </Autocomplete>
+                    </div>
+                    <div>
+                        <HeroDatePicker
+                            name="startedAt"
+                            id="startedAt"
+                            label="Start Date"
+                            labelPlacement="outside"
+                            value={dayjs(formik.values.startedAt)}
+                            onChange={(value) => {
+                                formik.setFieldValue('startedAt', value)
+                            }}
+                            isInvalid={
+                                Boolean(formik.touched.startedAt) &&
+                                Boolean(formik.errors.startedAt)
+                            }
+                            errorMessage={
+                                formik.touched.startedAt &&
+                                (formik.errors.startedAt as string)
+                            }
+                            variant="bordered"
+                        />
+                    </div>
+                    <div>
+                        <HeroDatePicker
+                            id="dueAt"
+                            name="dueAt"
+                            label="Due Date"
+                            labelPlacement="outside"
+                            value={dayjs(formik.values.dueAt)}
+                            onChange={(value) => {
+                                formik.setFieldValue('dueAt', value)
+                            }}
+                            isInvalid={
+                                Boolean(formik.touched.dueAt) &&
+                                Boolean(formik.errors.dueAt)
+                            }
+                            errorMessage={
+                                formik.touched.dueAt &&
+                                (formik.errors.dueAt as string)
+                            }
+                            variant="bordered"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <Textarea
+                            name="description"
+                            label="Description / Scope of Work"
+                            labelPlacement="outside"
+                            placeholder="Describe the job details..."
+                            minRows={6}
+                            value={formik.values.description}
+                            onChange={formik.handleChange}
+                            variant="bordered"
+                        />
+                    </div>
+                </div>
+                <div className="w-full flex items-center justify-end">
+                    <Button
+                        color="primary"
+                        startContent={<Save size={18} />}
+                        onPress={() => formik.handleSubmit()}
+                        isLoading={formik.isSubmitting}
+                    >
+                        Save Changes
+                    </Button>
+                </div>
+            </div>
+        </>
     )
 }

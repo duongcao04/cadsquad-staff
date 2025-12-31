@@ -219,9 +219,11 @@ export default function FilterView({
                                     startContent={
                                         <HeroNumberInput
                                             value={filters.incomeCostMin}
-                                            onValueChange={
-                                                handleIncomeMinChange
-                                            }
+                                            onValueChange={(val) => {
+                                                handleIncomeMinChange(
+                                                    val?.toString() ?? ''
+                                                )
+                                            }}
                                             placeholder="0"
                                             size="sm"
                                             hideStepper
@@ -230,9 +232,11 @@ export default function FilterView({
                                     endContent={
                                         <HeroNumberInput
                                             value={filters.incomeCostMax}
-                                            onValueChange={
-                                                handleIncomeMaxChange
-                                            }
+                                            onValueChange={(val) => {
+                                                handleIncomeMaxChange(
+                                                    val?.toString() ?? ''
+                                                )
+                                            }}
                                             placeholder="9999999"
                                             size="sm"
                                             hideStepper
@@ -290,9 +294,11 @@ export default function FilterView({
                                     startContent={
                                         <HeroNumberInput
                                             value={filters.staffCostMin}
-                                            onValueChange={
-                                                handleStaffCostMinChange
-                                            }
+                                            onValueChange={(val) => {
+                                                handleStaffCostMinChange(
+                                                    val?.toString() ?? ''
+                                                )
+                                            }}
                                             placeholder="0"
                                             size="sm"
                                             hideStepper
@@ -301,9 +307,11 @@ export default function FilterView({
                                     endContent={
                                         <HeroNumberInput
                                             value={filters.staffCostMax}
-                                            onValueChange={
-                                                handleStaffCostMaxChange
-                                            }
+                                            onValueChange={(val) => {
+                                                handleStaffCostMaxChange(
+                                                    val?.toString() ?? ''
+                                                )
+                                            }}
                                             placeholder="9999999"
                                             size="sm"
                                             hideStepper

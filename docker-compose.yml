@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 name: csd-staff
 
 services:
@@ -9,7 +9,7 @@ services:
       - '${REDIS_PORT:-6379}:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
     volumes:
-      - "${DATA_PATH:-./.data}/redis:/data"
+      - '${DATA_PATH:-./.data}/redis:/data'
     networks:
       - app-network
 
@@ -24,11 +24,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-cadsquaddb}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
-      - "${DATA_PATH:-./.data}/postgres:/var/lib/postgresql/data"
+      - '${DATA_PATH:-./.data}/postgres:/var/lib/postgresql/data'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cadsquaddb}"]
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-cadsquaddb}',
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -40,14 +44,14 @@ services:
     container_name: pgadmin
     restart: always
     ports:
-      - "${PGADMIN_PORT:-5050}:80"
+      - '${PGADMIN_PORT:-5050}:80'
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-root}
-      # Optional: To persist pgadmin configs/servers
-      # PGADMIN_CONFIG_SERVER_MODE: "False" 
+    # Optional: To persist pgadmin configs/servers
+    # PGADMIN_CONFIG_SERVER_MODE: "False"
     volumes:
-      - "${DATA_PATH:-./.data}/pgadmin:/var/lib/pgadmin"
+      - '${DATA_PATH:-./.data}/pgadmin:/var/lib/pgadmin'
     depends_on:
       database:
         condition: service_healthy
@@ -59,15 +63,14 @@ services:
     container_name: ngrok
     restart: unless-stopped
     ports:
-      - "4040:4040"
+      - '4040:4040'
     depends_on:
       - backend
     # - web_client
     volumes:
       - ./ngrok.yml:/etc/ngrok.yml:ro
-    env_file:
-      ./.env
-    command: ["start", "--all", "--config", "/etc/ngrok.yml"]
+    env_file: ./.env
+    command: ['start', '--all', '--config', '/etc/ngrok.yml']
     environment:
       NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     networks:
@@ -82,7 +85,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-database}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-cadsquaddb}?schema=public
     ports:
-      - "5555:5555"
+      - '5555:5555'
     depends_on:
       database:
         condition: service_healthy
@@ -95,7 +98,7 @@ services:
     build: ./server
     container_name: backend
     ports:
-      - "8080:8080"
+      - '8080:8080'
     depends_on:
       database:
         condition: service_healthy
@@ -129,25 +132,28 @@ services:
     networks:
       - app-network
 
-# web_client:
-#   build: ./client
-#   container_name: web_client
-#   ports:
-#     - "3000:3000"
-#   depends_on:
-#     - database
-#     - backend
-#   environment:
-#     NODE_ENV: ${NODE_ENV}
-#     NEXT_PUBLIC_APP_VERSION: ${CLIENT_VERSION:-0.0.0-release}
-#     NEXT_PUBLIC_APP_TITLE: ${CLIENT_APP_TITLE}
-#     NEXT_PUBLIC_API_ENDPOINT: ${API_URL}
-#     NEXT_PUBLIC_URL: ${CLIENT_URL}
-#     NEXT_PUBLIC_WS_URL: ${WS_URL}
-#     NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
-#     VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
-#   networks:
-#     - app-network
+  web_client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile # Ensure the Bun Dockerfile is in ./client
+    container_name: web_client
+    restart: always
+    ports:
+      - '3000:80' # Map host 3000 to Nginx container 80
+    depends_on:
+      - backend
+    environment:
+      VITE_APP_VERSION: ${CLIENT_VERSION:-0.0.0-release}
+      VITE_APP_TITLE: ${APP_TITLE}
+      VITE_APP_URL: ${CLIENT_URL}
+      VITE_API_ENDPOINT: ${API_ENDPOINT}
+      VITE_WS_URL: ${WS_URL}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      TAURI_DEV_HOST: ${TAURI_DEV_HOST}
+    # Note: Vite requires VITE_ prefix for client-side envs
+    networks:
+      - app-network
 
 networks:
   app-network:

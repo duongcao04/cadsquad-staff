@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import React from 'react'
 
-import { INTERNAL_URLS } from '@/lib'
+import { INTERNAL_URLS, useProfile } from '@/lib'
 
 import {
     departmentsListOptions,
@@ -132,6 +132,7 @@ export const AdminSidebar = ({
         ...jobsPendingPayoutsOptions(),
     })
 
+    const { isAdmin } = useProfile()
     return (
         <aside
             className={`flex flex-col h-full justify-between transition-all duration-300 ease-in-out
@@ -149,53 +150,55 @@ export const AdminSidebar = ({
                 <ScrollBar orientation="vertical" />
                 <div className="flex-1 px-3 space-y-6">
                     {/* Main Menu */}
-                    <div>
-                        {!isCollapsed && (
-                            <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
-                                Main Menu
-                            </p>
-                        )}
-                        <div className="space-y-1">
-                            <SidebarItem
-                                icon={LayoutDashboard}
-                                label="Dashboard"
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.admin}
-                            />
-                            <SidebarItem
-                                icon={CheckSquare}
-                                label="All Jobs"
-                                badge={12}
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.jobManage}
-                            />
-                            <SidebarItem
-                                icon={FileText}
-                                label="Files & Docs"
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.fileDocs}
-                            />
-                            <SidebarItem
-                                icon={Mail}
-                                label="Inbox"
-                                badge={5}
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.admin + '/inbox'}
-                            />
-                            <SidebarItem
-                                icon={Calendar}
-                                label="Schedule"
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.schedule}
-                            />
-                            <SidebarItem
-                                icon={MonitorCog}
-                                label="System Configuration"
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.systemConfiguration}
-                            />
+                    {isAdmin && (
+                        <div>
+                            {!isCollapsed && (
+                                <p className="p-2 text-sm text-text-subdued font-semibold leading-5 text-nowrap overflow-hidden">
+                                    Main Menu
+                                </p>
+                            )}
+                            <div className="space-y-1">
+                                <SidebarItem
+                                    icon={LayoutDashboard}
+                                    label="Dashboard"
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.admin}
+                                />
+                                <SidebarItem
+                                    icon={CheckSquare}
+                                    label="All Jobs"
+                                    badge={12}
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.jobManage}
+                                />
+                                <SidebarItem
+                                    icon={FileText}
+                                    label="Files & Docs"
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.fileDocs}
+                                />
+                                <SidebarItem
+                                    icon={Mail}
+                                    label="Inbox"
+                                    badge={5}
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.admin + '/inbox'}
+                                />
+                                <SidebarItem
+                                    icon={Calendar}
+                                    label="Schedule"
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.schedule}
+                                />
+                                <SidebarItem
+                                    icon={MonitorCog}
+                                    label="System Configuration"
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.systemConfiguration}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Management */}
                     <div>
@@ -211,18 +214,22 @@ export const AdminSidebar = ({
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.revenueReports}
                             />
-                            <SidebarItem
-                                icon={Users}
-                                label="Staff Directory"
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.staffDirectory}
-                            />
-                            <SidebarItem
-                                icon={UserPlus}
-                                label="Invite Member"
-                                isCollapsed={isCollapsed}
-                                url={INTERNAL_URLS.inviteMember}
-                            />
+                            {isAdmin && (
+                                <SidebarItem
+                                    icon={Users}
+                                    label="Staff Directory"
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.staffDirectory}
+                                />
+                            )}
+                            {isAdmin && (
+                                <SidebarItem
+                                    icon={UserPlus}
+                                    label="Invite Member"
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.inviteMember}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -275,7 +282,7 @@ export const AdminSidebar = ({
                     </div>
 
                     {/* Departments */}
-                    {departments && (
+                    {isAdmin && departments && (
                         <div>
                             {!isCollapsed ? (
                                 <div className="flex items-center justify-between px-2 mb-2">

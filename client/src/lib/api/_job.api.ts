@@ -20,6 +20,7 @@ import type { JobColumnKey, JobUpdateResponse } from '@/shared/types'
 import queryString from 'query-string'
 
 import { ProjectCenterTabEnum } from '../../shared/enums'
+import { TJobGeneralDetails } from '../../routes/_administrator/admin/mgmt/jobs/$no'
 
 export const jobApi = {
     togglePin: async (jobId: string) => {
@@ -190,6 +191,20 @@ export const jobApi = {
             .patch<
                 ApiResponse<JobUpdateResponse>
             >(`/v1/jobs/${jobId}/assign`, data)
+            .then((res) => res.data)
+    },
+    updateGeneralInfo: async (jobId: string, data: TJobGeneralDetails) => {
+        return axiosClient
+            .patch<ApiResponse<JobUpdateResponse>>(
+                `/v1/jobs/${jobId}/general`,
+                {
+                    clientName: data.clientName,
+                    displayName: data.displayName,
+                    dueAt: data.dueAt.toISOString(),
+                    startedAt: data.startedAt.toISOString(),
+                    description: data.description,
+                }
+            )
             .then((res) => res.data)
     },
     updateAssignmentCost: async (

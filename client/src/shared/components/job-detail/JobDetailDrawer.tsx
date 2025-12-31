@@ -152,7 +152,7 @@ export default function JobDetailDrawer({
             )}
             {financialModal.isOpen && job && (
                 <UpdateCostModal
-                    data={job}
+                    jobNo={job.no}
                     isOpen={financialModal.isOpen}
                     onClose={financialModal.onClose}
                 />
@@ -334,7 +334,7 @@ export default function JobDetailDrawer({
                                 <div className="flex gap-3 text-xs text-text-subdued items-center">
                                     <p className="flex items-center gap-1.5 font-medium">
                                         <UserRound size={14} />
-                                        {job.client.name}
+                                        {job.client?.name || 'Unknown client'}
                                     </p>
                                     <Divider
                                         orientation="vertical"

@@ -1,13 +1,4 @@
-import {
-    Avatar,
-    Button,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
-    Slider,
-} from '@heroui/react'
+import { Avatar, Button, Slider } from '@heroui/react'
 import {
     AlertCircle,
     Crop as CropIcon,

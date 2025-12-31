@@ -68,7 +68,7 @@ function JobCard({ data, onPress }: Props) {
             <div className="hidden lg:flex flex-col items-center justify-center gap-1">
                 <p className="text-xs text-text-subdued">Client name</p>
                 <p className="text-sm font-semibold text-center">
-                    {data.clientName}
+                    {data.client?.name ?? 'Unknown client'}
                 </p>
             </div>
             <div className="flex flex-col items-center justify-center gap-1">

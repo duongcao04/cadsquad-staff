@@ -583,7 +583,7 @@ export default function ProjectCenterTable({
                         </div>
                     )
                 case 'clientName':
-                    return <p className="line-clamp-1">{data.client.name}</p>
+                    return <p className="line-clamp-1">{data.client?.name || "Unknown client"}</p>
                 case 'type':
                     return (
                         <p className="line-clamp-1">{data.type.displayName}</p>

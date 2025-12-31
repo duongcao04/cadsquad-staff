@@ -23,6 +23,7 @@ import { ExcelModule } from './modules/excel/excel.module'
 import { AblyModule } from './modules/ably/ably.module'
 import { AnalyticsModule } from './modules/analytics/analytics.module'
 import { CommunityModule } from './modules/community/community.module'
+import { ClientModule } from './modules/client/client.module'
 
 @Module({
     imports: [
@@ -46,9 +47,10 @@ import { CommunityModule } from './modules/community/community.module'
         HealthModule,
         ExcelModule,
         AnalyticsModule,
-        CommunityModule
+        CommunityModule,
+        ClientModule,
     ],
     controllers: [AppController],
     providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

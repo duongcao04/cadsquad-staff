@@ -189,7 +189,7 @@ function JobDetailPage() {
                         <Divider orientation="vertical" className="h-3" />
                         <p className="flex items-center gap-1.5 font-medium">
                             <UserRound size={14} />
-                            {job.client.name}
+                            {job.client?.name || "Unknown client"}
                         </p>
                         <Divider orientation="vertical" className="h-3" />
                         <p className="flex items-center gap-1.5 font-medium">

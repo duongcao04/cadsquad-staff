@@ -65,7 +65,10 @@ export default function JobScheduleModal({
                                     {job?.status.displayName}
                                 </Chip>
                                 <span className="text-sm text-text-subdued">
-                                    for <strong>{job?.client.name}</strong>
+                                    for{' '}
+                                    <strong>
+                                        {job?.client?.name || 'Unknown client'}
+                                    </strong>
                                 </span>
                             </div>
 

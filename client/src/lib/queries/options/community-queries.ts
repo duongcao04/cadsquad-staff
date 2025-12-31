@@ -1,10 +1,15 @@
 import { queryOptions } from '@tanstack/react-query'
 
 import { ETopicType } from '../../../shared/enums'
-import { ICommunityResponse, ITopicResponse } from '../../../shared/interfaces'
-import { TCommunity, TTopic } from '../../../shared/types'
+import {
+    ICommunityResponse,
+    IPostResponse,
+    ITopicResponse,
+} from '../../../shared/interfaces'
+import { TCommunity, TPost, TTopic } from '../../../shared/types'
 import { communityApi } from '../../api/_community.api'
 import { COLORS, IMAGES, toDate } from '../../utils'
+import { mapUser } from './user-queries'
 
 export const mapCommunity: (item?: ICommunityResponse) => TCommunity = (
     item
@@ -32,6 +37,19 @@ export const mapTopic: (item?: ITopicResponse) => TTopic = (item) => ({
     updatedAt: toDate(item?.updatedAt),
 })
 
+export const mapPost: (item?: IPostResponse) => TPost = (item) => ({
+    id: item?.id ?? 'N/A',
+    attachments: item?.attachments ?? [],
+    author: mapUser(item?.author),
+    content: item?.content ?? '',
+    likeCount: item?.likeCount ?? 0,
+    isPinned: item?.isPinned ?? false,
+    event: item?.event ?? null,
+    topic: mapTopic(item?.topic),
+    createdAt: toDate(item?.createdAt),
+    updatedAt: toDate(item?.updatedAt),
+})
+
 export const communitiesListOptions = () => {
     return queryOptions({
         queryKey: ['communities'],
@@ -50,7 +68,7 @@ export const communitiesPostsListOptions = (code: string) => {
         queryFn: () => communityApi.getCommunityPosts(code),
         select: (res) => {
             const postsData = res?.result
-            return postsData
+            return Array.isArray(postsData) ? postsData.map(mapPost) : []
         },
     })
 }

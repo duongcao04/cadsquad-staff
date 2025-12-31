@@ -110,9 +110,11 @@ const MOCK_COMMENTS = [
 
 // --- ROUTE ---
 
-export const Route = createFileRoute('/communities/$code/$topicCode/$postSlug')({
-    component: TopicPage,
-})
+export const Route = createFileRoute('/communities/$code/$topicCode/$postSlug')(
+    {
+        component: TopicPage,
+    }
+)
 
 // --- COMPONENTS ---
 
@@ -438,7 +440,7 @@ export default function TopicPage() {
                         </h4>
                         <div className="relative pl-4 border-l border-border-default space-y-6">
                             <div className="relative">
-                                <div className="absolute -left-[21px] top-1 size-2.5 rounded-full bg-primary ring-4 ring-background-muted" />
+                                <div className="absolute -left-5.25 top-1 size-2.5 rounded-full bg-primary ring-4 ring-background-muted" />
                                 <div className="text-xs text-text-default font-medium">
                                     Topic Created
                                 </div>
@@ -447,7 +449,7 @@ export default function TopicPage() {
                                 </div>
                             </div>
                             <div className="relative">
-                                <div className="absolute -left-[21px] top-1 size-2.5 rounded-full bg-zinc-600 ring-4 ring-background-muted" />
+                                <div className="absolute -left-5.25 top-1 size-2.5 rounded-full bg-zinc-600 ring-4 ring-background-muted" />
                                 <div className="text-xs text-text-default font-medium">
                                     Last Activity
                                 </div>

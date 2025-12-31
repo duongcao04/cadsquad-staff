@@ -22,7 +22,6 @@ import {
     TrendingUp,
     Wallet,
 } from 'lucide-react'
-import { useState } from 'react'
 import {
     Area,
     AreaChart,
@@ -131,8 +130,6 @@ const KpiCard = ({ title, value, subValue, trend, icon: Icon, color }: any) => (
     </Card>
 )
 function RevenueReports() {
-    const [dateFilter, setDateFilter] = useState('this_year')
-
     return (
         <div className="p-8 max-w-400 mx-auto space-y-8 bg-slate-50 min-h-screen">
             {/* --- Header & Controls --- */}
@@ -292,7 +289,7 @@ function RevenueReports() {
                                     axisLine={false}
                                     tickLine={false}
                                     tick={{ fill: '#94A3B8', fontSize: 12 }}
-                                    tickFormatter={(value) => '$${value/1000}k'}
+                                    tickFormatter={() => '$${value/1000}k'}
                                 />
                                 <Tooltip
                                     contentStyle={{
@@ -301,10 +298,10 @@ function RevenueReports() {
                                         boxShadow:
                                             '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                                     }}
-                                    formatter={(value: number) => [
-                                        `$${value.toLocaleString()}`,
-                                        ``,
-                                    ]}
+                                    // formatter={(value: number) => [
+                                    //     `$${value.toLocaleString()}`,
+                                    //     ``,
+                                    // ]}
                                 />
                                 <Area
                                     type="monotone"
@@ -332,7 +329,7 @@ function RevenueReports() {
                     <h3 className="text-lg font-bold text-slate-800 mb-2 px-2">
                         Revenue by Service
                     </h3>
-                    <div className="h-[300px] w-full relative">
+                    <div className="h-75 w-full relative">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie

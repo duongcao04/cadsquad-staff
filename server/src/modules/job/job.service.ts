@@ -36,6 +36,7 @@ import { NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
 import { renderTemplate } from '../../utils/_string'
 import { UpdateRevenueDto } from './dto/update-revenue.dto'
 import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
+import { UpdateGeneralJobDto } from './dto/update-general.dto'
 
 @Injectable()
 export class JobService {
@@ -598,6 +599,67 @@ export class JobService {
         })
     }
 
+    async updateGeneralInfo(
+        modifierId: string,
+        jobId: string,
+        dto: UpdateGeneralJobDto
+    ) {
+        return await this.prisma.$transaction(async (tx) => {
+            let clientId: string | undefined = undefined
+
+            // 1. Handle Client Logic: Find or Create
+            if (dto.clientName) {
+                // 1. Tìm kiếm Client tồn tại (không phân biệt hoa thường)
+                const existingClient = await tx.client.findFirst({
+                    where: {
+                        name: {
+                            equals: dto.clientName.trim(),
+                            mode: 'insensitive', // Quan trọng: PostgreSQL sẽ coi "Apple", "apple", "APPLE" là một
+                        },
+                    },
+                })
+
+                if (existingClient) {
+                    clientId = existingClient.id
+                } else {
+                    // 2. Nếu chưa có thì mới tạo mới
+                    const newClient = await tx.client.create({
+                        data: {
+                            name: dto.clientName.trim(), // Xóa khoảng trắng thừa
+                            code: `CSD-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
+                        },
+                    })
+                    clientId = newClient.id
+                }
+            }
+
+            // 2. Perform the Job update
+            const updatedJob = await tx.job.update({
+                where: { id: jobId },
+                data: {
+                    displayName: dto.displayName,
+                    clientId: clientId, // Link the found/created client ID
+                    startedAt: dto.startedAt,
+                    dueAt: dto.dueAt,
+                    description: dto.description,
+                },
+                include: { client: true },
+            })
+
+            // 3. Activity Logging
+            await tx.jobActivityLog.create({
+                data: {
+                    jobId: jobId,
+                    modifiedById: modifierId,
+                    fieldName: 'General Information',
+                    activityType: ActivityType.UpdateInformation,
+                    notes: `Updated project info. Client set to: ${dto.clientName}`,
+                },
+            })
+
+            return { id: updatedJob.id, no: updatedJob.no }
+        })
+    }
     async update(modifierId: string, jobId: string, data: UpdateJobDto) {
         return await this.prisma.$transaction(async (tx) => {
             const current = await tx.job.findUnique({ where: { id: jobId } })

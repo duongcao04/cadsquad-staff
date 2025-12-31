@@ -119,7 +119,11 @@ export default function AdminManagementJobsTable({
                     </div>
                 )
             case 'clientName':
-                return <p className="line-clamp-1">{data.client.name}</p>
+                return (
+                    <p className="line-clamp-1">
+                        {data.client?.name || 'Unknown client'}
+                    </p>
+                )
             case 'assignee':
                 return !data.assignments.length ? (
                     <div className="size-full flex items-center justify-center">

@@ -640,13 +640,30 @@ model Post {
   topicId String
   topic   Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
 
+  likeCount Int @default(0)
+
   // Engagement metadata
   isPinned Boolean @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  eventId   String?
+  event     PostEvent?
 
   @@index([topicId])
   @@index([authorId])
   @@index([createdAt])
+}
+
+model PostEvent {
+  id           String   @id @default(uuid())
+  title        String
+  location     String?
+  startDate    DateTime
+  redirectUrl  String
+  thumbnailUrl String?
+
+  // Quan hệ với Post
+  postId String @unique
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 }

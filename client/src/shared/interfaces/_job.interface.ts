@@ -61,7 +61,7 @@ export interface IJobResponse {
      * The name of the client for whom the job is being done.
      * @type {TClient}
      */
-    client?: TClient
+    client?: TClient | null
 
     /**
      * The income generated from the job.

@@ -8,7 +8,7 @@ import { ActivityTypeEnum, ProjectCenterTabEnum } from '@/shared/enums'
 import { IJobActivityLogResponse, IJobResponse } from '@/shared/interfaces'
 import { TJob, TJobActivityLog } from '@/shared/types'
 
-import { COLORS, IMAGES, toDate, toNullableDate } from '../../utils'
+import { toDate, toNullableDate } from '../../utils'
 import { mapClient } from './client-queries'
 import { mapJobStatus } from './job-status-queries'
 import { mapJobType } from './job-type-queries'
@@ -25,7 +25,7 @@ export const mapJob = (item?: IJobResponse): TJob => ({
     attachmentUrls: item?.attachmentUrls ?? [],
     createdBy: mapUser(item?.createdBy),
     files: item?.files ?? [],
-    client: mapClient(item?.client),
+    client: item?.client ? mapClient(item?.client) : null,
     comments: item?.comments ?? [],
     jobDeliveries: item?.jobDeliveries ?? [],
     incomeCost:
@@ -45,15 +45,7 @@ export const mapJob = (item?: IJobResponse): TJob => ({
     isPublished: Boolean(item?.isPublished),
     paymentChannel: item?.paymentChannel
         ? mapPaymentChannel(item?.paymentChannel)
-        : {
-              displayName: 'Not Set',
-              cardNumber: 'Unknown',
-              id: 'N/A',
-              hexColor: COLORS.white,
-              jobs: [],
-              logoUrl: IMAGES.loadingPlaceholder,
-              ownerName: 'Unknown',
-          },
+        : null,
     status: mapJobStatus(item?.status),
     description: item?.description ?? null,
     paidAt: toNullableDate(item?.paidAt),
@@ -165,7 +157,8 @@ export const jobsSearchOptions = (keywords?: string) =>
             return jobApi.searchJobs(keywords)
         },
         enabled: !!keywords,
-        select: (res) => res?.result,
+        select: (res) =>
+            Array.isArray(res?.result) ? res?.result.map(mapJob) : [],
     })
 
 export const jobDeliveriesListOptions = (jobId: string) =>
@@ -194,7 +187,8 @@ export const jobScheduleOptions = (month: number, year: number) =>
     queryOptions({
         queryKey: ['jobs', 'schedule', `${month}/${year}`],
         queryFn: () => jobApi.jobsDueInMonth(month, year),
-        select: (res) => res?.result ?? [],
+        select: (res) =>
+            Array.isArray(res.result) ? res.result.map(mapJob) : [],
     })
 
 // 3. Jobs theo Deadline

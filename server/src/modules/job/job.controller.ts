@@ -44,6 +44,7 @@ import { UpdateJobMembersDto } from './dto/update-job-members.dto'
 import { RescheduleJobDto } from './dto/reschedule-job.dto'
 import { UpdateRevenueDto } from './dto/update-revenue.dto'
 import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
+import { UpdateGeneralJobDto } from './dto/update-general.dto'
 
 @ApiTags('Jobs')
 @Controller('jobs')
@@ -207,6 +208,18 @@ export class JobController {
     // UPDATE / PATCH OPERATIONS
     // -------------------------------------------------------------------------
 
+    @Patch(':id/general')
+    @UseGuards(JwtGuard, AdminGuard)
+    @ResponseMessage('Update general information successfully')
+    async updateGeneralInfo(
+        @Req() request: Request,
+        @Param('id') id: string,
+        @Body() dto: UpdateGeneralJobDto
+    ) {
+        const user: TokenPayload = request['user']
+        return this.jobService.updateGeneralInfo(user.sub, id, dto)
+    }
+
     @Patch(':id/assign')
     @UseGuards(JwtGuard, AdminGuard)
     @ResponseMessage('Member assigned successfully')
@@ -216,7 +229,6 @@ export class JobController {
         @Body() dto: AssignMemberDto
     ) {
         const user: TokenPayload = request['user']
-        // req.user.id is the admin/manager performing the action
         return this.jobService.assignMember(user.sub, id, dto)
     }
 

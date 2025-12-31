@@ -7,7 +7,7 @@ export interface ICommunityResponse {
     description?: string | null
     color?: string | null
     icon?: string
-    banner?: string | null
+    banner?: string
     topics?: TTopic[]
     createdAt?: Date | string
     updatedAt?: Date | string

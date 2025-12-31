@@ -15,6 +15,7 @@ import {
 } from '@/lib/validationSchemas'
 import { ProjectCenterTabEnum } from '@/shared/enums'
 import { queryClient } from '../../main'
+import { TJobGeneralDetails } from '../../routes/_administrator/admin/mgmt/jobs/$no'
 import { JobUpdateResponse } from '../../shared/types'
 import type { ApiResponse } from '../axios'
 import { onErrorToast } from './helper'
@@ -335,6 +336,46 @@ export const useAssignMemberMutation = (
             }
         },
         onError: (err) => onErrorToast(err, 'Failed to assign member'),
+    })
+}
+
+export const useUpdateJobGeneralInfoMutation = (
+    onSuccess?: (res: ApiResponse<JobUpdateResponse>) => void
+) => {
+    return useMutation({
+        mutationKey: ['updateJob', 'generalInfo'],
+        mutationFn: ({
+            jobId,
+            data,
+        }: {
+            jobId: string
+            data: TJobGeneralDetails
+        }) => jobApi.updateGeneralInfo(jobId, data),
+        onSuccess: (res) => {
+            queryClient.refetchQueries({
+                queryKey: jobsListOptions({}).queryKey,
+            })
+            queryClient.refetchQueries({
+                queryKey: workbenchDataOptions({}).queryKey,
+            })
+            if (res.result?.no) {
+                queryClient.refetchQueries({
+                    queryKey: jobByNoOptions(res.result?.no).queryKey,
+                })
+            }
+            queryClient.refetchQueries({
+                queryKey: ['jobActivityLog', String(res.result?.id)],
+            })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: 'Update general info successfully',
+                    color: 'success',
+                })
+            }
+        },
+        onError: (err) => onErrorToast(err, 'Failed to update'),
     })
 }
 

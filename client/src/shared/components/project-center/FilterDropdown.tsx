@@ -94,20 +94,24 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
 
     // --- 2. Configuration ---
     const FILTER_CONFIG: FilterConfig[] = useMemo(() => {
+        // Thêm giá trị mặc định "" hoặc lọc bỏ nếu displayName/code bị thiếu
         const statusOptions = jobStatuses.map((i) => ({
-            label: i.displayName,
-            value: i.code,
-        }))
-        const typeOptions = jobTypes.map((i) => ({
-            label: i.displayName,
-            value: i.code,
-        }))
-        const assigneeOptions = users.map((u) => ({
-            label: u.displayName || u.username,
-            value: u.username,
+            label: i.displayName ?? 'Unknown Status', // Sử dụng Nullish coalescing
+            value: i.code ?? '',
         }))
 
-        return [
+        const typeOptions = jobTypes.map((i) => ({
+            label: i.displayName ?? 'Unknown Type',
+            value: i.code ?? '',
+        }))
+
+        const assigneeOptions = users.map((u) => ({
+            label: u.displayName || u.username || 'Unknown User',
+            value: u.username || '',
+        }))
+
+        // Ép kiểu array này là FilterConfig[] để TS không tự suy luận kiểu hẹp hơn
+        const config: FilterConfig[] = [
             {
                 key: 'clientName',
                 label: 'Client Name',
@@ -180,6 +184,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
                 ],
             },
         ]
+        return config
     }, [jobStatuses, jobTypes, users])
 
     // --- 3. Initialization (Using Day.js) ---

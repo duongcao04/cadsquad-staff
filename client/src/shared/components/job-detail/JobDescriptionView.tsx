@@ -1,14 +1,14 @@
-import { addToast, useDisclosure } from '@heroui/react'
-import { Pencil, Maximize2, X, Check } from 'lucide-react'
-import { useState, useEffect } from 'react'
 import { useProfile, useUpdateJobMutation } from '@/lib/queries'
 import type { TJob } from '@/shared/types'
+import { addToast, useDisclosure } from '@heroui/react'
+import { Check, Maximize2, Pencil, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import QuillEditor from '../editor-quill/QuillEditor'
 import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody, HeroCardHeader } from '../ui/hero-card'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import HtmlReactParser from '../ui/html-react-parser'
 import JobDescriptionModal from './JobDescriptionModal'
-import QuillEditor from '../editor-quill/QuillEditor'
 
 type JobDescriptionViewProps = {
     data: TJob
@@ -21,7 +21,7 @@ export default function JobDescriptionView({ data }: JobDescriptionViewProps) {
     // Controls the "Full View" Modal
     const fullViewDisclosure = useDisclosure()
 
-    const updateJobMutation = useUpdateJobMutation((res) => {
+    const updateJobMutation = useUpdateJobMutation(() => {
         addToast({
             title: 'Description updated',
             // description: `Job #${res.result?.no} updated successfully.`,
@@ -142,7 +142,7 @@ export default function JobDescriptionView({ data }: JobDescriptionViewProps) {
                             />
                         </div>
                     ) : (
-                        <div className="p-5 min-h-[100px]">
+                        <div className="p-5 min-h-25">
                             {data?.description ? (
                                 <HtmlReactParser
                                     htmlString={data?.description}

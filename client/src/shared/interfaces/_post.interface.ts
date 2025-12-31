@@ -1,4 +1,4 @@
-import { TTopic, TUser } from '../types'
+import { TPostEvent, TTopic, TUser } from '../types'
 
 export interface IPostResponse {
     id?: string
@@ -14,6 +14,9 @@ export interface IPostResponse {
     // Relation to Topic
     topicId?: string
     topic?: TTopic
+
+    likeCount?: number
+    event?: TPostEvent | null
 
     // Engagement metadata
     isPinned?: boolean

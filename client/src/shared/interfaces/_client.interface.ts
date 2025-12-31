@@ -15,7 +15,7 @@ export interface IClientResponse {
     billingEmail?: string
     taxId?: string
     currency?: string
-    paymentTerms?: string
+    paymentTerms?: number
     jobs?: TJob[]
     createdAt?: Date | string
     updatedAt?: Date | string

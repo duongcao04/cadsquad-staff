@@ -37,14 +37,20 @@ const PL_DATA = [
 ]
 
 const CATEGORY_BREAKDOWN = [
-    { category: 'Revenue (Sales)', amount: 206000, type: 'income' },
-    { category: 'Cost of Goods Sold (Staff)', amount: -71000, type: 'expense' },
+    { id: 1, category: 'Revenue (Sales)', amount: 206000, type: 'income' },
     {
+        id: 2,
+        category: 'Cost of Goods Sold (Staff)',
+        amount: -71000,
+        type: 'expense',
+    },
+    {
+        id: 3,
         category: 'Operating Expenses (Rent/Server)',
         amount: -36700,
         type: 'expense',
     },
-    { category: 'Taxes (Est. 8%)', amount: -7864, type: 'expense' },
+    { id: 4, category: 'Taxes (Est. 8%)', amount: -7864, type: 'expense' },
 ]
 
 function ProfitLossPage() {
@@ -52,8 +58,8 @@ function ProfitLossPage() {
     const netMargin = ((totalNetIncome / 206000) * 100).toFixed(1)
 
     return (
-        <div className="p-8 max-w-400 mx-auto min-h-screen bg-slate-50 space-y-8">
-            {/* Header */}
+        <div className="p-8 max-w-300 mx-auto min-h-screen bg-slate-50 space-y-8">
+            {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900">
@@ -131,7 +137,7 @@ function ProfitLossPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Waterfall Chart Visual */}
+                {/* Chart Section */}
                 <Card className="lg:col-span-2 shadow-sm border border-slate-200">
                     <CardBody className="p-6">
                         <h3 className="font-bold text-slate-800 mb-6">
@@ -158,7 +164,6 @@ function ProfitLossPage() {
                                         tick={{ fill: '#94A3B8' }}
                                     />
                                     <Tooltip
-                                        cursor={{ fill: 'transparent' }}
                                         contentStyle={{
                                             borderRadius: '8px',
                                             border: 'none',
@@ -189,10 +194,10 @@ function ProfitLossPage() {
                     </CardBody>
                 </Card>
 
-                {/* Breakdown Table */}
+                {/* Table Section - FIXED VERSION */}
                 <Card className="shadow-sm border border-slate-200">
                     <CardBody className="p-0">
-                        <div className="p-6 border-b border-border-default">
+                        <div className="p-6 border-b border-divider">
                             <h3 className="font-bold text-slate-800">
                                 Statement Summary
                             </h3>
@@ -201,16 +206,16 @@ function ProfitLossPage() {
                             aria-label="P&L Breakdown"
                             shadow="none"
                             removeWrapper
-                            className="h-full"
                         >
                             <TableHeader>
                                 <TableColumn>CATEGORY</TableColumn>
                                 <TableColumn align="end">AMOUNT</TableColumn>
                             </TableHeader>
-                            <TableBody>
-                                {CATEGORY_BREAKDOWN.map((item, idx) => (
+                            {/* FIX: Sử dụng thuộc tính items và render function */}
+                            <TableBody items={CATEGORY_BREAKDOWN}>
+                                {(item) => (
                                     <TableRow
-                                        key={idx}
+                                        key={item.id}
                                         className="border-b border-slate-50 last:border-0"
                                     >
                                         <TableCell>
@@ -237,21 +242,19 @@ function ProfitLossPage() {
                                             </span>
                                         </TableCell>
                                     </TableRow>
-                                ))}
-                                <TableRow className="bg-slate-50">
-                                    <TableCell>
-                                        <span className="font-bold text-emerald-700 uppercase tracking-wide text-xs">
-                                            Net Income
-                                        </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <span className="font-bold text-lg text-emerald-700">
-                                            ${totalNetIncome.toLocaleString()}
-                                        </span>
-                                    </TableCell>
-                                </TableRow>
+                                )}
                             </TableBody>
                         </Table>
+
+                        {/* Footer Summary Row (Tách biệt để đảm bảo UI chuẩn) */}
+                        <div className="flex justify-between items-center p-6 bg-slate-50 border-t border-divider">
+                            <span className="font-bold text-emerald-700 uppercase tracking-wide text-xs">
+                                Net Income
+                            </span>
+                            <span className="font-bold text-lg text-emerald-700">
+                                ${totalNetIncome.toLocaleString()}
+                            </span>
+                        </div>
                     </CardBody>
                 </Card>
             </div>

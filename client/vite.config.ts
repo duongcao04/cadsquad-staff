@@ -10,7 +10,7 @@ export default defineConfig({
     clearScreen: false,
     // Tauri expects a fixed port, fail if that port is not available
     // Make sure to use the TAURI_PLATFORM etc env variables
-    envPrefix: ["VITE_", "TAURI_"],
+    envPrefix: ['VITE_', 'TAURI_'],
     server: {
         port: 3000, // Thay đổi port
         host: true, // Mở port ra mạng local nếu cần truy cập từ thiết bị khác
@@ -42,10 +42,12 @@ export default defineConfig({
             },
         },
         // Tauri uses Chromium on Windows and WebKit on macOS and Linux
-        target: process.env.TAURI_PLATFORM == "windows" ? "chrome105" : "safari13",
+        target:
+            process.env.TAURI_PLATFORM == 'windows' ? 'chrome105' : 'safari13',
         // Don't minify for debug builds
-        minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
+        minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
         // Produce sourcemaps for debug builds
         sourcemap: !!process.env.TAURI_DEBUG,
+        chunkSizeWarningLimit: 1000, // Set limit to 1000kB
     },
 })

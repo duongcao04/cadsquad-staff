@@ -7,7 +7,7 @@ import {
     ModalFooter,
     ModalHeader,
 } from '@heroui/react'
-import { FileIcon, LinkIcon, PlusIcon, Trash2, XIcon } from 'lucide-react'
+import { FileIcon, LinkIcon, PlusIcon, XIcon } from 'lucide-react'
 import { useState } from 'react'
 
 type Props = {
@@ -107,7 +107,7 @@ export default function AddAttachmentsModal({
                                 Pending Uploads ({attachments.length})
                             </p>
 
-                            <div className="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-2">
+                            <div className="flex flex-col gap-2 max-h-50 overflow-y-auto pr-2">
                                 {attachments.length === 0 ? (
                                     <div className="py-10 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-2xl bg-white/5">
                                         <FileIcon
