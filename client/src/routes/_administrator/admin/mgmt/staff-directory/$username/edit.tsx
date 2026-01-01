@@ -40,6 +40,7 @@ import {
     Input,
     Select,
     SelectItem,
+    Spinner,
     Switch,
     Tab,
     Tabs,
@@ -354,13 +355,17 @@ function EditStaffPage() {
                                     <span className="font-semibold text-sm text-slate-700">
                                         Account Status
                                     </span>
-                                    <Switch
-                                        color="success"
-                                        isSelected={user.isActive}
-                                        onValueChange={
-                                            handleOpenChangeUserModal
-                                        }
-                                    />
+                                    {toggleUserStatusMutation.isPending ? (
+                                        <Spinner />
+                                    ) : (
+                                        <Switch
+                                            color="success"
+                                            isSelected={user.isActive}
+                                            onValueChange={
+                                                handleOpenChangeUserModal
+                                            }
+                                        />
+                                    )}
                                 </div>
                                 <Button
                                     className="w-full mt-4 bg-white border border-red-200 text-red-600 hover:bg-red-50"

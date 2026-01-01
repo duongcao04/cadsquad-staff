@@ -15,12 +15,14 @@ import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserResponseDto } from './dto/user-response.dto'
+import { MailService } from '../mail/mail.service'
 
 @Injectable()
 export class UserService {
     constructor(
         private readonly prismaService: PrismaService,
-        private readonly bcryptService: BcryptService
+        private readonly bcryptService: BcryptService,
+        private readonly mailService: MailService
     ) {}
 
     async create(data: CreateUserDto): Promise<UserResponseDto> {
@@ -273,7 +275,13 @@ export class UserService {
         // 1. Kiểm tra user tồn tại
         const user = await this.prismaService.user.findUnique({
             where: { id: userId },
-            select: { id: true, isActive: true, role: true },
+            select: {
+                id: true,
+                isActive: true,
+                role: true,
+                displayName: true,
+                email: true,
+            },
         })
 
         if (!user) throw new NotFoundException('User not found')
@@ -292,6 +300,14 @@ export class UserService {
             newStatus = forceStatus === '1'
         } else {
             newStatus = !user.isActive
+        }
+
+        if (!newStatus) {
+            await this.mailService.sendAccountStatusUpdate({
+                displayName: user.displayName,
+                email: user.email,
+                isActive: user.isActive,
+            })
         }
 
         const resultUpdated = await this.prismaService.user.update({

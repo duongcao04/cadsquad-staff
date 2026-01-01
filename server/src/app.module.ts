@@ -23,10 +23,12 @@ import { AblyModule } from './modules/ably/ably.module'
 import { AnalyticsModule } from './modules/analytics/analytics.module'
 import { CommunityModule } from './modules/community/community.module'
 import { ClientModule } from './modules/client/client.module'
+import { MailModule } from './modules/mail/mail.module'
 
 @Module({
     imports: [
         PrismaModule,
+        MailModule,
         CloudinaryModule,
         AblyModule,
         UserModule,
