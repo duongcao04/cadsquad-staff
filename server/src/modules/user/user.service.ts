@@ -1,19 +1,20 @@
 import {
     BadRequestException,
     ConflictException,
+    ForbiddenException,
     Injectable,
     NotFoundException,
 } from '@nestjs/common'
-import { PrismaService } from '../../providers/prisma/prisma.service'
 import { RoleEnum, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
-import { UserResponseDto } from './dto/user-response.dto'
-import { CreateUserDto } from './dto/create-user.dto'
-import { UpdateUserDto } from './dto/update-user.dto'
+import { PrismaService } from '../../providers/prisma/prisma.service'
 import { removeVietnameseAccent } from '../../utils/removeVietnameseAccent'
 import { BcryptService } from '../auth/bcrypt.service'
-import { UpdatePasswordDto } from './dto/update-password.dto'
+import { CreateUserDto } from './dto/create-user.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
+import { UpdatePasswordDto } from './dto/update-password.dto'
+import { UpdateUserDto } from './dto/update-user.dto'
+import { UserResponseDto } from './dto/user-response.dto'
 
 @Injectable()
 export class UserService {
@@ -261,6 +262,46 @@ export class UserService {
 
         return {
             username: existingUser.username,
+        }
+    }
+
+    async toggleUserStatus(
+        modifierId: string,
+        userId: string,
+        forceStatus?: string
+    ) {
+        // 1. Kiểm tra user tồn tại
+        const user = await this.prismaService.user.findUnique({
+            where: { id: userId },
+            select: { id: true, isActive: true, role: true },
+        })
+
+        if (!user) throw new NotFoundException('User not found')
+
+        // 2. Bảo mật: Không cho phép Admin tự vô hiệu hóa chính mình
+        if (userId === modifierId) {
+            throw new ForbiddenException(
+                'You cannot deactivate your own account'
+            )
+        }
+
+        // 3. Xác định trạng thái mới
+        // Nếu forceStatus là '0' -> false, '1' -> true. Nếu undefined -> đảo ngược (!user.isActive)
+        let newStatus: boolean
+        if (forceStatus !== undefined) {
+            newStatus = forceStatus === '1'
+        } else {
+            newStatus = !user.isActive
+        }
+
+        const resultUpdated = await this.prismaService.user.update({
+            where: { id: userId },
+            data: { isActive: !user.isActive },
+        })
+        // 3. Cập nhật trạng thái
+        return {
+            isActive: resultUpdated.isActive,
+            username: resultUpdated.username,
         }
     }
 

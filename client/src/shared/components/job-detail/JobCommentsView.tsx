@@ -1,27 +1,18 @@
-import { addToast, Avatar, Button, Divider } from '@heroui/react'
+import { dateFormatter, linkify, optimizeCloudinary, useProfile } from '@/lib'
+import { jobCommentsOptions, useCreateJobCommentMutation } from '@/lib/queries'
+import { Avatar, Button, Divider, Skeleton } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import {
-    BlockquotePlugin,
-    BoldPlugin,
-    H1Plugin,
-    H2Plugin,
-    H3Plugin,
-    ItalicPlugin,
-    UnderlinePlugin,
-} from '@platejs/basic-nodes/react'
-import { MessageSquareMore } from 'lucide-react'
-import { Plate, usePlateEditor } from 'platejs/react'
-import { serializeHtml } from 'platejs/static'
-
-import { optimizeCloudinary } from '@/lib/cloudinary'
-import { dateFormatter } from '@/lib/dayjs'
-import { useComments, useCreateComment, useProfile } from '@/lib/queries'
-import type { TJob } from '@/shared/types'
-
-import { BlockquoteElement } from '../ui/blockquote-node'
-import { Editor, EditorContainer } from '../ui/editor'
-import { FixedToolbar } from '../ui/fixed-toolbar'
-import { H1Element, H2Element, H3Element } from '../ui/heading-node'
-import { HeroButton } from '../ui/hero-button'
+    Bold,
+    ChevronDown,
+    Italic,
+    MessageSquareMore,
+    ReplyIcon,
+    Underline,
+} from 'lucide-react'
+import { Suspense, useMemo, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import { TJob, TJobComment } from '../../types'
 import {
     HeroCard,
     HeroCardBody,
@@ -29,191 +20,323 @@ import {
     HeroCardHeader,
 } from '../ui/hero-card'
 import HtmlReactParser from '../ui/html-react-parser'
-import { MarkToolbarButton } from '../ui/mark-toolbar-button'
-import { ToolbarButton } from '../ui/toolbar'
+import { RichInput } from '../ui/rich-input'
 
-type JobCommentsViewProps = {
-    job: TJob
-}
-export default function JobCommentsView({ job }: JobCommentsViewProps) {
-    const { data: comments } = useComments(job.id)
-
+export default function JobCommentsView({ job }: { job: TJob }) {
     return (
-        <div className="space-y-5">
-            <AddCommentCard jobId={job.id} />
+        <div className="space-y-5 animate-in fade-in duration-500">
+            {/* Luôn hiển thị khu vực thêm comment */}
+            <AddCommentArea jobId={job.id} />
+
             <Divider />
-            <HeroCard className="shadow-none border-none px-0! py-0!">
-                <HeroCardHeader>
-                    <h3 className="text-sm uppercase">
-                        Comment ({comments.length})
-                    </h3>
-                </HeroCardHeader>
-                <HeroCardBody className="gap-4">
-                    {!comments ||
-                        (comments.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-10 text-text-subdued">
-                                <MessageSquareMore
-                                    size={32}
-                                    strokeWidth={1}
-                                    className="mb-2"
-                                />
-                                <p className="text-text-subdued text-sm">
-                                    No comments found.
-                                </p>
-                            </div>
-                        ))}
-                    {comments?.map((comment) => (
-                        <div
-                            key={comment.id}
-                            className="flex gap-3 items-start"
-                        >
-                            <Avatar
-                                src={optimizeCloudinary(comment.user.avatar)}
-                                name={comment.user.displayName}
-                                size="sm"
-                                className="mt-1"
-                            />
-                            <div className="border border-border shadow-XS p-3 rounded-lg rounded-tl-none flex-1">
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="text-xs font-semibold text-default-700">
-                                        {comment.user.displayName}
-                                    </span>
-                                    <span className="text-[10px] text-default-400">
-                                        {dateFormatter(comment.createdAt, {
-                                            format: 'longDate',
-                                        })}
-                                    </span>
-                                </div>
-                                <p className="text-sm text-default-600">
-                                    <HtmlReactParser
-                                        htmlString={comment.content}
-                                    />
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                </HeroCardBody>
-            </HeroCard>
+
+            <div className="px-1">
+                <ErrorBoundary
+                    fallback={
+                        <p className="text-center text-danger py-4">
+                            Could not load comments.
+                        </p>
+                    }
+                >
+                    <Suspense fallback={<CommentsSkeleton />}>
+                        {/* Tách riêng phần fetch data sang component này */}
+                        <CommentsList job={job} />
+                    </Suspense>
+                </ErrorBoundary>
+            </div>
         </div>
     )
 }
 
-function AddCommentCard({ jobId }: { jobId: string }) {
+function AddCommentArea({ jobId, parentId, onSuccess, autoFocus }: any) {
     const { data: profile } = useProfile()
-    const createCommentMutation = useCreateComment()
 
-    // const initialValue: Value = [
-    //     {
-    //         children: [{ text: 'Title' }],
-    //         type: 'h3',
-    //     },
-    //     {
-    //         children: [{ text: 'This is a quote.' }],
-    //         type: 'blockquote',
-    //     },
-    //     {
-    //         children: [
-    //             { text: 'With some ' },
-    //             { bold: true, text: 'bold' },
-    //             { text: ' text for emphasis!' },
-    //         ],
-    //         type: 'p',
-    //     },
-    // ]
+    const createCommentMutation = useCreateJobCommentMutation()
 
-    const editor = usePlateEditor({
-        plugins: [
-            BoldPlugin,
-            ItalicPlugin,
-            UnderlinePlugin,
-            H1Plugin.withComponent(H1Element),
-            H2Plugin.withComponent(H2Element),
-            H3Plugin.withComponent(H3Element),
-            BlockquotePlugin.withComponent(BlockquoteElement),
-        ],
-        value: undefined,
-    })
+    const [content, setContent] = useState('')
+
+    const applyFormat = (command: string) => {
+        document.execCommand(command, false)
+    }
 
     const onSubmit = async () => {
-        const isEmpty = editor.api.isEmpty()
-        if (isEmpty) {
-            addToast({
-                title: 'Vui lòng nhập ít nhất 1 từ khoá',
-                color: 'danger',
-            })
-            return
-        }
-        const html = await serializeHtml(editor)
+        // Remove HTML tags to check if the comment is actually empty
+
+        const strippedContent = content.replace(/<[^>]*>/g, '').trim()
+        if (!strippedContent) return
+
         await createCommentMutation.mutateAsync({
-            jobId: jobId,
-            content: html,
+            jobId,
+            data: { content: content, parentId: parentId || null },
         })
+
+        setContent('')
+
+        if (onSuccess) onSuccess()
     }
 
     return (
-        <HeroCard>
-            <HeroCardHeader className="gap-3">
-                <Avatar
-                    src={optimizeCloudinary(profile.avatar)}
-                    className="size-7"
-                />
-                <h3 className="text-sm text-text-default">Add a comment</h3>
+        <HeroCard className="border-border-default shadow-none bg-background">
+            <HeroCardHeader className="flex flex-row justify-between items-center py-2 px-3">
+                <div className="flex items-center gap-2">
+                    <Avatar
+                        src={optimizeCloudinary(profile?.avatar)}
+                        size="sm"
+                        className="size-5"
+                    />
+
+                    <span className="text-[11px] font-semibold text-default-500 italic">
+                        {parentId ? 'Replying...' : 'Add a comment'}
+                    </span>
+                </div>
+
+                <div className="flex gap-1">
+                    <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        className="h-6 w-6"
+                        onPress={() => applyFormat('bold')}
+                    >
+                        <Bold size={12} />
+                    </Button>
+
+                    <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        className="h-6 w-6"
+                        onPress={() => applyFormat('italic')}
+                    >
+                        <Italic size={12} />
+                    </Button>
+
+                    <Button
+                        isIconOnly
+                        size="sm"
+                        variant="light"
+                        className="h-6 w-6"
+                        onPress={() => applyFormat('underline')}
+                    >
+                        <Underline size={12} />
+                    </Button>
+                </div>
             </HeroCardHeader>
+
             <Divider />
-            <HeroCardBody>
-                <Plate editor={editor}>
-                    <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
-                        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>
-                            H1
-                        </ToolbarButton>
-                        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>
-                            H2
-                        </ToolbarButton>
-                        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>
-                            H3
-                        </ToolbarButton>
-                        <ToolbarButton
-                            onClick={() => editor.tf.blockquote.toggle()}
-                        >
-                            Quote
-                        </ToolbarButton>
-                        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">
-                            B
-                        </MarkToolbarButton>
-                        <MarkToolbarButton
-                            nodeType="italic"
-                            tooltip="Italic (⌘+I)"
-                        >
-                            I
-                        </MarkToolbarButton>
-                        <MarkToolbarButton
-                            nodeType="underline"
-                            tooltip="Underline (⌘+U)"
-                        >
-                            U
-                        </MarkToolbarButton>
-                    </FixedToolbar>
-                    {/* Provides editor context */}
-                    <EditorContainer>
-                        {/* Styles the editor area */}
-                        <Editor
-                            style={{
-                                padding: '8px 20px',
-                                minHeight: '100px',
-                            }}
-                            placeholder="Type your amazing comment here..."
-                        />
-                    </EditorContainer>
-                </Plate>
+
+            <HeroCardBody className="p-0">
+                <RichInput
+                    value={content}
+                    onChange={setContent}
+                    autoFocus={autoFocus}
+                    placeholder={
+                        parentId ? 'Write a reply...' : 'Write a comment...'
+                    }
+                />
             </HeroCardBody>
-            <HeroCardFooter>
-                <Button size="sm" variant="light">
-                    Cancel
+
+            <HeroCardFooter className="justify-end gap-2 border-t border-divider py-1.5 px-3">
+                <Button
+                    size="sm"
+                    color="primary"
+                    radius="full"
+                    className="h-7 text-xs font-bold"
+                    onPress={onSubmit}
+                    isLoading={createCommentMutation.isPending}
+                >
+                    {parentId ? 'Post Reply' : 'Post Comment'}
                 </Button>
-                <HeroButton size="sm" color="blue" onPress={onSubmit}>
-                    Submit
-                </HeroButton>
             </HeroCardFooter>
         </HeroCard>
+    )
+}
+
+export function CommentsList({ job }: { job: TJob }) {
+    const {
+        data: { comments },
+    } = useSuspenseQuery(jobCommentsOptions(job.id))
+
+    const rootComments = useMemo(
+        () => comments?.filter((c: TJobComment) => !c.parentId) || [],
+        [comments]
+    )
+
+    return (
+        <>
+            <h3 className="text-sm font-semibold mb-6">
+                Discussion ({comments?.length || 0})
+            </h3>
+
+            <div className="max-w-4xl mx-auto space-y-6">
+                {rootComments.length === 0 ? (
+                    <EmptyCommentsState />
+                ) : (
+                    rootComments.map((comment: any) => (
+                        <CommentItem
+                            key={comment.id}
+                            comment={comment}
+                            jobId={job.id}
+                        />
+                    ))
+                )}
+            </div>
+        </>
+    )
+}
+
+export function CommentsSkeleton() {
+    return (
+        <div className="space-y-8 max-w-4xl mx-auto mt-6">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-3 items-start animate-pulse">
+                    <Skeleton className="size-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                        <div className="flex justify-between w-full">
+                            <Skeleton className="w-24 h-3 rounded-lg" />
+                            <Skeleton className="w-16 h-3 rounded-lg" />
+                        </div>
+                        <Skeleton className="w-full h-16 rounded-xl" />
+                        <Skeleton className="w-12 h-3 rounded-lg ml-1" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    )
+}
+function CommentItem({
+    comment,
+    jobId,
+    isReply = false,
+}: {
+    comment: TJobComment
+    jobId: string
+    isReply?: boolean
+}) {
+    const [isReplying, setIsReplying] = useState(false)
+    const [showReply, setShowReply] = useState<boolean>(false)
+
+    return (
+        <div className="flex flex-col gap-3 relative animate-in fade-in slide-in-from-bottom-2 duration-400">
+            <div className="flex gap-3 items-start">
+                <Avatar
+                    src={optimizeCloudinary(comment.user.avatar)}
+                    name={comment.user.displayName}
+                    size="sm"
+                    className="mt-1 shrink-0 shadow-sm"
+                />
+
+                <div className="flex-1 min-w-0">
+                    <div className="border border-divider p-3 rounded-xl rounded-tl-none bg-content1 shadow-xs group hover:border-default-400 transition-colors">
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-bold text-default-900">
+                                {comment.user.displayName}
+                            </span>
+                            <span className="text-[10px] text-default-400 font-medium">
+                                {dateFormatter(comment.createdAt, {
+                                    format: 'longDate',
+                                })}
+                            </span>
+                        </div>
+
+                        <div className="text-sm text-default-600 leading-relaxed whitespace-pre-wrap">
+                            <HtmlReactParser
+                                htmlString={linkify(comment.content)}
+                            />
+                        </div>
+                    </div>
+
+                    {!isReply && (
+                        <div className="flex items-center gap-4 mt-1 px-1">
+                            <button
+                                onClick={() => setIsReplying(!isReplying)}
+                                className="text-[11px] font-semibold text-text-subdued hover:text-primary transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                                <ReplyIcon size={12} />
+                                {isReplying ? 'Cancel' : 'Reply'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* FORM REPLY */}
+            {isReplying && (
+                <div className="ml-11 mt-1 animate-in zoom-in-95 duration-200">
+                    <AddCommentArea
+                        jobId={jobId}
+                        parentId={comment.id}
+                        onSuccess={() => setIsReplying(false)}
+                        autoFocus
+                    />
+                </div>
+            )}
+
+            <div className="ml-10 ">
+                {!showReply! &&
+                    comment.replies &&
+                    comment.replies?.length > 0 && (
+                        <div
+                            className="flex items-center justify-start gap-1 cursor-pointer text-text-subdued font-medium"
+                            onClick={() => {
+                                setShowReply(true)
+                            }}
+                        >
+                            <ChevronDown size={12} />
+                            <p className="text-xs">
+                                View all {comment.replies.length} replies
+                            </p>
+                        </div>
+                    )}
+                {/* HIỂN THỊ REPLIES VỚI ĐƯỜNG KẺ XANH */}
+                {showReply && comment.replies && comment.replies.length > 0 && (
+                    // ml-4 hoặc ml-5 tùy vào kích thước Avatar để đường kẻ nằm giữa Avatar
+                    <div className="pl-4 border-l-2 border-divider hover:border-primary/50 transition-colors mt-1 space-y-5">
+                        {comment.replies.map((reply: any) => (
+                            <CommentItem
+                                key={reply.id}
+                                comment={reply}
+                                jobId={jobId}
+                                isReply={true}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+export function EmptyCommentsState() {
+    return (
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-in fade-in zoom-in-95 duration-500">
+            {/* Icon Container với hiệu ứng vòng tròn mờ */}
+            <div className="relative mb-4">
+                <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl scale-150 animate-pulse" />
+                <div className="relative bg-content2 border border-divider p-4 rounded-full shadow-sm">
+                    <MessageSquareMore
+                        size={32}
+                        className="text-primary/60"
+                        strokeWidth={1.5}
+                    />
+                </div>
+            </div>
+
+            {/* Text Content */}
+            <h4 className="text-base font-semibold text-default-700">
+                No discussion yet
+            </h4>
+            <p className="text-sm text-default-500 max-w-60 mt-1 leading-relaxed">
+                Be the first to share your thoughts or updates about this job.
+            </p>
+
+            {/* Một chi tiết nhỏ để hướng dẫn người dùng nhìn lên ô input */}
+            <div className="mt-6 flex flex-col items-center gap-2 text-primary-500/50 animate-bounce">
+                <span className="text-[10px] font-bold uppercase tracking-widest">
+                    Start here
+                </span>
+                <div className="w-px h-8 bg-linear-to-b from-primary/50 to-transparent" />
+            </div>
+        </div>
     )
 }

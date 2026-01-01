@@ -1,7 +1,6 @@
 export * from './_account.type'
 export * from './_browser-subscribes.type'
 export * from './_client.type'
-export * from './_comment.type'
 export * from './_community.type'
 export * from './_config.type'
 export * from './_department.type'

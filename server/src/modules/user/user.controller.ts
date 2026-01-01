@@ -7,6 +7,7 @@ import {
     Param,
     Patch,
     Post,
+    Query,
     Req,
     UseGuards,
 } from '@nestjs/common'
@@ -28,16 +29,19 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { UserResponseDto } from './dto/user-response.dto'
 import { UserService } from './user.service'
 import { isUUID } from 'class-validator'
+import { RolesGuard } from '../auth/roles.guard'
+import { Roles } from '../auth/decorators/roles.decorator'
+import { RoleEnum } from '@prisma/client'
 
 @ApiTags('Users')
 @Controller('users')
+@UseGuards(JwtGuard)
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Post()
     @HttpCode(201)
     @ResponseMessage('Create user successfully')
-    @UseGuards(JwtGuard, AdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new user' })
     @ApiResponse({
@@ -52,7 +56,6 @@ export class UserController {
     @Get()
     @HttpCode(200)
     @ResponseMessage('Get list of users successfully')
-    @UseGuards(JwtGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all users' })
     @ApiResponse({
@@ -60,13 +63,14 @@ export class UserController {
         description: 'Return a list of users.',
         type: [ProtectUserResponseDto],
     })
+    @UseGuards(RolesGuard)
+    @Roles(RoleEnum.ADMIN)
     async findAll() {
         return this.userService.findAll()
     }
 
     @Patch('update-password')
     @HttpCode(200)
-    @UseGuards(JwtGuard)
     @ApiBearerAuth()
     @ResponseMessage('Update password successfully')
     @ApiOperation({ summary: 'Update the password for the current user' })
@@ -85,13 +89,14 @@ export class UserController {
     @Patch(':id/reset-password')
     @HttpCode(200)
     @ResponseMessage('Reset password successfully')
-    @UseGuards(JwtGuard, AdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Reset the password for a user' })
     @ApiResponse({
         status: 200,
         description: 'The password has been successfully reset.',
     })
+    @UseGuards(RolesGuard)
+    @Roles(RoleEnum.ADMIN)
     async resetPassword(
         @Param('id') id: string,
         @Body() dto: ResetPasswordDto
@@ -102,7 +107,6 @@ export class UserController {
     @Get('username/:username')
     @HttpCode(200)
     @ResponseMessage('Check username successfully')
-    @UseGuards(JwtGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Check if a username is valid' })
     @ApiResponse({
@@ -117,7 +121,6 @@ export class UserController {
     @Get(':identifier')
     @HttpCode(200)
     @ResponseMessage('Get user detail successfully')
-    @UseGuards(JwtGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get a user by ID or Username' })
     @ApiResponse({
@@ -125,6 +128,8 @@ export class UserController {
         description: 'Return a single user.',
         type: UserResponseDto,
     })
+    @UseGuards(RolesGuard)
+    @Roles(RoleEnum.ADMIN)
     async findOne(@Param('identifier') identifier: string) {
         // Check if the parameter looks like a UUID
         if (isUUID(identifier)) {
@@ -137,7 +142,6 @@ export class UserController {
     @Patch(':username')
     @HttpCode(200)
     @ResponseMessage('Update user successfully')
-    @UseGuards(JwtGuard, AdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a user' })
     @ApiResponse({
@@ -145,6 +149,8 @@ export class UserController {
         description: 'The user has been successfully updated.',
         type: UserResponseDto,
     })
+    @UseGuards(RolesGuard)
+    @Roles(RoleEnum.ADMIN)
     async update(
         @Param('username') username: string,
         @Body() updateUserDto: UpdateUserDto
@@ -152,16 +158,30 @@ export class UserController {
         return this.userService.update(username, updateUserDto)
     }
 
+    @Patch(':id/status')
+    @UseGuards(RolesGuard)
+    @Roles(RoleEnum.ADMIN)
+    @ResponseMessage('User status updated successfully')
+    async toggleStatus(
+        @Param('id') id: string,
+        @Req() request: Request,
+        @Query('isActive') isActive: string
+    ) {
+        const userPayload: TokenPayload = await request['user']
+        return this.userService.toggleUserStatus(userPayload.role, id, isActive)
+    }
+
     @Delete(':id')
     @HttpCode(200)
     @ResponseMessage('Delete user successfully')
-    @UseGuards(JwtGuard, AdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a user' })
     @ApiResponse({
         status: 200,
         description: 'The user has been successfully deleted.',
     })
+    @UseGuards(RolesGuard)
+    @Roles(RoleEnum.ADMIN)
     async remove(@Param('id') id: string) {
         return this.userService.delete(id)
     }

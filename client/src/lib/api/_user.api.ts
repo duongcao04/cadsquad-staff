@@ -9,15 +9,15 @@ import type { IUserResponse } from '@/shared/interfaces'
 
 export interface IProfileOverview {
     summary: {
-        totalEarnings: number,
-        earningsTrend: number,
-        jobsCompleted: number,
-        hoursLogged: number,
-        activeJobs: number,
-    },
+        totalEarnings: number
+        earningsTrend: number
+        jobsCompleted: number
+        hoursLogged: number
+        activeJobs: number
+    }
     charts: {
-        financial: string,
-        jobStatus: string,
+        financial: string
+        jobStatus: string
     }
 }
 export const userApi = {
@@ -25,13 +25,29 @@ export const userApi = {
         return axiosClient.post<ApiResponse<IUserResponse>>('/v1/users', data)
     },
     findAll: async () => {
-        return axiosClient.get<ApiResponse<{
-            users: IUserResponse[],
-            total: number
-        }>>('/v1/users').then(res => res.data)
+        return axiosClient
+            .get<
+                ApiResponse<{
+                    users: IUserResponse[]
+                    total: number
+                }>
+            >('/v1/users')
+            .then((res) => res.data)
     },
     overview: async () => {
-        return axiosClient.get<ApiResponse<IProfileOverview>>('/v1/analytics/profile-overview').then(res => res.data)
+        return axiosClient
+            .get<
+                ApiResponse<IProfileOverview>
+            >('/v1/analytics/profile-overview')
+            .then((res) => res.data)
+    },
+    toggleStatus: async (userId: string, forceStatus?: boolean) => {
+        const url = forceStatus
+            ? `/v1/users/${userId}/status/?isActive=${forceStatus ? '1' : '0'}`
+            : `/v1/users/${userId}/status`
+        return axiosClient
+            .patch<ApiResponse<{ isActive: boolean; username: string }>>(url)
+            .then((res) => res.data)
     },
     checkUsernameValid: (username: string) => {
         return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(
@@ -39,10 +55,11 @@ export const userApi = {
         )
     },
     updatePassword: async (data: TUpdatePasswordInput) => {
-        return axiosClient.patch<ApiResponse<{ username: string }>>(
-            '/v1/users/update-password',
-            data
-        ).then(res => res.data)
+        return axiosClient
+            .patch<
+                ApiResponse<{ username: string }>
+            >('/v1/users/update-password', data)
+            .then((res) => res.data)
     },
     resetPassword: (userId: string, data: TResetPasswordInput) => {
         return axiosClient.patch<ApiResponse<{ username: string }>>(
@@ -51,13 +68,16 @@ export const userApi = {
         )
     },
     findOne: async (username: string) => {
-        return axiosClient.get<ApiResponse<IUserResponse>>(`/v1/users/${username}`).then(res => res.data)
+        return axiosClient
+            .get<ApiResponse<IUserResponse>>(`/v1/users/${username}`)
+            .then((res) => res.data)
     },
     update: async (username: string, data: TUpdateUserInput) => {
-        return axiosClient.patch<ApiResponse<{ id: string, username: string }>>(
-            `/v1/users/${username}`,
-            data
-        ).then(res => res.data)
+        return axiosClient
+            .patch<
+                ApiResponse<{ id: string; username: string }>
+            >(`/v1/users/${username}`, data)
+            .then((res) => res.data)
     },
     remove: (id: string) => {
         return axiosClient.delete<ApiResponse<{ username: string }>>(

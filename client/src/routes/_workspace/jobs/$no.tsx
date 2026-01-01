@@ -1,4 +1,31 @@
 import {
+    ApiResponse,
+    currencyFormatter,
+    dateFormatter,
+    EXTERNAL_URLS,
+    getPageTitle,
+    INTERNAL_URLS,
+    PAID_STATUS_COLOR,
+    useProfile,
+    useUpdateJobMutation,
+} from '@/lib'
+import { jobActivityLogsOptions, jobByNoOptions } from '@/lib/queries'
+import {
+    DeliverJobModal,
+    HeroButton,
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
+    JobActivityHistory,
+    JobStatusChip,
+} from '@/shared/components'
+import JobAttachmentsField from '@/shared/components/form-fields/JobAttachmentsField'
+import JobAssigneesView from '@/shared/components/job-detail/JobAssigneesView'
+import JobCommentsView from '@/shared/components/job-detail/JobCommentsView'
+import Timmer from '@/shared/components/layouts/PageHeading/Timmer'
+import UpdateCostModal from '@/shared/components/project-center/UpdateCostModal'
+import { TJob } from '@/shared/types'
+import {
     addToast,
     Avatar,
     Button,
@@ -15,9 +42,13 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
+    AlertCircle,
     CalendarDays,
+    CheckCircle2,
     ChevronLeft,
+    ChevronRight,
     CirclePlus,
+    Clock,
     FileText,
     LibraryBig,
     LinkIcon,
@@ -25,51 +56,31 @@ import {
     MessageSquare,
     Pencil,
     RotateCcw,
+    TrendingDown,
+    TruckElectricIcon,
     UserRound,
     Users,
     Wallet,
-    TrendingDown,
-    ChevronRight,
-    AlertCircle,
-    CheckCircle2,
-    Clock,
-    TruckElectricIcon,
 } from 'lucide-react'
-import { useMemo, useState, useEffect } from 'react'
-import {
-    ApiResponse,
-    dateFormatter,
-    EXTERNAL_URLS,
-    getPageTitle,
-    INTERNAL_URLS,
-    PAID_STATUS_COLOR,
-    useUpdateJobMutation,
-    useProfile,
-    currencyFormatter,
-} from '@/lib'
-import { jobActivityLogsOptions, jobByNoOptions } from '@/lib/queries'
-import { TJob } from '@/shared/types'
-import {
-    DeliverJobModal,
-    HeroButton,
-    HeroCard,
-    HeroCardBody,
-    HeroCardHeader,
-    JobActivityHistory,
-    JobStatusChip,
-    ScrollArea,
-    ScrollBar,
-} from '@/shared/components'
-import JobAttachmentsField from '@/shared/components/form-fields/JobAttachmentsField'
-import JobAssigneesView from '@/shared/components/job-detail/JobAssigneesView'
-import JobCommentsView from '@/shared/components/job-detail/JobCommentsView'
-import Timmer from '@/shared/components/layouts/PageHeading/Timmer'
-import UpdateCostModal from '@/shared/components/project-center/UpdateCostModal'
-import { JobStatusSystemTypeEnum } from '../../../shared/enums'
+import { useEffect, useMemo, useState } from 'react'
+import { z } from 'zod'
 import JobDescriptionModal from '../../../shared/components/job-detail/JobDescriptionModal'
-import HtmlReactParser from '../../../shared/components/ui/html-react-parser'
 import CountdownTimer from '../../../shared/components/ui/countdown-timer'
+import HtmlReactParser from '../../../shared/components/ui/html-react-parser'
+import { JobStatusSystemTypeEnum } from '../../../shared/enums'
 
+export enum JobDetailTabEnum {
+    OVERVIEW = 'overview',
+    ATTACHMENTS = 'attachments',
+    ASSIGNMENTS = 'assignments',
+    COMMENTS = 'comments',
+}
+
+export const jobDetailSearchSchema = z.object({
+    tab: z.nativeEnum(JobDetailTabEnum).catch(JobDetailTabEnum.OVERVIEW),
+})
+
+export type TJobDetailSearch = z.infer<typeof jobDetailSearchSchema>
 export const Route = createFileRoute('/_workspace/jobs/$no')({
     head: (ctx) => {
         const response = ctx.loaderData as unknown as ApiResponse<TJob>
@@ -79,6 +90,8 @@ export const Route = createFileRoute('/_workspace/jobs/$no')({
             ],
         }
     },
+    validateSearch: (search): TJobDetailSearch =>
+        jobDetailSearchSchema.parse(search),
     loader({ context, params }) {
         return context.queryClient.ensureQueryData({
             ...jobByNoOptions(params.no),
@@ -89,6 +102,8 @@ export const Route = createFileRoute('/_workspace/jobs/$no')({
 
 function JobDetailPage() {
     const { no } = Route.useParams()
+    const searchParams: TJobDetailSearch = Route.useSearch()
+    const navigate = Route.useNavigate()
     // 1. TOP-LEVEL HOOKS
     const { isAdmin } = useProfile()
 
@@ -109,6 +124,16 @@ function JobDetailPage() {
         ...jobActivityLogsOptions(job?.id ?? ''),
         enabled: !!job?.id,
     })
+
+    const handleTabChange = (key: React.Key) => {
+        navigate({
+            search: (prev: TJobDetailSearch) => ({
+                ...prev,
+                tab: key as JobDetailTabEnum,
+            }),
+            replace: true,
+        })
+    }
 
     const updateJobMutation = useUpdateJobMutation(() => {
         addToast({ title: 'Success', color: 'success' })
@@ -170,7 +195,7 @@ function JobDetailPage() {
             )}
 
             {/* --- Header Area --- */}
-            <div className="py-4 px-4 flex items-start justify-between bg-background/50 backdrop-blur-md sticky top-0 z-10 border-b border-divider">
+            <div className="py-4 px-4 flex items-start justify-between bg-background/50 backdrop-blur-md sticky top-0 z-20 border-b border-divider">
                 <div className="space-y-5">
                     <div className="flex items-center gap-4">
                         <Link to={INTERNAL_URLS.projectCenter}>
@@ -189,7 +214,7 @@ function JobDetailPage() {
                         <Divider orientation="vertical" className="h-3" />
                         <p className="flex items-center gap-1.5 font-medium">
                             <UserRound size={14} />
-                            {job.client?.name || "Unknown client"}
+                            {job.client?.name || 'Unknown client'}
                         </p>
                         <Divider orientation="vertical" className="h-3" />
                         <p className="flex items-center gap-1.5 font-medium">
@@ -221,11 +246,9 @@ function JobDetailPage() {
             </div>
 
             {/* --- Main Content --- */}
-            <ScrollArea className="mt-4 w-full h-[calc(100vh-120px)] space-y-6 px-4">
-                <ScrollBar orientation="vertical" />
-                <ScrollBar orientation="horizontal" />
+            <div className="mt-6 max-w-7xl mx-auto h-[calc(100vh-120px)] space-y-6 px-4">
                 {/* ACTION BAR */}
-                <HeroCard className="bg-background-muted border-border-muted shadow-xs">
+                <HeroCard className="bg-background border-border-muted">
                     <HeroCardBody className="w-full flex justify-between">
                         <div className="flex justify-between py-3">
                             {/* SECTION 1: CORE PROGRESS STATUS */}
@@ -390,10 +413,15 @@ function JobDetailPage() {
 
                 <div className="my-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <Tabs variant="underlined" color="primary">
+                        <Tabs
+                            variant="underlined"
+                            color="primary"
+                            selectedKey={searchParams.tab}
+                            onSelectionChange={handleTabChange}
+                        >
                             {/* TAB 1: OVERVIEW */}
                             <Tab
-                                key="overview"
+                                key={JobDetailTabEnum.OVERVIEW}
                                 title={
                                     <div className="flex items-center gap-2">
                                         <FileText size={16} />
@@ -461,7 +489,7 @@ function JobDetailPage() {
 
                             {/* TAB 2: ATTACHMENTS */}
                             <Tab
-                                key="attachments"
+                                key={JobDetailTabEnum.ATTACHMENTS}
                                 title={
                                     <div className="flex items-center gap-2">
                                         <LinkIcon size={16} />
@@ -489,7 +517,7 @@ function JobDetailPage() {
 
                             {/* TAB 3: ASSIGNMENTS (Beautiful Version) */}
                             <Tab
-                                key="assignments"
+                                key={JobDetailTabEnum.ASSIGNMENTS}
                                 title={
                                     <div className="flex items-center gap-2">
                                         <Users size={16} />
@@ -615,7 +643,7 @@ function JobDetailPage() {
 
                             {/* TAB 4: COMMENTS */}
                             <Tab
-                                key="comments"
+                                key={JobDetailTabEnum.COMMENTS}
                                 title={
                                     <div className="flex items-center gap-2">
                                         <MessageSquare size={16} />
@@ -626,7 +654,7 @@ function JobDetailPage() {
                                     </div>
                                 }
                             >
-                                <div className="pt-4">
+                                <div className="pt-4 pb-20">
                                     <JobCommentsView job={job} />
                                 </div>
                             </Tab>
@@ -787,7 +815,7 @@ function JobDetailPage() {
                         </HeroCard>
                     </div>
                 </div>
-            </ScrollArea>
+            </div>
         </div>
     )
 }

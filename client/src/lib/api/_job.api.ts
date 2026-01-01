@@ -3,6 +3,7 @@ import {
     TAssignMember,
     type TBulkChangeStatusInput,
     type TChangeStatusInput,
+    TCreateCommentInput,
     type TCreateJobInput,
     TDeliverJobInput,
     type TJobQueryInput,
@@ -16,7 +17,11 @@ import type {
     IPaginate,
     IUserResponse,
 } from '@/shared/interfaces'
-import type { JobColumnKey, JobUpdateResponse } from '@/shared/types'
+import type {
+    JobColumnKey,
+    JobUpdateResponse,
+    TJobComment,
+} from '@/shared/types'
 import queryString from 'query-string'
 
 import { ProjectCenterTabEnum } from '../../shared/enums'
@@ -243,4 +248,16 @@ export const jobApi = {
     remove: async (jobId: string) => {
         return axiosClient.delete(`/v1/jobs/${jobId}`).then((res) => res.data)
     },
+
+    // COMMENTS
+    createComment: (jobId: string, data: TCreateCommentInput) =>
+        axiosClient
+            .post<
+                ApiResponse<{ id: string; no: string }>
+            >(`/v1/jobs/${jobId}/comments`, data)
+            .then((res) => res.data),
+    getComments: (jobId: string) =>
+        axiosClient
+            .get<ApiResponse<TJobComment[]>>(`/v1/jobs/${jobId}/comments`)
+            .then((res) => res.data),
 }

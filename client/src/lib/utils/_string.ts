@@ -1,4 +1,4 @@
-import { envConfig } from "../config"
+import { envConfig } from '../config'
 
 /**
  * Removes Vietnamese diacritical marks (tones) from a string
@@ -67,7 +67,14 @@ export const handleCopy = (content: string, onSuccess?: () => void) => {
     }
 }
 
-
 export const getPageTitle = (title: string) => {
     return title + ' | ' + envConfig.APP_TITLE
+}
+
+export const linkify = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+
+    return text.replace(urlRegex, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0070f3; text-decoration: underline;">${url}</a>`
+    })
 }

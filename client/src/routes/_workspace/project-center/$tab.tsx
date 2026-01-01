@@ -14,7 +14,6 @@ import {
 import { Suspense, useMemo, useState, useTransition } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { z } from 'zod'
-
 import { excelApi, getPageTitle, jobApi, STORAGE_KEYS } from '@/lib'
 import {
     jobsListOptions,

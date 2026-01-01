@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer'
 import { ApiProperty, OmitType } from '@nestjs/swagger'
-import { CommentResponseDto } from '../../comment/dto/comment-response.dto'
+import { CommentResponseDto } from './job-comment/job-comment-response.dto'
 import { JobStatusResponseDto } from '../../job-status/dto/job-status-response.dto'
 import { JobTypeResponseDto } from '../../job-type/dto/job-type-response.dto'
 import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-channel-response.dto'

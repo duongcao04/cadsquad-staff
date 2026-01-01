@@ -68,6 +68,8 @@ import {
     User,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useToggleUserStatusMutation } from '../../../../../../lib/queries/useUser'
+import { ChangeUserStatusModal } from '../../../../../../shared/components/modals/ChangeUserStatusModal'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/$username/edit'
@@ -94,6 +96,8 @@ export const Route = createFileRoute(
 function EditStaffPage() {
     const { username } = Route.useParams()
 
+    const toggleUserStatusMutation = useToggleUserStatusMutation()
+
     const uploadImageMutation = useUploadImageMutation()
     const updateAvatarMutation = useUpdateAvatarMutation()
     // 1. Fetch Data
@@ -101,6 +105,9 @@ function EditStaffPage() {
     const { data: user } = useSuspenseQuery(options)
 
     const [activeTab, setActiveTab] = useState('profile')
+    const [toggleUserActive, setToggleUserActive] = useState<
+        'active' | 'deActive'
+    >(user.isActive ? 'deActive' : 'active')
 
     const {
         isOpen: isOpenResetPasswordModal,
@@ -123,6 +130,14 @@ function EditStaffPage() {
     } = useDisclosure({
         id: 'DeleteUserPermanentlyModal',
     })
+    const changeUserStatusModal = useDisclosure({
+        id: 'ChangeUserStatusModal',
+    })
+
+    const handleOpenChangeUserModal = (value: boolean) => {
+        setToggleUserActive(value ? 'active' : 'deActive')
+        changeUserStatusModal.onOpen()
+    }
 
     const handleAvatarSave = async (imageFile: File) => {
         try {
@@ -150,6 +165,17 @@ function EditStaffPage() {
 
     return (
         <>
+            {changeUserStatusModal.isOpen && (
+                <ChangeUserStatusModal
+                    isOpen={changeUserStatusModal.isOpen}
+                    onClose={changeUserStatusModal.onClose}
+                    user={user}
+                    action={toggleUserActive}
+                    onConfirm={async (userId) => {
+                        toggleUserStatusMutation.mutateAsync({ userId })
+                    }}
+                />
+            )}
             {isOpenResetPasswordModal && user && (
                 <ResetPasswordModal
                     isOpen={isOpenResetPasswordModal}
@@ -303,7 +329,7 @@ function EditStaffPage() {
                                             <HeroCopyButton
                                                 textValue={user.id}
                                             />
-                                            <span className="font-mono text-xs bg-slate-100 px-2 py-1 rounded">
+                                            <span className="text-xs bg-background-hovered px-2 py-1 rounded">
                                                 {user.id}
                                             </span>
                                         </div>
@@ -313,7 +339,7 @@ function EditStaffPage() {
                         </Card>
 
                         {/* Account Actions / Danger Zone */}
-                        <Card className="shadow-none border border-red-200 bg-red-50/50">
+                        <Card className="shadow-none border border-red-200 bg-red-50/50 dark:bg-red-50/70">
                             <CardHeader className="px-6 pt-6 pb-0">
                                 <h4 className="font-bold text-red-900 text-sm flex items-center gap-2">
                                     <AlertCircle size={16} /> Danger Zone
@@ -331,9 +357,9 @@ function EditStaffPage() {
                                     <Switch
                                         color="success"
                                         isSelected={user.isActive}
-                                        // onValueChange={(v) =>
-                                        //     formik.setFieldValue('isActive', v)
-                                        // }
+                                        onValueChange={
+                                            handleOpenChangeUserModal
+                                        }
                                     />
                                 </div>
                                 <Button

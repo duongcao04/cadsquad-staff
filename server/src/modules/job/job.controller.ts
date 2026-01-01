@@ -4,7 +4,6 @@ import {
     Controller,
     Delete,
     Get,
-    HttpCode,
     Param,
     Patch,
     Post,
@@ -12,39 +11,27 @@ import {
     Req,
     UseGuards,
 } from '@nestjs/common'
-import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiParam,
-    ApiQuery,
-    ApiResponse,
-    ApiTags,
-} from '@nestjs/swagger'
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 import { RoleEnum } from '@prisma/client'
-
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { AdminGuard } from '../auth/admin.guard'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { RolesGuard } from '../auth/roles.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
-
 import { JobService } from './job.service'
 import { JobTypeService } from '../job-type/job-type.service'
 import { ActivityLogService } from './activity-log.service'
-
 import { CreateJobDto } from './dto/create-job.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { JobQueryDto } from './dto/job-query.dto'
-import { JobResponseDto } from './dto/job-response.dto'
 import { DeliverJobDto } from './dto/deliver-job.dto'
 import { ChangeStatusDto } from './dto/change-status.dto'
-import { BulkChangeStatusDto } from './dto/bulk-change-status.dto'
-import { UpdateJobMembersDto } from './dto/update-job-members.dto'
-import { RescheduleJobDto } from './dto/reschedule-job.dto'
 import { UpdateRevenueDto } from './dto/update-revenue.dto'
 import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
 import { UpdateGeneralJobDto } from './dto/update-general.dto'
+import { JobCommentService } from './job-comment.service'
+import { CreateJobCommentDto } from './dto/job-comment/create-comment.dto'
 
 @ApiTags('Jobs')
 @Controller('jobs')
@@ -54,7 +41,8 @@ export class JobController {
     constructor(
         private readonly jobService: JobService,
         private readonly jobTypeService: JobTypeService,
-        private readonly activityLogService: ActivityLogService
+        private readonly activityLogService: ActivityLogService,
+        private readonly commentService: JobCommentService
     ) {}
 
     // -------------------------------------------------------------------------
@@ -62,11 +50,33 @@ export class JobController {
     // -------------------------------------------------------------------------
 
     @Get(':id/deliveries')
-    @UseGuards(JwtGuard) // Staff and Admins might need to see this
     @ResponseMessage('Get job deliveries successfully')
     @ApiOperation({ summary: 'Get all delivery attempts for a specific job' })
     async getJobDeliveries(@Param('id') id: string) {
         return this.jobService.getJobDeliveries(id)
+    }
+
+    @Get(':jobId/comments')
+    @ResponseMessage('Fetch job comments successfully')
+    async findAllComments(@Param('jobId') jobId: string) {
+        const comments = await this.commentService.findAllByJob(jobId)
+        return comments
+    }
+
+    @Post(':jobId/comments')
+    @ResponseMessage('Đã đăng bình luận')
+    async createComment(
+        @Param('jobId') jobId: string,
+        @Body() dto: CreateJobCommentDto,
+        @Req() request: Request
+    ) {
+        const user: TokenPayload = request['user']
+        const comment = await this.commentService.createComment(
+            jobId,
+            user.sub,
+            dto
+        )
+        return comment
     }
 
     @Get()

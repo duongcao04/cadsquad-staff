@@ -36,3 +36,13 @@ export type TJobAssignment = {
     staffCost: number
     assignedAt: Date | string
 }
+
+export type TJobComment = {
+    id: string
+    content: string
+    createdAt: Date | string
+    updatedAt: Date | string
+    user: TUser
+    parentId?: string | null
+    replies?: TJobComment[] // Đệ quy cho replies
+}

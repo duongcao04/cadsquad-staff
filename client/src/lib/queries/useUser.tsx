@@ -2,7 +2,7 @@ import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { userApi } from '@/lib/api'
-import { type ApiError,ApiResponse } from '@/lib/axios'
+import { type ApiError, ApiResponse } from '@/lib/axios'
 
 import { queryClient } from '../../main'
 import type {
@@ -191,5 +191,34 @@ export const useDeleteUser = () => {
                 color: 'danger',
             })
         },
+    })
+}
+export const useToggleUserStatusMutation = (
+    onSuccess?: (
+        res: ApiResponse<{ isActive: boolean; username: string }>
+    ) => void
+) => {
+    return useMutation({
+        mutationFn: async ({
+            userId,
+            forceStatus,
+        }: {
+            userId: string
+            forceStatus?: boolean
+        }) => await userApi.toggleStatus(userId, forceStatus),
+        onSuccess: (res) => {
+            queryClient.refetchQueries({ queryKey: ['users'] })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: res.result?.isActive
+                        ? 'Reactive'
+                        : 'Inactive' + ' user successfully',
+                    color: 'success',
+                })
+            }
+        },
+        onError: (err) => onErrorToast(err, 'Failed to toggle user status'),
     })
 }

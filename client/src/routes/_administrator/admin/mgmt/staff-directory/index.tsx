@@ -1,3 +1,22 @@
+import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
+import { departmentsListOptions, usersListOptions } from '@/lib/queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroButton,
+    HeroCard,
+    HeroCardBody,
+    HeroCardFooter,
+    HeroCardHeader,
+    HeroTooltip,
+} from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
+import { DeactivateUserModal } from '@/shared/components/staff-directory/DeactiveUserModal'
+import { EmailUserModal } from '@/shared/components/staff-directory/EmailUserModal'
+import { SendNotificationModal } from '@/shared/components/staff-directory/SendNotificationModal'
+import { RoleEnum } from '@/shared/enums'
+import { TUser } from '@/shared/types'
 import {
     Avatar,
     Button,
@@ -14,7 +33,7 @@ import {
     SelectItem,
     useDisclosure,
 } from '@heroui/react'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQueries } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import {
     Briefcase,
@@ -30,25 +49,6 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
-import { usersListOptions } from '@/lib/queries'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroButton,
-    HeroCard,
-    HeroCardBody,
-    HeroCardFooter,
-    HeroCardHeader,
-    HeroTooltip,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
-import { DeactivateUserModal } from '@/shared/components/staff-directory/DeactiveUserModal'
-import { EmailUserModal } from '@/shared/components/staff-directory/EmailUserModal'
-import { SendNotificationModal } from '@/shared/components/staff-directory/SendNotificationModal'
-import { TUser } from '@/shared/types'
-
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/'
 )({
@@ -58,120 +58,15 @@ export const Route = createFileRoute(
     component: StaffDirectoryPage,
 })
 
-// --- Types based on your Prisma Schema ---
-type RoleEnum = 'ADMIN' | 'USER' | 'ACCOUNTING'
-
-interface JobTitle {
-    id: string
-    displayName: string
-}
-
-interface Department {
-    id: string
-    displayName: string
-    hexColor: string
-}
-
-interface StaffMember {
-    id: string
-    displayName: string
-    email: string
-    avatar: string
-    phoneNumber?: string
-    role: RoleEnum
-    isActive: boolean
-    jobTitle?: JobTitle
-    department?: Department
-    location?: string
-}
-
-// --- Mock Data ---
-const MOCK_STAFF: StaffMember[] = [
-    {
-        id: '1',
-        displayName: 'Sarah Wilson',
-        email: 'sarah.w@hiveq.com',
-        avatar: 'https://i.pravatar.cc/150?u=sarah',
-        phoneNumber: '+1 234 567 890',
-        role: 'USER',
-        isActive: true,
-        jobTitle: { id: 'jt1', displayName: 'Senior UI Designer' },
-        department: {
-            id: 'd1',
-            displayName: 'Design Team',
-            hexColor: '#8B5CF6',
-        },
-        location: 'New York, USA',
-    },
-    {
-        id: '2',
-        displayName: 'David Chen',
-        email: 'david.c@hiveq.com',
-        avatar: 'https://i.pravatar.cc/150?u=david',
-        phoneNumber: '+1 987 654 321',
-        role: 'ADMIN',
-        isActive: true,
-        jobTitle: { id: 'jt2', displayName: 'Lead Developer' },
-        department: {
-            id: 'd2',
-            displayName: 'Development',
-            hexColor: '#3B82F6',
-        },
-        location: 'San Francisco, USA',
-    },
-    {
-        id: '3',
-        displayName: 'Amanda Lo',
-        email: 'amanda.l@hiveq.com',
-        avatar: 'https://i.pravatar.cc/150?u=amanda',
-        role: 'ACCOUNTING',
-        isActive: false,
-        jobTitle: { id: 'jt3', displayName: 'Financial Analyst' },
-        department: { id: 'd3', displayName: 'Finance', hexColor: '#F59E0B' },
-        location: 'London, UK',
-    },
-    {
-        id: '4',
-        displayName: 'James Smith',
-        email: 'james.s@hiveq.com',
-        avatar: 'https://i.pravatar.cc/150?u=james',
-        phoneNumber: '+44 20 1234 5678',
-        role: 'USER',
-        isActive: true,
-        jobTitle: { id: 'jt4', displayName: 'Marketing Manager' },
-        department: { id: 'd4', displayName: 'Marketing', hexColor: '#EC4899' },
-        location: 'Remote',
-    },
-    {
-        id: '5',
-        displayName: 'Alex Johnson',
-        email: 'alex.j@hiveq.com',
-        avatar: 'https://i.pravatar.cc/150?u=alex',
-        role: 'USER',
-        isActive: true,
-        jobTitle: { id: 'jt5', displayName: 'Frontend Dev' },
-        department: {
-            id: 'd2',
-            displayName: 'Development',
-            hexColor: '#3B82F6',
-        },
-        location: 'Berlin, DE',
-    },
-]
-
-const DEPARTMENTS = [
-    { key: 'all', label: 'All Departments' },
-    { key: 'Design Team', label: 'Design Team' },
-    { key: 'Development', label: 'Development' },
-    { key: 'Marketing', label: 'Marketing' },
-    { key: 'Finance', label: 'Finance' },
-]
-
 function StaffDirectoryPage() {
-    const options = usersListOptions()
-    const {
-        data: { users },
-    } = useSuspenseQuery(options)
+    const [
+        {
+            data: { users },
+        },
+        { data: departments },
+    ] = useSuspenseQueries({
+        queries: [{ ...usersListOptions() }, { ...departmentsListOptions() }],
+    })
 
     const {
         isOpen: isOpenAssignJobModal,
@@ -225,7 +120,7 @@ function StaffDirectoryPage() {
 
     // --- Filtering Logic ---
     const filteredItems = useMemo(() => {
-        let filteredUsers = [...MOCK_STAFF]
+        let filteredUsers = [...users]
 
         if (filterValue) {
             filteredUsers = filteredUsers.filter(
@@ -337,9 +232,12 @@ function StaffDirectoryPage() {
                             <Filter size={16} className="text-default-400" />
                         }
                     >
-                        {DEPARTMENTS.map((dept) => (
-                            <SelectItem key={dept.key} textValue={dept.key}>
-                                {dept.label}
+                        {departments.map((dept) => (
+                            <SelectItem
+                                key={dept.id}
+                                textValue={dept.displayName}
+                            >
+                                {dept.displayName}
                             </SelectItem>
                         ))}
                     </Select>
@@ -364,9 +262,7 @@ function StaffDirectoryPage() {
                                             height: 512,
                                         })}
                                         color={
-                                            user.isActive
-                                                ? 'success'
-                                                : 'default'
+                                            user.isActive ? 'success' : 'danger'
                                         }
                                     />
                                     <div className="flex flex-col gap-1 items-start justify-center">

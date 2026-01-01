@@ -3,7 +3,6 @@ import { AppController } from './app.controller'
 import { AppGateway } from './app.gateway'
 import { AppService } from './app.service'
 import { AuthModule } from './modules/auth/auth.module'
-import { CommentModule } from './modules/comment/comment.module'
 import { DepartmentModule } from './modules/department/department.module'
 import { GalleryModule } from './modules/gallery/gallery.module'
 import { JobStatusModule } from './modules/job-status/job-status.module'
@@ -37,7 +36,6 @@ import { ClientModule } from './modules/client/client.module'
         JobStatusModule,
         PaymentChannelModule,
         NotificationModule,
-        CommentModule,
         DepartmentModule,
         JobTitleModule,
         GalleryModule,
