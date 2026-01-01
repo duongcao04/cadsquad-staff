@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer'
 import { ApiProperty, OmitType } from '@nestjs/swagger'
-import { CommentResponseDto } from './job-comment/job-comment-response.dto'
+import { JobCommentResponseDto } from './job-comment/job-comment-response.dto'
 import { JobStatusResponseDto } from '../../job-status/dto/job-status-response.dto'
 import { JobTypeResponseDto } from '../../job-type/dto/job-type-response.dto'
 import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-channel-response.dto'
@@ -107,10 +107,10 @@ export class JobResponseDto {
     @Expose()
     jobDeliveries: unknown
 
-    @ApiProperty({ type: () => CommentResponseDto })
+    @ApiProperty({ type: () => JobCommentResponseDto })
     @Expose()
-    @Type(() => CommentResponseDto)
-    comments: CommentResponseDto
+    @Type(() => JobCommentResponseDto)
+    comments: JobCommentResponseDto
 
     @ApiProperty({ type: () => JobTypeResponseDto })
     @Expose()

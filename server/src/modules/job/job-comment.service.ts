@@ -4,9 +4,7 @@ import {
     NotFoundException,
 } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { plainToInstance } from 'class-transformer'
 import { CreateJobCommentDto } from './dto/job-comment/create-comment.dto'
-import { CommentResponseDto } from './dto/job-comment/job-comment-response.dto'
 import { JobComment } from '@prisma/client'
 
 @Injectable()

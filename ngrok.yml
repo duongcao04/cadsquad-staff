@@ -1,5 +1,5 @@
 version: '2'
 tunnels:
-  backend:
+  web_client:
     proto: http
-    addr: backend:8080
+    addr: web_client:80
