@@ -19,7 +19,6 @@ import {
     UserRoundPlus,
 } from 'lucide-react'
 import { ReactNode, useCallback, useMemo } from 'react'
-
 import { useProfile } from '@/lib'
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import {
@@ -29,7 +28,6 @@ import {
     TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
 import { JobColumnKey, TJob } from '@/shared/types'
-
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { pCenterTableStore } from '../../stores'
 import JobFinishChip from '../chips/JobFinishChip'
@@ -47,20 +45,24 @@ import {
 } from '../ui/hero-table'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
-import { WorkbenchTableViewProps } from './WorkbenchTableView'
+import { IPaginate } from '../../interfaces'
 
-type Options = {
-    fillContainerHeight?: boolean
-}
-
-type Props = WorkbenchTableViewProps & {
-    options?: Options
+type Props = {
+    pagination: IPaginate
+    sort: string
+    search?: string
+    onRefresh: () => void
+    onSearchChange: (newSearch?: string) => void
+    onPageChange: (newPage: number) => void
+    onSortChange: (newSort: string) => void
+    onLimitChange: (newLimit: number) => void
     onViewDetail: (jobNo: string) => void
     onAssignMember: (jobNo: string) => void
+    isLoadingData: boolean
+    data: TJob[]
 }
-
 export default function WorkbenchTable({
-    isDataLoading = false,
+    isLoadingData = false,
     data,
     onViewDetail,
     sort,
@@ -72,7 +74,6 @@ export default function WorkbenchTable({
     onPageChange,
     pagination,
     onLimitChange,
-    options = { fillContainerHeight: false },
 }: Props) {
     const { userRole, isAdmin, isAccounting } = useProfile()
     const isAdminOrAccounting = isAdmin || isAccounting
@@ -348,7 +349,6 @@ export default function WorkbenchTable({
             onSelectionChange={setSelectedKeys}
             onRowAction={(key) => onViewDetail(key as string)}
             classNames={{
-                base: `${options.fillContainerHeight ? 'h-full' : ''}`,
                 table: 'relative',
             }}
         >
@@ -374,8 +374,8 @@ export default function WorkbenchTable({
             </HeroTableHeader>
             <HeroTableBody
                 emptyContent="No jobs found on your workbench."
-                items={isDataLoading ? [] : data}
-                isLoading={isDataLoading}
+                items={isLoadingData ? [] : data}
+                isLoading={isLoadingData}
                 loadingContent={<Spinner label="Loading workbench..." />}
             >
                 {(item) => (

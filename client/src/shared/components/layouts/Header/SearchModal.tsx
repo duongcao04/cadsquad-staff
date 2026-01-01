@@ -1,453 +1,285 @@
-'use client'
-
-import { Divider, Kbd, Tab, Tabs } from '@heroui/react'
-import { useRouter } from '@tanstack/react-router'
-import { Image } from 'antd'
+import React, { useState, useMemo } from 'react'
 import {
-    BriefcaseBusiness,
-    ChevronRight,
-    CodeXml,
-    FileText,
-    History,
+    Input,
+    Kbd,
+    Listbox,
+    ListboxItem,
+    Tabs,
+    Tab,
+    Chip,
+} from '@heroui/react'
+import {
     SearchIcon,
+    BriefcaseIcon,
+    UsersIcon,
+    UserCircleIcon,
+    SettingsIcon,
+    LayoutGridIcon,
+    ChevronRightIcon,
+    HistoryIcon,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef } from 'react'
-import { useDebounceValue } from 'usehooks-ts'
+import { useNavigate } from '@tanstack/react-router'
+import { HeroModal, HeroModalContent, HeroModalBody } from '../../ui/hero-modal'
+import { SYSTEM_ROUTES } from '../../../../lib/utils'
 
-import { IMAGES, INTERNAL_URLS, WEB_PAGES } from '@/lib'
-import { useSearchJobs } from '@/lib/queries/useJob'
-import type { TJob } from '@/shared/types'
+// --- Types ---
+type Category = 'All' | 'Jobs' | 'Communities' | 'Clients' | 'System'
 
-import { HeroButton } from '../../ui/hero-button'
-import { HeroCard, HeroCardBody, HeroCardHeader } from '../../ui/hero-card'
-import { HeroInput } from '../../ui/hero-input'
-import {
-    HeroModal,
-    HeroModalBody,
-    HeroModalContent,
-    HeroModalHeader,
-} from '../../ui/hero-modal'
-import { ScrollArea, ScrollBar } from '../../ui/scroll-area'
-
-type SearchModalProps = {
+// --- SearchModal Component ---
+export const SearchModal = ({
+    isOpen,
+    onClose,
+    userRole = 'USER', // Pass this from your Auth context
+}: {
     isOpen: boolean
     onClose: () => void
-}
-export function SearchModal({ isOpen, onClose }: SearchModalProps) {
-    const router = useRouter()
-    const inputRef = useRef<HTMLInputElement | null>(null)
+    userRole?: 'ADMIN' | 'ACCOUNTING' | 'USER'
+}) => {
+    const [query, setQuery] = useState('')
+    const [activeTab, setActiveTab] = useState<Category>('All')
+    const navigate = useNavigate()
 
-    const [inputValue, setInputValue] = useDebounceValue<string | undefined>(
-        undefined,
-        30
-    )
-    const { jobs } = useSearchJobs(inputValue)
+    // 1. Filter results based on Permissions, Query, and Active Tab
+    const filteredResults = useMemo(() => {
+        // Start with System Routes + Any dynamic data (Jobs/Communities)
+        const allItems = [...SYSTEM_ROUTES]
 
-    const webPageResult = useMemo(() => {
-        // 1. Kiểm tra nếu không có input thì trả về rỗng (hoặc trả về all tùy logic của bạn)
-        if (!inputValue) return []
+        return allItems.filter((item) => {
+            // Check Role Permission
+            const hasPermission = item.allowRoles.includes(userRole)
+            if (!hasPermission) return false
 
-        // 2. Chuyển input về chữ thường 1 lần để tối ưu
-        const lowerInput = inputValue.toLowerCase().trim()
+            // Check Tab Category
+            const matchesTab =
+                activeTab === 'All' || item.category === activeTab
 
-        return WEB_PAGES.filter((item) =>
-            // 3. FIX: Item phải chứa Input (chứ không phải Input chứa Item)
-            item.displayName.toLowerCase().includes(lowerInput)
-        )
-    }, [inputValue])
+            // Check Search Query (if query exists)
+            const matchesQuery = query
+                ? item.title.toLowerCase().includes(query.toLowerCase()) ||
+                  item.subtitle?.toLowerCase().includes(query.toLowerCase())
+                : true // If no query, show everything in that tab (or "Recent")
 
-    const handleClose = () => {
+            return matchesTab && matchesQuery
+        })
+    }, [query, activeTab, userRole])
+
+    // Handle Selection
+    const handleSelect = (route: string) => {
+        navigate({ to: route })
+        setQuery('')
         onClose()
-        setInputValue(undefined)
     }
-
-    useEffect(() => {
-        if (isOpen) {
-            inputRef.current?.focus()
-        }
-    }, [isOpen])
 
     return (
         <HeroModal
             isOpen={isOpen}
-            onClose={handleClose}
-            classNames={{
-                base: 'max-w-[90%] sm:max-w-[80%] md:max-w-[60%] xl:max-w-[40%]',
-            }}
+            onOpenChange={onClose}
             hideCloseButton
             placement="top"
+            size="2xl"
+            classNames={{
+                base: 'mt-[8vh] bg-background border border-default-200 shadow-2xl overflow-hidden',
+                backdrop: 'bg-zinc-900/50 backdrop-blur-sm',
+            }}
         >
             <HeroModalContent>
-                <HeroModalHeader>
-                    <HeroInput
-                        ref={inputRef}
-                        className="mt-1"
-                        placeholder="Search ..."
-                        value={inputValue}
-                        isClearable
-                        onChange={(e) => {
-                            const value = e.target.value
-                            setInputValue(value)
-                        }}
-                        startContent={<SearchIcon />}
-                        endContent={<Kbd>ESC</Kbd>}
-                    />
-                </HeroModalHeader>
-                <Divider />
-                <HeroModalBody className="px-0 py-4">
-                    <Tabs
-                        aria-label="Search modal tabs"
-                        fullWidth
-                        disabledKeys={['documents']}
-                        classNames={{
-                            base: 'px-4',
-                        }}
-                    >
-                        <Tab
-                            key="all"
-                            title={
-                                <div className="flex items-center justify-start gap-2">
-                                    <History size={20} />
-                                    <p className="font-medium text-text-default">
-                                        All
-                                        {jobs && webPageResult && (
-                                            <span className="pl-1 text-sm text-text-subdued">
-                                                (
-                                                {jobs?.length +
-                                                    webPageResult.length}
-                                                )
-                                            </span>
-                                        )}
-                                    </p>
+                <HeroModalBody className="p-0">
+                    {/* --- Search Input Section --- */}
+                    <div className="flex items-center px-4 pt-4">
+                        <Input
+                            autoFocus
+                            placeholder="Search everything or jump to page..."
+                            variant="flat"
+                            startContent={
+                                <SearchIcon
+                                    className="text-default-400"
+                                    size={20}
+                                />
+                            }
+                            endContent={
+                                <div className="flex items-center gap-1">
+                                    <Kbd
+                                        keys={['command']}
+                                        className="hidden sm:inline-flex"
+                                    >
+                                        K
+                                    </Kbd>
                                 </div>
                             }
+                            classNames={{
+                                inputWrapper:
+                                    'bg-transparent shadow-none border-none',
+                                input: 'text-lg h-12',
+                            }}
+                            value={query}
+                            onValueChange={setQuery}
+                        />
+                    </div>
+
+                    {/* --- Tabs Section --- */}
+                    <div className="px-4 pb-2 border-b border-default-100">
+                        <Tabs
+                            variant="underlined"
+                            aria-label="Search Categories"
+                            selectedKey={activeTab}
+                            onSelectionChange={(key) =>
+                                setActiveTab(key as Category)
+                            }
+                            classNames={{
+                                tabList: 'gap-4',
+                                cursor: 'w-full bg-primary',
+                                tab: 'max-w-fit px-0 h-10',
+                                tabContent:
+                                    'group-data-[selected=true]:text-primary font-medium',
+                            }}
                         >
-                            {!inputValue && (
-                                <p className="pb-8 mt-5 text-center text-text-subdued">
-                                    Please enter search input least one
-                                    character.
-                                </p>
-                            )}
-                            {inputValue && (
-                                <ScrollArea className="size-full min-h-[40vh] h-[70vh] pl-4 pr-2">
-                                    <ScrollBar orientation="horizontal" />
-                                    <ScrollBar orientation="vertical" />
-                                    {jobs && jobs?.length > 0 && (
-                                        <HeroCard className="p-0 border-none shadow-none">
-                                            <HeroCardHeader className="py-0 px-2 rounded-none">
-                                                <div className="flex items-center justify-start gap-4">
-                                                    <p className="font-medium text-text-subdued text-nowrap">
-                                                        Jobs
-                                                        <span className="pl-2 font-semibold text-text-subdued">
-                                                            ({jobs?.length})
-                                                        </span>
-                                                    </p>
-                                                    <div className="bg-text-subdued h-px w-full" />
-                                                </div>
-                                            </HeroCardHeader>
-                                            <HeroCardBody className="px-0 pb-5">
-                                                {jobs?.map((job) => {
-                                                    return (
-                                                        <JobResultCard
-                                                            key={job.id}
-                                                            data={job}
-                                                            onClick={(
-                                                                jobNo
-                                                            ) => {
-                                                                router.navigate(
-                                                                    {
-                                                                        href: INTERNAL_URLS.getJobDetailUrl(
-                                                                            jobNo
-                                                                        ),
-                                                                    }
-                                                                )
-                                                                handleClose()
-                                                            }}
+                            <Tab
+                                key="All"
+                                title={
+                                    <TabHeader
+                                        icon={<LayoutGridIcon size={16} />}
+                                        text="All"
+                                    />
+                                }
+                            />
+                            <Tab
+                                key="Jobs"
+                                title={
+                                    <TabHeader
+                                        icon={<BriefcaseIcon size={16} />}
+                                        text="Jobs"
+                                    />
+                                }
+                            />
+                            <Tab
+                                key="Communities"
+                                title={
+                                    <TabHeader
+                                        icon={<UsersIcon size={16} />}
+                                        text="Communities"
+                                    />
+                                }
+                            />
+                            <Tab
+                                key="Clients"
+                                title={
+                                    <TabHeader
+                                        icon={<UserCircleIcon size={16} />}
+                                        text="Clients"
+                                    />
+                                }
+                            />
+                            <Tab
+                                key="System"
+                                title={
+                                    <TabHeader
+                                        icon={<SettingsIcon size={16} />}
+                                        text="System"
+                                    />
+                                }
+                            />
+                        </Tabs>
+                    </div>
+
+                    {/* --- Results Section --- */}
+                    <div className="max-h-112.5 overflow-y-auto p-2 scrollbar-hide">
+                        {filteredResults.length > 0 ? (
+                            <Listbox
+                                aria-label="Search results"
+                                onAction={(key) => handleSelect(key as string)}
+                                variant="flat"
+                            >
+                                {filteredResults.map((item) => (
+                                    <ListboxItem
+                                        key={item.route}
+                                        className="py-3 px-4 rounded-xl"
+                                        textValue={item.title}
+                                        startContent={
+                                            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-default-100 text-default-500">
+                                                {item.icon ||
+                                                    (!query ? (
+                                                        <HistoryIcon
+                                                            size={18}
                                                         />
-                                                    )
-                                                })}
-                                            </HeroCardBody>
-                                        </HeroCard>
-                                    )}
-                                    <Divider className="mb-5" />
-                                    {webPageResult &&
-                                        webPageResult?.length > 0 && (
-                                            <HeroCard className="p-0 border-none shadow-none">
-                                                <HeroCardHeader className="py-0 px-2 rounded-none">
-                                                    <div className="flex items-center justify-start gap-4">
-                                                        <p className="font-medium text-text-subdued text-nowrap">
-                                                            Internal pages
-                                                            <span className="pl-2 font-semibold text-text-subdued">
-                                                                (
-                                                                {
-                                                                    webPageResult?.length
-                                                                }
-                                                                )
-                                                            </span>
-                                                        </p>
-                                                        <div className="bg-text-subdued h-px w-full" />
-                                                    </div>
-                                                </HeroCardHeader>
-                                                <HeroCardBody className="px-0 pb-5">
-                                                    {webPageResult?.map(
-                                                        (page, idx) => {
-                                                            return (
-                                                                <InternalPageResultCard
-                                                                    key={idx}
-                                                                    icon={
-                                                                        <page.icon
-                                                                            size={
-                                                                                32
-                                                                            }
-                                                                        />
-                                                                    }
-                                                                    title={
-                                                                        page.displayName
-                                                                    }
-                                                                    url={
-                                                                        page.url
-                                                                    }
-                                                                    onClick={
-                                                                        handleClose
-                                                                    }
-                                                                />
-                                                            )
-                                                        }
-                                                    )}
-                                                </HeroCardBody>
-                                            </HeroCard>
-                                        )}
-                                </ScrollArea>
-                            )}
-                        </Tab>
-                        <Tab
-                            key="job"
-                            title={
-                                <div className="flex items-center justify-start gap-2">
-                                    <BriefcaseBusiness size={20} />
-                                    <p className="font-medium text-text-default">
-                                        Jobs
-                                        {jobs && (
-                                            <span className="pl-1 text-sm text-text-subdued">
-                                                ({jobs?.length})
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                            }
-                        >
-                            {!inputValue && (
-                                <p className="pb-8 mt-5 text-center text-text-subdued">
-                                    Please enter search input least one
-                                    character.
+                                                    ) : (
+                                                        <SearchIcon size={18} />
+                                                    ))}
+                                            </div>
+                                        }
+                                        endContent={
+                                            <ChevronRightIcon
+                                                size={14}
+                                                className="text-default-300"
+                                            />
+                                        }
+                                    >
+                                        <div className="flex justify-between items-center w-full ml-1">
+                                            <div className="flex flex-col">
+                                                <span className="font-semibold text-default-900 leading-tight">
+                                                    {item.title}
+                                                </span>
+                                                <span className="text-tiny text-default-400">
+                                                    {item.subtitle}
+                                                </span>
+                                            </div>
+                                            {activeTab === 'All' && (
+                                                <Chip
+                                                    size="sm"
+                                                    variant="flat"
+                                                    className="capitalize text-[10px] h-5"
+                                                >
+                                                    {item.category}
+                                                </Chip>
+                                            )}
+                                        </div>
+                                    </ListboxItem>
+                                ))}
+                            </Listbox>
+                        ) : (
+                            <div className="py-20 flex flex-col items-center justify-center text-default-400 gap-2">
+                                <SearchIcon size={40} className="opacity-10" />
+                                <p className="text-sm">
+                                    No results found in{' '}
+                                    <span className="font-bold">
+                                        {activeTab}
+                                    </span>
                                 </p>
-                            )}
-                            {inputValue && (
-                                <ScrollArea className="size-full min-h-[40vh] h-[70vh] pl-4 pr-2">
-                                    <ScrollBar orientation="horizontal" />
-                                    <ScrollBar orientation="vertical" />
-                                    {jobs && jobs?.length > 0 && (
-                                        <HeroCard className="p-0 border-none shadow-none">
-                                            <HeroCardHeader className="py-0 px-2 rounded-none">
-                                                <div className="flex items-center justify-start gap-4">
-                                                    <p className="font-medium text-text-subdued text-nowrap">
-                                                        Jobs
-                                                        <span className="pl-2 font-semibold text-text-subdued">
-                                                            ({jobs?.length})
-                                                        </span>
-                                                    </p>
-                                                    <div className="bg-text-subdued h-px w-full" />
-                                                </div>
-                                            </HeroCardHeader>
-                                            <HeroCardBody className="px-0 pb-5">
-                                                {jobs?.map((job) => {
-                                                    return (
-                                                        <JobResultCard
-                                                            key={job.id}
-                                                            data={job}
-                                                            onClick={(
-                                                                jobNo
-                                                            ) => {
-                                                                router.navigate(
-                                                                    {
-                                                                        href: INTERNAL_URLS.getJobDetailUrl(
-                                                                            jobNo
-                                                                        ),
-                                                                    }
-                                                                )
-                                                                onClose()
-                                                            }}
-                                                        />
-                                                    )
-                                                })}
-                                            </HeroCardBody>
-                                        </HeroCard>
-                                    )}
-                                </ScrollArea>
-                            )}
-                        </Tab>
-                        <Tab
-                            key="documents"
-                            title={
-                                <div className="flex items-center justify-start gap-2">
-                                    <FileText size={20} />
-                                    <p className="font-medium text-text-default">
-                                        Documents
-                                    </p>
-                                </div>
-                            }
-                        >
-                            <div></div>
-                        </Tab>
-                        <Tab
-                            key="others"
-                            title={
-                                <div className="flex items-center justify-start gap-2">
-                                    <CodeXml size={20} />
-                                    <p className="font-medium text-text-default">
-                                        Others
-                                        {webPageResult && (
-                                            <span className="pl-1 text-sm text-text-subdued">
-                                                ({webPageResult.length})
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                            }
-                        >
-                            {!inputValue && (
-                                <p className="pb-8 mt-5 text-center text-text-subdued">
-                                    Please enter search input least one
-                                    character.
-                                </p>
-                            )}
-                            {inputValue && (
-                                <ScrollArea className="size-full min-h-[40vh] h-[70vh] pl-4 pr-2">
-                                    <ScrollBar orientation="horizontal" />
-                                    <ScrollBar orientation="vertical" />
-                                    {webPageResult &&
-                                        webPageResult?.length > 0 && (
-                                            <HeroCard className="p-0 border-none shadow-none">
-                                                <HeroCardHeader className="py-0 px-2 rounded-none">
-                                                    <div className="flex items-center justify-start gap-4">
-                                                        <p className="font-medium text-text-subdued text-nowrap">
-                                                            Internal pages
-                                                            <span className="pl-2 font-semibold text-text-subdued">
-                                                                (
-                                                                {
-                                                                    webPageResult?.length
-                                                                }
-                                                                )
-                                                            </span>
-                                                        </p>
-                                                        <div className="bg-text-subdued h-px w-full" />
-                                                    </div>
-                                                </HeroCardHeader>
-                                                <HeroCardBody className="px-0 pb-5">
-                                                    {webPageResult?.map(
-                                                        (page, idx) => {
-                                                            return (
-                                                                <InternalPageResultCard
-                                                                    key={idx}
-                                                                    icon={
-                                                                        <page.icon
-                                                                            size={
-                                                                                32
-                                                                            }
-                                                                        />
-                                                                    }
-                                                                    title={
-                                                                        page.displayName
-                                                                    }
-                                                                    url={
-                                                                        page.url
-                                                                    }
-                                                                    onClick={
-                                                                        handleClose
-                                                                    }
-                                                                />
-                                                            )
-                                                        }
-                                                    )}
-                                                </HeroCardBody>
-                                            </HeroCard>
-                                        )}
-                                </ScrollArea>
-                            )}
-                        </Tab>
-                    </Tabs>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* --- Footer Guide --- */}
+                    <div className="px-4 py-2.5 border-t border-default-100 bg-default-50/50 flex justify-between items-center">
+                        <div className="flex gap-4">
+                            <span className="text-[10px] text-default-400 flex items-center gap-1">
+                                <Kbd className="py-0 px-1 text-[10px]">ESC</Kbd>{' '}
+                                Close
+                            </span>
+                            <span className="text-[10px] text-default-400 flex items-center gap-1">
+                                <Kbd className="py-0 px-1 text-[10px]">↑↓</Kbd>{' '}
+                                Navigate
+                            </span>
+                            <span className="text-[10px] text-default-400 flex items-center gap-1">
+                                <Kbd className="py-0 px-1 text-[10px]">
+                                    ENTER
+                                </Kbd>{' '}
+                                Open
+                            </span>
+                        </div>
+                        <span className="text-[10px] font-medium text-default-300 italic">
+                            Gemini Search v1.0
+                        </span>
+                    </div>
                 </HeroModalBody>
             </HeroModalContent>
         </HeroModal>
     )
 }
 
-function JobResultCard({
-    data,
-    onClick,
-}: {
-    data: TJob
-    onClick: (jobNo: string) => void
-}) {
-    return (
-        <button
-            onClick={() => onClick(data.no)}
-            className="bg-background-muted size-full rounded-md px-4 py-3 flex items-center justify-between hover:bg-primary hover:text-white transition duration-50 cursor-pointer"
-        >
-            <div className="flex items-center justify-start gap-3">
-                <Image
-                    src={data.status.thumbnailUrl ?? IMAGES.loadingPlaceholder}
-                    alt={data.displayName}
-                    rootClassName="size-12 rounded-full"
-                    className="size-12 rounded-full"
-                    preview={false}
-                />
-                <div className="space-y-0.5 text-left">
-                    <p className="text-xs">#{data.no}</p>
-                    <p className="text-sm font-medium">{data.displayName}</p>
-                </div>
-            </div>
-            <ChevronRight size={16} />
-        </button>
-    )
-}
-
-function InternalPageResultCard({
-    icon,
-    title,
-    description,
-    url,
-    onClick,
-}: {
-    icon: React.ReactNode
-    title: string
-    description?: string
-    url: string
-    onClick?: () => void
-}) {
-    const router = useRouter()
-    return (
-        <HeroButton
-            className="flex items-center justify-start gap-2 w-full! h-18! hover:bg-primary! hover:text-white! border-none ring-none text-text-default! duration-150"
-            startContent={
-                <div className="size-12 flex items-center justify-center">
-                    {icon}
-                </div>
-            }
-            variant="light"
-            endContent={<ChevronRight size={16} />}
-            disableAnimation={true}
-            onPress={() => {
-                router.navigate({
-                    href: url,
-                })
-                onClick?.()
-            }}
-        >
-            <div className="w-full flex items-center justify-start gap-2">
-                <span className="font-medium">{title}</span>
-                {description}
-            </div>
-        </HeroButton>
-    )
-}
+// --- Sub-component for Tab Headers ---
+const TabHeader = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
+    <div className="flex items-center gap-2">
+        {icon}
+        <span>{text}</span>
+    </div>
+)

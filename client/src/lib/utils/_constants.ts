@@ -1,16 +1,5 @@
 import { capitalize } from 'lodash'
-import {
-    CircleUserRound,
-    House,
-    LifeBuoy,
-    Settings,
-    ShieldCheck,
-    SquareUser,
-    SwatchBook,
-    UserCircle,
-    UsersRound,
-    Wallet,
-} from 'lucide-react'
+import { ShieldCheck, UserCircle, Wallet } from 'lucide-react'
 import { envConfig } from '@/lib/config'
 import { RoleEnum } from '../../shared/enums'
 
@@ -97,44 +86,6 @@ export const INTERNAL_URLS = {
     ) =>
         '/' + 'communities/' + communityCode + '/' + topicCode + '/' + postSlug,
 }
-
-export const WEB_PAGES = [
-    {
-        icon: House, // Placeholder for Home icon
-        displayName: 'Workbench',
-        url: '/',
-    },
-    {
-        icon: LifeBuoy, // Placeholder for Project Center icon
-        displayName: 'Project Center',
-        url: '/project-center',
-    },
-    {
-        icon: CircleUserRound, // Placeholder for Profile icon
-        displayName: 'Profile',
-        url: '/profile',
-    },
-    {
-        icon: Settings, // Placeholder for Settings icon
-        displayName: 'Settings',
-        url: '/settings',
-    },
-    {
-        icon: UsersRound, // Placeholder for Manage Team icon
-        displayName: 'Manage Team',
-        url: '/admin/mgmt/team',
-    },
-    {
-        icon: SquareUser, // Placeholder for Manage Team icon
-        displayName: 'Account settings',
-        url: '/settings/personal_details',
-    },
-    {
-        icon: SwatchBook, // Placeholder for Manage Team icon
-        displayName: 'Appearance',
-        url: '/settings/appearance',
-    },
-]
 
 export const baseUrl = envConfig.APP_URL ?? 'http://localhost'
 export const apiBaseUrl = envConfig.API_ENDPOINT

@@ -2,6 +2,7 @@ import { Spinner, Tab, Tabs, useDisclosure } from '@heroui/react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
+import lodash from 'lodash'
 import {
     CircleCheckBig,
     ClockAlert,
@@ -10,7 +11,7 @@ import {
     Truck,
     Vote,
 } from 'lucide-react'
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useMemo, useState, useTransition } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { z } from 'zod'
 
@@ -105,43 +106,65 @@ export function ProjectCenterPage() {
     const navigate = Route.useNavigate()
     const { tab } = Route.useParams()
 
+    // Key fix: useTransition prevents jumping to Suspense fallback
+    const [isPending, startTransition] = useTransition()
+
     const [localShowFinishItems, setLocalShowFinishItems] = useLocalStorage(
         STORAGE_KEYS.projectCenterFinishItems,
         false
     )
 
+    // Using concrete objects for type safety and transition support
     const updateParams = (newParams: Partial<TProjectCenterSearch>) => {
-        navigate({ search: (old) => ({ ...old, ...newParams }), replace: true })
+        startTransition(() => {
+            navigate({
+                search: { ...search, ...newParams },
+                replace: true,
+            })
+        })
+    }
+
+    const handleTabChange = (t: ProjectCenterTabEnum) => {
+        startTransition(() => {
+            navigate({
+                to: '/project-center/$tab',
+                params: { tab: t },
+                search: { ...search, page: 1 },
+                replace: true,
+            })
+        })
     }
 
     return (
         <div className="size-full space-y-5">
-            <ProjectCenterTabs
-                onTabChange={(t: ProjectCenterTabEnum) =>
-                    navigate({
-                        to: '/project-center/$tab',
-                        params: { tab: t },
-                        search: (old) => ({ ...old, page: 1 }),
-                        replace: true,
-                    })
+            <ProjectCenterTabs onTabChange={handleTabChange} defaultTab={tab} />
+
+            {/* Visual feedback during transition */}
+            <div
+                className={
+                    isPending
+                        ? 'opacity-70 transition-opacity pointer-events-none'
+                        : 'opacity-100 transition-opacity'
                 }
-                defaultTab={tab}
-            />
-            <Suspense fallback={<TableLoadingFallback />}>
-                <ProjectCenterTableContent
-                    tab={tab}
-                    search={search}
-                    localShowFinishItems={localShowFinishItems}
-                    setLocalShowFinishItems={setLocalShowFinishItems}
-                    onFiltersChange={(f) => updateParams({ ...f })}
-                    onPageChange={(p) => updateParams({ page: p })}
-                    onSortChange={(s) => updateParams({ sort: s, page: 1 })}
-                    onLimitChange={(l) => updateParams({ limit: l, page: 1 })}
-                    onSearchChange={(s) =>
-                        updateParams({ search: s || undefined, page: 1 })
-                    }
-                />
-            </Suspense>
+            >
+                <Suspense fallback={<TableLoadingFallback />}>
+                    <ProjectCenterTableContent
+                        tab={tab}
+                        search={search}
+                        localShowFinishItems={localShowFinishItems}
+                        setLocalShowFinishItems={setLocalShowFinishItems}
+                        onFiltersChange={(f) => updateParams({ ...f, page: 1 })}
+                        onPageChange={(p) => updateParams({ page: p })}
+                        onSortChange={(s) => updateParams({ sort: s, page: 1 })}
+                        onLimitChange={(l) =>
+                            updateParams({ limit: l, page: 1 })
+                        }
+                        onSearchChange={(s) =>
+                            updateParams({ search: s || undefined, page: 1 })
+                        }
+                    />
+                </Suspense>
+            </div>
         </div>
     )
 }
@@ -189,7 +212,6 @@ function ProjectCenterTableContent({
         [data?.paginate]
     )
 
-    // Integrate our security helper to filter columns in the table
     const storedColumns = useStore(
         pCenterTableStore,
         (state) => state.jobColumns
@@ -203,16 +225,19 @@ function ProjectCenterTableContent({
     const assignMemberDisclosure = useDisclosure()
     const attachmentsDisclosure = useDisclosure()
 
+    // Debounce Search Logic
+    const debouncedSearchChange = useMemo(
+        () => lodash.debounce((value: string) => onSearchChange(value), 500),
+        [onSearchChange]
+    )
+
     const handleExport = async () => {
-        // Filter columns for export based on role permissions
         const exportColumns = getAllowedJobColumns(userRole, 'all').filter(
             (c) => c.uid !== 'action'
         )
-
         try {
             const res = await jobApi.findAll({ ...search, tab, isAll: '1' })
             const jobs = (res.result?.data as TJob[]) || []
-
             const payload: TDownloadExcelInput = {
                 columns: exportColumns.map((col) => ({
                     header: col.displayName,
@@ -229,7 +254,6 @@ function ProjectCenterTableContent({
                     status: item.status?.displayName,
                 })),
             }
-
             const response = await excelApi.download(payload)
             const url = window.URL.createObjectURL(new Blob([response.data]))
             const link = document.createElement('a')
@@ -256,21 +280,30 @@ function ProjectCenterTableContent({
                 <JobDetailDrawer
                     jobNo={selectedJob}
                     isOpen
-                    onClose={jobDetailDisclosure.onClose}
+                    onClose={() => {
+                        jobDetailDisclosure.onClose()
+                        setSelectedJob(null)
+                    }}
                 />
             )}
             {assignMemberDisclosure.isOpen && selectedJob && (
                 <AssignMemberModal
                     jobNo={selectedJob}
                     isOpen
-                    onClose={assignMemberDisclosure.onClose}
+                    onClose={() => {
+                        assignMemberDisclosure.onClose()
+                        setSelectedJob(null)
+                    }}
                 />
             )}
             {attachmentsDisclosure.isOpen && selectedJob && (
                 <AddAttachmentsModal
                     jobNo={selectedJob}
                     isOpen
-                    onClose={attachmentsDisclosure.onClose}
+                    onClose={() => {
+                        attachmentsDisclosure.onClose()
+                        setSelectedJob(null)
+                    }}
                 />
             )}
 
@@ -280,7 +313,7 @@ function ProjectCenterTableContent({
                 pagination={pagination}
                 searchKeywords={search.search}
                 sort={search.sort}
-                visibleColumns={headerColumns.map((c) => c.uid)} // Pass filtered keys
+                visibleColumns={headerColumns.map((c) => c.uid)}
                 showFinishItems={localShowFinishItems}
                 onRefresh={refetch}
                 onDownloadCsv={handleExport}
@@ -300,7 +333,10 @@ function ProjectCenterTableContent({
                 onShowFinishItemsChange={setLocalShowFinishItems}
                 onFiltersChange={onFiltersChange}
                 onPageChange={onPageChange}
-                onSearchKeywordsChange={onSearchChange}
+                onSearchKeywordsChange={(val) => {
+                    if (!val) onSearchChange(undefined)
+                    else debouncedSearchChange(val)
+                }}
                 onSortChange={onSortChange}
                 onLimitChange={onLimitChange}
                 filters={search as TJobFilters}
@@ -312,7 +348,7 @@ function ProjectCenterTableContent({
 function TableLoadingFallback() {
     return (
         <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-divider bg-content1/50">
-            <Spinner size="lg" color="primary" label="Loading data..." />
+            <Spinner size="lg" color="primary" label="Syncing projects..." />
         </div>
     )
 }
