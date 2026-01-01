@@ -4,13 +4,11 @@ import { Image } from 'antd'
 import dayjs from 'dayjs'
 import { Clock2 } from 'lucide-react'
 import React from 'react'
-
 import { INTERNAL_URLS } from '@/lib'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { JobStatusChip } from '@/shared/components'
 import { useDevice } from '@/shared/hooks'
 import type { TJob } from '@/shared/types'
-
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 
@@ -94,7 +92,6 @@ function JobCard({ data, onPress }: Props) {
             <Link
                 to={INTERNAL_URLS.getJobDetailUrl(data.no)}
                 className="hidden lg:block text-sm font-semibold hover:underline! underline-offset-2 text-end text-link!"
-                target="_blank"
             >
                 View
             </Link>
