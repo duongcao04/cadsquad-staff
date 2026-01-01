@@ -1,29 +1,28 @@
 import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
-import { AppGateway } from './app.gateway'
 import { AppService } from './app.service'
+import { AblyModule } from './modules/ably/ably.module'
+import { AnalyticsModule } from './modules/analytics/analytics.module'
 import { AuthModule } from './modules/auth/auth.module'
+import { BrowserSubscribesModule } from './modules/browser-subscribes/browser-subscribes.module'
+import { ClientModule } from './modules/client/client.module'
+import { CommunityModule } from './modules/community/community.module'
 import { DepartmentModule } from './modules/department/department.module'
+import { ExcelModule } from './modules/excel/excel.module'
 import { GalleryModule } from './modules/gallery/gallery.module'
+import { HealthModule } from './modules/health/health.module'
 import { JobStatusModule } from './modules/job-status/job-status.module'
 import { JobTitleModule } from './modules/job-title/job-title.module'
 import { JobTypeModule } from './modules/job-type/job-type.module'
 import { JobModule } from './modules/job/job.module'
 import { NotificationModule } from './modules/notification/notification.module'
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module'
+import { UploadModule } from './modules/upload/upload.module'
 import { UserDevicesModule } from './modules/user-devices/user-devices.module'
 import { UserModule } from './modules/user/user.module'
 import { CloudinaryModule } from './providers/cloudinary/cloudinary.module'
+import { MailModule } from './providers/mail/mail.module'
 import { PrismaModule } from './providers/prisma/prisma.module'
-import { BrowserSubscribesModule } from './modules/browser-subscribes/browser-subscribes.module'
-import { UploadModule } from './modules/upload/upload.module'
-import { HealthModule } from './modules/health/health.module'
-import { ExcelModule } from './modules/excel/excel.module'
-import { AblyModule } from './modules/ably/ably.module'
-import { AnalyticsModule } from './modules/analytics/analytics.module'
-import { CommunityModule } from './modules/community/community.module'
-import { ClientModule } from './modules/client/client.module'
-import { MailModule } from './modules/mail/mail.module'
 
 @Module({
     imports: [
@@ -31,8 +30,9 @@ import { MailModule } from './modules/mail/mail.module'
         MailModule,
         CloudinaryModule,
         AblyModule,
-        UserModule,
         AuthModule,
+        UserModule,
+        UserDevicesModule,
         JobModule,
         JobTypeModule,
         JobStatusModule,
@@ -41,7 +41,6 @@ import { MailModule } from './modules/mail/mail.module'
         DepartmentModule,
         JobTitleModule,
         GalleryModule,
-        UserDevicesModule,
         BrowserSubscribesModule,
         UploadModule,
         HealthModule,

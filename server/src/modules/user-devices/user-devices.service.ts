@@ -1,59 +1,82 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { CreateUserDeviceDto } from './dto/create-user-device.dto'
-import { UpdateUserDeviceDto } from './dto/update-user-device.dto'
+import { CreateUserDeviceDto } from '../user-devices/dto/create-user-device.dto'
 
 @Injectable()
 export class UserDevicesService {
-  constructor(private readonly prisma: PrismaService) { }
+    constructor(private prisma: PrismaService) {}
 
-  async create(createUserDeviceDto: CreateUserDeviceDto) {
-    return this.prisma.userDevices.create({
-      data: {
-        type: createUserDeviceDto.type,
-        userId: createUserDeviceDto.userId,
-        value: createUserDeviceDto.value,
-        status: createUserDeviceDto.status,
-      },
-    })
-  }
+    /**
+     * Đăng ký hoặc cập nhật Device Token
+     */
+    async registerDevice(userId: string, dto: CreateUserDeviceDto) {
+        // Chúng ta tìm kiếm thiết bị dựa trên userId và type (ví dụ: 'WEB_BROWSER')
+        const existingDevice = await this.prisma.userDevices.findFirst({
+            where: {
+                userId: userId,
+                type: dto.type,
+            },
+        })
 
-  async findAll() {
-    return this.prisma.userDevices.findMany({
-      include: { user: true },
-    })
-  }
+        if (existingDevice) {
+            // Nếu đã có thiết bị loại này cho User này, cập nhật Token mới nhất
+            return this.prisma.userDevices.update({
+                where: { id: existingDevice.id },
+                data: {
+                    value: dto.token,
+                    status: true, // Đảm bảo status luôn bật khi reload/login
+                },
+            })
+        }
 
-  async findOne(id: string) {
-    const device = await this.prisma.userDevices.findUnique({
-      where: { id },
-      include: { user: true },
-    })
-    if (!device) throw new NotFoundException(`Device with ID ${id} not found`)
-    return device
-  }
+        // Nếu chưa có (ví dụ: User đăng nhập trên thiết bị mới hoàn toàn), tạo mới
+        return this.prisma.userDevices.create({
+            data: {
+                userId: userId,
+                value: dto.token,
+                type: dto.type,
+                status: true,
+            },
+        })
+    }
 
-  async findByUser(userId: string) {
-    return this.prisma.userDevices.findMany({
-      where: { userId },
-      select: { user: true },
-    })
-  }
+    /**
+     * Vô hiệu hóa thiết bị (khi người dùng logout)
+     */
+    async logoutDevice(token: string) {
+        const device = await this.prisma.userDevices.findFirst({
+            where: { value: token },
+        })
 
-  async update(id: string, updateUserDeviceDto: UpdateUserDeviceDto) {
-    const existing = await this.prisma.userDevices.findUnique({ where: { id } })
-    if (!existing) throw new NotFoundException(`Device with ID ${id} not found`)
+        if (!device) return
 
-    return this.prisma.userDevices.update({
-      where: { id },
-      data: updateUserDeviceDto,
-    })
-  }
+        return this.prisma.userDevices.update({
+            where: { id: device.id },
+            data: { status: false },
+        })
+    }
 
-  async remove(id: string) {
-    const existing = await this.prisma.userDevices.findUnique({ where: { id } })
-    if (!existing) throw new NotFoundException(`Device with ID ${id} not found`)
+    /**
+     * Lấy danh sách các token đang hoạt động của một User
+     */
+    async getActiveTokens(userId: string): Promise<string[]> {
+        const devices = await this.prisma.userDevices.findMany({
+            where: {
+                userId: userId,
+                status: true,
+            },
+            select: { value: true },
+        })
 
-    return this.prisma.userDevices.delete({ where: { id } })
-  }
+        return devices.map((d) => d.value)
+    }
+
+    /**
+     * Xóa thiết bị khỏi hệ thống
+     */
+    async removeDevice(id: string) {
+        return this.prisma.userDevices.delete({
+            where: { id },
+        })
+    }
 }

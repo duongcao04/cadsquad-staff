@@ -3,6 +3,7 @@ import { useLocation, useRouter } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { authApi, cookie, COOKIES, INTERNAL_URLS } from '../../lib'
 import { RoleEnum } from '../enums'
+import { RegisterDevice } from '../components/app/RegisterDevice'
 interface RoleGuardProps {
     children: React.ReactNode
 
@@ -103,7 +104,12 @@ export default function RoleGuard({
     if (isLoading) return <LoadingScreen />
     if (!isAuthorized) return null
 
-    return <>{children}</>
+    return (
+        <>
+            <RegisterDevice />
+            {children}
+        </>
+    )
 }
 
 function LoadingScreen() {

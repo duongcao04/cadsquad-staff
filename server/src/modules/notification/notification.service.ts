@@ -1,45 +1,40 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { plainToInstance } from 'class-transformer'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { CreateNotificationDto } from './dto/create-notification.dto'
 import { NotificationResponseDto } from './dto/notification-response.dto'
 import { UpdateNotificationDto } from './dto/update-notification.dto'
-import { NotificationStatus, NotificationType } from '@prisma/client'
+import { NotificationStatus, NotificationType, RoleEnum } from '@prisma/client'
 import { AblyService } from '../ably/ably.service'
+import * as admin from 'firebase-admin'
+import { FirebaseService } from '../../providers/firebase/firebase.service'
 
 @Injectable()
 export class NotificationService {
     private readonly logger = new Logger(NotificationService.name)
 
     constructor(
+        @Inject('FIREBASE_ADMIN') private readonly firebase: admin.app.App,
         private readonly prisma: PrismaService,
-        private readonly ablyService: AblyService
+        private readonly ablyService: AblyService,
+        private readonly firebaseService: FirebaseService
     ) {}
 
-    async create(
-        data: CreateNotificationDto
-    ): Promise<NotificationResponseDto> {
-        const notification = await this.prisma.notification.create({ data })
-        return plainToInstance(NotificationResponseDto, notification, {
-            excludeExtraneousValues: true,
-        })
-    }
-
     /**
-     * Send a single notification and publish to Ably
+     * Gửi thông báo đến 1 User cụ thể (Lưu DB + Ably + Firebase)
      */
     async send(data: CreateNotificationDto): Promise<NotificationResponseDto> {
         const notification = await this.prisma.notification.create({ data })
 
-        // Bắn tín hiệu sang Ably
-        await this.ablyService.publish(
-            `user-notifications:${notification.userId}`,
-            notification.type,
-            {
-                ...notification,
-                timestamp: new Date(),
-            }
-        )
+        // 1. Realtime (Ably)
+        await this.publishToAbly(notification)
+
+        // 3. Push qua Firebase (Web đã đóng hoặc Mobile)
+        await this.firebaseService.sendToUser(notification.userId, {
+            title: notification.title ?? 'CADSQUAD System',
+            body: notification.content,
+            url: notification.redirectUrl ?? undefined,
+        })
 
         return plainToInstance(NotificationResponseDto, notification, {
             excludeExtraneousValues: true,
@@ -47,103 +42,201 @@ export class NotificationService {
     }
 
     /**
-     * Send multiple notifications efficiently
-     * Useful for notifying all admins or all project members at once
+     * Gửi thông báo cho toàn bộ User thuộc một Role (Ví dụ: Tất cả ADMIN)
+     */
+    async sendToRole(
+        role: RoleEnum,
+        data: Omit<CreateNotificationDto, 'userId'>
+    ) {
+        const users = await this.prisma.user.findMany({
+            where: { role, isActive: true },
+            select: { id: true },
+        })
+
+        const dataArray = users.map((user) => ({
+            ...data,
+            userId: user.id,
+        })) as CreateNotificationDto[]
+
+        return this.sendMany(dataArray)
+    }
+
+    /**
+     * Gửi hàng loạt thông báo hiệu năng cao
      */
     async sendMany(dataArray: CreateNotificationDto[]): Promise<void> {
         if (!dataArray.length) return
 
         try {
-            // 1. Lưu vào Database hàng loạt (1 query duy nhất)
-            // Note: createMany returns a count, so we fetch the data if we need the IDs,
-            // but for simple notifications, firing Ably with the payload is often enough.
+            // Lưu DB một lần duy nhất
             await this.prisma.notification.createMany({
                 data: dataArray,
                 skipDuplicates: true,
             })
 
-            // 2. Gửi tín hiệu Realtime qua Ably cho từng User
-            const publishPromises = dataArray.map((item) =>
-                this.ablyService.publish(
-                    `user-notifications:${item.userId}`,
-                    NotificationType.INFO,
-                    {
-                        ...item,
-                        status: NotificationStatus.UNSEEN,
-                        createdAt: new Date(),
-                    }
-                )
-            )
+            // Gửi các kênh truyền thông song song
+            const tasks = dataArray.map(async (item) => {
+                await this.publishToAbly(item)
+                await this.firebaseService.sendToUser(item.userId, {
+                    title: item.title ?? 'CADSQUAD System',
+                    body: item.content,
+                    url: item.redirectUrl,
+                })
+            })
 
-            await Promise.all(publishPromises)
+            await Promise.all(tasks)
         } catch (error) {
-            this.logger.error(
-                `Failed to send bulk notifications: ${error.message}`
-            )
+            this.logger.error(`Bulk notification error: ${error.message}`)
         }
     }
 
-    async findAll(userId: string): Promise<{
-        notifications: NotificationResponseDto[]
-        totalCount: number
-        unseenCount: number
-    }> {
+    /**
+     * Đánh dấu một thông báo cụ thể là đã xem
+     * @param id ID của thông báo
+     * @param userId ID của người dùng (để đảm bảo tính bảo mật, tránh user này markSeen cho user khác)
+     */
+    async markAsSeen(
+        id: string,
+        userId: string
+    ): Promise<NotificationResponseDto> {
+        // 1. Kiểm tra sự tồn tại và quyền sở hữu
+        const notification = await this.prisma.notification.findFirst({
+            where: { id, userId },
+        })
+
+        if (!notification) {
+            throw new NotFoundException(
+                `Notification with ID ${id} not found for this user`
+            )
+        }
+
+        // 2. Cập nhật trạng thái
+        const updatedNotification = await this.prisma.notification.update({
+            where: { id },
+            data: { status: NotificationStatus.SEEN },
+        })
+
+        // 3. Trả về DTO chuẩn
+        return plainToInstance(NotificationResponseDto, updatedNotification, {
+            excludeExtraneousValues: true,
+        })
+    }
+
+    /**
+     * Helper: Bắn tín hiệu Ably
+     */
+    private async publishToAbly(item: any) {
+        try {
+            await this.ablyService.publish(
+                `user-notifications:${item.userId}`,
+                item.type || NotificationType.INFO,
+                { ...item, createdAt: item.createdAt || new Date() }
+            )
+        } catch (e) {
+            this.logger.warn(`Ably publish failed for ${item.userId}`)
+        }
+    }
+
+    /**
+     * Helper: Gửi Push Firebase & Tự dọn dẹp token cũ
+     */
+    private async pushToFirebase(
+        userId: string,
+        payload: { title: string; body: string; url?: string }
+    ) {
+        const devices = await this.prisma.userDevices.findMany({
+            where: { userId, status: true },
+            select: { value: true },
+        })
+
+        const tokens = devices.map((d) => d.value)
+        console.log(tokens)
+
+        if (tokens.length === 0) return
+
+        const message: admin.messaging.MulticastMessage = {
+            tokens,
+            notification: { title: payload.title, body: payload.body },
+            data: { redirectUrl: payload.url || '/' },
+        }
+
+        const response = await this.firebase
+            .messaging()
+            .sendEachForMulticast(message)
+
+        // Xử lý token lỗi/hết hạn
+        const tokensToDeactivate = response.responses
+            .map((resp, idx) => {
+                if (!resp.success) {
+                    const code = resp.error?.code
+                    if (
+                        code ===
+                            'messaging/registration-token-not-registered' ||
+                        code === 'messaging/invalid-registration-token'
+                    ) {
+                        return tokens[idx]
+                    }
+                }
+                return null
+            })
+            .filter((t): t is string => t !== null)
+
+        if (tokensToDeactivate.length > 0) {
+            await this.prisma.userDevices.updateMany({
+                where: { value: { in: tokensToDeactivate } },
+                data: { status: false },
+            })
+        }
+    }
+
+    // --- Các hàm Query (Giữ nguyên) ---
+    async findAll(userId: string) {
         const [notifications, totalCount, unseenCount] = await Promise.all([
             this.prisma.notification.findMany({
+                where: { userId },
                 orderBy: { createdAt: 'desc' },
-                where: { userId },
+                take: 50, // Giới hạn lấy 50 cái mới nhất
             }),
+            this.prisma.notification.count({ where: { userId } }),
             this.prisma.notification.count({
-                where: { userId },
-            }),
-            this.prisma.notification.count({
-                where: {
-                    AND: [{ userId }, { status: NotificationStatus.UNSEEN }],
-                },
+                where: { userId, status: NotificationStatus.UNSEEN },
             }),
         ])
         return {
             notifications: plainToInstance(
                 NotificationResponseDto,
                 notifications,
-                {
-                    excludeExtraneousValues: true,
-                }
+                { excludeExtraneousValues: true }
             ),
             unseenCount,
             totalCount,
         }
     }
 
-    async findById(id: string): Promise<NotificationResponseDto> {
-        const notification = await this.prisma.notification.findUnique({
-            where: { id },
+    /**
+     * Đánh dấu tất cả thông báo của một người dùng là đã xem
+     * @param userId ID của người dùng thực hiện hành động
+     */
+    async markAllAsSeen(userId: string): Promise<{ count: number }> {
+        // Cập nhật tất cả các bản ghi có status UNSEEN của user này
+        const result = await this.prisma.notification.updateMany({
+            where: {
+                userId: userId,
+                status: NotificationStatus.UNSEEN,
+            },
+            data: {
+                status: NotificationStatus.SEEN,
+            },
         })
-        if (!notification) throw new NotFoundException('Notification not found')
-        return plainToInstance(NotificationResponseDto, notification, {
-            excludeExtraneousValues: true,
-        })
+
+        this.logger.log(
+            `User ${userId} marked ${result.count} notifications as seen`
+        )
+
+        return result // Trả về số lượng bản ghi đã được cập nhật
     }
 
-    async update(
-        id: string,
-        data: UpdateNotificationDto
-    ): Promise<NotificationResponseDto> {
-        const notification = await this.prisma.notification.update({
-            where: { id },
-            data,
-        })
-        return plainToInstance(NotificationResponseDto, notification, {
-            excludeExtraneousValues: true,
-        })
-    }
-
-    async delete(id: string): Promise<NotificationResponseDto> {
-        const notification = await this.prisma.notification.delete({
-            where: { id },
-        })
-        return plainToInstance(NotificationResponseDto, notification, {
-            excludeExtraneousValues: true,
-        })
+    async delete(id: string) {
+        return this.prisma.notification.delete({ where: { id } })
     }
 }

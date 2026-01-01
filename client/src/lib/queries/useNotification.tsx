@@ -2,10 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 
 import { notificationApi } from '@/lib/api'
 import { axiosClient } from '@/lib/axios'
-import {
-    type TCreateNotificationInput,
-    type TUpdateNotificationInput,
-} from '@/lib/validationSchemas'
+import { type TCreateNotificationInput } from '@/lib/validationSchemas'
 
 import { queryClient } from '../../main'
 import { notificationsListOptions } from './options/notification-queries'
@@ -40,18 +37,19 @@ export const useSendNotificationMutation = () => {
     })
 }
 
-export const useUpdateNotification = (onSuccess?: () => void) => {
+export const useMarkSeenNotification = (onSuccess?: () => void) => {
     return useMutation({
-        mutationFn: async ({
-            id,
-            data,
-        }: {
-            id: string
-            data: TUpdateNotificationInput
-        }) => {
-            const res = await notificationApi.update(id, data)
-            return res.data
+        mutationFn: ({ id }: { id: string }) => notificationApi.markSeen(id),
+        onSuccess: () => {
+            // invalidate query notifications để refetch dữ liệu mới
+            queryClient.refetchQueries({ queryKey: ['notifications'] })
+            onSuccess?.()
         },
+    })
+}
+export const useMarkAllSeenMutation = (onSuccess?: () => void) => {
+    return useMutation({
+        mutationFn: () => notificationApi.markAllSeen(),
         onSuccess: () => {
             // invalidate query notifications để refetch dữ liệu mới
             queryClient.refetchQueries({ queryKey: ['notifications'] })

@@ -64,7 +64,6 @@ export class UserController {
         type: [ProtectUserResponseDto],
     })
     @UseGuards(RolesGuard)
-    @Roles(RoleEnum.ADMIN)
     async findAll() {
         return this.userService.findAll()
     }

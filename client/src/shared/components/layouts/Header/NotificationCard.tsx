@@ -1,22 +1,18 @@
 import { Image } from 'antd'
-
-import { useUpdateNotification } from '@/lib/queries/useNotification'
+import { useMarkSeenNotification } from '@/lib/queries/useNotification'
 import CadsquadLogo from '@/shared/components/CadsquadLogo'
 import { NotificationStatusEnum } from '@/shared/enums/_notification-status.enum'
 import type { TUserNotification } from '@/shared/types'
 
 export function NotificationCard({ data }: { data: TUserNotification }) {
-    const { mutateAsync: updateNotificationMutate } = useUpdateNotification()
+    const markSeenNotification = useMarkSeenNotification()
 
     return (
         <div
             className="grid grid-cols-[50px_1fr_7px] gap-3 items-center"
             onClick={async () => {
-                await updateNotificationMutate({
+                markSeenNotification.mutateAsync({
                     id: data.id,
-                    data: {
-                        status: NotificationStatusEnum.SEEN,
-                    },
                 })
             }}
         >

@@ -2,52 +2,77 @@ import tailwindcss from '@tailwindcss/vite'
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
 // https://vite.dev/config/
-export default defineConfig({
-    // Prevent Vite from obscuring Rust errors
-    clearScreen: false,
-    // Tauri expects a fixed port, fail if that port is not available
-    // Make sure to use the TAURI_PLATFORM etc env variables
-    envPrefix: ['VITE_', 'TAURI_'],
-    server: {
-        port: 3000, // Thay đổi port
-        host: true, // Mở port ra mạng local nếu cần truy cập từ thiết bị khác
-        strictPort: true, // Buộc Vite phải dùng đúng port này, nếu không sẽ báo lỗi
-        allowedHosts: ['nonresiliently-sociologistic-liliana.ngrok-free.dev'],
-    },
-    plugins: [
-        tailwindcss(),
-        TanStackRouterVite(),
-        react({
-            babel: {
-                plugins: [['babel-plugin-react-compiler']],
-            },
-        }),
-    ], // 2. Thêm đoạn này
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src'),
+export default defineConfig(({ mode }) => {
+    // Load các biến env (VITE_...) để sử dụng trong config
+    const env = loadEnv(mode, process.cwd())
+
+    return {
+        // Prevent Vite from obscuring Rust errors
+        clearScreen: false,
+        envPrefix: ['VITE_', 'TAURI_'],
+        
+        server: {
+            port: 3000,
+            host: true,
+            strictPort: true,
+            allowedHosts: ['nonresiliently-sociologistic-liliana.ngrok-free.dev'],
         },
-    },
-    build: {
-        rollupOptions: {
-            onwarn(warning, warn) {
-                // Bỏ qua cảnh báo về "use client"
-                if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
-                    return
-                }
-                warn(warning)
+
+        // Inject các biến env vào mã nguồn thông qua import.meta.env
+        define: {
+            // Lưu ý: Key ở đây phải khớp 100% với chuỗi trong file .js (có dấu ngoặc kép)
+            '"VITE_FIREBASE_API_KEY"': JSON.stringify(env.VITE_FIREBASE_API_KEY),
+            '"VITE_FIREBASE_AUTH_DOMAIN"': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
+            '"VITE_FIREBASE_PROJECT_ID"': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),
+            '"VITE_FIREBASE_MESSAGING_SENDER_ID"': JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID),
+            '"VITE_FIREBASE_APP_ID"': JSON.stringify(env.VITE_FIREBASE_APP_ID),
+        },
+
+        plugins: [
+            tailwindcss(),
+            TanStackRouterVite(),
+            react({
+                babel: {
+                    plugins: [['babel-plugin-react-compiler']],
+                },
+            }),
+        ],
+
+        resolve: {
+            alias: {
+                '@': path.resolve(__dirname, './src'),
             },
         },
-        // Tauri uses Chromium on Windows and WebKit on macOS and Linux
-        target:
-            process.env.TAURI_PLATFORM == 'windows' ? 'chrome105' : 'safari13',
-        // Don't minify for debug builds
-        minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
-        // Produce sourcemaps for debug builds
-        sourcemap: !!process.env.TAURI_DEBUG,
-        chunkSizeWarningLimit: 2000, // Increase limit to 2MB to silence warning
-    },
+
+        build: {
+            rollupOptions: {
+                // ĐỊNH NGHĨA 2 ĐẦU VÀO: Ứng dụng chính và Service Worker
+                input: {
+                    main: path.resolve(__dirname, 'index.html'),
+                    'firebase-messaging-sw': path.resolve(__dirname, 'src/firebase-messaging-sw.js'),
+                },
+                output: {
+                    // Giữ tên file Service Worker cố định ở root của thư mục dist
+                    entryFileNames: (chunkInfo) => {
+                        return chunkInfo.name === 'firebase-messaging-sw'
+                            ? '[name].js' // Xuất ra dist/firebase-messaging-sw.js
+                            : 'assets/[name]-[hash].js'
+                    },
+                },
+                onwarn(warning, warn) {
+                    if (warning.code === 'MODULE_LEVEL_DIRECTIVE') {
+                        return
+                    }
+                    warn(warning)
+                },
+            },
+            target: process.env.TAURI_PLATFORM == 'windows' ? 'chrome105' : 'safari13',
+            minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
+            sourcemap: !!process.env.TAURI_DEBUG,
+            chunkSizeWarningLimit: 2000,
+        },
+    }
 })

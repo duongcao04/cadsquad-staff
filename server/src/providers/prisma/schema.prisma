@@ -30,6 +30,8 @@ model UserDevices {
   type   String
   status Boolean @default(false)
   value  String
+
+  @@unique([userId, type])
 }
 
 model User {

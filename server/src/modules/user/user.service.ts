@@ -15,7 +15,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserResponseDto } from './dto/user-response.dto'
-import { MailService } from '../mail/mail.service'
+import { MailService } from '../../providers/mail/mail.service'
 
 @Injectable()
 export class UserService {

@@ -1,3 +1,10 @@
+import { cn, useMarkAllSeenMutation } from '@/lib'
+import { CHANNELS } from '@/lib/ably'
+import { jobsListOptions, useProfile } from '@/lib/queries'
+import { workbenchDataOptions } from '@/lib/queries/options/job-queries'
+import { notificationsListOptions } from '@/lib/queries/options/notification-queries'
+import { queryClient } from '@/main'
+import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
 import {
     addToast,
     Badge,
@@ -14,15 +21,6 @@ import { useRouter } from '@tanstack/react-router'
 import { useChannel } from 'ably/react'
 import { CheckCheck, Inbox, RefreshCcw } from 'lucide-react'
 import { useState } from 'react'
-
-import { cn } from '@/lib'
-import { CHANNELS } from '@/lib/ably'
-import { notificationsListOptions } from '@/lib/queries/options/notification-queries'
-import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
-
-import { jobsListOptions, useProfile } from '../../../../lib/queries'
-import { workbenchDataOptions } from '../../../../lib/queries/options/job-queries'
-import { queryClient } from '../../../../main'
 import { TUserNotification } from '../../../types'
 import { BellIcon } from '../../icons/animate/BellIcon'
 import { HeroButton } from '../../ui/hero-button'
@@ -38,7 +36,13 @@ export default function NotificationDropdown() {
         retry: isOpen,
     })
 
+    const markAllSeenMutation = useMarkAllSeenMutation()
+
     console.log(CHANNELS.userNotificationsKey(profile.id))
+
+    const handleMarkAllSeen = () => {
+        markAllSeenMutation.mutateAsync()
+    }
 
     useChannel(
         {
@@ -165,8 +169,13 @@ export default function NotificationDropdown() {
                             variant="light"
                             className="text-default-500"
                             tooltip="Mark all as read"
+                            onPress={handleMarkAllSeen}
                         >
-                            <CheckCheck size={18} />
+                            {markAllSeenMutation.isPending ? (
+                                <Spinner size="sm" />
+                            ) : (
+                                <CheckCheck size={18} />
+                            )}
                         </HeroButton>
                     </div>
                 </div>

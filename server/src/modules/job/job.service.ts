@@ -502,7 +502,7 @@ export class JobService {
                 const notifications = job.assignments.map((assignee) => ({
                     userId: assignee.userId,
                     senderId: modifierId,
-                    title: 'Job Status Updated',
+                    title: 'Trạng thái công việc thay đổi 🔄',
                     content: renderTemplate(
                         NOTIFICATION_CONTENT_TEMPLATES
                             .notifyAssigneeWhenChangeStatus.content,
@@ -699,23 +699,16 @@ export class JobService {
         dto: AssignMemberDto
     ) {
         const { memberId, staffCost } = dto
-
         return await this.prisma.$transaction(async (tx) => {
-            // 1. Check if Job exists
             const job = await tx.job.findUnique({
                 where: { id: jobId },
-                select: { id: true, no: true },
+                select: { id: true, no: true, displayName: true },
             })
             if (!job) throw new NotFoundException('Job not found')
 
-            // 2. Create the Assignment (@@unique in schema handles duplicates)
             try {
                 await tx.jobAssignment.create({
-                    data: {
-                        jobId,
-                        userId: memberId,
-                        staffCost,
-                    },
+                    data: { jobId, userId: memberId, staffCost },
                 })
             } catch (e) {
                 throw new BadRequestException(
@@ -723,20 +716,26 @@ export class JobService {
                 )
             }
 
-            // 3. Recalculate and Update Job's total sumStaffCost
             const aggregate = await tx.jobAssignment.aggregate({
                 where: { jobId },
                 _sum: { staffCost: true },
             })
 
-            const updatedJob = await tx.job.update({
+            await tx.job.update({
                 where: { id: jobId },
-                data: {
-                    sumStaffCost: aggregate._sum.staffCost || 0,
-                },
+                data: { sumStaffCost: aggregate._sum.staffCost || 0 },
             })
 
-            // 4. Create Activity Log
+            // --- FIX NOTIFICATION ---
+            await this.notificationService.send({
+                userId: memberId,
+                senderId: modifierId,
+                title: 'Bạn có công việc mới 📋',
+                content: `Bạn vừa được giao vào dự án: ${job.no} - ${job.displayName}`,
+                type: NotificationType.JOB_UPDATE,
+                redirectUrl: `/jobs/${job.no}`,
+            })
+
             await tx.jobActivityLog.create({
                 data: {
                     jobId,
@@ -748,7 +747,7 @@ export class JobService {
                 },
             })
 
-            return updatedJob
+            return job
         })
     }
 
@@ -862,18 +861,10 @@ export class JobService {
             const job = await tx.job.update({
                 where: { id: jobId },
                 data: { statusId: reviewStatus.id },
+                include: { createdBy: { select: { displayName: true } } }, // Lấy tên người gửi
             })
 
-            await tx.jobActivityLog.create({
-                data: {
-                    jobId,
-                    modifiedById: userId,
-                    fieldName: 'Delivery',
-                    activityType: ActivityType.DeliverJob,
-                    currentValue: reviewStatus.code,
-                },
-            })
-
+            // --- FIX NOTIFICATION ---
             const admins = await tx.user.findMany({
                 where: { role: RoleEnum.ADMIN },
             })
@@ -881,12 +872,13 @@ export class JobService {
                 admins.map((admin) => ({
                     userId: admin.id,
                     senderId: userId,
-                    title: 'Job Delivered',
-                    content: `Job #${job.no} needs review.`,
+                    title: 'Bản bàn giao mới cần duyệt 🚀',
+                    content: `Công việc #${job.no} vừa được nhân viên gửi bản bàn giao.`,
                     type: NotificationType.JOB_UPDATE,
                     redirectUrl: `/admin/mgmt/jobs/${job.no}?tab=deliveries`,
                 }))
             )
+
             return delivery
         })
     }

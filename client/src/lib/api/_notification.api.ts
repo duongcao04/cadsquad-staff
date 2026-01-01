@@ -1,8 +1,5 @@
 import { type ApiResponse, axiosClient } from '@/lib/axios'
-import type {
-    TCreateNotificationInput,
-    TUpdateNotificationInput,
-} from '@/lib/validationSchemas'
+import type { TCreateNotificationInput } from '@/lib/validationSchemas'
 import type { IUserNotificationResponse } from '@/shared/interfaces'
 
 export const notificationApi = {
@@ -30,11 +27,13 @@ export const notificationApi = {
             `/v1/notifications/${id}`
         )
     },
-    update: (id: string, data: TUpdateNotificationInput) => {
+    markSeen: (id: string) => {
         return axiosClient.patch<ApiResponse<{ id: string }>>(
-            `/v1/notifications/${id}`,
-            data
+            `/v1/notifications/${id}/seen`
         )
+    },
+    markAllSeen: () => {
+        return axiosClient.patch(`/v1/notifications/mark-all-seen`)
     },
     remove: (id: string) => {
         return axiosClient.delete(`/v1/notifications/${id}`)

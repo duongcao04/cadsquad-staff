@@ -1,6 +1,6 @@
 import { envConfig } from './_env.config'
 
-const firebaseConfig = {
+export const firebaseConfig = {
     apiKey: envConfig.FIREBASE.apiKey,
     authDomain: envConfig.FIREBASE.authDomain,
     databaseURL: envConfig.FIREBASE.databaseURL,
@@ -10,5 +10,3 @@ const firebaseConfig = {
     appId: envConfig.FIREBASE.appId,
     measurementId: envConfig.FIREBASE.measurementId,
 }
-
-export default firebaseConfig
