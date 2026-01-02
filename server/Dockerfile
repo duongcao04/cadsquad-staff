@@ -1,7 +1,12 @@
 # Stage 0: base
 FROM oven/bun:1-slim AS base
 WORKDIR /app
-RUN apt-get update && apt-get install -y openssl libsqlite3-dev postgresql-client && rm -rf /var/lib/apt/lists/*
+RUN apt-get update || apt-get update && \
+    apt-get install -y --no-install-recommends \
+    openssl \
+    libsqlite3-dev \
+    postgresql-client && \
+    rm -rf /var/lib/apt/lists/*
 
 # Stage 1: deps
 FROM base AS deps
