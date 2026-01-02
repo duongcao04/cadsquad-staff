@@ -14,11 +14,21 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-	console.log('[SW] Background message received', payload);
-	const notificationTitle = payload.notification.title || "CAD SQUAD";
-	const notificationOptions = {
-		body: payload.notification.body,
-		icon: '/favicon.ico',
-	};
-	self.registration.showNotification(notificationTitle, notificationOptions);
+    console.log('[SW] Background message received', payload);
+    const notificationTitle = payload.notification?.title || "CAD SQUAD";
+    const notificationOptions = {
+        body: payload.notification?.body || "Bạn có thông báo mới",
+        icon: '/favicon.ico',
+        badge: '/favicon.ico', // Thêm badge cho Android
+        data: payload.data,    // Lưu data để xử lý khi click
+    };
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// Thêm sự kiện click vào thông báo để mở app
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(
+        clients.openWindow('/') // Mở trang chủ khi click
+    );
 });
