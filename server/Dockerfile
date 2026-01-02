@@ -1,8 +1,8 @@
-# Stage 0: base - Thiết lập hệ điều hành cơ sở (Dùng Bookworm Slim để ổn định nhất)
-FROM oven/bun:1-bookworm-slim AS base
+# Stage 0: base - Sử dụng bản slim chuẩn của Bun (Debian-based)
+FROM oven/bun:1-slim AS base
 WORKDIR /app
 
-# Cài đặt các gói hệ thống cần thiết cho Prisma và Postgres
+# Cài đặt thư viện hệ thống cần thiết (Dùng cho Prisma và kết nối Postgres)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     openssl \
@@ -10,49 +10,49 @@ RUN apt-get update && \
     postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
-# Stage 1: deps - Cài đặt thư viện
+# Stage 1: deps - Cài đặt thư viện Node.js
 FROM base AS deps
 COPY package.json bun.lockb* ./
-# Copy Prisma schema để generate client ngay trong bước cài đặt
+# Copy Prisma schema để chuẩn bị generate client
 COPY ./src/providers/prisma/schema.prisma ./prisma/schema.prisma
 RUN bun install --frozen-lockfile
 
-# Stage 2: builder - Biên dịch TypeScript sang JavaScript
+# Stage 2: builder - Build mã nguồn TypeScript
 FROM deps AS builder
 COPY . .
 RUN bun run build
 
-# TỐI ƯU: Xóa sạch node_modules và chỉ cài lại các gói Production để giảm dung lượng
+# TỐI ƯU: Xóa node_modules cũ và chỉ cài lại bản Production để giảm dung lượng
 RUN rm -rf node_modules && bun install --frozen-lockfile --production
-# Generate Prisma Client cho môi trường Production
+# Tạo Prisma Client cho môi trường chạy thực tế
 RUN bunx prisma generate
 
-# Stage 3: runner - Môi trường thực thi cuối cùng (Siêu nhẹ)
+# Stage 3: runner - Môi trường Production cuối cùng
 FROM base AS runner
 WORKDIR /app
 
-# FIX LỖI: Sử dụng lệnh groupadd/useradd của Debian thay cho addgroup/adduser của Alpine
+# Tạo User và Group theo chuẩn Debian (Fix lỗi addgroup/adduser not found)
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs nodejs
 
-# Copy kết quả từ các bước build trước
+# Copy kết quả build từ Stage 2 sang Stage 3
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma ./prisma
 
-# Xử lý file Entrypoint (Dùng để chạy migration trước khi start app)
+# Copy và xử lý Entrypoint script
 COPY --chown=nodejs:nodejs ./entrypoint.sh ./
-# Fix lỗi xuống dòng nếu file được tạo từ Windows và cấp quyền thực thi
+# Sửa định dạng file (CRLF to LF) và cấp quyền thực thi
 RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
-# Phân quyền lại thư mục cho user non-root để đảm bảo bảo mật
+# Phân quyền thư mục cho user không có quyền root (Bảo mật)
 RUN chown -R nodejs:nodejs /app
 USER nodejs
 
 EXPOSE 8080
 ENV NODE_ENV production
 
-# Lệnh khởi chạy: entrypoint sẽ chạy trước (migrate DB), sau đó CMD sẽ chạy (start app)
-# ENTRYPOINT ["sh", "./entrypoint.sh"]
+# Entrypoint chạy migration trước, CMD khởi động Server sau
+ENTRYPOINT ["sh", "./entrypoint.sh"]
 CMD ["bun", "dist/main.js"]
