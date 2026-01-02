@@ -14,7 +14,7 @@ services:
       - '${DATA_PATH:-./data}/postgres:/var/lib/postgresql/data'
       - '${LOG_PATH:-./logs}/postgres:/var/log/postgresql'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -49,7 +49,7 @@ services:
       context: ./client
       args:
         VITE_APP_URL: ${CLIENT_URL}
-        VITE_API_ENDPOINT: "/api"
+        VITE_API_ENDPOINT: '/api'
         VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY}
         VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
     container_name: web_client
@@ -58,6 +58,18 @@ services:
       - '80:80'
     volumes:
       - '${LOG_PATH:-./logs}/web_client:/var/log/nginx'
+    networks:
+      - app-network
+
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '81:81' # Port quản lý UI
+    volumes:
+      - ./data/npm:/data
+      - ./data/letsencrypt:/etc/letsencrypt
     networks:
       - app-network
 
