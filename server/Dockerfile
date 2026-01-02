@@ -1,7 +1,7 @@
 # Stage 0: base
-FROM oven/bun:1-alpine AS base
+FROM oven/bun:1-slim AS base
 WORKDIR /app
-RUN apk add --no-cache openssl libc6-compat postgresql16-client
+RUN apt-get update && apt-get install -y openssl libsqlite3-dev postgresql-client && rm -rf /var/lib/apt/lists/*
 
 # Stage 1: deps
 FROM base AS deps
