@@ -27,6 +27,7 @@ services:
       - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - '${DATA_PATH:-./.data}/postgres:/var/lib/postgresql/data'
+      - ${LOG_PATH:-./logs}/postgres:/var/log/postgresql
     healthcheck:
       test:
         [
@@ -104,8 +105,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+    volumes:
+      - ${LOG_PATH:-./logs}/backend:/app/logs # Giả sử ứng dụng ghi log vào /app/logs
     environment:
-      NODE_ENV: ${NODE_ENV}
+      NODE_ENV: ${NODE_ENV:-production}
       BACKEND_PORT: ${BACKEND_PORT}
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-database}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-cadsquaddb}?schema=public
       CLIENT_URL: ${CLIENT_URL}
@@ -140,6 +143,16 @@ services:
       args:
         VITE_APP_URL: ${CLIENT_URL:-http://web_client:80}
         VITE_API_ENDPOINT: '/api'
+        # FIREBASE ARGS
+        VITE_FIREBASE_VAPID_KEY: ${FIREBASE_VAPID_KEY}
+        VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+        VITE_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
+        VITE_FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
+        VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+        VITE_FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET}
+        VITE_FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID}
+        VITE_FIREBASE_APP_ID: ${FIREBASE_APP_ID}
+        VITE_FIREBASE_MEASUREMENT_ID: ${FIREBASE_MEASUREMENT_ID}
     container_name: web_client
     restart: always
     ports:
@@ -147,16 +160,25 @@ services:
     depends_on:
       - backend
     env_file: .env
+    volumes:
+      - ${LOG_PATH:-./logs}/web_client:/var/log/nginx # Nếu dùng Nginx làm web server
     environment:
+      NODE_ENV: ${NODE_ENV:-production}
       VITE_APP_VERSION: ${CLIENT_VERSION:-0.0.0-release}
-      VITE_APP_TITLE: ${APP_TITLE}
+      VITE_APP_TITLE: ${APP_TITLE:-Cadsquad Staff}
       VITE_APP_URL: ${CLIENT_URL:-http://web_client:80}
       VITE_API_ENDPOINT: "/api"
       VITE_WS_URL: ${WS_URL}
-      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
-      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       TAURI_DEV_HOST: ${TAURI_DEV_HOST}
-    # Note: Vite requires VITE_ prefix for client-side envs
+      VITE_FIREBASE_VAPID_KEY: ${FIREBASE_VAPID_KEY}
+      VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+      VITE_FIREBASE_AUTH_DOMAIN: ${FIREBASE_AUTH_DOMAIN}
+      VITE_FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL}
+      VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
+      VITE_FIREBASE_STORAGE_BUCKET: ${FIREBASE_STORAGE_BUCKET}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${FIREBASE_MESSAGING_SENDER_ID}
+      VITE_FIREBASE_APP_ID: ${FIREBASE_APP_ID}
+      VITE_FIREBASE_MEASUREMENT_ID: ${FIREBASE_MEASUREMENT_ID}
     networks:
       - app-network
 

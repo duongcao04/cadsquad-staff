@@ -24,11 +24,11 @@ export default defineConfig(({ mode }) => {
         // Inject các biến env vào mã nguồn thông qua import.meta.env
         define: {
             // Lưu ý: Key ở đây phải khớp 100% với chuỗi trong file .js (có dấu ngoặc kép)
-            '"VITE_FIREBASE_API_KEY"': JSON.stringify(env.VITE_FIREBASE_API_KEY),
-            '"VITE_FIREBASE_AUTH_DOMAIN"': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
-            '"VITE_FIREBASE_PROJECT_ID"': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),
-            '"VITE_FIREBASE_MESSAGING_SENDER_ID"': JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID),
-            '"VITE_FIREBASE_APP_ID"': JSON.stringify(env.VITE_FIREBASE_APP_ID),
+            'VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY),
+            'VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
+            'VITE_FIREBASE_PROJECT_ID': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),
+            'VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID),
+            'VITE_FIREBASE_APP_ID': JSON.stringify(env.VITE_FIREBASE_APP_ID),
         },
 
         plugins: [
@@ -52,7 +52,7 @@ export default defineConfig(({ mode }) => {
                 // ĐỊNH NGHĨA 2 ĐẦU VÀO: Ứng dụng chính và Service Worker
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
-                    'firebase-messaging-sw': path.resolve(__dirname, 'src/firebase-messaging-sw.js'),
+                    'firebase-messaging-sw': path.resolve(__dirname, 'public/firebase-messaging-sw.js'),
                 },
                 output: {
                     // Giữ tên file Service Worker cố định ở root của thư mục dist
