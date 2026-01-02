@@ -33,6 +33,7 @@ services:
   backend:
     build: ./server
     container_name: backend
+    restart: always
     depends_on:
       database: { condition: service_healthy }
     volumes:
@@ -62,22 +63,26 @@ services:
         VITE_FIREBASE_MEASUREMENT_ID: ${FIREBASE_MEASUREMENT_ID}
     container_name: web_client
     restart: always
-    ports:
-      - '80:80'
+    # FIX: Gỡ bỏ ports 80:80 ở đây để tránh xung đột. NPM sẽ gọi container này qua mạng nội bộ.
+    expose:
+      - "80"
     volumes:
-      - '${LOG_PATH:-./logs}/web_client:/var/log/nginx'
+      - ./client/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro # Ánh xạ chứng chỉ SSL cho Nginx nội bộ
     networks:
       - app-network
 
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
+    container_name: proxy-manager
+    restart: always
     ports:
-      - '80:80'
-      - '443:443'
-      - '81:81' # Port quản lý UI
+      - '80:80'   # Cổng nhận HTTP
+      - '443:443' # Cổng nhận HTTPS
+      - '81:81'   # Cổng quản lý UI (Truy cập http://IP-VPS:81)
     volumes:
       - ./data/npm:/data
-      - ./data/letsencrypt:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro # FIX: Ánh xạ chứng chỉ từ hệ thống vào
     networks:
       - app-network
 
