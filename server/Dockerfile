@@ -55,4 +55,4 @@ ENV NODE_ENV production
 
 # Entrypoint chạy migration trước, CMD khởi động Server sau
 ENTRYPOINT ["sh", "./entrypoint.sh"]
-CMD ["bun", "dist/main.js"]
+CMD ["bun", "dist/src/main.js"]

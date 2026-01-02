@@ -49,6 +49,7 @@ services:
       context: ./client
       args:
         VITE_APP_URL: ${CLIENT_URL}
+        VITE_APP_TITLE: ${APP_TITLE}
         VITE_API_ENDPOINT: '/api'
         VITE_FIREBASE_API_KEY: ${FIREBASE_API_KEY}
         VITE_FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID}
