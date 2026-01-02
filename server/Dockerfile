@@ -1,7 +1,10 @@
 # Stage 0: base
 FROM oven/bun:1-slim AS base
 WORKDIR /app
-RUN apt-get update || apt-get update && \
+
+RUN sed -i 's/deb.debian.org/ftp.us.debian.org/g' /etc/apt/sources.list.d/debian.sources || true
+
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     openssl \
     libsqlite3-dev \
