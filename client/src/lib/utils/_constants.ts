@@ -89,8 +89,8 @@ export const INTERNAL_URLS = {
 
 export const baseUrl = envConfig.APP_URL ?? 'http://localhost'
 export const apiBaseUrl = envConfig.API_ENDPOINT
-    ? `${envConfig.API_ENDPOINT}/api`
-    : 'https://testapi.appnavotar.com/api'
+    ? `${envConfig.API_ENDPOINT}`
+    : 'http://localhost/api'
 
 export const STORAGE_KEYS = {
     theme: 'theme',
