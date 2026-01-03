@@ -1,5 +1,0 @@
-version: '2'
-tunnels:
-  web_client:
-    proto: http
-    addr: web_client:80
