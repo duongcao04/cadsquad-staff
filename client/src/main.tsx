@@ -16,6 +16,31 @@ export const queryClient = new QueryClient({
     },
 })
 
+if (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone
+) {
+    document.addEventListener(
+        'click',
+        (e: MouseEvent) => {
+            // Sử dụng ép kiểu để lấy thẻ <a> gần nhất
+            const target = (e.target as HTMLElement).closest('a')
+
+            // Kiểm tra target có tồn tại và có href không
+            if (target && target.href) {
+                // Kiểm tra nếu link dẫn ra ngoài domain hiện tại
+                const isInternal = target.href.includes(window.location.origin)
+
+                // Nếu là link nội bộ và không phải mở tab mới (_blank)
+                if (isInternal && !target.getAttribute('target')) {
+                    e.preventDefault()
+                    window.location.href = target.href
+                }
+            }
+        },
+        false
+    )
+}
 // Tạo router instance
 const router = createRouter({
     routeTree,

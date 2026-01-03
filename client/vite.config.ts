@@ -3,6 +3,7 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { defineConfig, loadEnv } from 'vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -13,22 +14,30 @@ export default defineConfig(({ mode }) => {
         // Prevent Vite from obscuring Rust errors
         clearScreen: false,
         envPrefix: ['VITE_', 'TAURI_'],
-        
+
         server: {
             port: 3000,
             host: true,
             strictPort: true,
-            allowedHosts: ['nonresiliently-sociologistic-liliana.ngrok-free.dev'],
+            allowedHosts: [
+                'nonresiliently-sociologistic-liliana.ngrok-free.dev',
+            ],
         },
 
         // Inject các biến env vào mã nguồn thông qua import.meta.env
         define: {
             // Lưu ý: Key ở đây phải khớp 100% với chuỗi trong file .js (có dấu ngoặc kép)
-            'VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY),
-            'VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN),
-            'VITE_FIREBASE_PROJECT_ID': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID),
-            'VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(env.VITE_FIREBASE_MESSAGING_SENDER_ID),
-            'VITE_FIREBASE_APP_ID': JSON.stringify(env.VITE_FIREBASE_APP_ID),
+            VITE_FIREBASE_API_KEY: JSON.stringify(env.VITE_FIREBASE_API_KEY),
+            VITE_FIREBASE_AUTH_DOMAIN: JSON.stringify(
+                env.VITE_FIREBASE_AUTH_DOMAIN
+            ),
+            VITE_FIREBASE_PROJECT_ID: JSON.stringify(
+                env.VITE_FIREBASE_PROJECT_ID
+            ),
+            VITE_FIREBASE_MESSAGING_SENDER_ID: JSON.stringify(
+                env.VITE_FIREBASE_MESSAGING_SENDER_ID
+            ),
+            VITE_FIREBASE_APP_ID: JSON.stringify(env.VITE_FIREBASE_APP_ID),
         },
 
         plugins: [
@@ -37,6 +46,39 @@ export default defineConfig(({ mode }) => {
             react({
                 babel: {
                     plugins: [['babel-plugin-react-compiler']],
+                },
+            }),
+            VitePWA({
+                registerType: 'autoUpdate',
+                includeAssets: [
+                    'favicon.ico',
+                    'apple-touch-icon.png',
+                    'mask-icon.svg',
+                ],
+                manifest: {
+                    name: 'Cadsquad Staff',
+                    short_name: 'Staff',
+                    description:
+                        "Web application designed for Cadsquad's internal staff. It provides a comprehensive platform for managing jobs, user accounts, notifications, and other core business operations",
+                    icons: [
+                        {
+                            src: '/android-chrome-192x192.png',
+                            sizes: '192x192',
+                            type: 'image/png',
+                        },
+                        {
+                            src: '/android-chrome-512x512.png',
+                            sizes: '512x512',
+                            type: 'image/png',
+                        },
+                    ],
+                    theme_color: '#ffffff',
+                    background_color: '#ffffff',
+                    // Cấu hình riêng cho Safari/iOS
+                    display: 'standalone',
+                },
+                devOptions: {
+                    enabled: true, // Bật để kiểm tra ngay trong quá trình dev
                 },
             }),
         ],
@@ -52,7 +94,10 @@ export default defineConfig(({ mode }) => {
                 // ĐỊNH NGHĨA 2 ĐẦU VÀO: Ứng dụng chính và Service Worker
                 input: {
                     main: path.resolve(__dirname, 'index.html'),
-                    'firebase-messaging-sw': path.resolve(__dirname, 'public/firebase-messaging-sw.js'),
+                    'firebase-messaging-sw': path.resolve(
+                        __dirname,
+                        'public/firebase-messaging-sw.js'
+                    ),
                 },
                 output: {
                     // Giữ tên file Service Worker cố định ở root của thư mục dist
@@ -69,7 +114,10 @@ export default defineConfig(({ mode }) => {
                     warn(warning)
                 },
             },
-            target: process.env.TAURI_PLATFORM == 'windows' ? 'chrome105' : 'safari13',
+            target:
+                process.env.TAURI_PLATFORM == 'windows'
+                    ? 'chrome105'
+                    : 'safari13',
             minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
             sourcemap: !!process.env.TAURI_DEBUG,
             chunkSizeWarningLimit: 2000,
