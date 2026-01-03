@@ -5,14 +5,15 @@ import { userApi } from '@/lib/api'
 import { type ApiError, ApiResponse } from '@/lib/axios'
 
 import { queryClient } from '../../main'
+import { TCreateUserInput } from '../../shared/components'
+import { TUser } from '../../shared/types'
 import type {
-    TCreateUserInput,
     TResetPasswordInput,
     TUpdatePasswordInput,
     TUpdateUserInput,
 } from '../validationSchemas'
 import { onErrorToast } from './helper'
-import { userOptions, usersListOptions } from './options/user-queries'
+import { mapUser, userOptions, usersListOptions } from './options/user-queries'
 
 export const useUsers = () => {
     // Gọi Options
@@ -154,25 +155,32 @@ export const useResetPasswordMutation = () => {
     })
 }
 
-export const useCreateUserMutation = () => {
+export const useCreateUserMutation = (onSuccess?: (res: TUser) => void) => {
     return useMutation({
-        mutationFn: async (data: TCreateUserInput) =>
-            await userApi.create(data),
-        onSuccess: () => {
-            addToast({
-                title: 'Tạo mới thành công',
-                color: 'success',
-            })
+        mutationFn: async (data: TCreateUserInput) => {
+            const userCreated = await userApi.create(
+                {
+                    displayName: data.displayName,
+                    email: data.email,
+                    role: data.role,
+                    departmentId: data.departmentId,
+                    jobTitleId: data.jobTitleId,
+                    password: data.password,
+                },
+                data.sendInviteEmail
+            )
+            return mapUser(userCreated.result)
+        },
+
+        onSuccess: (res: TUser) => {
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({ title: 'Staff member created', color: 'success' })
+            }
             queryClient.invalidateQueries({ queryKey: ['users'] })
         },
-        onError: (error) => {
-            const errorRes = error as unknown as ApiError
-            addToast({
-                title: errorRes.error,
-                description: `Error: ${errorRes.message}`,
-                color: 'danger',
-            })
-        },
+        onError: (error) => onErrorToast(error, 'User creation failed'),
     })
 }
 

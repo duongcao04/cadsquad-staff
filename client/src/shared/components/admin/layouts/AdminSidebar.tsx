@@ -124,7 +124,9 @@ export const AdminSidebar = ({
 }: {
     isCollapsed?: boolean
 }) => {
-    const { data: departments } = useSuspenseQuery({
+    const {
+        data: { departments },
+    } = useSuspenseQuery({
         ...departmentsListOptions(),
     })
 

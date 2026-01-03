@@ -57,7 +57,9 @@ const PRESET_COLORS = [
 ]
 
 function DepartmentsSettingsPage() {
-    const { data: defaultDepartments } = useSuspenseQuery({
+    const {
+        data: { departments: defaultDepartments },
+    } = useSuspenseQuery({
         ...departmentsListOptions(),
     })
     const [departments, setDepartments] = useState(defaultDepartments)

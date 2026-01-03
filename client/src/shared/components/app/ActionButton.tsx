@@ -18,7 +18,6 @@ import { useProfile } from '@/lib/queries'
 import {
     CreateJobModal,
     CreateNotificationModal,
-    CreateUserModal,
     IconAlertColorful,
     IconPeopleColorful,
 } from '@/shared/components'
@@ -29,6 +28,7 @@ import { FluentColorBriefcase20 } from '../icons/FluentColorBriefcase20'
 import { FluentColorErrorCircle20 } from '../icons/FluentColorErrorCircle20'
 import { DeliverJobModal } from '../modals/DeliverJobModal'
 import { IssueReportModal } from '../modals/IssueReportModal'
+import CreateUserModal from '../modals/CreateUserModal'
 
 export function ActionButton({
     forceStatus,

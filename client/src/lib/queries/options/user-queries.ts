@@ -90,3 +90,12 @@ export const profileOverviewOptions = () => {
         },
     })
 }
+export const checkUsernameTakenOptions = (username: string) => {
+    return queryOptions({
+        queryKey: ['users', 'username', 'taken', username],
+        queryFn: () => userApi.checkUsernameTaken(username),
+        select: (res) => {
+            return { isTaken: res.result?.isExist }
+        },
+    })
+}

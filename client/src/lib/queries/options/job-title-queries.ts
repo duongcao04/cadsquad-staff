@@ -20,9 +20,11 @@ export const jobTitlesListOptions = () => {
         queryFn: () => jobTitleApi.findAll(),
         select: (res) => {
             const jobTitlesData = res?.result
-            return Array.isArray(jobTitlesData)
-                ? jobTitlesData.map(mapJobTitle)
-                : []
+            return {
+                jobTitles: Array.isArray(jobTitlesData)
+                    ? jobTitlesData.map(mapJobTitle)
+                    : [],
+            }
         },
     })
 }

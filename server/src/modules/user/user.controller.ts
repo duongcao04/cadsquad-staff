@@ -17,10 +17,13 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger'
-import { AdminGuard } from '../auth/admin.guard'
+import { RoleEnum } from '@prisma/client'
+import { isUUID } from 'class-validator'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { Roles } from '../auth/decorators/roles.decorator'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { JwtGuard } from '../auth/jwt.guard'
+import { RolesGuard } from '../auth/roles.guard'
 import { CreateUserDto } from './dto/create-user.dto'
 import { ProtectUserResponseDto } from './dto/protect-user-response.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
@@ -28,10 +31,6 @@ import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserResponseDto } from './dto/user-response.dto'
 import { UserService } from './user.service'
-import { isUUID } from 'class-validator'
-import { RolesGuard } from '../auth/roles.guard'
-import { Roles } from '../auth/decorators/roles.decorator'
-import { RoleEnum } from '@prisma/client'
 
 @ApiTags('Users')
 @Controller('users')
@@ -49,8 +48,12 @@ export class UserController {
         description: 'The user has been successfully created.',
         type: UserResponseDto,
     })
-    async create(@Body() createUserDto: CreateUserDto) {
-        return this.userService.create(createUserDto)
+    async create(
+        @Body() createUserDto: CreateUserDto,
+        @Query() sendInviteEmail: '0' | '1'
+    ) {
+        const isSendInviteEmail = Boolean(sendInviteEmail)
+        return this.userService.create(createUserDto, isSendInviteEmail)
     }
 
     @Get()
@@ -103,7 +106,7 @@ export class UserController {
         return this.userService.resetPassword(id, dto)
     }
 
-    @Get('username/:username')
+    @Get('check-username')
     @HttpCode(200)
     @ResponseMessage('Check username successfully')
     @ApiBearerAuth()
@@ -112,8 +115,9 @@ export class UserController {
         status: 200,
         description: 'Returns a boolean indicating if the username is valid.',
     })
-    async checkUsernameValid(@Param('username') username: string) {
-        return this.userService.checkUsernameValid(username)
+    async checkUsernameTaken(@Query('username') username: string) {
+        const isExist = await this.userService.isUsernameTaken(username)
+        return { isExist }
     }
 
     // Handles both ID and Username

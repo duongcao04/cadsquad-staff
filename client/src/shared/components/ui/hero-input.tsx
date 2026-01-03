@@ -9,7 +9,7 @@ export const HeroInput = extendVariants(Input, {
             minimal: {
                 inputWrapper: [
                     'shadow-none',
-                    'border',
+                    'border-[1px]',
                     'border-border-default',
                     '!bg-background',
                     'transition',

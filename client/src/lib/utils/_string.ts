@@ -78,3 +78,53 @@ export const linkify = (text: string) => {
         return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #0070f3; text-decoration: underline;">${url}</a>`
     })
 }
+
+/**
+ * Tạo mật khẩu ngẫu nhiên an toàn (Cryptographically secure)
+ * Đáp ứng: Tối thiểu 8 ký tự, có Chữ hoa, Chữ thường, Số, Ký tự đặc biệt
+ */
+export const generatePassword = (length: number = 12): string => {
+    const charset = {
+        upper: 'ABCDEFGHJKLMNPQRSTUVWXYZ', // Loại bỏ I, O để tránh nhầm lẫn
+        lower: 'abcdefghijkmnopqrstuvwxyz', // Loại bỏ l để tránh nhầm lẫn
+        number: '23456789', // Loại bỏ 0, 1
+        special: '!@#$%^&*',
+    }
+
+    const allChars = Object.values(charset).join('')
+    let password = ''
+
+    // Đảm bảo mật khẩu luôn có ít nhất 1 ký tự từ mỗi nhóm (tăng độ mạnh)
+    password +=
+        charset.upper[
+            crypto.getRandomValues(new Uint32Array(1))[0] % charset.upper.length
+        ]
+    password +=
+        charset.lower[
+            crypto.getRandomValues(new Uint32Array(1))[0] % charset.lower.length
+        ]
+    password +=
+        charset.number[
+            crypto.getRandomValues(new Uint32Array(1))[0] %
+                charset.number.length
+        ]
+    password +=
+        charset.special[
+            crypto.getRandomValues(new Uint32Array(1))[0] %
+                charset.special.length
+        ]
+
+    // Các ký tự còn lại lấy ngẫu nhiên
+    const array = new Uint32Array(length - 4)
+    crypto.getRandomValues(array)
+
+    for (let i = 0; i < array.length; i++) {
+        password += allChars[array[i] % allChars.length]
+    }
+
+    // Trộn ngẫu nhiên chuỗi thu được để tránh vị trí cố định của 4 ký tự đầu
+    return password
+        .split('')
+        .sort(() => 0.5 - Math.random())
+        .join('')
+}

@@ -3,85 +3,73 @@ import {
     ConflictException,
     ForbiddenException,
     Injectable,
+    InternalServerErrorException,
+    Logger,
     NotFoundException,
 } from '@nestjs/common'
 import { RoleEnum, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
+import { MailService } from '../../providers/mail/mail.service'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { removeVietnameseAccent } from '../../utils/removeVietnameseAccent'
 import { BcryptService } from '../auth/bcrypt.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserResponseDto } from './dto/user-response.dto'
-import { MailService } from '../../providers/mail/mail.service'
 
 @Injectable()
 export class UserService {
+    private readonly logger = new Logger(UserService.name)
     constructor(
         private readonly prismaService: PrismaService,
         private readonly bcryptService: BcryptService,
         private readonly mailService: MailService
     ) {}
 
-    async create(data: CreateUserDto): Promise<UserResponseDto> {
-        const { jobTitleId, departmentId, ...rest } = data
-        const username = data.username
-            ? data.username
-            : removeVietnameseAccent(data.displayName.toLowerCase()) +
-              Date.now()
+    async create(dto: CreateUserDto, sendInviteEmail: boolean) {
+        // 1. Kiểm tra email tồn tại
+        const existingUser = await this.prismaService.user.findUnique({
+            where: { email: dto.email },
+        })
+        if (existingUser) throw new ConflictException('Email already exists')
 
-        if (
-            (await this.existingEmail(data.email)) ||
-            (await this.existingUsername(username))
-        ) {
-            throw new ConflictException('User already exists')
-        }
+        // 2. Hash mật khẩu
+        const hashedPassword = await this.bcryptService.hash(dto.password)
 
-        const password = data.password
-            ? await this.bcryptService.hash(data.password)
-            : ''
-        const avatar = data.avatar
-            ? data.avatar
-            : `https://ui-avatars.com/api/?name=${data.displayName.replaceAll(' ', '+')}&background=random`
+        // 3. Get unique username
+        const username = await this.generateUsernameFromEmail(dto.email)
 
+        // 4. Generate avatarURL
+        const avatar = this.generateAvatar(dto.displayName)
+
+        // 3. Tạo User trong DB
+        // Lưu ý: Better Auth cần 'name' và 'username'
+        const user = await this.prismaService.user.create({
+            data: {
+                ...dto,
+                password: hashedPassword,
+                username: username,
+                displayName: dto.displayName,
+                avatar,
+            },
+        })
+
+        // 4. Gửi Email nếu được yêu cầu
         try {
-            const user = await this.prismaService.user.create({
-                data: {
-                    ...rest,
-                    password,
-                    displayName: data.displayName,
-                    avatar,
-                    username,
-                    ...(jobTitleId
-                        ? {
-                              jobTitle: {
-                                  connect: { id: jobTitleId },
-                              },
-                          }
-                        : {}),
-                    ...(departmentId
-                        ? {
-                              department: {
-                                  connect: { id: departmentId },
-                              },
-                          }
-                        : {}),
-                },
-                include: {
-                    jobTitle: true,
-                    department: true,
-                },
-            })
-
-            return plainToInstance(UserResponseDto, user, {
-                excludeExtraneousValues: true,
-            })
+            if (sendInviteEmail) {
+                // Chúng ta gửi mật khẩu chưa hash cho user qua email
+                await this.mailService.sendUserInvitation(
+                    dto.email,
+                    dto.displayName,
+                    dto.password
+                )
+            }
         } catch (error) {
-            console.log(error)
-            throw new BadRequestException(error.message)
+            this.logger.error(error)
         }
+
+        return user
     }
 
     async updatePassword(
@@ -133,27 +121,6 @@ export class UserService {
         })
 
         return { message: 'Password updated successfully' }
-    }
-
-    async checkUsernameValid(username: string) {
-        if (
-            username.toLocaleLowerCase() === 'admin' ||
-            username.toLocaleLowerCase() === 'cadsquadadmin' ||
-            username.toLocaleLowerCase() === 'admin-cadsquad' ||
-            username.toLocaleLowerCase() === 'cadsquad-admin'
-        ) {
-            return {
-                isValid: 0,
-            }
-        }
-        const existingUsername = await this.prismaService.user.findUnique({
-            where: {
-                username,
-            },
-        })
-        return {
-            isValid: Boolean(existingUsername) ? 0 : 1,
-        }
     }
 
     async getUserRole(userId: string): Promise<RoleEnum> {
@@ -302,12 +269,17 @@ export class UserService {
             newStatus = !user.isActive
         }
 
-        if (!newStatus) {
-            await this.mailService.sendAccountStatusUpdate({
-                displayName: user.displayName,
-                email: user.email,
-                isActive: user.isActive,
-            })
+        try {
+            if (!newStatus) {
+                await this.mailService.sendAccountStatusUpdate({
+                    displayName: user.displayName,
+                    email: user.email,
+                    isActive: user.isActive,
+                })
+            }
+        } catch (error) {
+            this.logger.error(error)
+            throw new InternalServerErrorException('Send email error')
         }
 
         const resultUpdated = await this.prismaService.user.update({
@@ -329,11 +301,60 @@ export class UserService {
         })
     }
 
-    private async existingUsername(username: string) {
-        return await this.prismaService.user.findUnique({
+    async isUsernameTaken(username: string): Promise<boolean> {
+        const count = await this.prismaService.user.count({
             where: {
-                username,
+                username: {
+                    equals: username,
+                    mode: 'insensitive', // Không phân biệt hoa thường (VD: 'John' và 'john' là một)
+                },
             },
         })
+
+        return count > 0
+    }
+
+    /**
+     * Input: ch.duong@cadsquad.vn -> Output: ch.duong
+     * Nếu ch.duong đã tồn tại -> Output: ch.duong.a1b2
+     */
+    private async generateUsernameFromEmail(email: string): Promise<string> {
+        // 1. Tách phần prefix từ email (Lấy phần trước dấu @)
+        // Ví dụ: ch.duong@cadsquad.vn -> ch.duong
+        const baseUsername = email.split('@')[0].toLowerCase()
+
+        // 2. Kiểm tra sự tồn tại trong Database
+        const existingUser = await this.prismaService.user.findUnique({
+            where: { username: baseUsername },
+            select: { id: true },
+        })
+
+        // 3. Nếu chưa tồn tại, dùng luôn baseUsername
+        if (!existingUser) {
+            return baseUsername
+        }
+
+        // 4. Nếu đã tồn tại, tạo hậu tố ngẫu nhiên (4 ký tự)
+        // Kết quả: ch.duong.x8k2
+        const shortId = Math.random().toString(36).substring(2, 6)
+        const finalUsername = `${baseUsername}.${shortId}`
+
+        return finalUsername
+    }
+
+    /**
+     * Tạo URL avatar từ tên hiển thị
+     * @param name Ví dụ: "Ho Thien My"
+     * @returns https://ui-avatars.com/api/?name=Ho+Thien+My&background=random
+     */
+    private generateAvatar(name: string): string {
+        // 1. Loại bỏ các khoảng trắng thừa
+        const cleanName = name.trim()
+
+        // 2. Thay thế khoảng trắng bằng dấu "+" để đúng định dạng URL query
+        const formattedName = cleanName.replace(/\s+/g, '+')
+
+        // 3. Trả về URL hoàn chỉnh
+        return `https://ui-avatars.com/api/?name=${formattedName}&background=random&size=128`
     }
 }

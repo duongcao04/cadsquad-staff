@@ -1,8 +1,8 @@
 import type {
     TClient,
-    TComment,
     TJobActivityLog,
     TJobAssignment,
+    TJobComment,
     TJobStatus,
     TJobType,
     TPaymentChannel,
@@ -76,9 +76,9 @@ export interface IJobResponse {
 
     /**
      * A list of comments.
-     * @type {TComment[]}
+     * @type {TJobComment[]}
      */
-    comments?: TComment[]
+    comments?: TJobComment[]
 
     /**
      * The cost associated with the staff working on the job.

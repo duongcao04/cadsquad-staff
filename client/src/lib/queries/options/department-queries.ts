@@ -23,9 +23,11 @@ export const departmentsListOptions = () => {
         queryFn: () => departmentApi.findAll(),
         select: (res) => {
             const departmentsData = res?.result
-            return Array.isArray(departmentsData)
-                ? departmentsData.map(mapDepartment)
-                : []
+            return {
+                departments: Array.isArray(departmentsData)
+                    ? departmentsData.map(mapDepartment)
+                    : [],
+            }
         },
     })
 }

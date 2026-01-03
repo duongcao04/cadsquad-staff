@@ -1,5 +1,6 @@
 export * from './_color'
 export * from './_constants'
+export * from './_email'
 export * from './_mapper'
 export * from './_number'
 export * from './_string'

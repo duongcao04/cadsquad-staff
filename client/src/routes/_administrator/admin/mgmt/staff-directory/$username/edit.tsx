@@ -46,7 +46,7 @@ import {
     Tabs,
     useDisclosure,
 } from '@heroui/react'
-import { useQueries, useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import {
@@ -629,7 +629,14 @@ function EditProfileTab({ user }: { user: TUser }) {
 
 function OrganizationDepartment({ user }: { user: TUser }) {
     const updateUserMutation = useUpdateUserMutation()
-    const [{ data: departments }, { data: jobTitles }] = useQueries({
+    const [
+        {
+            data: { departments },
+        },
+        {
+            data: { jobTitles },
+        },
+    ] = useSuspenseQueries({
         queries: [
             {
                 ...departmentsListOptions(),

@@ -23,9 +23,8 @@ import type {
     TJobComment,
 } from '@/shared/types'
 import queryString from 'query-string'
-
-import { ProjectCenterTabEnum } from '../../shared/enums'
 import { TJobGeneralDetails } from '../../routes/_administrator/admin/mgmt/jobs/$no'
+import { ProjectCenterTabEnum } from '../../shared/enums'
 
 export const jobApi = {
     togglePin: async (jobId: string) => {

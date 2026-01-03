@@ -1,11 +1,11 @@
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import type {
-    TCreateUserInput,
     TResetPasswordInput,
     TUpdatePasswordInput,
     TUpdateUserInput,
 } from '@/lib/validationSchemas'
 import type { IUserResponse } from '@/shared/interfaces'
+import { TCreateUserInput } from '../../shared/components'
 
 export interface IProfileOverview {
     summary: {
@@ -21,8 +21,23 @@ export interface IProfileOverview {
     }
 }
 export const userApi = {
-    create: (data: TCreateUserInput) => {
-        return axiosClient.post<ApiResponse<IUserResponse>>('/v1/users', data)
+    create: async (
+        data: Omit<TCreateUserInput, 'sendInviteEmail'>,
+        sendInviteEmail: boolean
+    ) => {
+        return axiosClient
+            .post<ApiResponse<IUserResponse>>(
+                `/v1/users?sendInviteEmail=${sendInviteEmail ? '1' : '0'}`,
+                {
+                    displayName: data.displayName,
+                    email: data.email,
+                    role: data.role,
+                    password: data.password,
+                    jobTitleId: data.jobTitleId,
+                    departmentId: data.departmentId,
+                }
+            )
+            .then((res) => res.data)
     },
     findAll: async () => {
         return axiosClient
@@ -49,10 +64,12 @@ export const userApi = {
             .patch<ApiResponse<{ isActive: boolean; username: string }>>(url)
             .then((res) => res.data)
     },
-    checkUsernameValid: (username: string) => {
-        return axiosClient.get<ApiResponse<{ isValid: 0 | 1 }>>(
-            `/v1/users/username/${username}`
-        )
+    checkUsernameTaken: async (username: string) => {
+        return axiosClient
+            .get<
+                ApiResponse<{ isExist: boolean }>
+            >(`/v1/users/check-username?username=${username}`)
+            .then((res) => res.data)
     },
     updatePassword: async (data: TUpdatePasswordInput) => {
         return axiosClient

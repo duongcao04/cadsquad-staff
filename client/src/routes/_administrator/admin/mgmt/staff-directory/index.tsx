@@ -63,7 +63,9 @@ function StaffDirectoryPage() {
         {
             data: { users },
         },
-        { data: departments },
+        {
+            data: { departments },
+        },
     ] = useSuspenseQueries({
         queries: [{ ...usersListOptions() }, { ...departmentsListOptions() }],
     })
