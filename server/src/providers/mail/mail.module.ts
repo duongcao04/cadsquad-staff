@@ -16,7 +16,7 @@ import { MailService } from './mail.service'
                     },
                 },
                 template: {
-                    dir: join(process.cwd(), 'src/providers/mail/templates'),
+                    dir: join(process.cwd(), 'src/common/templates'),
                     adapter: new HandlebarsAdapter({
                         // Định nghĩa các logic so sánh cho template .hbs
                         eq: (a: any, b: any) => a === b,
