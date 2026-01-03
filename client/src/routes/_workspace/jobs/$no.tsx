@@ -68,6 +68,8 @@ import JobDescriptionModal from '../../../shared/components/job-detail/JobDescri
 import CountdownTimer from '../../../shared/components/ui/countdown-timer'
 import HtmlReactParser from '../../../shared/components/ui/html-react-parser'
 import { JobStatusSystemTypeEnum } from '../../../shared/enums'
+import { useDevice } from '../../../shared/hooks'
+import MobileJobDetailPage from '../../../shared/components/job-detail/mobile/MobileJobDetailPage'
 
 export enum JobDetailTabEnum {
     OVERVIEW = 'overview',
@@ -97,7 +99,13 @@ export const Route = createFileRoute('/_workspace/jobs/$no')({
             ...jobByNoOptions(params.no),
         })
     },
-    component: JobDetailPage,
+    component: () => {
+        const { isSmallView } = useDevice()
+        if (isSmallView) {
+            return <MobileJobDetailPage />
+        }
+        return <JobDetailPage />
+    },
 })
 
 function JobDetailPage() {

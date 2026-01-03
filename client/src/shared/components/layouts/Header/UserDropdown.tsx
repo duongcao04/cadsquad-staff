@@ -79,7 +79,7 @@ export function UserDropdown() {
                         key="profile"
                         className="h-14 gap-2 opacity-100"
                         onClick={() => {
-                            router.navigate({ href: '/profile' })
+                            router.navigate({ href: INTERNAL_URLS.profile })
                         }}
                     >
                         <UserComp

@@ -18,6 +18,7 @@ export const EXTERNAL_URLS = {
 export const INTERNAL_URLS = {
     home: '/',
     projectCenter: '/' + 'project-center',
+    userSchedule: '/' + 'schedule',
     workbench: '/',
     getJobDetailUrl: (jobNo: string, locale?: string) => {
         if (!locale) return '/' + 'jobs' + '/' + jobNo

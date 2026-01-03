@@ -1,5 +1,3 @@
-'use client'
-
 import { useWindowSize } from 'usehooks-ts'
 
 export const BREAKPOINTS = {
@@ -30,5 +28,11 @@ export const useDevice = () => {
     const isDesktop = width >= SCREENS.desktop && width < SCREENS.largeDevice
     const isLargeDevice = width >= SCREENS.largeDevice
 
-    return { isMobile, isTablet, isDesktop, isLargeDevice }
+    return {
+        isSmallView: isMobile || isTablet,
+        isMobile,
+        isTablet,
+        isDesktop,
+        isLargeDevice,
+    }
 }

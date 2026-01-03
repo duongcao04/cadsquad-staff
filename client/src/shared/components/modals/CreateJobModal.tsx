@@ -1,5 +1,7 @@
 import { useCreateJobMutation } from '../../../lib'
+import { useDevice } from '../../hooks'
 import CreateJobForm from '../forms/CreateJobForm'
+import CreateJobFormMobile from '../forms/CreateJobFormMobile'
 import {
     HeroModal,
     HeroModalBody,
@@ -12,15 +14,15 @@ type Props = {
     onClose: () => void
 }
 export function CreateJobModal({ isOpen, onClose }: Props) {
+    const { isSmallView } = useDevice()
     const createJobMutation = useCreateJobMutation()
 
     return (
         <HeroModal
             isOpen={isOpen}
             onClose={onClose}
-            classNames={{
-                base: 'max-w-[90%] sm:max-w-[80%] md:max-w-[80%] xl:max-w-[60%]',
-            }}
+            placement={isSmallView ? 'bottom-center' : 'center'}
+            size='4xl'
         >
             <HeroModalContent>
                 <HeroModalHeader>
@@ -29,14 +31,25 @@ export function CreateJobModal({ isOpen, onClose }: Props) {
                     </div>
                 </HeroModalHeader>
                 <HeroModalBody className="px-0 pt-0">
-                    <CreateJobForm
-                        isSubmitting={createJobMutation.isPending}
-                        onSubmit={async (values) => {
-                            await createJobMutation.mutateAsync(values)
-                            console.log(values)
-                        }}
-                        afterSubmit={onClose}
-                    />
+                    {isSmallView ? (
+                        <CreateJobFormMobile
+                            isSubmitting={createJobMutation.isPending}
+                            onSubmit={async (values) => {
+                                await createJobMutation.mutateAsync(values)
+                                console.log(values)
+                            }}
+                            afterSubmit={onClose}
+                        />
+                    ) : (
+                        <CreateJobForm
+                            isSubmitting={createJobMutation.isPending}
+                            onSubmit={async (values) => {
+                                await createJobMutation.mutateAsync(values)
+                                console.log(values)
+                            }}
+                            afterSubmit={onClose}
+                        />
+                    )}
                 </HeroModalBody>
             </HeroModalContent>
         </HeroModal>

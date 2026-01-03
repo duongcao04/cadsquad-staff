@@ -40,6 +40,7 @@ import { HeroInput } from '../ui/hero-input'
 import { HeroModal, HeroModalContent } from '../ui/hero-modal'
 import { HeroPasswordInput } from '../ui/hero-password-input'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
+import { useDevice } from '../../hooks'
 
 const ONLY_INTERNAL_EMAIL = false
 
@@ -96,6 +97,7 @@ export default function CreateUserModal({
     isOpen: boolean
     onClose: () => void
 }) {
+    const { isDesktop } = useDevice()
     const createUserMutation = useCreateUserMutation()
     const [isSuccess, setIsSuccess] = useState(false)
     const [userCreated, setUserCreated] = useState<UserCreatedValues | null>(
@@ -118,7 +120,7 @@ export default function CreateUserModal({
         <HeroModal
             isOpen={isOpen}
             onClose={onClose}
-            placement="center"
+            placement={isDesktop ? 'center' : 'bottom-center'}
             scrollBehavior="inside"
             classNames={{ base: 'max-w-[800px]' }}
         >

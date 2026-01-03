@@ -1,12 +1,8 @@
-import { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { jobsPendingDeliverOptions, useDeliverJobMutation } from '@/lib/queries'
 import {
-    HeroModal,
-    HeroModalBody,
-    HeroModalContent,
-    HeroModalHeader,
-    HeroModalFooter,
-} from '../ui/hero-modal'
+    DeliverJobInputSchema,
+    TDeliverJobInput,
+} from '@/lib/validationSchemas/_job.schema'
 import {
     Button,
     Chip,
@@ -20,12 +16,16 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useFormik } from 'formik'
 import lodash from 'lodash'
 import { CheckCircle2, Link as LinkIcon, Paperclip, Send } from 'lucide-react'
-import { jobsPendingDeliverOptions, useDeliverJobMutation } from '@/lib/queries'
-import {
-    DeliverJobInputSchema,
-    TDeliverJobInput,
-} from '@/lib/validationSchemas/_job.schema'
+import { Suspense } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { JobStatusChip } from '../chips/JobStatusChip'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
+} from '../ui/hero-modal'
 
 interface DeliverJobModalProps {
     isOpen: boolean

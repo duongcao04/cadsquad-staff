@@ -10,7 +10,9 @@ import { getPageTitle } from '../../lib'
 import { workbenchDataOptions } from '../../lib/queries'
 import JobDetailDrawer from '../../shared/components/job-detail/JobDetailDrawer'
 import AssignMemberModal from '../../shared/components/project-center/AssignMemberModal'
+import WorkbenchMobileContent from '../../shared/components/workbench/WorkbenchMobileContent'
 import WorkbenchTable from '../../shared/components/workbench/WorkbenchTable'
+import { useDevice } from '../../shared/hooks'
 
 const DEFAULT_SORT = 'displayName:asc'
 
@@ -56,6 +58,7 @@ export const Route = createFileRoute('/_workspace/_workbench')({
 })
 
 export function WorkbenchPage() {
+    const { isSmallView } = useDevice()
     const searchParams = Route.useSearch()
     const navigate = Route.useNavigate()
 
@@ -103,23 +106,33 @@ export function WorkbenchPage() {
                   while useTransition is pending, instead of unmounting the whole table
                 */}
                 <div
-                    className={
+                    className={`${
                         isPending
                             ? 'opacity-70 transition-opacity'
                             : 'opacity-100'
-                    }
+                    } size-full`}
                 >
                     <Suspense fallback={<TableLoadingFallback />}>
-                        <WorkbenchTableContent
-                            {...searchParams}
-                            sort={searchParams.sort || DEFAULT_SORT}
-                            limit={searchParams.limit || 10}
-                            page={searchParams.page || 1}
-                            onSortChange={handleSortChange}
-                            onPageChange={handlePageChange}
-                            onLimitChange={handleLimitChange}
-                            onSearchChange={handleSearchChange}
-                        />
+                        {isSmallView ? (
+                            <WorkbenchMobileContent
+                                onAssignMember={() => {}}
+                                currentPage={searchParams.page ?? 1}
+                                onPageChange={handlePageChange}
+                                search={searchParams.search}
+                                onSearchChange={handleSearchChange}
+                            />
+                        ) : (
+                            <WorkbenchTableContent
+                                {...searchParams}
+                                sort={searchParams.sort || DEFAULT_SORT}
+                                limit={searchParams.limit || 10}
+                                page={searchParams.page || 1}
+                                onSortChange={handleSortChange}
+                                onPageChange={handlePageChange}
+                                onLimitChange={handleLimitChange}
+                                onSearchChange={handleSearchChange}
+                            />
+                        )}
                     </Suspense>
                 </div>
             </ErrorBoundary>
@@ -128,12 +141,13 @@ export function WorkbenchPage() {
 }
 
 function WorkbenchLayout({ children }: { children: React.ReactNode }) {
+    const { isDesktop } = useDevice()
     return (
         <>
             <PageHeading
                 title="Workbench"
                 classNames={{
-                    wrapper: '!py-3 pl-6 pr-3.5 border-b border-border-default',
+                    wrapper: `${isDesktop ? '!py-3' : '!py-2'} pl-6 pr-3.5 border-b border-border-default`,
                 }}
             />
             <div className="size-full pl-5 pr-3.5 pt-5">{children}</div>
@@ -143,7 +157,7 @@ function WorkbenchLayout({ children }: { children: React.ReactNode }) {
 
 function TableLoadingFallback() {
     return (
-        <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-divider bg-content1/50">
+        <div className="flex h-[60vh] w-full flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-divider bg-background">
             <Spinner size="lg" color="primary" label="Loading workbench..." />
         </div>
     )
