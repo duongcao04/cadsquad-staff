@@ -1,4 +1,4 @@
-import { Pagination } from '@heroui/react'
+import { Pagination, Skeleton } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { workbenchDataOptions } from '../../../lib/queries'
 import { HeroInput } from '../ui/hero-input'
@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 import lodash from 'lodash'
 import { INTERNAL_URLS } from '../../../lib'
 import { useRouter } from '@tanstack/react-router'
+import { HeroCard, HeroCardBody } from '../ui/hero-card'
 
 type Props = {
     onAssignMember: (jobNo: string) => void
@@ -70,6 +71,32 @@ export default function WorkbenchMobileContent({
                     onChange={onPageChange}
                 />
             </div>
+        </div>
+    )
+}
+
+export function WorkbenchMobileSkeleton() {
+    return (
+        <div className="space-y-4">
+            {/* Giả lập 3-4 cards đang load */}
+            {[...Array(3)].map((_, i) => (
+                <HeroCard key={i} className="border border-divider shadow-sm">
+                    <HeroCardBody className="gap-3 p-4">
+                        <div className="flex justify-between items-start">
+                            <Skeleton className="w-20 h-6 rounded-lg" />
+                            <Skeleton className="w-16 h-6 rounded-full" />
+                        </div>
+                        <div className="space-y-2">
+                            <Skeleton className="w-3/4 h-5 rounded-lg" />
+                            <Skeleton className="w-1/2 h-4 rounded-lg" />
+                        </div>
+                        <div className="flex justify-between items-center pt-2">
+                            <Skeleton className="w-24 h-4 rounded-lg" />
+                            <Skeleton className="w-16 h-8 rounded-full" />
+                        </div>
+                    </HeroCardBody>
+                </HeroCard>
+            ))}
         </div>
     )
 }

@@ -10,7 +10,9 @@ import { getPageTitle } from '../../lib'
 import { workbenchDataOptions } from '../../lib/queries'
 import JobDetailDrawer from '../../shared/components/job-detail/JobDetailDrawer'
 import AssignMemberModal from '../../shared/components/project-center/AssignMemberModal'
-import WorkbenchMobileContent from '../../shared/components/workbench/WorkbenchMobileContent'
+import WorkbenchMobileContent, {
+    WorkbenchMobileSkeleton,
+} from '../../shared/components/workbench/WorkbenchMobileContent'
 import WorkbenchTable from '../../shared/components/workbench/WorkbenchTable'
 import { useDevice } from '../../shared/hooks'
 
@@ -54,7 +56,24 @@ export const Route = createFileRoute('/_workspace/_workbench')({
             })
         )
     },
-    component: WorkbenchPage,
+    component: () => {
+        const { isSmallView } = useDevice()
+        return (
+            <>
+                <PageHeading
+                    title="Workbench"
+                    classNames={{
+                        wrapper: `${isSmallView ? '!py-3' : '!py-2'} pl-6 pr-3.5 border-b border-border-default`,
+                    }}
+                />
+                <div
+                    className={`size-full ${isSmallView ? 'container' : 'pl-5 pr-3.5'} pt-5`}
+                >
+                    <WorkbenchPage />
+                </div>
+            </>
+        )
+    },
 })
 
 export function WorkbenchPage() {
@@ -91,67 +110,56 @@ export function WorkbenchPage() {
         updateSearch((old) => ({ ...old, search: newSearch, page: 1 }))
 
     return (
-        <WorkbenchLayout>
-            <ErrorBoundary
-                fallback={
-                    <div className="p-10 text-center text-danger">
-                        <p className="font-bold text-lg">Failed to load data</p>
-                        <Button onPress={() => window.location.reload()}>
-                            Retry
-                        </Button>
-                    </div>
-                }
-            >
-                {/* Wrapping in a custom div allows us to show a subtle loading state 
+        <ErrorBoundary
+            fallback={
+                <div className="p-10 text-center text-danger">
+                    <p className="font-bold text-lg">Failed to load data</p>
+                    <Button onPress={() => window.location.reload()}>
+                        Retry
+                    </Button>
+                </div>
+            }
+        >
+            {/* Wrapping in a custom div allows us to show a subtle loading state 
                   while useTransition is pending, instead of unmounting the whole table
                 */}
-                <div
-                    className={`${
-                        isPending
-                            ? 'opacity-70 transition-opacity'
-                            : 'opacity-100'
-                    } size-full`}
-                >
-                    <Suspense fallback={<TableLoadingFallback />}>
-                        {isSmallView ? (
-                            <WorkbenchMobileContent
-                                onAssignMember={() => {}}
-                                currentPage={searchParams.page ?? 1}
-                                onPageChange={handlePageChange}
-                                search={searchParams.search}
-                                onSearchChange={handleSearchChange}
-                            />
+            <div
+                className={`${
+                    isPending ? 'opacity-70 transition-opacity' : 'opacity-100'
+                } size-full min-h-[calc(100svh-122px)]!`}
+            >
+                <Suspense
+                    fallback={
+                        isSmallView ? (
+                            <WorkbenchMobileSkeleton />
                         ) : (
-                            <WorkbenchTableContent
-                                {...searchParams}
-                                sort={searchParams.sort || DEFAULT_SORT}
-                                limit={searchParams.limit || 10}
-                                page={searchParams.page || 1}
-                                onSortChange={handleSortChange}
-                                onPageChange={handlePageChange}
-                                onLimitChange={handleLimitChange}
-                                onSearchChange={handleSearchChange}
-                            />
-                        )}
-                    </Suspense>
-                </div>
-            </ErrorBoundary>
-        </WorkbenchLayout>
-    )
-}
-
-function WorkbenchLayout({ children }: { children: React.ReactNode }) {
-    const { isDesktop } = useDevice()
-    return (
-        <>
-            <PageHeading
-                title="Workbench"
-                classNames={{
-                    wrapper: `${isDesktop ? '!py-3' : '!py-2'} pl-6 pr-3.5 border-b border-border-default`,
-                }}
-            />
-            <div className="size-full pl-5 pr-3.5 pt-5">{children}</div>
-        </>
+                            <TableLoadingFallback />
+                        )
+                    }
+                >
+                    {isSmallView ? (
+                        <WorkbenchMobileContent
+                            onAssignMember={() => {}}
+                            currentPage={searchParams.page ?? 1}
+                            onPageChange={handlePageChange}
+                            search={searchParams.search}
+                            onSearchChange={handleSearchChange}
+                        />
+                    ) : (
+                        <WorkbenchTableContent
+                            {...searchParams}
+                            sort={searchParams.sort || DEFAULT_SORT}
+                            limit={searchParams.limit || 10}
+                            page={searchParams.page || 1}
+                            onSortChange={handleSortChange}
+                            onPageChange={handlePageChange}
+                            onLimitChange={handleLimitChange}
+                            onSearchChange={handleSearchChange}
+                        />
+                    )}
+                </Suspense>
+            </div>
+        </ErrorBoundary>
     )
 }
 

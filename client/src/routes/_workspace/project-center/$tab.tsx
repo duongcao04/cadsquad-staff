@@ -6,6 +6,7 @@ import lodash from 'lodash'
 import {
     CircleCheckBig,
     ClockAlert,
+    LucideIcon,
     PinIcon,
     SquareX,
     Truck,
@@ -38,6 +39,8 @@ import { pCenterTableStore } from '@/shared/stores'
 import { TJob } from '@/shared/types'
 import { getAllowedJobColumns } from '../../../lib/utils'
 import dayjs from 'dayjs'
+import { useDevice } from '../../../shared/hooks'
+import { ProjectCenterMobileContent } from '../../../shared/components/project-center/ProjectCenterMobileContent'
 
 const DEFAULT_SORT = 'displayName:asc'
 
@@ -189,6 +192,7 @@ function ProjectCenterTableContent({
     onSearchChange: (s?: string) => void
     onFiltersChange: (newFilters: TJobFilters) => void
 }) {
+    const { isSmallView } = useDevice()
     const { userRole } = useProfile()
     const [selectedJob, setSelectedJob] = useState<string | null>(null)
 
@@ -306,40 +310,63 @@ function ProjectCenterTableContent({
                 />
             )}
 
-            <ProjectCenterTable
-                data={data?.jobs ?? []}
-                isLoadingData={isFetching}
-                pagination={pagination}
-                searchKeywords={search.search}
-                sort={search.sort}
-                visibleColumns={headerColumns.map((c) => c.uid)}
-                showFinishItems={localShowFinishItems}
-                onRefresh={refetch}
-                onDownloadCsv={handleExport}
-                openViewColDrawer={viewColDisclosure.onOpen}
-                openJobDetailDrawer={(no) => {
-                    setSelectedJob(no)
-                    jobDetailDisclosure.onOpen()
-                }}
-                onAssignMember={(no) => {
-                    setSelectedJob(no)
-                    assignMemberDisclosure.onOpen()
-                }}
-                onAddAttachments={(no) => {
-                    setSelectedJob(no)
-                    attachmentsDisclosure.onOpen()
-                }}
-                onShowFinishItemsChange={setLocalShowFinishItems}
-                onFiltersChange={onFiltersChange}
-                onPageChange={onPageChange}
-                onSearchKeywordsChange={(val) => {
-                    if (!val) onSearchChange(undefined)
-                    else debouncedSearchChange(val)
-                }}
-                onSortChange={onSortChange}
-                onLimitChange={onLimitChange}
-                filters={search as TJobFilters}
-            />
+            {isSmallView ? (
+                <ProjectCenterMobileContent
+                    data={data?.jobs ?? []}
+                    isFetching={isFetching}
+                    pagination={pagination}
+                    onPageChange={onPageChange}
+                    onSearchChange={onSearchChange}
+                    onViewDetail={(no) => {
+                        setSelectedJob(no)
+                        jobDetailDisclosure.onOpen()
+                    }}
+                    onAssignMember={(no) => {
+                        setSelectedJob(no)
+                        assignMemberDisclosure.onOpen()
+                    }}
+                    onAddAttachments={(no) => {
+                        setSelectedJob(no)
+                        attachmentsDisclosure.onOpen()
+                    }}
+                    onExport={handleExport}
+                />
+            ) : (
+                <ProjectCenterTable
+                    data={data?.jobs ?? []}
+                    isLoadingData={isFetching}
+                    pagination={pagination}
+                    searchKeywords={search.search}
+                    sort={search.sort}
+                    visibleColumns={headerColumns.map((c) => c.uid)}
+                    showFinishItems={localShowFinishItems}
+                    onRefresh={refetch}
+                    onDownloadCsv={handleExport}
+                    openViewColDrawer={viewColDisclosure.onOpen}
+                    openJobDetailDrawer={(no) => {
+                        setSelectedJob(no)
+                        jobDetailDisclosure.onOpen()
+                    }}
+                    onAssignMember={(no) => {
+                        setSelectedJob(no)
+                        assignMemberDisclosure.onOpen()
+                    }}
+                    onAddAttachments={(no) => {
+                        setSelectedJob(no)
+                        attachmentsDisclosure.onOpen()
+                    }}
+                    onShowFinishItemsChange={setLocalShowFinishItems}
+                    onFiltersChange={onFiltersChange}
+                    onPageChange={onPageChange}
+                    onSearchKeywordsChange={(val) => {
+                        if (!val) onSearchChange(undefined)
+                        else debouncedSearchChange(val)
+                    }}
+                    onSortChange={onSortChange}
+                    onLimitChange={onLimitChange}
+                    filters={search as TJobFilters}
+                />
+            )}
         </>
     )
 }
@@ -354,11 +381,12 @@ function TableLoadingFallback() {
 
 function ProjectCenterTabs({ defaultTab, onTabChange }: any) {
     const { isAdmin } = useProfile()
+    const { isSmallView } = useDevice()
     return (
         <Tabs
             aria-label="Project Tabs"
             color="primary"
-            size="sm"
+            size={isSmallView ? 'md' : 'sm'}
             variant="bordered"
             selectedKey={defaultTab}
             onSelectionChange={(key) =>
@@ -368,37 +396,97 @@ function ProjectCenterTabs({ defaultTab, onTabChange }: any) {
         >
             <Tab
                 key={ProjectCenterTabEnum.PRIORITY}
-                title={<TabTitle icon={PinIcon} label="Priority" rotate />}
+                title={
+                    <TabTitle
+                        icon={PinIcon}
+                        label="Priority"
+                        rotate
+                        value={ProjectCenterTabEnum.PRIORITY}
+                    />
+                }
             />
             <Tab
                 key={ProjectCenterTabEnum.ACTIVE}
-                title={<TabTitle icon={Vote} label="Active" />}
+                title={
+                    <TabTitle
+                        icon={Vote}
+                        label="Active"
+                        value={ProjectCenterTabEnum.ACTIVE}
+                    />
+                }
             />
             <Tab
                 key={ProjectCenterTabEnum.LATE}
-                title={<TabTitle icon={ClockAlert} label="Late" />}
+                title={
+                    <TabTitle
+                        icon={ClockAlert}
+                        label="Late"
+                        value={ProjectCenterTabEnum.LATE}
+                    />
+                }
             />
             <Tab
                 key={ProjectCenterTabEnum.DELIVERED}
-                title={<TabTitle icon={Truck} label="Delivered" />}
+                title={
+                    <TabTitle
+                        icon={Truck}
+                        label="Delivered"
+                        value={ProjectCenterTabEnum.DELIVERED}
+                    />
+                }
             />
             <Tab
                 key={ProjectCenterTabEnum.COMPLETED}
-                title={<TabTitle icon={CircleCheckBig} label="Completed" />}
+                title={
+                    <TabTitle
+                        icon={CircleCheckBig}
+                        label="Completed"
+                        value={ProjectCenterTabEnum.COMPLETED}
+                    />
+                }
             />
             {isAdmin && (
                 <Tab
                     key={ProjectCenterTabEnum.CANCELLED}
-                    title={<TabTitle icon={SquareX} label="Canceled" />}
+                    title={
+                        <TabTitle
+                            icon={SquareX}
+                            label="Canceled"
+                            value={ProjectCenterTabEnum.CANCELLED}
+                        />
+                    }
                 />
             )}
         </Tabs>
     )
 }
 
-const TabTitle = ({ icon: Icon, label, rotate }: any) => (
-    <div className="flex items-center space-x-2">
-        <Icon size={16} className={rotate ? 'rotate-45' : ''} />
-        <span>{label}</span>
-    </div>
-)
+const TabTitle = ({
+    icon: Icon,
+    label,
+    rotate,
+    value,
+}: {
+    icon: LucideIcon
+    label: string
+    rotate?: boolean
+    value: ProjectCenterTabEnum
+}) => {
+    const { tab } = Route.useParams()
+    const { isSmallView } = useDevice()
+
+    if (isSmallView) {
+        return (
+            <div className="flex items-center space-x-2">
+                <Icon size={16} className={rotate ? 'rotate-45' : ''} />
+                {tab === value && <span>{label}</span>}
+            </div>
+        )
+    }
+    return (
+        <div className="flex items-center space-x-2">
+            <Icon size={16} className={rotate ? 'rotate-45' : ''} />
+            <span>{label}</span>
+        </div>
+    )
+}

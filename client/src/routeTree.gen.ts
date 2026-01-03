@@ -24,6 +24,7 @@ import { Route as SettingsLoginAndSecurityRouteImport } from './routes/settings/
 import { Route as SettingsLanguageAndRegionRouteImport } from './routes/settings/language-and-region'
 import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
 import { Route as WorkspaceTaskSummaryRouteImport } from './routes/_workspace/task-summary'
+import { Route as WorkspaceScheduleRouteImport } from './routes/_workspace/schedule'
 import { Route as WorkspaceProjectCenterRouteImport } from './routes/_workspace/project-center'
 import { Route as WorkspaceProfileRouteImport } from './routes/_workspace/profile'
 import { Route as WorkspaceOverviewRouteImport } from './routes/_workspace/overview'
@@ -134,6 +135,11 @@ const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
 const WorkspaceTaskSummaryRoute = WorkspaceTaskSummaryRouteImport.update({
   id: '/task-summary',
   path: '/task-summary',
+  getParentRoute: () => WorkspaceRoute,
+} as any)
+const WorkspaceScheduleRoute = WorkspaceScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
   getParentRoute: () => WorkspaceRoute,
 } as any)
 const WorkspaceProjectCenterRoute = WorkspaceProjectCenterRouteImport.update({
@@ -361,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/overview': typeof WorkspaceOverviewRoute
   '/profile': typeof WorkspaceProfileRoute
   '/project-center': typeof WorkspaceProjectCenterRouteWithChildren
+  '/schedule': typeof WorkspaceScheduleRoute
   '/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
@@ -406,6 +413,7 @@ export interface FileRoutesByTo {
   '/help-center': typeof PublicHelpCenterRoute
   '/overview': typeof WorkspaceOverviewRoute
   '/profile': typeof WorkspaceProfileRoute
+  '/schedule': typeof WorkspaceScheduleRoute
   '/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
@@ -461,6 +469,7 @@ export interface FileRoutesById {
   '/_workspace/overview': typeof WorkspaceOverviewRoute
   '/_workspace/profile': typeof WorkspaceProfileRoute
   '/_workspace/project-center': typeof WorkspaceProjectCenterRouteWithChildren
+  '/_workspace/schedule': typeof WorkspaceScheduleRoute
   '/_workspace/task-summary': typeof WorkspaceTaskSummaryRoute
   '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/language-and-region': typeof SettingsLanguageAndRegionRoute
@@ -513,6 +522,7 @@ export interface FileRouteTypes {
     | '/overview'
     | '/profile'
     | '/project-center'
+    | '/schedule'
     | '/task-summary'
     | '/settings/appearance'
     | '/settings/language-and-region'
@@ -558,6 +568,7 @@ export interface FileRouteTypes {
     | '/help-center'
     | '/overview'
     | '/profile'
+    | '/schedule'
     | '/task-summary'
     | '/settings/appearance'
     | '/settings/language-and-region'
@@ -612,6 +623,7 @@ export interface FileRouteTypes {
     | '/_workspace/overview'
     | '/_workspace/profile'
     | '/_workspace/project-center'
+    | '/_workspace/schedule'
     | '/_workspace/task-summary'
     | '/settings/appearance'
     | '/settings/language-and-region'
@@ -766,6 +778,13 @@ declare module '@tanstack/react-router' {
       path: '/task-summary'
       fullPath: '/task-summary'
       preLoaderRoute: typeof WorkspaceTaskSummaryRouteImport
+      parentRoute: typeof WorkspaceRoute
+    }
+    '/_workspace/schedule': {
+      id: '/_workspace/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof WorkspaceScheduleRouteImport
       parentRoute: typeof WorkspaceRoute
     }
     '/_workspace/project-center': {
@@ -1196,6 +1215,7 @@ interface WorkspaceRouteChildren {
   WorkspaceOverviewRoute: typeof WorkspaceOverviewRoute
   WorkspaceProfileRoute: typeof WorkspaceProfileRoute
   WorkspaceProjectCenterRoute: typeof WorkspaceProjectCenterRouteWithChildren
+  WorkspaceScheduleRoute: typeof WorkspaceScheduleRoute
   WorkspaceTaskSummaryRoute: typeof WorkspaceTaskSummaryRoute
 }
 
@@ -1205,6 +1225,7 @@ const WorkspaceRouteChildren: WorkspaceRouteChildren = {
   WorkspaceOverviewRoute: WorkspaceOverviewRoute,
   WorkspaceProfileRoute: WorkspaceProfileRoute,
   WorkspaceProjectCenterRoute: WorkspaceProjectCenterRouteWithChildren,
+  WorkspaceScheduleRoute: WorkspaceScheduleRoute,
   WorkspaceTaskSummaryRoute: WorkspaceTaskSummaryRoute,
 }
 
