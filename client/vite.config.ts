@@ -55,6 +55,10 @@ export default defineConfig(({ mode }) => {
                     'apple-touch-icon.png',
                     'mask-icon.svg',
                 ],
+                workbox: {
+                    // Tăng giới hạn lên 10MB (hoặc cao hơn nếu cần)
+                    maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+                },
                 manifest: {
                     name: 'Cadsquad Staff',
                     short_name: 'Staff',
