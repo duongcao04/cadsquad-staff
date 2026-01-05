@@ -1,14 +1,10 @@
-import { INTERNAL_URLS, optimizeCloudinary } from '@/lib'
+import { COLORS, INTERNAL_URLS, optimizeCloudinary } from '@/lib'
 import { departmentsListOptions, usersListOptions } from '@/lib/queries'
 import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroButton,
     HeroCard,
     HeroCardBody,
     HeroCardFooter,
     HeroCardHeader,
-    HeroTooltip,
 } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
@@ -20,8 +16,8 @@ import { TUser } from '@/shared/types'
 import {
     Avatar,
     Button,
+    Card,
     Chip,
-    Divider,
     Dropdown,
     DropdownItem,
     DropdownMenu,
@@ -31,210 +27,229 @@ import {
     Pagination,
     Select,
     SelectItem,
+    Skeleton,
+    Spinner,
     useDisclosure,
 } from '@heroui/react'
 import { useSuspenseQueries } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import {
+    createFileRoute,
+    Link,
+    useNavigate,
+    useRouter,
+} from '@tanstack/react-router'
+import lodash from 'lodash'
 import {
     Briefcase,
     Filter,
-    House,
     Mail,
     MoreVertical,
     Phone,
-    RotateCcw,
+    RefreshCw,
     Search,
     SendIcon,
     UserPen,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useTransition } from 'react'
+import { z } from 'zod'
+
+// --- 1. ROUTE DEFINITION WITH SEARCH SCHEMA ---
+const staffSearchSchema = z.object({
+    page: z.number().catch(1),
+    limit: z.number().catch(8),
+    search: z.string().optional(),
+    departmentId: z.string().optional(),
+})
+export type TStaffSearch = z.infer<typeof staffSearchSchema>
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/'
 )({
-    loader: ({ context }) => {
-        return context.queryClient.ensureQueryData(usersListOptions())
+    validateSearch: (search) => staffSearchSchema.parse(search),
+    loaderDeps: ({ search }) => ({
+        page: search.page,
+        limit: search.limit,
+        search: search.search,
+        departmentId: search.departmentId,
+    }),
+    loader: async ({ context, deps }) => {
+        const { departmentId, limit, page, search } = deps
+        return Promise.all([
+            context.queryClient.ensureQueryData(
+                usersListOptions({
+                    limit,
+                    page,
+                    sortBy: 'displayName',
+                    sortOrder: 'asc',
+                    departmentId,
+                    search,
+                })
+            ),
+            context.queryClient.ensureQueryData(departmentsListOptions()),
+        ])
     },
     component: StaffDirectoryPage,
 })
 
+// --- 2. MAIN PAGE COMPONENT ---
 function StaffDirectoryPage() {
+    const searchParams = Route.useSearch()
+    const navigate = useNavigate({ from: Route.fullPath })
+
     const [
         {
-            data: { users },
+            data: { users, total: totalUsers, totalPages },
+            isFetching: isUsersLoading,
+            refetch,
         },
         {
             data: { departments },
         },
     ] = useSuspenseQueries({
-        queries: [{ ...usersListOptions() }, { ...departmentsListOptions() }],
+        queries: [
+            {
+                ...usersListOptions({
+                    limit: searchParams.limit,
+                    page: searchParams.page,
+                    sortBy: 'displayName',
+                    sortOrder: 'asc',
+                    departmentId: searchParams.departmentId,
+                    search: searchParams.search,
+                }),
+            },
+            { ...departmentsListOptions() },
+        ],
     })
 
-    const {
-        isOpen: isOpenAssignJobModal,
-        onOpen: onOpenAssignJobModal,
-        onClose: onCloseAssignJobModal,
-    } = useDisclosure({
-        id: 'AssignJobModal',
-    })
-    const {
-        isOpen: isOpenEmailUserModal,
-        onOpen: onOpenEmailUserModal,
-        onClose: onCloseEmailUserModal,
-    } = useDisclosure({
-        id: 'EmailUserModal',
-    })
-    const {
-        isOpen: isOpenSendNotificationModal,
-        onOpen: onOpenSendNotificationModal,
-        onClose: onCloseSendNotificationModal,
-    } = useDisclosure({
-        id: 'SendNotificationModal',
-    })
-    const {
-        isOpen: isOpenDeactivateUserModal,
-        onOpen: onOpenDeactivateUserModal,
-        onClose: onCloseDeactivateUserModal,
-    } = useDisclosure({
-        id: 'DeactivateUserModal',
-    })
-
-    const [filterValue, setFilterValue] = useState('')
-    const [departmentFilter, setDepartmentFilter] = useState<string>('all')
+    // --- Disclosure Hooks cho Modals ---
     const [selectedUser, setSelectedUser] = useState<null | TUser>(null)
+    const assignJobModal = useDisclosure()
+    const emailUserModal = useDisclosure()
+    const notificationModal = useDisclosure()
+    const deactivateModal = useDisclosure()
 
-    const handleOpenAssignModal = (user: TUser) => {
-        setSelectedUser(user)
-        onOpenAssignJobModal()
+    // useTransition is key to preventing the "jump" to Suspense fallback
+    const [, startTransition] = useTransition()
+
+    // Generic function to handle all navigation updates with transition
+    const updateSearch = (updater: (old: TStaffSearch) => TStaffSearch) => {
+        startTransition(() => {
+            navigate({
+                search: ((old: TStaffSearch) =>
+                    updater(old as TStaffSearch)) as unknown as true,
+                replace: true,
+            })
+        })
     }
-    const handleOpenEmailUserModal = (user: TUser) => {
-        setSelectedUser(user)
-        onOpenEmailUserModal()
+
+    const handlePageChange = (newPage: number) =>
+        updateSearch((old) => ({ ...old, page: newPage }))
+
+    const handleLimitChange = (newLimit: number) =>
+        updateSearch((old) => ({ ...old, limit: newLimit, page: 1 }))
+
+    const handleSearchChange = (newSearch?: string) =>
+        updateSearch((old) => ({ ...old, search: newSearch, page: 1 }))
+
+    const debouncedSearchChange = useMemo(
+        () =>
+            lodash.debounce((value: string) => handleSearchChange(value), 500),
+        [handleSearchChange]
+    )
+    const handleFilters = (deptId: string) => {
+        navigate({
+            search: (prev) => ({
+                ...prev,
+                departmentId: deptId === 'all' ? undefined : deptId,
+                page: 1,
+            }),
+        })
     }
-    const handleOpenSendNotificationModal = (user: TUser) => {
-        setSelectedUser(user)
-        onOpenSendNotificationModal()
-    }
-    const handleOpenDeactivateUserModal = (user: TUser) => {
-        setSelectedUser(user)
-        onOpenDeactivateUserModal()
-    }
 
-    // --- Filtering Logic ---
-    const filteredItems = useMemo(() => {
-        let filteredUsers = [...users]
-
-        if (filterValue) {
-            filteredUsers = filteredUsers.filter(
-                (user) =>
-                    user.displayName
-                        .toLowerCase()
-                        .includes(filterValue.toLowerCase()) ||
-                    user.email.toLowerCase().includes(filterValue.toLowerCase())
-            )
-        }
-
-        if (departmentFilter !== 'all' && departmentFilter !== '') {
-            filteredUsers = filteredUsers.filter(
-                (user) => user.department?.displayName === departmentFilter
-            )
-        }
-
-        return filteredUsers
-    }, [filterValue, departmentFilter])
-
-    // --- Helper for Role Color ---
     const getRoleColor = (role: RoleEnum) => {
-        switch (role) {
-            case 'ADMIN':
-                return 'danger'
-            case 'ACCOUNTING':
-                return 'warning'
-            case 'USER':
-                return 'primary'
-            default:
-                return 'default'
+        const colors: Record<string, any> = {
+            ADMIN: 'danger',
+            ACCOUNTING: 'warning',
+            USER: 'primary',
         }
+        return colors[role] || 'default'
     }
 
     return (
         <>
-            {isOpenAssignJobModal && selectedUser && (
+            {/* Modals Management */}
+            {assignJobModal.isOpen && selectedUser && (
                 <AssignJobModal
-                    isOpen={isOpenAssignJobModal}
-                    onClose={onCloseAssignJobModal}
+                    isOpen
+                    onClose={assignJobModal.onClose}
                     user={selectedUser}
                 />
             )}
-            {isOpenEmailUserModal && selectedUser && (
+            {emailUserModal.isOpen && selectedUser && (
                 <EmailUserModal
-                    isOpen={isOpenEmailUserModal}
-                    onClose={onCloseEmailUserModal}
+                    isOpen
+                    onClose={emailUserModal.onClose}
                     user={selectedUser}
                 />
             )}
-            {isOpenSendNotificationModal && selectedUser && (
+            {notificationModal.isOpen && selectedUser && (
                 <SendNotificationModal
-                    isOpen={isOpenSendNotificationModal}
-                    onClose={onCloseSendNotificationModal}
+                    isOpen
+                    onClose={notificationModal.onClose}
                     user={selectedUser}
                 />
             )}
-            {isOpenDeactivateUserModal && selectedUser && (
+            {deactivateModal.isOpen && selectedUser && (
                 <DeactivateUserModal
-                    isOpen={isOpenDeactivateUserModal}
-                    onClose={onCloseDeactivateUserModal}
+                    isOpen
+                    onClose={deactivateModal.onClose}
                     user={selectedUser}
                 />
             )}
-            <HeroBreadcrumbs className="pt-3 px-7 text-xs">
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.home}
-                        className="text-text-subdued!"
-                    >
-                        <House size={16} />
-                    </Link>
-                </HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.admin}
-                        className="text-text-subdued!"
-                    >
-                        Admin
-                    </Link>
-                </HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>Staff Directory</HeroBreadcrumbItem>
-            </HeroBreadcrumbs>
 
-            <AdminContentContainer className="mt-1">
-                {/* --- Toolbar Section --- */}
-                <div className="flex flex-col md:flex-row gap-4 items-center">
+            <AdminContentContainer className="mt-1 pb-10">
+                {/* --- Toolbar --- */}
+                <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
                     <Input
                         isClearable
                         className="w-full md:max-w-md"
-                        placeholder="Search by name or email..."
+                        placeholder="Search name or email..."
                         startContent={
                             <Search size={18} className="text-default-400" />
                         }
-                        value={filterValue}
-                        onClear={() => setFilterValue('')}
-                        onValueChange={setFilterValue}
-                        radius="lg"
+                        value={searchParams.search}
+                        onValueChange={(val) => {
+                            if (!val)
+                                handleSearchChange(undefined) // Instant reset on clear
+                            else debouncedSearchChange(val)
+                        }}
+                        variant="bordered"
                     />
 
                     <Select
-                        label="Department"
-                        placeholder="Filter by department"
-                        labelPlacement="outside-left"
+                        labelPlacement="outside"
                         className="w-full md:max-w-xs"
-                        defaultSelectedKeys={['all']}
-                        onChange={(e) => setDepartmentFilter(e.target.value)}
+                        selectedKeys={[searchParams.departmentId || 'all']}
+                        onChange={(e) => handleFilters(e.target.value)}
+                        variant="bordered"
+                        aria-label="Filter by department"
                         startContent={
                             <Filter size={16} className="text-default-400" />
                         }
                     >
-                        {departments.map((dept) => (
+                        {[
+                            {
+                                code: 'all-departments',
+                                createdAt: new Date(),
+                                displayName: 'All Departments',
+                                hexColor: COLORS.white,
+                                id: 'all',
+                                notes: 'Empty',
+                                updatedAt: new Date(),
+                                users: [],
+                            },
+                            ...departments,
+                        ].map((dept) => (
                             <SelectItem
                                 key={dept.id}
                                 textValue={dept.displayName}
@@ -244,238 +259,301 @@ function StaffDirectoryPage() {
                         ))}
                     </Select>
 
-                    <div className="ml-auto text-default-400 text-xs font-medium">
-                        Showing {filteredItems.length} members
+                    <div className="w-px mx-3 h-5 bg-text-muted"></div>
+                    <div className="flex gap-3">
+                        <Button
+                            startContent={
+                                isUsersLoading ? (
+                                    <Spinner size="sm" />
+                                ) : (
+                                    <RefreshCw
+                                        size={14}
+                                        className="text-small"
+                                    />
+                                )
+                            }
+                            className="border-1"
+                            variant="bordered"
+                            size="sm"
+                            onPress={() => {
+                                refetch()
+                            }}
+                        >
+                            <span className="font-medium">Refresh</span>
+                        </Button>
+                    </div>
+
+                    <div className="ml-auto flex items-center gap-4">
+                        <span className="text-default-400 text-xs font-medium">
+                            {isUsersLoading
+                                ? 'Syncing...'
+                                : `${totalUsers || 0} members`}
+                        </span>
+                        <Select
+                            size="sm"
+                            className="w-32"
+                            selectedKeys={[searchParams.limit.toString()]}
+                            onChange={(e) =>
+                                handleLimitChange(Number(e.target.value))
+                            }
+                            disallowEmptySelection
+                            variant="bordered"
+                            aria-label="Rows per page"
+                        >
+                            <SelectItem key="8" textValue="8">
+                                8 / page
+                            </SelectItem>
+                            <SelectItem key="12" textValue="12">
+                                12 / page
+                            </SelectItem>
+                            <SelectItem key="24" textValue="24">
+                                24 / page
+                            </SelectItem>
+                        </Select>
                     </div>
                 </div>
 
-                {/* --- Grid Content --- */}
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                    {users.map((user) => (
-                        <HeroCard key={user.id} className="w-full" shadow="sm">
-                            <HeroCardHeader className="justify-between items-start pt-5 px-5">
-                                <div className="flex gap-4">
-                                    <Avatar
-                                        isBordered
-                                        radius="lg"
-                                        size="lg"
-                                        src={optimizeCloudinary(user.avatar, {
-                                            width: 512,
-                                            height: 512,
-                                        })}
-                                        color={
-                                            user.isActive ? 'success' : 'danger'
-                                        }
-                                    />
-                                    <div className="flex flex-col gap-1 items-start justify-center">
-                                        <Link
-                                            to={INTERNAL_URLS.editStaffDetails(
-                                                user.username
-                                            )}
-                                        >
-                                            <h4 className="text-sm font-semibold text-text-default">
-                                                {user.displayName}
-                                            </h4>
-                                        </Link>
-                                        <h5 className="text-xs tracking-tight font-medium text-text-subdued">
-                                            {user.jobTitle?.displayName ||
-                                                'No Title'}
-                                        </h5>
-                                    </div>
-                                </div>
+                {/* --- Grid Content with Skeleton --- */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 min-h-112.5">
+                    {isUsersLoading
+                        ? [...Array(searchParams.limit)].map((_, i) => (
+                              <StaffSkeleton key={i} />
+                          ))
+                        : users.map((user) => (
+                              <HeroCard
+                                  key={user.id}
+                                  className="w-full group hover:border-primary transition-all duration-300"
+                                  shadow="sm"
+                              >
+                                  <HeroCardHeader className="justify-between items-start pt-5 px-5">
+                                      <div className="flex gap-4">
+                                          <Avatar
+                                              isBordered
+                                              radius="lg"
+                                              size="lg"
+                                              src={optimizeCloudinary(
+                                                  user.avatar,
+                                                  { width: 200, height: 200 }
+                                              )}
+                                              color={
+                                                  user.isActive
+                                                      ? 'success'
+                                                      : 'danger'
+                                              }
+                                          />
+                                          <div className="flex flex-col gap-1 items-start justify-center">
+                                              <Link
+                                                  to={INTERNAL_URLS.editStaffDetails(
+                                                      user.username
+                                                  )}
+                                              >
+                                                  <h4 className="text-sm font-bold hover:text-primary transition-colors line-clamp-1">
+                                                      {user.displayName}
+                                                  </h4>
+                                              </Link>
+                                              <h5 className="text-[10px] uppercase font-black text-text-subdued tracking-widest truncate w-32">
+                                                  {user.jobTitle?.displayName ||
+                                                      'Staff'}
+                                              </h5>
+                                          </div>
+                                      </div>
+                                      <UserActionDropdown
+                                          username={user.username}
+                                          onEmail={() => {
+                                              setSelectedUser(user)
+                                              emailUserModal.onOpen()
+                                          }}
+                                          onNotify={() => {
+                                              setSelectedUser(user)
+                                              notificationModal.onOpen()
+                                          }}
+                                          onDeactivate={() => {
+                                              setSelectedUser(user)
+                                              deactivateModal.onOpen()
+                                          }}
+                                      />
+                                  </HeroCardHeader>
 
-                                <Dropdown>
-                                    <DropdownTrigger>
-                                        <Button
-                                            isIconOnly
-                                            size="sm"
-                                            variant="light"
-                                            className="text-default-400"
-                                        >
-                                            <MoreVertical size={20} />
-                                        </Button>
-                                    </DropdownTrigger>
-                                    <DropdownMenu aria-label="User Actions">
-                                        <DropdownSection showDivider>
-                                            <DropdownItem key="view">
-                                                View Profile
-                                            </DropdownItem>
-                                            <DropdownItem
-                                                key="edit"
-                                                children={
-                                                    <Link
-                                                        className="block size-full"
-                                                        to={INTERNAL_URLS.editStaffDetails(
-                                                            user.username
-                                                        )}
-                                                    >
-                                                        Edit Details
-                                                    </Link>
-                                                }
-                                            />
-                                        </DropdownSection>
-                                        <DropdownSection
-                                            title="Update user"
-                                            showDivider
-                                        >
-                                            <DropdownItem
-                                                key="resetPassword"
-                                                startContent={
-                                                    <RotateCcw
-                                                        size={14}
-                                                        className="text-text-default"
-                                                    />
-                                                }
-                                                // onPress={onOpenResetPWModal}
-                                            >
-                                                Reset password
-                                            </DropdownItem>
-                                            <DropdownItem
-                                                key="renameUser"
-                                                startContent={
-                                                    <UserPen
-                                                        size={14}
-                                                        className="text-text-default"
-                                                    />
-                                                }
-                                                // onPress={onOpenUpdateUsernameModal}
-                                            >
-                                                Rename user
-                                            </DropdownItem>
-                                        </DropdownSection>
-                                        <DropdownSection title="Danger zone">
-                                            <DropdownItem
-                                                key="delete"
-                                                className="text-danger"
-                                                color="danger"
-                                                onPress={() => {
-                                                    handleOpenDeactivateUserModal(
-                                                        user
-                                                    )
-                                                }}
-                                            >
-                                                Deactivate User
-                                            </DropdownItem>
-                                        </DropdownSection>
-                                    </DropdownMenu>
-                                </Dropdown>
-                            </HeroCardHeader>
+                                  <HeroCardBody className="px-5 pt-2 pb-4 space-y-4">
+                                      <div className="flex flex-wrap gap-2">
+                                          <Chip
+                                              size="sm"
+                                              variant="flat"
+                                              style={{
+                                                  backgroundColor: `${user.department?.hexColor}20`,
+                                                  color: user.department
+                                                      ?.hexColor,
+                                              }}
+                                              className="border-none font-bold"
+                                          >
+                                              {user.department?.displayName}
+                                          </Chip>
+                                          <Chip
+                                              size="sm"
+                                              variant="dot"
+                                              color={getRoleColor(user.role)}
+                                              className="capitalize border-none font-bold"
+                                          >
+                                              {user.role.toLowerCase()}
+                                          </Chip>
+                                      </div>
+                                      <div className="space-y-2 text-xs text-default-500">
+                                          <div className="flex items-center gap-2 truncate">
+                                              <Mail size={14} /> {user.email}
+                                          </div>
+                                          {user.phoneNumber && (
+                                              <div className="flex items-center gap-2">
+                                                  <Phone size={14} />{' '}
+                                                  {user.phoneNumber}
+                                              </div>
+                                          )}
+                                      </div>
+                                  </HeroCardBody>
 
-                            <HeroCardBody className="px-5 pt-1 pb-3 text-small text-default-400">
-                                <div className="space-y-3">
-                                    {/* Department & Role Chips */}
-                                    <div className="flex flex-wrap gap-2 mb-2">
-                                        <Chip
-                                            size="sm"
-                                            variant="flat"
-                                            className="border-none"
-                                            // Custom style for dynamic hex colors from DB
-                                            style={{
-                                                backgroundColor: `${user.department?.hexColor}20`, // 20% opacity
-                                                color: user.department
-                                                    ?.hexColor,
-                                            }}
-                                        >
-                                            {user.department?.displayName}
-                                        </Chip>
-                                        <Chip
-                                            size="sm"
-                                            variant="dot"
-                                            color={getRoleColor(user.role)}
-                                            className="capitalize border-none"
-                                        >
-                                            {user.role.toLowerCase()}
-                                        </Chip>
-                                    </div>
-
-                                    <Divider className="my-2" />
-
-                                    {/* Contact Info */}
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-3">
-                                            <Mail size={16} />
-                                            <span className="truncate">
-                                                {user.email}
-                                            </span>
-                                        </div>
-                                        {user.phoneNumber && (
-                                            <div className="flex items-center gap-3">
-                                                <Phone size={16} />
-                                                <span>{user.phoneNumber}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </HeroCardBody>
-
-                            <HeroCardFooter className="gap-3 px-5 pb-5 pt-0">
-                                <div className="flex-1 flex gap-2">
-                                    <Button
-                                        className="flex-1"
-                                        variant="flat"
-                                        color="primary"
-                                        size="sm"
-                                        startContent={<Briefcase size={16} />}
-                                        onPress={() => {
-                                            handleOpenAssignModal(user)
-                                        }}
-                                    >
-                                        Assign Job
-                                    </Button>
-
-                                    <HeroTooltip content="Email user">
-                                        <HeroButton
-                                            isIconOnly
-                                            variant="bordered"
-                                            size="sm"
-                                            color="default"
-                                            className="border-1"
-                                            onPress={() => {
-                                                handleOpenEmailUserModal(user)
-                                            }}
-                                        >
-                                            <Mail
-                                                size={16}
-                                                className="text-text-7"
-                                            />
-                                        </HeroButton>
-                                    </HeroTooltip>
-                                    <HeroTooltip content="Send notification">
-                                        <HeroButton
-                                            isIconOnly
-                                            variant="bordered"
-                                            size="sm"
-                                            color="default"
-                                            className="border-1"
-                                            onPress={() => {
-                                                handleOpenSendNotificationModal(
-                                                    user
-                                                )
-                                            }}
-                                        >
-                                            <SendIcon
-                                                size={16}
-                                                className="text-text-7"
-                                            />
-                                        </HeroButton>
-                                    </HeroTooltip>
-                                </div>
-                            </HeroCardFooter>
-                        </HeroCard>
-                    ))}
+                                  <HeroCardFooter className="px-5 pb-5 pt-0">
+                                      <Button
+                                          fullWidth
+                                          variant="flat"
+                                          color="primary"
+                                          size="sm"
+                                          className="font-bold"
+                                          startContent={<Briefcase size={16} />}
+                                          onPress={() => {
+                                              setSelectedUser(user)
+                                              assignJobModal.onOpen()
+                                          }}
+                                      >
+                                          Assign Job
+                                      </Button>
+                                  </HeroCardFooter>
+                              </HeroCard>
+                          ))}
                 </div>
 
-                {/* --- Pagination --- */}
-                <div className="flex justify-center mt-8">
-                    <Pagination
-                        total={10}
-                        initialPage={1}
-                        color="primary"
-                        variant="flat"
-                        showControls
-                    />
+                {/* --- Pagination UI --- */}
+                <div className="flex flex-col md:flex-row justify-between items-center mt-12 px-2 gap-4">
+                    <p className="text-xs text-default-500 font-medium order-2 md:order-1">
+                        Showing{' '}
+                        {users.length > 0
+                            ? (searchParams.page - 1) * searchParams.limit + 1
+                            : 0}
+                        {' - '}
+                        {Math.min(
+                            searchParams.page * searchParams.limit,
+                            totalUsers || 0
+                        )}
+                        {' of '} {totalUsers || 0} users
+                    </p>
+
+                    {totalPages > 1 && (
+                        <Pagination
+                            isCompact
+                            showControls
+                            showShadow
+                            color="primary"
+                            page={searchParams.page}
+                            total={totalPages}
+                            onChange={handlePageChange}
+                            className="order-1 md:order-2"
+                            variant="flat"
+                        />
+                    )}
                 </div>
             </AdminContentContainer>
         </>
+    )
+}
+
+// --- 3. HELPER COMPONENTS ---
+function StaffSkeleton() {
+    return (
+        <Card className="w-full h-61.25 p-5 space-y-5" radius="lg">
+            <div className="flex gap-4">
+                <Skeleton className="rounded-lg w-14 h-14" />
+                <div className="flex flex-col gap-2 flex-1 justify-center">
+                    <Skeleton className="h-3 w-4/5 rounded-lg" />
+                    <Skeleton className="h-2 w-2/5 rounded-lg" />
+                </div>
+            </div>
+            <div className="space-y-4 pt-2">
+                <div className="flex gap-2">
+                    <Skeleton className="h-6 w-24 rounded-full" />
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                </div>
+                <div className="space-y-2">
+                    <Skeleton className="h-3 w-full rounded-lg" />
+                    <Skeleton className="h-3 w-3/4 rounded-lg" />
+                </div>
+                <Skeleton className="h-8 w-full rounded-xl mt-2" />
+            </div>
+        </Card>
+    )
+}
+
+type UserActionDropdownProps = {
+    username: string
+    onEmail: () => void
+    onNotify: () => void
+    onDeactivate: () => void
+}
+function UserActionDropdown({
+    username,
+    onEmail,
+    onNotify,
+    onDeactivate,
+}: UserActionDropdownProps) {
+    const router = useRouter()
+    return (
+        <Dropdown>
+            <DropdownTrigger>
+                <Button
+                    isIconOnly
+                    size="sm"
+                    variant="light"
+                    className="text-default-400"
+                >
+                    <MoreVertical size={20} />
+                </Button>
+            </DropdownTrigger>
+            <DropdownMenu aria-label="User Actions">
+                <DropdownSection showDivider>
+                    <DropdownItem
+                        key="view"
+                        startContent={<UserPen size={16} />}
+                        onPress={() => {
+                            router.navigate({
+                                href: INTERNAL_URLS.editStaffDetails(username),
+                            })
+                        }}
+                    >
+                        View Profile
+                    </DropdownItem>
+                    <DropdownItem
+                        key="notify"
+                        startContent={<SendIcon size={16} />}
+                        onPress={onNotify}
+                    >
+                        Send Notification
+                    </DropdownItem>
+                    <DropdownItem
+                        key="email"
+                        startContent={<Mail size={16} />}
+                        onPress={onEmail}
+                    >
+                        Direct Email
+                    </DropdownItem>
+                </DropdownSection>
+                <DropdownSection title="Danger zone">
+                    <DropdownItem
+                        key="delete"
+                        className="text-danger"
+                        color="danger"
+                        onPress={onDeactivate}
+                    >
+                        Deactivate User
+                    </DropdownItem>
+                </DropdownSection>
+            </DropdownMenu>
+        </Dropdown>
     )
 }

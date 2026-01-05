@@ -31,6 +31,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserResponseDto } from './dto/user-response.dto'
 import { UserService } from './user.service'
+import { UserQueryDto } from './dto/user-query.dto'
 
 @ApiTags('Users')
 @Controller('users')
@@ -66,9 +67,8 @@ export class UserController {
         description: 'Return a list of users.',
         type: [ProtectUserResponseDto],
     })
-    @UseGuards(RolesGuard)
-    async findAll() {
-        return this.userService.findAll()
+    async findAll(@Query() query: UserQueryDto) {
+        return this.userService.findAll(query)
     }
 
     @Patch('update-password')

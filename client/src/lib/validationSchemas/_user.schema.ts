@@ -44,3 +44,28 @@ export const editUserSchema = z.object({
 
 // Export the type to be used in the component
 export type TEditUser = z.infer<typeof editUserSchema>
+
+export const userQuerySchema = z.object({
+    // Phân trang: Tự động chuyển string từ URL sang number
+    page: z.preprocess((val) => Number(val), z.number().min(1)).default(1),
+
+    limit: z
+        .preprocess((val) => Number(val), z.number().min(1).max(100))
+        .default(10),
+
+    // Tìm kiếm theo tên/email
+    search: z.string().optional(),
+
+    // Lọc theo phòng ban (UUID)
+    departmentId: z.string().uuid('Invalid Department ID').optional(),
+
+    // Lọc theo Role
+    role: z.enum(['ADMIN', 'USER', 'ACCOUNTING']).optional(),
+
+    // Sắp xếp
+    sortBy: z.string().default('createdAt'),
+    sortOrder: z.enum(['asc', 'desc']).default('desc'),
+})
+
+// Export type để dùng trong Service/Controller
+export type TUserQueryInput = z.infer<typeof userQuerySchema>

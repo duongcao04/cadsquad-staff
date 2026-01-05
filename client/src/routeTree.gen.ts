@@ -55,14 +55,21 @@ import { Route as AdministratorAdminDepartmentsIndexRouteImport } from './routes
 import { Route as CommunitiesCodeTopicCodePostSlugRouteImport } from './routes/communities/$code/$topicCode/$postSlug'
 import { Route as AdministratorAdminMgmtTeamRouteImport } from './routes/_administrator/admin/mgmt/team'
 import { Route as AdministratorAdminMgmtStaffDirectoryRouteImport } from './routes/_administrator/admin/mgmt/staff-directory'
+import { Route as AdministratorAdminMgmtRoleNPermissionRouteImport } from './routes/_administrator/admin/mgmt/role-n-permission'
 import { Route as AdministratorAdminMgmtRevenueRouteImport } from './routes/_administrator/admin/mgmt/revenue'
 import { Route as AdministratorAdminMgmtInviteMemberRouteImport } from './routes/_administrator/admin/mgmt/invite-member'
 import { Route as AdministratorAdminDepartmentsCodeRouteImport } from './routes/_administrator/admin/departments/$code'
 import { Route as AdministratorAdminMgmtStaffDirectoryIndexRouteImport } from './routes/_administrator/admin/mgmt/staff-directory/index'
+import { Route as AdministratorAdminMgmtRoleNPermissionIndexRouteImport } from './routes/_administrator/admin/mgmt/role-n-permission/index'
 import { Route as AdministratorAdminMgmtJobsIndexRouteImport } from './routes/_administrator/admin/mgmt/jobs/index'
 import { Route as AdministratorAdminMgmtFileDocsIndexRouteImport } from './routes/_administrator/admin/mgmt/file-docs/index'
+import { Route as AdministratorAdminMgmtRoleNPermissionPermissionsRouteImport } from './routes/_administrator/admin/mgmt/role-n-permission/permissions'
+import { Route as AdministratorAdminMgmtRoleNPermissionMatrixRouteImport } from './routes/_administrator/admin/mgmt/role-n-permission/matrix'
 import { Route as AdministratorAdminMgmtJobsNoRouteImport } from './routes/_administrator/admin/mgmt/jobs/$no'
+import { Route as AdministratorAdminMgmtRoleNPermissionUsersIndexRouteImport } from './routes/_administrator/admin/mgmt/role-n-permission/users/index'
+import { Route as AdministratorAdminMgmtRoleNPermissionRolesIndexRouteImport } from './routes/_administrator/admin/mgmt/role-n-permission/roles/index'
 import { Route as AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport } from './routes/_administrator/admin/mgmt/staff-directory/$username/edit'
+import { Route as AdministratorAdminMgmtRoleNPermissionRolesCodeRouteImport } from './routes/_administrator/admin/mgmt/role-n-permission/roles/$code'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -307,6 +314,12 @@ const AdministratorAdminMgmtStaffDirectoryRoute =
     path: '/mgmt/staff-directory',
     getParentRoute: () => AdministratorAdminRoute,
   } as any)
+const AdministratorAdminMgmtRoleNPermissionRoute =
+  AdministratorAdminMgmtRoleNPermissionRouteImport.update({
+    id: '/mgmt/role-n-permission',
+    path: '/mgmt/role-n-permission',
+    getParentRoute: () => AdministratorAdminRoute,
+  } as any)
 const AdministratorAdminMgmtRevenueRoute =
   AdministratorAdminMgmtRevenueRouteImport.update({
     id: '/mgmt/revenue',
@@ -331,6 +344,12 @@ const AdministratorAdminMgmtStaffDirectoryIndexRoute =
     path: '/',
     getParentRoute: () => AdministratorAdminMgmtStaffDirectoryRoute,
   } as any)
+const AdministratorAdminMgmtRoleNPermissionIndexRoute =
+  AdministratorAdminMgmtRoleNPermissionIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AdministratorAdminMgmtRoleNPermissionRoute,
+  } as any)
 const AdministratorAdminMgmtJobsIndexRoute =
   AdministratorAdminMgmtJobsIndexRouteImport.update({
     id: '/mgmt/jobs/',
@@ -343,17 +362,47 @@ const AdministratorAdminMgmtFileDocsIndexRoute =
     path: '/mgmt/file-docs/',
     getParentRoute: () => AdministratorAdminRoute,
   } as any)
+const AdministratorAdminMgmtRoleNPermissionPermissionsRoute =
+  AdministratorAdminMgmtRoleNPermissionPermissionsRouteImport.update({
+    id: '/permissions',
+    path: '/permissions',
+    getParentRoute: () => AdministratorAdminMgmtRoleNPermissionRoute,
+  } as any)
+const AdministratorAdminMgmtRoleNPermissionMatrixRoute =
+  AdministratorAdminMgmtRoleNPermissionMatrixRouteImport.update({
+    id: '/matrix',
+    path: '/matrix',
+    getParentRoute: () => AdministratorAdminMgmtRoleNPermissionRoute,
+  } as any)
 const AdministratorAdminMgmtJobsNoRoute =
   AdministratorAdminMgmtJobsNoRouteImport.update({
     id: '/mgmt/jobs/$no',
     path: '/mgmt/jobs/$no',
     getParentRoute: () => AdministratorAdminRoute,
   } as any)
+const AdministratorAdminMgmtRoleNPermissionUsersIndexRoute =
+  AdministratorAdminMgmtRoleNPermissionUsersIndexRouteImport.update({
+    id: '/users/',
+    path: '/users/',
+    getParentRoute: () => AdministratorAdminMgmtRoleNPermissionRoute,
+  } as any)
+const AdministratorAdminMgmtRoleNPermissionRolesIndexRoute =
+  AdministratorAdminMgmtRoleNPermissionRolesIndexRouteImport.update({
+    id: '/roles/',
+    path: '/roles/',
+    getParentRoute: () => AdministratorAdminMgmtRoleNPermissionRoute,
+  } as any)
 const AdministratorAdminMgmtStaffDirectoryUsernameEditRoute =
   AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport.update({
     id: '/$username/edit',
     path: '/$username/edit',
     getParentRoute: () => AdministratorAdminMgmtStaffDirectoryRoute,
+  } as any)
+const AdministratorAdminMgmtRoleNPermissionRolesCodeRoute =
+  AdministratorAdminMgmtRoleNPermissionRolesCodeRouteImport.update({
+    id: '/roles/$code',
+    path: '/roles/$code',
+    getParentRoute: () => AdministratorAdminMgmtRoleNPermissionRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -396,16 +445,23 @@ export interface FileRoutesByFullPath {
   '/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
+  '/admin/mgmt/role-n-permission': typeof AdministratorAdminMgmtRoleNPermissionRouteWithChildren
   '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
   '/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/communities/$code/$topicCode/$postSlug': typeof CommunitiesCodeTopicCodePostSlugRoute
   '/admin/departments': typeof AdministratorAdminDepartmentsIndexRoute
   '/communities/$code/$topicCode': typeof CommunitiesCodeTopicCodeIndexRoute
   '/admin/mgmt/jobs/$no': typeof AdministratorAdminMgmtJobsNoRoute
+  '/admin/mgmt/role-n-permission/matrix': typeof AdministratorAdminMgmtRoleNPermissionMatrixRoute
+  '/admin/mgmt/role-n-permission/permissions': typeof AdministratorAdminMgmtRoleNPermissionPermissionsRoute
   '/admin/mgmt/file-docs': typeof AdministratorAdminMgmtFileDocsIndexRoute
   '/admin/mgmt/jobs': typeof AdministratorAdminMgmtJobsIndexRoute
+  '/admin/mgmt/role-n-permission/': typeof AdministratorAdminMgmtRoleNPermissionIndexRoute
   '/admin/mgmt/staff-directory/': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
+  '/admin/mgmt/role-n-permission/roles/$code': typeof AdministratorAdminMgmtRoleNPermissionRolesCodeRoute
   '/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
+  '/admin/mgmt/role-n-permission/roles': typeof AdministratorAdminMgmtRoleNPermissionRolesIndexRoute
+  '/admin/mgmt/role-n-permission/users': typeof AdministratorAdminMgmtRoleNPermissionUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '/financial': typeof AdministratorFinancialRouteWithChildren
@@ -447,10 +503,16 @@ export interface FileRoutesByTo {
   '/admin/departments': typeof AdministratorAdminDepartmentsIndexRoute
   '/communities/$code/$topicCode': typeof CommunitiesCodeTopicCodeIndexRoute
   '/admin/mgmt/jobs/$no': typeof AdministratorAdminMgmtJobsNoRoute
+  '/admin/mgmt/role-n-permission/matrix': typeof AdministratorAdminMgmtRoleNPermissionMatrixRoute
+  '/admin/mgmt/role-n-permission/permissions': typeof AdministratorAdminMgmtRoleNPermissionPermissionsRoute
   '/admin/mgmt/file-docs': typeof AdministratorAdminMgmtFileDocsIndexRoute
   '/admin/mgmt/jobs': typeof AdministratorAdminMgmtJobsIndexRoute
+  '/admin/mgmt/role-n-permission': typeof AdministratorAdminMgmtRoleNPermissionIndexRoute
   '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
+  '/admin/mgmt/role-n-permission/roles/$code': typeof AdministratorAdminMgmtRoleNPermissionRolesCodeRoute
   '/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
+  '/admin/mgmt/role-n-permission/roles': typeof AdministratorAdminMgmtRoleNPermissionRolesIndexRoute
+  '/admin/mgmt/role-n-permission/users': typeof AdministratorAdminMgmtRoleNPermissionUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -498,16 +560,23 @@ export interface FileRoutesById {
   '/_administrator/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/_administrator/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/_administrator/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
+  '/_administrator/admin/mgmt/role-n-permission': typeof AdministratorAdminMgmtRoleNPermissionRouteWithChildren
   '/_administrator/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
   '/_administrator/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/communities/$code/$topicCode/$postSlug': typeof CommunitiesCodeTopicCodePostSlugRoute
   '/_administrator/admin/departments/': typeof AdministratorAdminDepartmentsIndexRoute
   '/communities/$code/$topicCode/': typeof CommunitiesCodeTopicCodeIndexRoute
   '/_administrator/admin/mgmt/jobs/$no': typeof AdministratorAdminMgmtJobsNoRoute
+  '/_administrator/admin/mgmt/role-n-permission/matrix': typeof AdministratorAdminMgmtRoleNPermissionMatrixRoute
+  '/_administrator/admin/mgmt/role-n-permission/permissions': typeof AdministratorAdminMgmtRoleNPermissionPermissionsRoute
   '/_administrator/admin/mgmt/file-docs/': typeof AdministratorAdminMgmtFileDocsIndexRoute
   '/_administrator/admin/mgmt/jobs/': typeof AdministratorAdminMgmtJobsIndexRoute
+  '/_administrator/admin/mgmt/role-n-permission/': typeof AdministratorAdminMgmtRoleNPermissionIndexRoute
   '/_administrator/admin/mgmt/staff-directory/': typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
+  '/_administrator/admin/mgmt/role-n-permission/roles/$code': typeof AdministratorAdminMgmtRoleNPermissionRolesCodeRoute
   '/_administrator/admin/mgmt/staff-directory/$username/edit': typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRoute
+  '/_administrator/admin/mgmt/role-n-permission/roles/': typeof AdministratorAdminMgmtRoleNPermissionRolesIndexRoute
+  '/_administrator/admin/mgmt/role-n-permission/users/': typeof AdministratorAdminMgmtRoleNPermissionUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -551,16 +620,23 @@ export interface FileRouteTypes {
     | '/admin/departments/$code'
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
+    | '/admin/mgmt/role-n-permission'
     | '/admin/mgmt/staff-directory'
     | '/admin/mgmt/team'
     | '/communities/$code/$topicCode/$postSlug'
     | '/admin/departments'
     | '/communities/$code/$topicCode'
     | '/admin/mgmt/jobs/$no'
+    | '/admin/mgmt/role-n-permission/matrix'
+    | '/admin/mgmt/role-n-permission/permissions'
     | '/admin/mgmt/file-docs'
     | '/admin/mgmt/jobs'
+    | '/admin/mgmt/role-n-permission/'
     | '/admin/mgmt/staff-directory/'
+    | '/admin/mgmt/role-n-permission/roles/$code'
     | '/admin/mgmt/staff-directory/$username/edit'
+    | '/admin/mgmt/role-n-permission/roles'
+    | '/admin/mgmt/role-n-permission/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/financial'
@@ -602,10 +678,16 @@ export interface FileRouteTypes {
     | '/admin/departments'
     | '/communities/$code/$topicCode'
     | '/admin/mgmt/jobs/$no'
+    | '/admin/mgmt/role-n-permission/matrix'
+    | '/admin/mgmt/role-n-permission/permissions'
     | '/admin/mgmt/file-docs'
     | '/admin/mgmt/jobs'
+    | '/admin/mgmt/role-n-permission'
     | '/admin/mgmt/staff-directory'
+    | '/admin/mgmt/role-n-permission/roles/$code'
     | '/admin/mgmt/staff-directory/$username/edit'
+    | '/admin/mgmt/role-n-permission/roles'
+    | '/admin/mgmt/role-n-permission/users'
   id:
     | '__root__'
     | '/_administrator'
@@ -652,16 +734,23 @@ export interface FileRouteTypes {
     | '/_administrator/admin/departments/$code'
     | '/_administrator/admin/mgmt/invite-member'
     | '/_administrator/admin/mgmt/revenue'
+    | '/_administrator/admin/mgmt/role-n-permission'
     | '/_administrator/admin/mgmt/staff-directory'
     | '/_administrator/admin/mgmt/team'
     | '/communities/$code/$topicCode/$postSlug'
     | '/_administrator/admin/departments/'
     | '/communities/$code/$topicCode/'
     | '/_administrator/admin/mgmt/jobs/$no'
+    | '/_administrator/admin/mgmt/role-n-permission/matrix'
+    | '/_administrator/admin/mgmt/role-n-permission/permissions'
     | '/_administrator/admin/mgmt/file-docs/'
     | '/_administrator/admin/mgmt/jobs/'
+    | '/_administrator/admin/mgmt/role-n-permission/'
     | '/_administrator/admin/mgmt/staff-directory/'
+    | '/_administrator/admin/mgmt/role-n-permission/roles/$code'
     | '/_administrator/admin/mgmt/staff-directory/$username/edit'
+    | '/_administrator/admin/mgmt/role-n-permission/roles/'
+    | '/_administrator/admin/mgmt/role-n-permission/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -997,6 +1086,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministratorAdminMgmtStaffDirectoryRouteImport
       parentRoute: typeof AdministratorAdminRoute
     }
+    '/_administrator/admin/mgmt/role-n-permission': {
+      id: '/_administrator/admin/mgmt/role-n-permission'
+      path: '/mgmt/role-n-permission'
+      fullPath: '/admin/mgmt/role-n-permission'
+      preLoaderRoute: typeof AdministratorAdminMgmtRoleNPermissionRouteImport
+      parentRoute: typeof AdministratorAdminRoute
+    }
     '/_administrator/admin/mgmt/revenue': {
       id: '/_administrator/admin/mgmt/revenue'
       path: '/mgmt/revenue'
@@ -1025,6 +1121,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministratorAdminMgmtStaffDirectoryIndexRouteImport
       parentRoute: typeof AdministratorAdminMgmtStaffDirectoryRoute
     }
+    '/_administrator/admin/mgmt/role-n-permission/': {
+      id: '/_administrator/admin/mgmt/role-n-permission/'
+      path: '/'
+      fullPath: '/admin/mgmt/role-n-permission/'
+      preLoaderRoute: typeof AdministratorAdminMgmtRoleNPermissionIndexRouteImport
+      parentRoute: typeof AdministratorAdminMgmtRoleNPermissionRoute
+    }
     '/_administrator/admin/mgmt/jobs/': {
       id: '/_administrator/admin/mgmt/jobs/'
       path: '/mgmt/jobs'
@@ -1039,12 +1142,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministratorAdminMgmtFileDocsIndexRouteImport
       parentRoute: typeof AdministratorAdminRoute
     }
+    '/_administrator/admin/mgmt/role-n-permission/permissions': {
+      id: '/_administrator/admin/mgmt/role-n-permission/permissions'
+      path: '/permissions'
+      fullPath: '/admin/mgmt/role-n-permission/permissions'
+      preLoaderRoute: typeof AdministratorAdminMgmtRoleNPermissionPermissionsRouteImport
+      parentRoute: typeof AdministratorAdminMgmtRoleNPermissionRoute
+    }
+    '/_administrator/admin/mgmt/role-n-permission/matrix': {
+      id: '/_administrator/admin/mgmt/role-n-permission/matrix'
+      path: '/matrix'
+      fullPath: '/admin/mgmt/role-n-permission/matrix'
+      preLoaderRoute: typeof AdministratorAdminMgmtRoleNPermissionMatrixRouteImport
+      parentRoute: typeof AdministratorAdminMgmtRoleNPermissionRoute
+    }
     '/_administrator/admin/mgmt/jobs/$no': {
       id: '/_administrator/admin/mgmt/jobs/$no'
       path: '/mgmt/jobs/$no'
       fullPath: '/admin/mgmt/jobs/$no'
       preLoaderRoute: typeof AdministratorAdminMgmtJobsNoRouteImport
       parentRoute: typeof AdministratorAdminRoute
+    }
+    '/_administrator/admin/mgmt/role-n-permission/users/': {
+      id: '/_administrator/admin/mgmt/role-n-permission/users/'
+      path: '/users'
+      fullPath: '/admin/mgmt/role-n-permission/users'
+      preLoaderRoute: typeof AdministratorAdminMgmtRoleNPermissionUsersIndexRouteImport
+      parentRoute: typeof AdministratorAdminMgmtRoleNPermissionRoute
+    }
+    '/_administrator/admin/mgmt/role-n-permission/roles/': {
+      id: '/_administrator/admin/mgmt/role-n-permission/roles/'
+      path: '/roles'
+      fullPath: '/admin/mgmt/role-n-permission/roles'
+      preLoaderRoute: typeof AdministratorAdminMgmtRoleNPermissionRolesIndexRouteImport
+      parentRoute: typeof AdministratorAdminMgmtRoleNPermissionRoute
     }
     '/_administrator/admin/mgmt/staff-directory/$username/edit': {
       id: '/_administrator/admin/mgmt/staff-directory/$username/edit'
@@ -1053,8 +1184,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdministratorAdminMgmtStaffDirectoryUsernameEditRouteImport
       parentRoute: typeof AdministratorAdminMgmtStaffDirectoryRoute
     }
+    '/_administrator/admin/mgmt/role-n-permission/roles/$code': {
+      id: '/_administrator/admin/mgmt/role-n-permission/roles/$code'
+      path: '/roles/$code'
+      fullPath: '/admin/mgmt/role-n-permission/roles/$code'
+      preLoaderRoute: typeof AdministratorAdminMgmtRoleNPermissionRolesCodeRouteImport
+      parentRoute: typeof AdministratorAdminMgmtRoleNPermissionRoute
+    }
   }
 }
+
+interface AdministratorAdminMgmtRoleNPermissionRouteChildren {
+  AdministratorAdminMgmtRoleNPermissionMatrixRoute: typeof AdministratorAdminMgmtRoleNPermissionMatrixRoute
+  AdministratorAdminMgmtRoleNPermissionPermissionsRoute: typeof AdministratorAdminMgmtRoleNPermissionPermissionsRoute
+  AdministratorAdminMgmtRoleNPermissionIndexRoute: typeof AdministratorAdminMgmtRoleNPermissionIndexRoute
+  AdministratorAdminMgmtRoleNPermissionRolesCodeRoute: typeof AdministratorAdminMgmtRoleNPermissionRolesCodeRoute
+  AdministratorAdminMgmtRoleNPermissionRolesIndexRoute: typeof AdministratorAdminMgmtRoleNPermissionRolesIndexRoute
+  AdministratorAdminMgmtRoleNPermissionUsersIndexRoute: typeof AdministratorAdminMgmtRoleNPermissionUsersIndexRoute
+}
+
+const AdministratorAdminMgmtRoleNPermissionRouteChildren: AdministratorAdminMgmtRoleNPermissionRouteChildren =
+  {
+    AdministratorAdminMgmtRoleNPermissionMatrixRoute:
+      AdministratorAdminMgmtRoleNPermissionMatrixRoute,
+    AdministratorAdminMgmtRoleNPermissionPermissionsRoute:
+      AdministratorAdminMgmtRoleNPermissionPermissionsRoute,
+    AdministratorAdminMgmtRoleNPermissionIndexRoute:
+      AdministratorAdminMgmtRoleNPermissionIndexRoute,
+    AdministratorAdminMgmtRoleNPermissionRolesCodeRoute:
+      AdministratorAdminMgmtRoleNPermissionRolesCodeRoute,
+    AdministratorAdminMgmtRoleNPermissionRolesIndexRoute:
+      AdministratorAdminMgmtRoleNPermissionRolesIndexRoute,
+    AdministratorAdminMgmtRoleNPermissionUsersIndexRoute:
+      AdministratorAdminMgmtRoleNPermissionUsersIndexRoute,
+  }
+
+const AdministratorAdminMgmtRoleNPermissionRouteWithChildren =
+  AdministratorAdminMgmtRoleNPermissionRoute._addFileChildren(
+    AdministratorAdminMgmtRoleNPermissionRouteChildren,
+  )
 
 interface AdministratorAdminMgmtStaffDirectoryRouteChildren {
   AdministratorAdminMgmtStaffDirectoryIndexRoute: typeof AdministratorAdminMgmtStaffDirectoryIndexRoute
@@ -1082,6 +1250,7 @@ interface AdministratorAdminRouteChildren {
   AdministratorAdminDepartmentsCodeRoute: typeof AdministratorAdminDepartmentsCodeRoute
   AdministratorAdminMgmtInviteMemberRoute: typeof AdministratorAdminMgmtInviteMemberRoute
   AdministratorAdminMgmtRevenueRoute: typeof AdministratorAdminMgmtRevenueRoute
+  AdministratorAdminMgmtRoleNPermissionRoute: typeof AdministratorAdminMgmtRoleNPermissionRouteWithChildren
   AdministratorAdminMgmtStaffDirectoryRoute: typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
   AdministratorAdminMgmtTeamRoute: typeof AdministratorAdminMgmtTeamRoute
   AdministratorAdminDepartmentsIndexRoute: typeof AdministratorAdminDepartmentsIndexRoute
@@ -1100,6 +1269,8 @@ const AdministratorAdminRouteChildren: AdministratorAdminRouteChildren = {
   AdministratorAdminMgmtInviteMemberRoute:
     AdministratorAdminMgmtInviteMemberRoute,
   AdministratorAdminMgmtRevenueRoute: AdministratorAdminMgmtRevenueRoute,
+  AdministratorAdminMgmtRoleNPermissionRoute:
+    AdministratorAdminMgmtRoleNPermissionRouteWithChildren,
   AdministratorAdminMgmtStaffDirectoryRoute:
     AdministratorAdminMgmtStaffDirectoryRouteWithChildren,
   AdministratorAdminMgmtTeamRoute: AdministratorAdminMgmtTeamRoute,

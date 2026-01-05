@@ -19,9 +19,6 @@ export default defineConfig(({ mode }) => {
             port: 3000,
             host: true,
             strictPort: true,
-            allowedHosts: [
-                'nonresiliently-sociologistic-liliana.ngrok-free.dev',
-            ],
         },
 
         // Inject các biến env vào mã nguồn thông qua import.meta.env
@@ -49,6 +46,9 @@ export default defineConfig(({ mode }) => {
                 },
             }),
             VitePWA({
+                devOptions: {
+                    enabled: false,
+                },
                 registerType: 'autoUpdate',
                 includeAssets: [
                     'favicon.ico',
@@ -80,9 +80,6 @@ export default defineConfig(({ mode }) => {
                     background_color: '#ffffff',
                     // Cấu hình riêng cho Safari/iOS
                     display: 'standalone',
-                },
-                devOptions: {
-                    enabled: true, // Bật để kiểm tra ngay trong quá trình dev
                 },
             }),
         ],

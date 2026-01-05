@@ -3,8 +3,10 @@ import type {
     TResetPasswordInput,
     TUpdatePasswordInput,
     TUpdateUserInput,
+    TUserQueryInput,
 } from '@/lib/validationSchemas'
 import type { IUserResponse } from '@/shared/interfaces'
+import queryString from 'query-string'
 import { TCreateUserInput } from '../../shared/components'
 
 export interface IProfileOverview {
@@ -39,14 +41,19 @@ export const userApi = {
             )
             .then((res) => res.data)
     },
-    findAll: async () => {
+    findAll: async (params: TUserQueryInput) => {
+        const queryStringFormatter = queryString.stringify(params, {
+            arrayFormat: 'comma',
+        })
         return axiosClient
             .get<
                 ApiResponse<{
                     users: IUserResponse[]
                     total: number
+                    currentPage: number
+                    totalPages: number
                 }>
-            >('/v1/users')
+            >(`/v1/users?${queryStringFormatter}`)
             .then((res) => res.data)
     },
     overview: async () => {

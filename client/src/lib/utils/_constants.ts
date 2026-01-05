@@ -56,6 +56,7 @@ export const INTERNAL_URLS = {
     inviteMember: '/' + 'admin/mgmt/invite-member',
     revenueReports: '/' + 'admin/mgmt/revenue',
     teamManage: '/' + 'admin/mgmt/staff-directory',
+    roleAndPermissionManage: '/' + 'admin/mgmt/role-n-permission',
     jobManage: '/' + 'admin/mgmt/jobs',
     departmentsManage: '/' + 'admin/departments',
     departmentItemManage: (departmentCode: string) =>

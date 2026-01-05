@@ -7,7 +7,7 @@ import {
     Logger,
     NotFoundException,
 } from '@nestjs/common'
-import { RoleEnum, User } from '@prisma/client'
+import { Prisma, RoleEnum, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { MailService } from '../../providers/mail/mail.service'
 import { PrismaService } from '../../providers/prisma/prisma.service'
@@ -16,6 +16,7 @@ import { CreateUserDto } from './dto/create-user.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
+import { UserQueryDto } from './dto/user-query.dto'
 import { UserResponseDto } from './dto/user-response.dto'
 
 @Injectable()
@@ -132,21 +133,63 @@ export class UserService {
         }
         return user.role
     }
-    async findAll(): Promise<{ users: UserResponseDto[]; total: number }> {
+
+    async findAll(query: UserQueryDto): Promise<{
+        users: UserResponseDto[]
+        total: number
+        totalPages: number
+        currentPage: number
+    }> {
+        const { page = 1, limit = 8, search, departmentId, role } = query
+        const skip = (page - 1) * limit
+
+        // Xây dựng bộ lọc động
+        const where: Prisma.UserWhereInput = {
+            isActive: true, // Chỉ lấy user đang hoạt động (tùy chọn)
+            AND: [
+                search
+                    ? {
+                          OR: [
+                              {
+                                  displayName: {
+                                      contains: search,
+                                      mode: 'insensitive',
+                                  },
+                              },
+                              {
+                                  email: {
+                                      contains: search,
+                                      mode: 'insensitive',
+                                  },
+                              },
+                              {
+                                  username: {
+                                      contains: search,
+                                      mode: 'insensitive',
+                                  },
+                              },
+                          ],
+                      }
+                    : {},
+                departmentId ? { departmentId } : {},
+                role ? { role: role as any } : {},
+            ],
+        }
+
         const [users, total] = await this.prismaService.$transaction([
-            // 1. Fetch Users
             this.prismaService.user.findMany({
+                where,
                 include: {
-                    department: true, // simplified from {}
+                    department: true,
                     jobTitle: true,
                 },
                 orderBy: {
-                    role: 'desc',
+                    createdAt: 'desc', // Thường ưu tiên người mới tạo lên đầu
                 },
+                skip: Number(skip),
+                take: Number(limit),
             }),
-
-            // 2. Count Total
-            this.prismaService.user.count(),
+            this.prismaService.user.count({ where }),
         ])
 
         return {
@@ -154,6 +197,8 @@ export class UserService {
                 excludeExtraneousValues: true,
             }),
             total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
         }
     }
 

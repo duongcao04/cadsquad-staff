@@ -5,6 +5,7 @@ import { authApi, IProfileOverview, userApi } from '../../api'
 import { IMAGES, toDate, toNullableDate } from '../../utils'
 import { mapDepartment } from './department-queries'
 import { mapJobTitle } from './job-title-queries'
+import { TUserQueryInput } from '../../validationSchemas'
 
 export const mapUser: (item?: IUserResponse) => TUser = (item) => {
     return {
@@ -32,15 +33,30 @@ export const mapUser: (item?: IUserResponse) => TUser = (item) => {
     }
 }
 
-export const usersListOptions = () => {
+export const usersListOptions = (
+    params: TUserQueryInput = {
+        page: 1,
+        limit: 10,
+        sortBy: '',
+        sortOrder: 'asc',
+    }
+) => {
     return queryOptions({
-        queryKey: ['users'],
-        queryFn: () => userApi.findAll(),
+        queryKey: [
+            'users',
+            `page=${params.page}`,
+            `limit=${params.limit}`,
+            `sort=${params.sortBy}:${params.sortOrder}`,
+            `search=${params.search}`,
+        ],
+        queryFn: () => userApi.findAll(params),
         select: (res) => {
             const userData = res?.result?.users
             return {
                 users: Array.isArray(userData) ? userData.map(mapUser) : [],
                 total: res.result?.total ?? 0,
+                currentPage: res.result?.currentPage ?? 1,
+                totalPages: res.result?.totalPages ?? 1,
             }
         },
     })

@@ -16,6 +16,7 @@ import {
     PieChart,
     Settings,
     Settings2,
+    ShieldUser,
     UserPlus,
     Users,
 } from 'lucide-react'
@@ -222,6 +223,14 @@ export const AdminSidebar = ({
                                     label="Staff Directory"
                                     isCollapsed={isCollapsed}
                                     url={INTERNAL_URLS.staffDirectory}
+                                />
+                            )}
+                            {isAdmin && (
+                                <SidebarItem
+                                    icon={ShieldUser}
+                                    label="Role & Permission"
+                                    isCollapsed={isCollapsed}
+                                    url={INTERNAL_URLS.roleAndPermissionManage}
                                 />
                             )}
                             {isAdmin && (

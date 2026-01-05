@@ -18,12 +18,17 @@ function WorkspaceLayout() {
 
     return (
         <AuthGuard>
+            <style jsx global>{`
+                body::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
             {isLargeDevice ? <Header /> : <MobileHeader />}
             {/* Height for header */}
             <div className={isLargeDevice ? 'h-14' : 'h-11'} />
             <main className="size-full relative flex items-start justify-start">
                 {isLargeDevice ? (
-                    <div className="fixed top-14">
+                    <div className="fixed top-14 z-50">
                         <Sidebar />
                     </div>
                 ) : null}
@@ -38,7 +43,7 @@ function WorkspaceLayout() {
                     }}
                 >
                     <ScrollArea
-                        className="size-full bg-background-muted"
+                        className="w-full"
                         style={{
                             height: isLargeDevice
                                 ? 'calc(100vh-57px)'
