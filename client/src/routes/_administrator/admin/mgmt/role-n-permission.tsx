@@ -29,19 +29,7 @@ function RolePermissionLayout() {
             <AdminPageHeading title="Role and Permission Access Control" />
 
             <AdminContentContainer className="pb-10 space-y-2.5">
-                <Tabs
-                    selectedKey={activeTab}
-                    onSelectionChange={(key) =>
-                        navigate({
-                            href:
-                                INTERNAL_URLS.roleAndPermissionManage +
-                                '/' +
-                                key,
-                        })
-                    }
-                    variant="light"
-                    color="primary"
-                >
+                <Tabs selectedKey={activeTab} variant="light" color="primary">
                     <Tab
                         key="/"
                         title={
@@ -50,6 +38,12 @@ function RolePermissionLayout() {
                                 <span>Overview</span>
                             </div>
                         }
+                        onClick={() => {
+                            navigate({
+                                href:
+                                    INTERNAL_URLS.roleAndPermissionManage + '/',
+                            })
+                        }}
                     />
                     <Tab
                         key="roles"
@@ -59,6 +53,13 @@ function RolePermissionLayout() {
                                 <span>Roles</span>
                             </div>
                         }
+                        onClick={() => {
+                            navigate({
+                                href:
+                                    INTERNAL_URLS.roleAndPermissionManage +
+                                    '/roles',
+                            })
+                        }}
                     />
                     <Tab
                         key="permissions"
@@ -68,6 +69,13 @@ function RolePermissionLayout() {
                                 <span>Permissions</span>
                             </div>
                         }
+                        onClick={() => {
+                            navigate({
+                                href:
+                                    INTERNAL_URLS.roleAndPermissionManage +
+                                    '/permissions',
+                            })
+                        }}
                     />
                     <Tab
                         key="users"
@@ -77,6 +85,13 @@ function RolePermissionLayout() {
                                 <span>User Access</span>
                             </div>
                         }
+                        onClick={() => {
+                            navigate({
+                                href:
+                                    INTERNAL_URLS.roleAndPermissionManage +
+                                    '/users',
+                            })
+                        }}
                     />
                 </Tabs>
                 <Outlet />

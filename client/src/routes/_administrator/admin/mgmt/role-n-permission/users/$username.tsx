@@ -1,3 +1,9 @@
+export const Route = createFileRoute(
+    '/_administrator/admin/mgmt/role-n-permission/users/$username'
+)({
+    component: UserAccessPage,
+})
+
 import {
     Button,
     Avatar,
@@ -17,20 +23,18 @@ import {
     AlertTriangle,
     ShieldAlert,
     CheckCircle2,
+    XCircle,
 } from 'lucide-react'
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeading, HeroCard } from '@/shared/components'
 
 export default function UserAccessPage() {
-    const { username } = useParams({
-        from: '/_administrator/admin/mgmt/role-n-permission/users/$username',
-    })
     const navigate = useNavigate()
 
     // Mock data for the specific user
     const userProfile = {
         name: 'Dang Son',
-        username: username,
+        username: 'asjdasj',
         role: 'Moderator',
         avatar: '',
         department: 'Content Quality',
