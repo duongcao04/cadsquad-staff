@@ -3,7 +3,7 @@ import type {
     TCreateJobStatusInput,
     TUpdateJobStatusInput,
 } from '@/lib/validationSchemas'
-import type { IJobResponse, IJobStatusResponse } from '@/shared/interfaces'
+import type { IJobStatusResponse } from '@/shared/interfaces'
 
 export const jobStatusApi = {
     create: (data: TCreateJobStatusInput) => {
@@ -13,15 +13,8 @@ export const jobStatusApi = {
         )
     },
     findAll: async () => {
-        return axiosClient.get<ApiResponse<IJobStatusResponse[]>>(
-            '/v1/job-statuses'
-        ).then(res => res.data)
-    },
-    findJobsByStatusCode: async (statusCode: string) => {
         return axiosClient
-            .get<
-                ApiResponse<IJobResponse[]>
-            >(`/v1/job-statuses/code/${statusCode}/jobs`)
+            .get<ApiResponse<IJobStatusResponse[]>>('/v1/job-statuses')
             .then((res) => res.data)
     },
     findOne: (id: string) => {
@@ -30,9 +23,11 @@ export const jobStatusApi = {
         )
     },
     findByOrder: async (orderNum: number) => {
-        return axiosClient.get<ApiResponse<IJobStatusResponse>>(
-            `/v1/job-statuses/order/${orderNum}`
-        ).then(res => res.data)
+        return axiosClient
+            .get<
+                ApiResponse<IJobStatusResponse>
+            >(`/v1/job-statuses/order/${orderNum}`)
+            .then((res) => res.data)
     },
     update: (id: string, data: TUpdateJobStatusInput) => {
         return axiosClient.patch<ApiResponse<{ id: string }>>(

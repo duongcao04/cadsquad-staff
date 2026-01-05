@@ -56,7 +56,11 @@ export const useLogout = () => {
 }
 
 export function useProfile() {
-    const { data, isLoading, isFetching } = useQuery({
+    const {
+        data,
+        status,
+        isLoading: isQueryLoading,
+    } = useQuery({
         queryKey: ['profile'],
         queryFn: () => authApi.getProfile(),
         select: (res) => res.data.result,
@@ -100,14 +104,14 @@ export function useProfile() {
 
     const userRole = profile?.role
 
-    const isAdmin = userRole === RoleEnum.ADMIN
-    const isStaff = userRole === RoleEnum.USER
-    const isAccounting = userRole === RoleEnum.ACCOUNTING
+    const isAdmin = userRole?.code === 'admin'
+    const isStaff = userRole?.code === 'staff'
+    const isAccounting = userRole?.code === 'accounting'
 
     return {
         data: profile,
         profile: profile,
-        isLoading: isLoading || isFetching,
+        isLoading: isQueryLoading || (status === 'pending' && !!accessToken),
         isStaff,
         isAdmin,
         isAccounting,
@@ -127,7 +131,7 @@ export function useAuth() {
         select: (res) => res.data.result,
     })
 
-    const userRole = profile?.role as RoleEnum
+    const userRole = profile?.role
 
     return {
         profile,

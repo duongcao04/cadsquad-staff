@@ -7,6 +7,7 @@ import type {
     TJobTitle,
     TUserConfig,
 } from '../types'
+import { TRole } from '../types/_role.type'
 
 /**
  * Represents a user entity with profile details, relations,
@@ -46,8 +47,8 @@ export interface IUserResponse {
     /** Phone number (nullable) */
     phoneNumber?: string | null
 
-    /** User role (e.g., ADMIN, USER) */
-    role?: RoleEnum
+    // /** User role (e.g., ADMIN, USER) */
+    // role?: RoleEnum
 
     /** Indicates if the user account is active */
     isActive?: boolean
@@ -69,6 +70,8 @@ export interface IUserResponse {
 
     /** Connected accounts (e.g., Google, GitHub) */
     accounts?: TAccount[]
+
+    role: TRole
 
     /** Notifications sent by the user */
     sendedNotifications?: Notification[]

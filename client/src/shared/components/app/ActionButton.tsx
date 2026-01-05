@@ -1,3 +1,11 @@
+import { MotionDiv } from '@/lib/motion'
+import {
+    CreateJobModal,
+    CreateNotificationModal,
+    IconAlertColorful,
+    IconPeopleColorful,
+} from '@/shared/components'
+import { appStore, ESidebarStatus } from '@/shared/stores'
 import {
     Button,
     Dropdown,
@@ -12,30 +20,21 @@ import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
 import { type Variants } from 'motion/react'
 import { useEffect } from 'react'
-
-import { MotionDiv } from '@/lib/motion'
-import { useProfile } from '@/lib/queries'
-import {
-    CreateJobModal,
-    CreateNotificationModal,
-    IconAlertColorful,
-    IconPeopleColorful,
-} from '@/shared/components'
-import { appStore, ESidebarStatus } from '@/shared/stores'
-
+import { APP_PERMISSIONS } from '../../../lib/utils'
+import { usePermission } from '../../hooks'
 import { FluentColorApprovalsApp20 } from '../icons/FluentColorApprovalsApp20'
 import { FluentColorBriefcase20 } from '../icons/FluentColorBriefcase20'
 import { FluentColorErrorCircle20 } from '../icons/FluentColorErrorCircle20'
+import CreateUserModal from '../modals/CreateUserModal'
 import { DeliverJobModal } from '../modals/DeliverJobModal'
 import { IssueReportModal } from '../modals/IssueReportModal'
-import CreateUserModal from '../modals/CreateUserModal'
 
 export function ActionButton({
     forceStatus,
 }: {
     forceStatus?: 'collapse' | 'expand'
 }) {
-    const { isAdmin } = useProfile()
+    const { hasPermission } = usePermission()
     const sidebarStatus = forceStatus
         ? forceStatus
         : useStore(appStore, (state) => state.sidebarStatus)
@@ -111,13 +110,13 @@ export function ActionButton({
             whileHover="hover"
             className="w-fit"
         >
-            {isAdmin && isOpenJM && (
+            {hasPermission(APP_PERMISSIONS.JOB.CREATE) && isOpenJM && (
                 <CreateJobModal isOpen={isOpenJM} onClose={onCloseJM} />
             )}
-            {isAdmin && isOpenUM && (
+            {hasPermission(APP_PERMISSIONS.USER.CREATE) && isOpenUM && (
                 <CreateUserModal isOpen={isOpenUM} onClose={onCloseUm} />
             )}
-            {isAdmin && isOpenNM && (
+            {hasPermission(APP_PERMISSIONS.USER.CREATE) && isOpenNM && (
                 <CreateNotificationModal
                     isOpen={isOpenNM}
                     onClose={onCloseNM}
@@ -172,7 +171,7 @@ export function ActionButton({
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Admin actions" variant="flat">
                     <DropdownSection showDivider title="Job Operations">
-                        {isAdmin ? (
+                        {hasPermission(APP_PERMISSIONS.JOB.DELIVER) ? (
                             <DropdownItem
                                 key="createJob"
                                 shortcut="Alt + N"
@@ -191,7 +190,7 @@ export function ActionButton({
                             Deliver
                         </DropdownItem>
                     </DropdownSection>
-                    <DropdownSection showDivider={isAdmin} title="Support">
+                    <DropdownSection title="Support">
                         <DropdownItem
                             key="issueReport"
                             shortcut="Alt + I"
@@ -201,7 +200,7 @@ export function ActionButton({
                             Issue Report
                         </DropdownItem>
                     </DropdownSection>
-                    {isAdmin ? (
+                    {hasPermission(APP_PERMISSIONS.USER.CREATE) ? (
                         <DropdownSection title="Team">
                             <DropdownItem
                                 key="createUser"

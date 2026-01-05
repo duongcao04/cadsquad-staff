@@ -124,16 +124,6 @@ export class UserService {
         return { message: 'Password updated successfully' }
     }
 
-    async getUserRole(userId: string): Promise<RoleEnum> {
-        const user = await this.prismaService.user.findUnique({
-            where: { id: userId },
-        })
-        if (!user) {
-            throw new NotFoundException('User not found')
-        }
-        return user.role
-    }
-
     async findAll(query: UserQueryDto): Promise<{
         users: UserResponseDto[]
         total: number
@@ -357,6 +347,19 @@ export class UserService {
         })
 
         return count > 0
+    }
+
+    async userPermissions(userId: string): Promise<string[]> {
+        const permissions = await this.prismaService.user.findUnique({
+            where: { id: userId },
+            select: { role: { include: { permissions: true } } },
+        })
+        const mapPermissions =
+            permissions?.role?.permissions.map((it) => it.entityAction) ?? []
+        if (mapPermissions.length === 0) {
+            throw new NotFoundException('User not have any permissions')
+        }
+        return mapPermissions
     }
 
     /**

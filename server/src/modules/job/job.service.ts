@@ -7,36 +7,35 @@ import {
 } from '@nestjs/common'
 import {
     ActivityType,
+    EntityEnum,
     Job,
-    JobDelivery,
     JobStatusSystemType,
     NotificationType,
+    Permission,
     Prisma,
     RoleEnum,
 } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
-import slugify from 'slugify'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
-
+import slugify from 'slugify'
 import { PaginationMeta } from '../../common/interfaces/pagination-meta.interface'
 import { PrismaService } from '../../providers/prisma/prisma.service'
+import { NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
+import { renderTemplate } from '../../utils/_string'
 import { NotificationService } from '../notification/notification.service'
+import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
+import { ChangeStatusDto } from './dto/change-status.dto'
+import { CreateJobDto } from './dto/create-job.dto'
+import { DeliverJobDto } from './dto/deliver-job.dto'
 import { JobFiltersBuilder } from './dto/job-filters.dto'
 import { JobQueryBuilder, JobQueryDto } from './dto/job-query.dto'
 import { JobResponseDto } from './dto/job-response.dto'
 import { JobSortBuilder } from './dto/job-sort.dto'
-import { DeliverJobDto } from './dto/deliver-job.dto'
-import { ChangeStatusDto } from './dto/change-status.dto'
-import { CreateJobDto } from './dto/create-job.dto'
-import { UpdateJobDto } from './dto/update-job.dto'
-import { UpdateJobMembersDto } from './dto/update-job-members.dto'
-import { RescheduleJobDto } from './dto/reschedule-job.dto'
-import { NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
-import { renderTemplate } from '../../utils/_string'
-import { UpdateRevenueDto } from './dto/update-revenue.dto'
-import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
 import { UpdateGeneralJobDto } from './dto/update-general.dto'
+import { UpdateJobDto } from './dto/update-job.dto'
+import { UpdateRevenueDto } from './dto/update-revenue.dto'
+import { UserService } from '../user/user.service'
 
 @Injectable()
 export class JobService {
@@ -44,37 +43,41 @@ export class JobService {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly notificationService: NotificationService
+        private readonly notificationService: NotificationService,
+        private readonly userService: UserService
     ) {}
 
     /**
      * PRIVATE HELPER: Handles data privacy.
      * Members see personal 'staffCost'. Admins see 'incomeCost' and 'totalStaffCost'.
      */
-    private mapRoleBasedData(
-        rawData: any[],
-        userId: string,
-        userRole: RoleEnum
+    private async mapRoleBasedData(
+        rawData: Prisma.JobGetPayload<{
+            include: {
+                assignments: { include: { user: true } }
+            }
+        }>[],
+        userId: string
     ) {
-        const isAdminOrAccountant =
-            userRole === RoleEnum.ADMIN || userRole === RoleEnum.ACCOUNTING
+        const userPermissions = await this.userService.userPermissions(userId)
+        const canReadSensitiveData = userPermissions.includes(
+            EntityEnum.JOB.toLowerCase() + '.readSensitive'
+        )
 
-        return rawData.map((job) => {
+        const mapData = rawData.map((job) => {
             const personalCost = job.assignments?.find(
                 (a: any) => a.userId === userId || a.user?.id === userId
             )?.staffCost
 
             return {
                 ...job,
-                totalStaffCost: isAdminOrAccountant
+                totalStaffCost: canReadSensitiveData
                     ? job.sumStaffCost
                     : undefined,
-                staffCost: !isAdminOrAccountant
-                    ? (personalCost ?? 0)
-                    : undefined,
+                staffCost: personalCost ?? undefined,
                 assignments: job.assignments?.map((asm: any) => ({
                     ...asm,
-                    staffCost: isAdminOrAccountant ? asm.staffCost : undefined,
+                    staffCost: canReadSensitiveData ? asm.staffCost : undefined,
                     user: asm.user
                         ? {
                               id: asm.user.id,
@@ -86,6 +89,7 @@ export class JobService {
                 })),
             }
         })
+        return mapData
     }
 
     // -------------------------------------------------------------------------
@@ -94,7 +98,7 @@ export class JobService {
 
     async findAll(
         userId: string,
-        userRole: RoleEnum,
+        userPermissions: string[],
         query: JobQueryDto
     ): Promise<{ data: Job[]; paginate: PaginationMeta }> {
         const {
@@ -116,9 +120,10 @@ export class JobService {
             'displayName',
         ])
 
+        const userPermission = await this.buildPermission(userId)
         const queryBuilder: Prisma.JobWhereInput = {
             AND: [
-                this.buildPermission(userRole, userId),
+                userPermission,
                 hideFinishItems
                     ? { status: { isNot: { systemType: 'TERMINATED' } } }
                     : {},
@@ -149,11 +154,11 @@ export class JobService {
             this.prisma.job.count({ where: queryBuilder }),
         ])
 
-        const mappedData = this.mapRoleBasedData(rawData, userId, userRole)
+        const mappedData = await this.mapRoleBasedData(rawData, userId)
         return {
             data: plainToInstance(JobResponseDto, mappedData, {
                 excludeExtraneousValues: true,
-                groups: [userRole as string],
+                // groups: userPermissions.find(i=>i.),
             }) as unknown as Job[],
             paginate: {
                 limit: Number(limit),
@@ -166,7 +171,7 @@ export class JobService {
 
     async getWorkbenchData(
         userId: string,
-        userRole: RoleEnum,
+        userPermissions: string[],
         query: JobQueryDto
     ) {
         const pinned = await this.prisma.pinnedJob.findMany({
@@ -175,7 +180,7 @@ export class JobService {
         })
         const pinnedIds = pinned.map((p) => p.jobId)
 
-        const result = await this.findAll(userId, userRole, query)
+        const result = await this.findAll(userId, userPermissions, query)
         result.data = result.data.map((job) => ({
             ...job,
             isPinned: pinnedIds.includes(job.id),
@@ -185,11 +190,13 @@ export class JobService {
 
     async findByJobNo(
         userId: string,
-        userRole: RoleEnum,
+        userPermissions: string[],
         jobNo: string
     ): Promise<Job> {
+        const userPermission = await this.buildPermission(userId)
+
         const job = await this.prisma.job.findFirst({
-            where: { no: jobNo, AND: [this.buildPermission(userRole, userId)] },
+            where: { AND: [userPermission, { no: jobNo }] },
             include: {
                 type: true,
                 assignments: { include: { user: true } },
@@ -212,29 +219,33 @@ export class JobService {
             },
         })
         if (!job) throw new NotFoundException('Job not found')
-        return plainToInstance(
-            JobResponseDto,
-            this.mapRoleBasedData([job], userId, userRole)[0],
-            {
-                excludeExtraneousValues: true,
-                groups: [userRole as string],
-            }
-        ) as unknown as Job
+        const mappedData = (await this.mapRoleBasedData([job], userId))[0]
+
+        return plainToInstance(JobResponseDto, mappedData, {
+            excludeExtraneousValues: true,
+            groups: [
+                userPermissions.find(
+                    (item) => item === 'job.readSensitive'
+                ) as string,
+            ],
+        }) as unknown as Job
     }
 
     async findJobsDueAt(
         userId: string,
-        userRole: RoleEnum,
+        userPermissions: string[],
         isoDate: string
     ): Promise<Job[]> {
         const startOfDay = dayjs(isoDate).startOf('day').toDate()
         const endOfDay = dayjs(isoDate).endOf('day').toDate()
+        const userPermission = await this.buildPermission(userId)
+
         const rawData = await this.prisma.job.findMany({
             where: {
                 AND: [
                     { dueAt: { gte: startOfDay, lte: endOfDay } },
                     { deletedAt: null },
-                    this.buildPermission(userRole, userId),
+                    userPermission,
                 ],
             },
             include: {
@@ -243,18 +254,22 @@ export class JobService {
                 assignments: { include: { user: true } },
             },
         })
-        return plainToInstance(
-            JobResponseDto,
-            this.mapRoleBasedData(rawData, userId, userRole),
-            { excludeExtraneousValues: true, groups: [userRole as string] }
-        ) as unknown as Job[]
+        const mappedData = await this.mapRoleBasedData(rawData, userId)
+        return plainToInstance(JobResponseDto, mappedData, {
+            excludeExtraneousValues: true,
+            groups: [
+                userPermissions.find(
+                    (item) => item === 'job.readSensitive'
+                ) as string,
+            ],
+        }) as unknown as Job[]
     }
 
     async getDueInMonth(
         month: number,
         year: number,
         userId: string,
-        userRole: RoleEnum
+        userPermissions: string[]
     ): Promise<Job[]> {
         const startOfMonth = dayjs()
             .year(year)
@@ -266,12 +281,14 @@ export class JobService {
             .month(month - 1)
             .endOf('month')
             .toDate()
+
+        const userPermission = await this.buildPermission(userId)
         const rawData = await this.prisma.job.findMany({
             where: {
                 AND: [
                     { dueAt: { gte: startOfMonth, lte: endOfMonth } },
                     { deletedAt: null },
-                    this.buildPermission(userRole, userId),
+                    userPermission,
                 ],
             },
             include: {
@@ -281,18 +298,23 @@ export class JobService {
             },
             orderBy: { dueAt: 'asc' },
         })
-        return plainToInstance(
-            JobResponseDto,
-            this.mapRoleBasedData(rawData, userId, userRole),
-            { excludeExtraneousValues: true, groups: [userRole as string] }
-        ) as unknown as Job[]
+        const mappedData = await this.mapRoleBasedData(rawData, userId)
+        return plainToInstance(JobResponseDto, mappedData, {
+            excludeExtraneousValues: true,
+            groups: [
+                userPermissions.find(
+                    (item) => item === 'job.readSensitive'
+                ) as string,
+            ],
+        }) as unknown as Job[]
     }
 
-    async getPendingDeliverJobs(userId: string, userRole: RoleEnum) {
+    async getPendingDeliverJobs(userId: string, userPermissions: string[]) {
+        const userPermission = await this.buildPermission(userId)
         const rawData = await this.prisma.job.findMany({
             where: {
                 AND: [
-                    this.buildPermission(userRole, userId),
+                    userPermission,
                     { status: { code: { in: ['in-progress', 'revision'] } } },
                     { deletedAt: null },
                 ],
@@ -304,11 +326,15 @@ export class JobService {
                 assignments: { include: { user: true } },
             },
         })
-        return plainToInstance(
-            JobResponseDto,
-            this.mapRoleBasedData(rawData, userId, userRole),
-            { excludeExtraneousValues: true, groups: [userRole as string] }
-        ) as unknown as Job[]
+        const mappedData = await this.mapRoleBasedData(rawData, userId)
+        return plainToInstance(JobResponseDto, mappedData, {
+            excludeExtraneousValues: true,
+            groups: [
+                userPermissions.find(
+                    (item) => item === 'job.readSensitive'
+                ) as string,
+            ],
+        }) as unknown as Job[]
     }
 
     async getPendingPaymentJobs() {
@@ -415,7 +441,15 @@ export class JobService {
             // If approved, notify Accounting to prepare payout
             if (isApproved) {
                 const accountants = await tx.user.findMany({
-                    where: { role: RoleEnum.ACCOUNTING },
+                    where: {
+                        role: {
+                            permissions: {
+                                some: {
+                                    entityAction: EntityEnum.JOB + '.paid',
+                                },
+                            },
+                        },
+                    },
                 })
 
                 if (accountants.length > 0) {
@@ -865,11 +899,19 @@ export class JobService {
             })
 
             // --- FIX NOTIFICATION ---
-            const admins = await tx.user.findMany({
-                where: { role: RoleEnum.ADMIN },
+            const approver = await tx.user.findMany({
+                where: {
+                    role: {
+                        permissions: {
+                            some: {
+                                entityAction: EntityEnum.JOB + '.review',
+                            },
+                        },
+                    },
+                },
             })
             await this.notificationService.sendMany(
-                admins.map((admin) => ({
+                approver.map((admin) => ({
                     userId: admin.id,
                     senderId: userId,
                     title: 'Bản bàn giao mới cần duyệt 🚀',
@@ -1037,11 +1079,15 @@ export class JobService {
         return { id: jobId }
     }
 
-    private buildPermission(
-        userRole: RoleEnum,
+    private async buildPermission(
         userId: string
-    ): Prisma.JobWhereInput {
-        if (userRole === RoleEnum.ADMIN) return {}
+    ): Promise<Prisma.JobWhereInput> {
+        const userPermissions = await this.userService.userPermissions(userId)
+        const canReadAll = userPermissions.includes(
+            EntityEnum.JOB.toLowerCase() + '.readAll'
+        )
+
+        if (canReadAll) return {}
         return { assignments: { some: { userId } } }
     }
 }

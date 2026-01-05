@@ -37,11 +37,11 @@ export class JobResponseDto {
     client: Client
 
     @ApiProperty({ description: 'Income cost of the job' })
-    @Expose({ groups: [RoleEnum.ADMIN, RoleEnum.ACCOUNTING] })
+    @Expose({ groups: ['job.readSensitive'] })
     incomeCost: number
 
     @ApiProperty({ description: 'Total staff cost of the job' })
-    @Expose({ groups: [RoleEnum.ADMIN, RoleEnum.ACCOUNTING] })
+    @Expose({ groups: ['job.readSensitive'] })
     totalStaffCost: number
 
     @ApiProperty({ description: 'Staff cost of the job' })

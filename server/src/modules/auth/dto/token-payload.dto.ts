@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { RoleEnum } from '@prisma/client'
 import { Expose } from 'class-transformer'
+import { RoleResponseDto } from '../../role-permissions/dtos/role-response.dto'
+import { PermissionResponseDto } from '../../role-permissions/dtos/permission-response.dto'
 
 export class TokenPayload {
     @ApiProperty({ description: 'User ID (subject)' })
@@ -11,9 +13,13 @@ export class TokenPayload {
     @Expose()
     email: string
 
-    @ApiProperty({ description: 'User role', enum: RoleEnum })
+    @ApiProperty({ description: 'User role', type: RoleResponseDto })
     @Expose()
-    role: RoleEnum
+    role: RoleResponseDto
+
+    @ApiProperty({ description: 'User role', type: [String] })
+    @Expose()
+    permissions: string[]
 
     @ApiProperty({ description: 'Issued at timestamp' })
     @Expose()

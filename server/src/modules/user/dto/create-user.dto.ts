@@ -26,7 +26,7 @@ export class CreateUserDto {
         required: false,
     })
     @IsOptional()
-    role?: RoleEnum = RoleEnum.USER
+    roleId?: string
 
     @ApiProperty({
         description: 'User password',

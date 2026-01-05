@@ -1,33 +1,63 @@
-import { RoleEnum } from '../enums'
-import RoleGuard from './role-guard'
+import React from 'react'
+import { APP_PERMISSIONS } from '../../lib/utils/_app-permissions'
+import ProtectedRoute from './protected-route'
 
-// 1. Basic Auth Guard
-// Allow ANY logged-in user (User, Admin, Accounting, etc.)
+/**
+ * 1. Basic Auth Guard
+ * Cho phép MỌI người dùng đã đăng nhập truy cập.
+ */
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-    return <RoleGuard>{children}</RoleGuard>
+    return <ProtectedRoute>{children}</ProtectedRoute>
 }
 
-// 2. Admin Guard
-// Only for Super Admins
-export function AdminGuard({ children }: { children: React.ReactNode }) {
-    return <RoleGuard allowedRoles={[RoleEnum.ADMIN]}>{children}</RoleGuard>
-}
-
-// 3. Accounting Guard
-// Allows Accounting Staff AND Admins (Admins usually need access to everything)
-export function AccountingGuard({ children }: { children: React.ReactNode }) {
+/**
+ * 2. System Admin Guard
+ * Chỉ dành cho những người có quyền quản lý hệ thống (System Manage).
+ */
+export function AdministratorGuard({
+    children,
+}: {
+    children: React.ReactNode
+}) {
     return (
-        <RoleGuard allowedRoles={[RoleEnum.ACCOUNTING, RoleEnum.ADMIN]}>
+        <ProtectedRoute permissions={[APP_PERMISSIONS.SYSTEM.MANAGE]}>
             {children}
-        </RoleGuard>
+        </ProtectedRoute>
     )
 }
 
-// 4. Example: Manager Guard (if you have this role)
-export function ManagerGuard({ children }: { children: React.ReactNode }) {
+/**
+ * 3. Finance/Accounting Guard
+ * Dành cho những người có quyền liên quan đến thanh toán hoặc tài chính.
+ * Thường bao gồm Kế toán và Admin.
+ */
+export function FinanceGuard({ children }: { children: React.ReactNode }) {
     return (
-        <RoleGuard allowedRoles={[RoleEnum.ACCOUNTING, RoleEnum.ADMIN]}>
+        <ProtectedRoute
+            permissions={[
+                APP_PERMISSIONS.PAYMENT.READ,
+                APP_PERMISSIONS.JOB.PAID,
+            ]}
+        >
             {children}
-        </RoleGuard>
+        </ProtectedRoute>
+    )
+}
+
+/**
+ * 4. Staff/Recruitment Guard
+ * Dành cho nhân viên vận hành, quản lý Jobs.
+ * Chỉ cần có quyền Tạo hoặc Cập nhật Job là có thể vào.
+ */
+export function RecruitmentGuard({ children }: { children: React.ReactNode }) {
+    return (
+        <ProtectedRoute
+            permissions={[
+                APP_PERMISSIONS.JOB.CREATE,
+                APP_PERMISSIONS.JOB.UPDATE,
+            ]}
+        >
+            {children}
+        </ProtectedRoute>
     )
 }

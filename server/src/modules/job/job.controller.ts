@@ -12,26 +12,25 @@ import {
     UseGuards,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
-import { RoleEnum } from '@prisma/client'
+import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
-import { AdminGuard } from '../auth/admin.guard'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
+import { APP_PERMISSIONS } from '../../utils/_app-permissions'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { JwtGuard } from '../auth/jwt.guard'
-import { RolesGuard } from '../auth/roles.guard'
-import { Roles } from '../auth/decorators/roles.decorator'
-import { JobService } from './job.service'
 import { JobTypeService } from '../job-type/job-type.service'
 import { ActivityLogService } from './activity-log.service'
-import { CreateJobDto } from './dto/create-job.dto'
-import { UpdateJobDto } from './dto/update-job.dto'
-import { JobQueryDto } from './dto/job-query.dto'
-import { DeliverJobDto } from './dto/deliver-job.dto'
-import { ChangeStatusDto } from './dto/change-status.dto'
-import { UpdateRevenueDto } from './dto/update-revenue.dto'
 import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
-import { UpdateGeneralJobDto } from './dto/update-general.dto'
-import { JobCommentService } from './job-comment.service'
+import { ChangeStatusDto } from './dto/change-status.dto'
+import { CreateJobDto } from './dto/create-job.dto'
+import { DeliverJobDto } from './dto/deliver-job.dto'
 import { CreateJobCommentDto } from './dto/job-comment/create-comment.dto'
+import { JobQueryDto } from './dto/job-query.dto'
+import { UpdateGeneralJobDto } from './dto/update-general.dto'
+import { UpdateJobDto } from './dto/update-job.dto'
+import { UpdateRevenueDto } from './dto/update-revenue.dto'
+import { JobCommentService } from './job-comment.service'
+import { JobService } from './job.service'
 
 @ApiTags('Jobs')
 @Controller('jobs')
@@ -83,7 +82,7 @@ export class JobController {
     @ApiOperation({ summary: 'Get list of jobs with pagination' })
     async findAll(@Req() request: Request, @Query() query: JobQueryDto) {
         const user: TokenPayload = request['user']
-        return this.jobService.findAll(user.sub, user.role as RoleEnum, query)
+        return this.jobService.findAll(user.sub, user.permissions, query)
     }
 
     @Get('workbench')
@@ -95,7 +94,7 @@ export class JobController {
         const user: TokenPayload = request['user']
         return this.jobService.getWorkbenchData(
             user.sub,
-            user.role as RoleEnum,
+            user.permissions,
             query
         )
     }
@@ -104,11 +103,7 @@ export class JobController {
     @ApiOperation({ summary: 'Get a job by its job number' })
     async findByNo(@Req() request: Request, @Param('jobNo') jobNo: string) {
         const user: TokenPayload = request['user']
-        return this.jobService.findByJobNo(
-            user.sub,
-            user.role as RoleEnum,
-            jobNo
-        )
+        return this.jobService.findByJobNo(user.sub, user.permissions, jobNo)
     }
 
     @Get('due-at/:isoDate')
@@ -120,7 +115,7 @@ export class JobController {
         const user: TokenPayload = request['user']
         return this.jobService.findJobsDueAt(
             user.sub,
-            user.role as RoleEnum,
+            user.permissions,
             isoDate
         )
     }
@@ -136,22 +131,19 @@ export class JobController {
             Number(month),
             Number(year),
             user.sub,
-            user.role as RoleEnum
+            user.permissions
         )
     }
 
     @Get('pending-deliver')
     async getPendingDeliver(@Req() request: Request) {
         const user: TokenPayload = request['user']
-        return this.jobService.getPendingDeliverJobs(
-            user.sub,
-            user.role as RoleEnum
-        )
+        return this.jobService.getPendingDeliverJobs(user.sub, user.permissions)
     }
 
     @Get('pending-payouts')
-    @UseGuards(RolesGuard)
-    @Roles('ADMIN', 'ACCOUNTING')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.PAID)
     async getPendingPayouts() {
         return this.jobService.getPendingPaymentJobs()
     }
@@ -161,8 +153,8 @@ export class JobController {
     // -------------------------------------------------------------------------
 
     @Post()
-    @UseGuards(RolesGuard)
-    @Roles('ADMIN')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.CREATE)
     @ResponseMessage('The job has been successfully created.')
     async create(@Req() request: Request, @Body() createJobDto: CreateJobDto) {
         const user: TokenPayload = request['user']
@@ -176,6 +168,8 @@ export class JobController {
     }
 
     @Post(':id/deliver')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.DELIVER)
     async deliverJob(
         @Req() request: Request,
         @Param('id') id: string,
@@ -186,8 +180,8 @@ export class JobController {
     }
 
     @Post('deliver/:deliveryId/:action')
-    @UseGuards(RolesGuard)
-    @Roles('ADMIN')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.REVIEW)
     async reviewDeliver(
         @Req() request: Request,
         @Param('deliveryId') deliveryId: string,
@@ -207,8 +201,8 @@ export class JobController {
     }
 
     @Post(':id/mark-paid')
-    @UseGuards(RolesGuard)
-    @Roles('ADMIN', 'ACCOUNTING')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.PAID)
     async markPaid(@Req() request: Request, @Param('id') id: string) {
         const user: TokenPayload = request['user']
         return this.jobService.markPaid(id, user.sub)
@@ -219,7 +213,8 @@ export class JobController {
     // -------------------------------------------------------------------------
 
     @Patch(':id/general')
-    @UseGuards(JwtGuard, AdminGuard)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.UPDATE)
     @ResponseMessage('Update general information successfully')
     async updateGeneralInfo(
         @Req() request: Request,
@@ -231,7 +226,8 @@ export class JobController {
     }
 
     @Patch(':id/assign')
-    @UseGuards(JwtGuard, AdminGuard)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.ASSIGN_MEMBER)
     @ResponseMessage('Member assigned successfully')
     async assignMember(
         @Req() request: Request,
@@ -243,7 +239,8 @@ export class JobController {
     }
 
     @Patch(':id/assignments/:memberId')
-    @UseGuards(JwtGuard, AdminGuard)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.ASSIGN_MEMBER)
     @ResponseMessage('Assignment cost updated')
     async updateAssignment(
         @Req() request: Request,
@@ -261,8 +258,8 @@ export class JobController {
     }
 
     @Delete(':id/assignments/:memberId')
-    @UseGuards(JwtGuard, AdminGuard)
-    @ResponseMessage('Member unassigned successfully')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.ASSIGN_MEMBER)
     async unassignMember(
         @Req() request: Request,
         @Param('id') jobId: string,
@@ -273,7 +270,8 @@ export class JobController {
     }
 
     @Patch(':id/update-revenue')
-    @UseGuards(AdminGuard)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.UPDATE)
     async updateRevenue(
         @Req() request: Request,
         @Param('id') id: string,
@@ -284,7 +282,8 @@ export class JobController {
     }
 
     @Patch(':id')
-    @UseGuards(AdminGuard)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.UPDATE)
     async update(
         @Req() request: Request,
         @Param('id') id: string,
@@ -295,6 +294,8 @@ export class JobController {
     }
 
     @Patch(':id/change-status')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.UPDATE)
     async changeStatus(
         @Req() request: Request,
         @Param('id') id: string,
@@ -309,14 +310,15 @@ export class JobController {
     // -------------------------------------------------------------------------
 
     @Get('next-no')
-    @UseGuards(RolesGuard)
-    @Roles('ADMIN')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.READ_ALL)
     async getNextNo(@Query('typeId') typeId: string) {
         return this.jobTypeService.getNextJobNo(typeId)
     }
 
     @Delete(':id')
-    @UseGuards(AdminGuard)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.JOB.DELETE)
     async remove(@Req() request: Request, @Param('id') id: string) {
         const user: TokenPayload = request['user']
         return this.jobService.delete(id, user.sub)

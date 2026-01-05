@@ -5,7 +5,7 @@ import { ScrollArea, ScrollBar } from '../shared/components'
 import { DashboardRightPanel } from '../shared/components/admin/DashboardRightPanel'
 import { AdminHeader } from '../shared/components/admin/layouts/AdminHeader'
 import { AdminSidebar } from '../shared/components/admin/layouts/AdminSidebar'
-import { ManagerGuard } from '../shared/guards'
+import { AdministratorGuard } from '../shared/guards'
 import { appStore, ESidebarStatus } from '../shared/stores'
 
 // Lưu ý: path là id ảo, không xuất hiện trên URL
@@ -24,7 +24,7 @@ function AdminLayout() {
     )
 
     return (
-        <ManagerGuard>
+        <AdministratorGuard>
             <div id="admin-page">
                 <div className="fixed top-0 w-full z-50">
                     <AdminHeader />
@@ -69,6 +69,6 @@ function AdminLayout() {
                     </div>
                 </div>
             </div>
-        </ManagerGuard>
+        </AdministratorGuard>
     )
 }

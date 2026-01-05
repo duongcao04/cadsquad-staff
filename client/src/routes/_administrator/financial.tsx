@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
-import { ManagerGuard } from '../../shared/guards'
+import { FinanceGuard } from '../../shared/guards'
 
 export const Route = createFileRoute('/_administrator/financial')({
     component: FinancialLayout,
@@ -8,8 +8,8 @@ export const Route = createFileRoute('/_administrator/financial')({
 
 function FinancialLayout() {
     return (
-        <ManagerGuard>
+        <FinanceGuard>
             <Outlet />
-        </ManagerGuard>
+        </FinanceGuard>
     )
 }

@@ -1,3 +1,4 @@
+export * from './_app-permissions'
 export * from './_color'
 export * from './_constants'
 export * from './_email'

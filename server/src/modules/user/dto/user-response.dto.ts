@@ -27,6 +27,10 @@ export class UserResponseDto {
     @Expose()
     displayName: string
 
+    @ApiProperty({ description: 'Role of the user' })
+    @Expose()
+    role: any
+
     @ApiProperty({
         description: 'URL of the user avatar',
         required: false,
@@ -50,10 +54,6 @@ export class UserResponseDto {
     })
     @Expose()
     phoneNumber?: string
-
-    @ApiProperty({ description: 'Role of the user', enum: RoleEnum })
-    @Expose()
-    role: RoleEnum
 
     @ApiProperty({ description: 'Whether the user is active', example: true })
     @Expose()

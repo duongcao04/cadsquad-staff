@@ -45,11 +45,11 @@ export class NotificationService {
      * Gửi thông báo cho toàn bộ User thuộc một Role (Ví dụ: Tất cả ADMIN)
      */
     async sendToRole(
-        role: RoleEnum,
+        roleId: string,
         data: Omit<CreateNotificationDto, 'userId'>
     ) {
         const users = await this.prisma.user.findMany({
-            where: { role, isActive: true },
+            where: { role: { id: roleId }, isActive: true },
             select: { id: true },
         })
 

@@ -103,7 +103,7 @@ export class UserConfigService {
         }
     }
 
-    async getSystemJobColumns(userRole: string) {
+    async getSystemJobColumns(userPermissions: string[]) {
         const code = EUserConfigCode.JOB_SHOW_COLUMNS
         // 1. Lấy Config toàn hệ thống (userId = null)
         let config = await this.prisma.userConfig.findFirst({
@@ -128,7 +128,7 @@ export class UserConfigService {
 
         // 3. Nếu là Admin, trả về toàn bộ (Full quyền)
         // Lưu ý: Thay 'ADMIN' bằng enum role thực tế trong dự án của bạn
-        if (userRole === 'ADMIN') {
+        if (userPermissions.includes('job.readSensitive')) {
             return DEFAULT_JOB_COLUMNS
         }
 

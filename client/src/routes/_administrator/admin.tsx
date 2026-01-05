@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
-import { AdminGuard } from '../../shared/guards'
+import { AdministratorGuard } from '../../shared/guards'
 
 export const Route = createFileRoute('/_administrator/admin')({
     component: AdminLayout,
@@ -8,8 +8,8 @@ export const Route = createFileRoute('/_administrator/admin')({
 
 function AdminLayout() {
     return (
-        <AdminGuard>
+        <AdministratorGuard>
             <Outlet />
-        </AdminGuard>
+        </AdministratorGuard>
     )
 }

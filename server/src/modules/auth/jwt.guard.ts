@@ -37,9 +37,8 @@ export class JwtGuard implements CanActivate {
                 select: {
                     id: true,
                     email: true,
-                    role: true,
                     isActive: true,
-                    newRole: { include: { permissions: true } },
+                    role: { include: { permissions: true } },
                 },
             })
 

@@ -47,7 +47,6 @@ model User {
   departmentId        String?
   department          Department?        @relation(fields: [departmentId], references: [id])
   phoneNumber         String?
-  role                RoleEnum           @default(USER)
   isActive            Boolean            @default(true)
   lastLoginAt         DateTime?
   notifications       Notification[]     @relation("UserNotifications")
@@ -77,7 +76,7 @@ model User {
   communities    CommunityMember[]
   posts          Post[]
   jobAssignments JobAssignment[]
-  newRole        Role?             @relation(fields: [roleId], references: [id])
+  role        Role?             @relation(fields: [roleId], references: [id])
   roleId         String?
 }
 

@@ -69,7 +69,7 @@ export class UserConfigController {
     @ApiResponse({ status: 200, description: 'Return a list of columns.' })
     async getColumns(@Req() request: Request) {
         const userPayload: TokenPayload = await request['user']
-        return this.configService.getSystemJobColumns(userPayload.role)
+        return this.configService.getSystemJobColumns(userPayload.permissions)
     }
 
     @Get(':code')

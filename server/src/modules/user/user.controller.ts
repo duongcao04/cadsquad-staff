@@ -171,7 +171,7 @@ export class UserController {
         @Query('isActive') isActive: string
     ) {
         const userPayload: TokenPayload = await request['user']
-        return this.userService.toggleUserStatus(userPayload.role, id, isActive)
+        return this.userService.toggleUserStatus(userPayload.sub, id, isActive)
     }
 
     @Delete(':id')

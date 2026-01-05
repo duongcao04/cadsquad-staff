@@ -28,11 +28,17 @@ SET "displayName" = EXCLUDED."displayName", "order" = EXCLUDED."order";
 INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "entityAction", "permissionGroupId", "description") VALUES 
 
 -- GROUP 1: RECRUITMENT (Jobs)
-(gen_random_uuid(), 'View Jobs',       'JOB_READ',    'JOB'::"EntityEnum", 'read',    'job.read',    'group-0000-0000-0000-0000-000000000001', 'View jobs'),
+(gen_random_uuid(), 'View Jobs',       'JOB_READ',    'JOB'::"EntityEnum", 'read',    'job.read',    'group-0000-0000-0000-0000-000000000001', 'View jobs assigned'),
+(gen_random_uuid(), 'View Jobs',       'JOB_READ_ALL',    'JOB'::"EntityEnum", 'readAll',    'job.readAll',    'group-0000-0000-0000-0000-000000000001', 'View all jobs (both assigned or not assigned)'),
+(gen_random_uuid(), 'View Job Sensitive data',       'JOB_READ_SENSITIVE_DATA',    'JOB'::"EntityEnum", 'readSensitive',    'job.readSensitive',    'group-0000-0000-0000-0000-000000000001', 'View all job sensitive data'),
 (gen_random_uuid(), 'Create Jobs',     'JOB_CREATE',  'JOB'::"EntityEnum", 'create',  'job.create',  'group-0000-0000-0000-0000-000000000001', 'Create jobs'),
 (gen_random_uuid(), 'Update Jobs',     'JOB_UPDATE',  'JOB'::"EntityEnum", 'update',  'job.update',  'group-0000-0000-0000-0000-000000000001', 'Update jobs'),
+(gen_random_uuid(), 'Deliver Jobs',     'JOB_DELIVER',  'JOB'::"EntityEnum", 'deliver',  'job.deliver',  'group-0000-0000-0000-0000-000000000001', 'Deliver jobs'),
+(gen_random_uuid(), 'Update Jobs',     'JOB_PAID',  'JOB'::"EntityEnum", 'paid',  'job.paid',  'group-0000-0000-0000-0000-000000000001', 'Paid jobs'),
+(gen_random_uuid(), 'Update Jobs',     'JOB_REVIEW',  'JOB'::"EntityEnum", 'review',  'job.review',  'group-0000-0000-0000-0000-000000000001', 'Approve or Reject job when job in Wait_review status'),
 (gen_random_uuid(), 'Delete Jobs',     'JOB_DELETE',  'JOB'::"EntityEnum", 'delete',  'job.delete',  'group-0000-0000-0000-0000-000000000001', 'Delete jobs'),
 (gen_random_uuid(), 'Publish Jobs',    'JOB_PUBLISH', 'JOB'::"EntityEnum", 'publish', 'job.publish', 'group-0000-0000-0000-0000-000000000001', 'Publish jobs'),
+(gen_random_uuid(), 'Assign member',    'JOB_ASSIGN_MEMBER', 'JOB'::"EntityEnum", 'assignMember', 'job.assignMember', 'group-0000-0000-0000-0000-000000000001', 'Assign member to job'),
 
 -- GROUP 2: STAFF (Users)
 (gen_random_uuid(), 'View Users',      'USER_READ',   'USER'::"EntityEnum", 'read',    'user.read',    'group-0000-0000-0000-0000-000000000002', 'View staff'),
