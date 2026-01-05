@@ -17,6 +17,7 @@ import { JobTypeModule } from './modules/job-type/job-type.module'
 import { JobModule } from './modules/job/job.module'
 import { NotificationModule } from './modules/notification/notification.module'
 import { PaymentChannelModule } from './modules/payment-channel/payment-channel.module'
+import { RoleModule } from './modules/role-permissions/role.module'
 import { UploadModule } from './modules/upload/upload.module'
 import { UserDevicesModule } from './modules/user-devices/user-devices.module'
 import { UserModule } from './modules/user/user.module'
@@ -30,6 +31,7 @@ import { PrismaModule } from './providers/prisma/prisma.module'
         MailModule,
         CloudinaryModule,
         AblyModule,
+        RoleModule,
         AuthModule,
         UserModule,
         UserDevicesModule,

@@ -1,3 +1,4 @@
+import { permissionsListOptions, rolesListOptions } from '@/lib/queries'
 import { HeroCard } from '@/shared/components'
 import {
     Button,
@@ -8,12 +9,21 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
+    Tooltip,
 } from '@heroui/react'
+import { useSuspenseQueries } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Activity, Lock, ShieldCheck, Users } from 'lucide-react'
+import {
+    Activity,
+    CheckCircle2,
+    Lock,
+    ShieldAlert,
+    ShieldCheck,
+    UserCheck,
+    Users,
+    XCircle,
+} from 'lucide-react'
 import React from 'react'
-import { Tooltip } from '@heroui/react'
-import { CheckCircle2, ShieldAlert, UserCheck, XCircle } from 'lucide-react'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/role-n-permission/'
@@ -22,18 +32,28 @@ export const Route = createFileRoute(
 })
 
 export default function RolePermissionOverviewPage() {
+    const [
+        {
+            data: { total: totalRoles },
+        },
+        {
+            data: { total: totalPermissions },
+        },
+    ] = useSuspenseQueries({
+        queries: [{ ...rolesListOptions() }, { ...permissionsListOptions() }],
+    })
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             {/* --- Stats Row --- */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <StatCard
                     title="Roles"
-                    value="8"
+                    value={totalRoles}
                     icon={<ShieldCheck className="text-primary" />}
                 />
                 <StatCard
                     title="Permissions"
-                    value="124"
+                    value={totalPermissions}
                     icon={<Lock className="text-secondary" />}
                 />
                 <StatCard

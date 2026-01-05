@@ -1,7 +1,10 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { lightenHexColor } from '@/lib'
+import { rolesListOptions } from '@/lib/queries/options/role-queries'
+import CreateRoleModal from '@/shared/components/role-and-permission/CreateRoleModal'
 import { Button, Card, CardBody, Chip, useDisclosure } from '@heroui/react'
-import { Plus, Edit3, Trash2 } from 'lucide-react'
-import CreateRoleModal from '../../../../../../shared/components/role-and-permission/CreateRoleModal'
+import { useSuspenseQueries } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Edit3, Plus, Trash2 } from 'lucide-react'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/role-n-permission/roles/'
@@ -13,11 +16,11 @@ export default function RolesPage() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const navigate = useNavigate()
 
-    const roles = [
-        { id: '1', name: 'Admin', color: 'danger', perms: 45 },
-        { id: '2', name: 'Moderator', color: 'warning', perms: 20 },
-        { id: '3', name: 'Member', color: 'primary', perms: 5 },
-    ]
+    const [
+        {
+            data: { roles },
+        },
+    ] = useSuspenseQueries({ queries: [{ ...rolesListOptions() }] })
 
     return (
         <div className="p-6 space-y-6 animate-in fade-in duration-500">
@@ -42,15 +45,21 @@ export default function RolesPage() {
                         <CardBody className="p-5 flex flex-row justify-between items-center">
                             <div className="space-y-1">
                                 <Chip
-                                    color={role.color as any}
+                                    style={{
+                                        backgroundColor: lightenHexColor(
+                                            role.hexColor,
+                                            85
+                                        ),
+                                        color: role.hexColor,
+                                    }}
                                     variant="flat"
                                     size="sm"
                                     className="font-bold"
                                 >
-                                    {role.name}
+                                    {role.displayName}
                                 </Chip>
                                 <p className="text-xs text-text-subdued">
-                                    {role.perms} active permissions
+                                    {role.permissions.length} active permissions
                                 </p>
                             </div>
                             <div className="flex gap-1">
@@ -60,7 +69,7 @@ export default function RolesPage() {
                                     variant="light"
                                     onPress={() =>
                                         navigate({
-                                            to: `/admin/mgmt/role-n-permission/roles/${role.name.toLowerCase()}`,
+                                            to: `/admin/mgmt/role-n-permission/roles/${role.displayName.toLowerCase()}`,
                                         })
                                     }
                                 >

@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "EntityEnum" AS ENUM ('JOB', 'USER', 'ROLE', 'PERMISSION', 'CLIENT', 'PAYMENT_CHANNEL', 'DEPARTMENT', 'JOB_TITLE', 'COMMUNITY', 'TOPIC', 'POST', 'COMMENT', 'FILE', 'NOTIFICATION', 'SYSTEM', 'ANALYTICS');
+
+-- CreateEnum
 CREATE TYPE "UserConfigGroupEnum" AS ENUM ('SYSTEM', 'USER');
 
 -- CreateEnum
@@ -20,7 +23,7 @@ CREATE TYPE "JobStatusSystemType" AS ENUM ('STANDARD', 'WAIT_REVIEW', 'COMPLETED
 CREATE TYPE "DeliveryStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
-CREATE TYPE "ActivityType" AS ENUM ('CreateJob', 'ChangeStatus', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'UpdateInformation', 'DeleteJob', 'DeliverJob', 'MarkPaid');
+CREATE TYPE "ActivityType" AS ENUM ('CreateJob', 'ChangeStatus', 'DeliverJob', 'MarkPaid', 'ReviewJob', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'IncomeCost', 'UpdateInformation', 'DeleteJob', 'Private');
 
 -- CreateEnum
 CREATE TYPE "NotificationStatus" AS ENUM ('SEEN', 'UNSEEN');
@@ -74,8 +77,45 @@ CREATE TABLE "User" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "managerId" TEXT,
+    "roleId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Role" (
+    "id" TEXT NOT NULL,
+    "displayName" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "hexColor" TEXT,
+
+    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Permission" (
+    "id" TEXT NOT NULL,
+    "displayName" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "entity" "EntityEnum" NOT NULL,
+    "action" TEXT NOT NULL,
+    "entityAction" TEXT NOT NULL,
+    "description" TEXT,
+    "permissionGroupId" TEXT,
+
+    CONSTRAINT "Permission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PermissionGroup" (
+    "id" TEXT NOT NULL,
+    "displayName" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PermissionGroup_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -213,6 +253,7 @@ CREATE TABLE "Job" (
     "attachmentUrls" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "clientId" TEXT,
     "incomeCost" DOUBLE PRECISION NOT NULL,
+    "sumStaffCost" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "createdById" TEXT NOT NULL,
     "paymentChannelId" TEXT,
     "statusId" TEXT NOT NULL,
@@ -358,7 +399,7 @@ CREATE TABLE "JobActivityLog" (
     "modifiedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "modifiedById" TEXT NOT NULL,
     "fieldName" TEXT NOT NULL,
-    "activityType" "ActivityType" NOT NULL,
+    "activityType" "ActivityType" NOT NULL DEFAULT 'Private',
     "notes" TEXT,
 
     CONSTRAINT "JobActivityLog_pkey" PRIMARY KEY ("id")
@@ -429,11 +470,34 @@ CREATE TABLE "Post" (
     "attachments" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "authorId" TEXT NOT NULL,
     "topicId" TEXT NOT NULL,
+    "likeCount" INTEGER NOT NULL DEFAULT 0,
     "isPinned" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "eventId" TEXT,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PostEvent" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "location" TEXT,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "redirectUrl" TEXT NOT NULL,
+    "thumbnailUrl" TEXT,
+    "postId" TEXT NOT NULL,
+
+    CONSTRAINT "PostEvent_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "_PermissionToRole" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_PermissionToRole_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateTable
@@ -444,19 +508,32 @@ CREATE TABLE "_UserFiles" (
     CONSTRAINT "_UserFiles_AB_pkey" PRIMARY KEY ("A","B")
 );
 
--- CreateTable
-CREATE TABLE "_UserJobs" (
-    "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
-
-    CONSTRAINT "_UserJobs_AB_pkey" PRIMARY KEY ("A","B")
-);
+-- CreateIndex
+CREATE UNIQUE INDEX "UserDevices_userId_type_key" ON "UserDevices"("userId", "type");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Role_displayName_key" ON "Role"("displayName");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Role_code_key" ON "Role"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_code_key" ON "Permission"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_entityAction_key" ON "Permission"("entityAction");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_entity_action_key" ON "Permission"("entity", "action");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PermissionGroup_code_key" ON "PermissionGroup"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Session_token_key" ON "Session"("token");
@@ -502,6 +579,9 @@ CREATE INDEX "Job_priority_idx" ON "Job"("priority");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "JobAssignment_jobId_userId_key" ON "JobAssignment"("jobId", "userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Client_name_key" ON "Client"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Client_code_key" ON "Client"("code");
@@ -570,10 +650,13 @@ CREATE INDEX "Post_authorId_idx" ON "Post"("authorId");
 CREATE INDEX "Post_createdAt_idx" ON "Post"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "_UserFiles_B_index" ON "_UserFiles"("B");
+CREATE UNIQUE INDEX "PostEvent_postId_key" ON "PostEvent"("postId");
 
 -- CreateIndex
-CREATE INDEX "_UserJobs_B_index" ON "_UserJobs"("B");
+CREATE INDEX "_PermissionToRole_B_index" ON "_PermissionToRole"("B");
+
+-- CreateIndex
+CREATE INDEX "_UserFiles_B_index" ON "_UserFiles"("B");
 
 -- AddForeignKey
 ALTER TABLE "UserDevices" ADD CONSTRAINT "UserDevices_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -586,6 +669,12 @@ ALTER TABLE "User" ADD CONSTRAINT "User_departmentId_fkey" FOREIGN KEY ("departm
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_managerId_fkey" FOREIGN KEY ("managerId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Permission" ADD CONSTRAINT "Permission_permissionGroupId_fkey" FOREIGN KEY ("permissionGroupId") REFERENCES "PermissionGroup"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -684,13 +773,16 @@ ALTER TABLE "Post" ADD CONSTRAINT "Post_authorId_fkey" FOREIGN KEY ("authorId") 
 ALTER TABLE "Post" ADD CONSTRAINT "Post_topicId_fkey" FOREIGN KEY ("topicId") REFERENCES "Topic"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "PostEvent" ADD CONSTRAINT "PostEvent_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PermissionToRole" ADD CONSTRAINT "_PermissionToRole_A_fkey" FOREIGN KEY ("A") REFERENCES "Permission"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_PermissionToRole" ADD CONSTRAINT "_PermissionToRole_B_fkey" FOREIGN KEY ("B") REFERENCES "Role"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "_UserFiles" ADD CONSTRAINT "_UserFiles_A_fkey" FOREIGN KEY ("A") REFERENCES "FileSystem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_UserFiles" ADD CONSTRAINT "_UserFiles_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_UserJobs" ADD CONSTRAINT "_UserJobs_A_fkey" FOREIGN KEY ("A") REFERENCES "Job"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_UserJobs" ADD CONSTRAINT "_UserJobs_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

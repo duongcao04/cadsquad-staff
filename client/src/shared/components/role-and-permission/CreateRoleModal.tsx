@@ -8,11 +8,12 @@ import {
     ModalContent,
     ModalHeader,
 } from '@heroui/react'
+import { TPermission } from '../../types/_role.type'
 
 type CreateRoleModalProps = {
     isOpen: boolean
     onClose: () => void
-    allPermission: any[]
+    allPermission: TPermission[]
 }
 export default function CreateRoleModal({
     isOpen,

@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Job" ADD COLUMN     "sumStaffCost" DOUBLE PRECISION NOT NULL DEFAULT 0;

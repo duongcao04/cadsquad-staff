@@ -1,20 +1,22 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { PlusIcon, TrashIcon, ShieldCheckIcon, SearchIcon } from 'lucide-react'
+import { permissionsListOptions } from '@/lib/queries'
+import CreatePermissionModal from '@/shared/components/role-and-permission/CreatePermissionModal'
 import {
     Button,
-    Table,
-    TableHeader,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    Input,
     Chip,
+    Input,
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow,
     Tooltip,
     useDisclosure,
 } from '@heroui/react'
+import { useSuspenseQueries } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { PlusIcon, SearchIcon, TrashIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import CreatePermissionModal from '../../../../../shared/components/role-and-permission/CreatePermissionModal'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/role-n-permission/permissions'
@@ -22,33 +24,19 @@ export const Route = createFileRoute(
     component: AllPermissionsPage,
 })
 
-const MOCK_PERMISSIONS = [
-    {
-        id: '1',
-        action: 'create',
-        entity: 'post',
-        description: 'Allow creating new posts',
-    },
-    {
-        id: '2',
-        action: 'delete',
-        entity: 'post',
-        description: 'Allow deleting any post',
-    },
-    {
-        id: '3',
-        action: 'moderate',
-        entity: 'comment',
-        description: 'Review and hide comments',
-    },
-]
-
 export default function AllPermissionsPage() {
+    const [
+        {
+            data: { permissions },
+        },
+    ] = useSuspenseQueries({
+        queries: [{ ...permissionsListOptions() }],
+    })
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [filterValue, setFilterValue] = useState('')
 
     const filteredItems = useMemo(() => {
-        return MOCK_PERMISSIONS.filter((p) =>
+        return permissions.filter((p) =>
             `${p.entity}:${p.action}`
                 .toLowerCase()
                 .includes(filterValue.toLowerCase())
@@ -86,7 +74,7 @@ export default function AllPermissionsPage() {
             {/* Search Toolbar */}
             <Input
                 isClearable
-                className="w-full sm:max-w-[350px]"
+                className="w-full sm:max-w-87.5"
                 placeholder="Search key (e.g. post:create)..."
                 startContent={
                     <SearchIcon size={18} className="text-default-300" />

@@ -3,13 +3,12 @@ import {
     ExecutionContext,
     ForbiddenException,
     Injectable,
-    SetMetadata,
     UnauthorizedException,
 } from '@nestjs/common'
 import { Request } from 'express'
-import { TokenService } from './token.service'
-import { TokenPayload } from './dto/token-payload.dto'
 import { PrismaService } from '../../providers/prisma/prisma.service'
+import { TokenPayload } from './dto/token-payload.dto'
+import { TokenService } from './token.service'
 
 @Injectable()
 export class JwtGuard implements CanActivate {
@@ -40,6 +39,7 @@ export class JwtGuard implements CanActivate {
                     email: true,
                     role: true,
                     isActive: true,
+                    newRole: { include: { permissions: true } },
                 },
             })
 

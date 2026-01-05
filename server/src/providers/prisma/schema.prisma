@@ -77,6 +77,75 @@ model User {
   communities    CommunityMember[]
   posts          Post[]
   jobAssignments JobAssignment[]
+  newRole        Role?             @relation(fields: [roleId], references: [id])
+  roleId         String?
+}
+
+model Role {
+  id          String @id @default(uuid())
+  displayName String @unique // e.g., 'ADMIN', 'STAFF'
+  code        String @unique
+
+  // Relation: Role has many Permissions
+  permissions Permission[]
+  hexColor    String?
+  users       User[]
+}
+
+model Permission {
+  id          String @id @default(uuid())
+  displayName String
+  code        String @unique
+
+  entity       EntityEnum
+  action       String
+  entityAction String     @unique // e.g., 'job.read', 'job.write'
+  description  String?
+
+  // Relation: Permission belongs to many Roles
+  roles             Role[]
+  permissionGroup   PermissionGroup? @relation(fields: [permissionGroupId], references: [id])
+  permissionGroupId String?
+
+  @@unique([entity, action])
+}
+
+model PermissionGroup {
+  id          String @id @default(uuid())
+  displayName String // e.g. "Recruitment Module"
+  code        String @unique // e.g. "MODULE_RECRUITMENT"
+  order       Int    @default(0) // To sort them in UI
+
+  permissions Permission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum EntityEnum {
+  // Core Modules
+  JOB
+  USER
+  ROLE
+  PERMISSION
+
+  // CRM / Business
+  CLIENT
+  PAYMENT_CHANNEL
+  DEPARTMENT
+  JOB_TITLE
+
+  // Social / Community
+  COMMUNITY
+  TOPIC
+  POST
+  COMMENT // Covers JobComment and potential future Post comments
+
+  // Assets & System
+  FILE // FileSystem
+  NOTIFICATION
+  SYSTEM // For configs, logs, maintenance
+  ANALYTICS // For dashboard/reports viewing
 }
 
 // Model Session bắt buộc cho Better Auth
