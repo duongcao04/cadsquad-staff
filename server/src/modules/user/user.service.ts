@@ -172,6 +172,7 @@ export class UserService {
                 include: {
                     department: true,
                     jobTitle: true,
+                    role: true,
                 },
                 orderBy: {
                     createdAt: 'desc', // Thường ưu tiên người mới tạo lên đầu
@@ -229,6 +230,11 @@ export class UserService {
                 include: {
                     department: true,
                     jobTitle: true,
+                    role: {
+                        include: {
+                            permissions: true,
+                        },
+                    },
                 },
             })
             const userRes = plainToInstance(UserResponseDto, userData, {

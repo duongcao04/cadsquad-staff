@@ -4,7 +4,6 @@ import {
     dateFormatter,
     EXTERNAL_URLS,
     getPageTitle,
-    INTERNAL_URLS,
     PAID_STATUS_COLOR,
     useProfile,
     useUpdateJobMutation,
@@ -39,7 +38,7 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import dayjs from 'dayjs'
 import {
     AlertCircle,
@@ -206,11 +205,14 @@ function JobDetailPage() {
             <div className="py-4 px-4 flex items-start justify-between bg-background/50 backdrop-blur-md sticky top-0 z-20 border-b border-divider">
                 <div className="space-y-5">
                     <div className="flex items-center gap-4">
-                        <Link to={INTERNAL_URLS.projectCenter}>
-                            <Button isIconOnly variant="light" size="sm">
-                                <ChevronLeft size={20} />
-                            </Button>
-                        </Link>
+                        <Button
+                            isIconOnly
+                            variant="light"
+                            size="sm"
+                            onPress={() => navigate({ to: '..' })}
+                        >
+                            <ChevronLeft size={20} />
+                        </Button>
                         <h1 className="text-2xl font-bold tracking-tight">
                             {job.displayName}
                         </h1>

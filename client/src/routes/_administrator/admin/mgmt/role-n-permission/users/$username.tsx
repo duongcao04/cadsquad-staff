@@ -1,63 +1,88 @@
+import { optimizeCloudinary } from '@/lib'
+import {
+    permissionGroupsListOptions,
+    rolesListOptions,
+    userOptions,
+} from '@/lib/queries'
+import { HeroCard, HeroTooltip } from '@/shared/components'
+import {
+    Avatar,
+    Button,
+    Card,
+    CardBody,
+    Select,
+    SelectItem,
+    Switch,
+    Accordion,
+    AccordionItem,
+    Divider,
+} from '@heroui/react'
+import { useSuspenseQueries } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+    AlertTriangle,
+    ArrowLeft,
+    CheckCircle2,
+    History,
+    Save,
+    ShieldAlert,
+    ShieldCheck,
+    XCircle,
+    LayoutGrid,
+} from 'lucide-react'
+import { useMemo } from 'react'
+
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/role-n-permission/users/$username'
 )({
+    loader: ({ context, params }) => {
+        void context.queryClient.ensureQueryData(permissionGroupsListOptions())
+        void context.queryClient.ensureQueryData(rolesListOptions())
+        void context.queryClient.ensureQueryData(userOptions(params.username))
+    },
     component: UserAccessPage,
 })
 
-import {
-    Button,
-    Avatar,
-    Chip,
-    Divider,
-    Switch,
-    Select,
-    SelectItem,
-    Card,
-    CardBody,
-} from '@heroui/react'
-import {
-    ArrowLeft,
-    Save,
-    ShieldCheck,
-    History,
-    AlertTriangle,
-    ShieldAlert,
-    CheckCircle2,
-    XCircle,
-} from 'lucide-react'
-import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
-import { PageHeading, HeroCard } from '@/shared/components'
-
 export default function UserAccessPage() {
     const navigate = useNavigate()
+    const { username } = Route.useParams()
 
-    // Mock data for the specific user
-    const userProfile = {
-        name: 'Dang Son',
-        username: 'asjdasj',
-        role: 'Moderator',
-        avatar: '',
-        department: 'Content Quality',
-    }
+    const [
+        { data: user },
+        {
+            data: { roles },
+        },
+        { data: permissionGroups },
+    ] = useSuspenseQueries({
+        queries: [
+            { ...userOptions(username) },
+            { ...rolesListOptions() },
+            { ...permissionGroupsListOptions() },
+        ],
+    })
+
+    const memberPermissions = useMemo(
+        () => user?.role?.permissions?.map((it) => it.entityAction) ?? [],
+        [user]
+    )
+    console.log(memberPermissions)
 
     return (
         <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
-            {/* --- Navigation & Header --- */}
-            <div className="flex justify-between items-center">
+            {/* --- Header Section --- */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex items-center gap-4">
                     <Button
                         isIconOnly
                         variant="flat"
                         radius="full"
-                        onPress={() =>
-                            navigate({ to: '/admin/role-n-permission/users' })
-                        }
+                        onPress={() => navigate({ to: '..' })}
                     >
                         <ArrowLeft size={20} />
                     </Button>
                     <div className="flex items-center gap-4">
                         <Avatar
-                            src={userProfile.avatar}
+                            src={optimizeCloudinary(user.avatar)}
                             size="lg"
                             isBordered
                             color="primary"
@@ -65,12 +90,12 @@ export default function UserAccessPage() {
                         />
                         <div>
                             <h1 className="text-2xl font-black tracking-tight">
-                                {userProfile.name}
+                                {user.displayName}
                             </h1>
                             <p className="text-text-subdued text-sm font-medium flex items-center gap-2">
-                                @{userProfile.username} •{' '}
+                                @{user.username} •{' '}
                                 <span className="text-primary font-bold">
-                                    {userProfile.department}
+                                    {user.department?.displayName}
                                 </span>
                             </p>
                         </div>
@@ -86,13 +111,13 @@ export default function UserAccessPage() {
                         className="font-bold px-8 shadow-xl shadow-primary/30"
                         startContent={<Save size={18} />}
                     >
-                        Save Access
+                        Save Changes
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* --- Left Column: Primary Role Assignment --- */}
+                {/* --- Left Column: Summary --- */}
                 <div className="space-y-6">
                     <HeroCard
                         title="Primary Identity"
@@ -101,130 +126,128 @@ export default function UserAccessPage() {
                         <CardBody className="p-6 space-y-6">
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase text-text-subdued tracking-widest">
-                                    Current Role
+                                    Assign Primary Role
                                 </label>
                                 <Select
-                                    defaultSelectedKeys={[
-                                        userProfile.role.toLowerCase(),
-                                    ]}
+                                    defaultSelectedKeys={[user.role.code]}
                                     variant="bordered"
                                     className="w-full"
                                 >
-                                    <SelectItem key="admin" textValue="Admin">
-                                        Admin (Full Access)
-                                    </SelectItem>
-                                    <SelectItem
-                                        key="moderator"
-                                        textValue="Moderator"
-                                    >
-                                        Moderator (High Access)
-                                    </SelectItem>
-                                    <SelectItem key="member" textValue="Member">
-                                        Member (Standard Access)
-                                    </SelectItem>
+                                    {roles.map((role) => (
+                                        <SelectItem
+                                            key={role.code}
+                                            textValue={role.displayName}
+                                        >
+                                            {role.displayName}
+                                        </SelectItem>
+                                    ))}
                                 </Select>
                                 <p className="text-[10px] text-warning-600 flex items-start gap-1 bg-warning-50 p-2 rounded-lg mt-2">
                                     <AlertTriangle
                                         size={12}
                                         className="shrink-0 mt-0.5"
                                     />
-                                    Changing the primary role will reset all
-                                    current inherited permissions.
+                                    Role changes reset custom overrides to the
+                                    new role's defaults.
                                 </p>
                             </div>
                         </CardBody>
                     </HeroCard>
 
-                    <Card className="bg-slate-900 text-white border-none p-6 rounded-[2rem]">
+                    <Card className="bg-slate-900 text-white border-none p-6 rounded-4xl">
                         <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
                             <ShieldCheck size={20} className="text-primary" />{' '}
                             Access Summary
                         </h4>
                         <p className="text-slate-400 text-xs mb-4">
-                            Current effective rights for this user.
+                            Effective permissions for this session.
                         </p>
                         <ul className="space-y-3">
                             <AccessSummaryItem
-                                label="Can moderate all posts"
+                                label="Global Moderation"
                                 active
                             />
                             <AccessSummaryItem
-                                label="Can update community info"
+                                label="Community Management"
                                 active={false}
                             />
                             <AccessSummaryItem
-                                label="Can manage staff roles"
+                                label="Financial Access"
                                 active={false}
                             />
                         </ul>
                     </Card>
                 </div>
 
-                {/* --- Right Column: Granular Permission Overrides --- */}
+                {/* --- Right Column: Accordion Permissions --- */}
                 <div className="lg:col-span-2 space-y-6">
-                    <h3 className="text-xl font-bold flex items-center gap-2">
-                        <ShieldAlert size={22} className="text-primary" />{' '}
-                        Permission Overrides
-                    </h3>
-                    <p className="text-text-subdued text-sm -mt-4">
-                        Manually grant or revoke specific rights outside of the
-                        primary role.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {['Community', 'Topic', 'Post', 'Comment'].map(
-                            (entity) => (
-                                <HeroCard
-                                    key={entity}
-                                    className="border-divider hover:shadow-md transition-shadow"
-                                >
-                                    <CardBody className="p-5">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h4 className="font-black text-sm uppercase tracking-tighter">
-                                                {entity} Actions
-                                            </h4>
-                                            <Chip
-                                                size="sm"
-                                                variant="flat"
-                                                color="primary"
-                                            >
-                                                Inherited
-                                            </Chip>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <PermissionToggle
-                                                label="Create"
-                                                inheritedValue={true}
-                                            />
-                                            <PermissionToggle
-                                                label="Update"
-                                                inheritedValue={false}
-                                            />
-                                            <PermissionToggle
-                                                label="Delete"
-                                                inheritedValue={
-                                                    entity === 'Post'
-                                                }
-                                            />
-                                            <PermissionToggle
-                                                label="Moderate"
-                                                inheritedValue={
-                                                    entity !== 'Comment'
-                                                }
-                                            />
-                                        </div>
-                                    </CardBody>
-                                </HeroCard>
-                            )
-                        )}
+                    <div className="flex items-center gap-3">
+                        <ShieldAlert size={24} className="text-primary" />
+                        <div>
+                            <h3 className="text-xl font-bold">
+                                Permission Overrides
+                            </h3>
+                            <p className="text-text-subdued text-xs font-medium">
+                                Toggle individual rights independent of role
+                                assignment.
+                            </p>
+                        </div>
                     </div>
+
+                    <Accordion
+                        variant="splitted"
+                        selectionMode="multiple"
+                        className="px-0"
+                        defaultExpandedKeys={[permissionGroups[0]?.name]}
+                    >
+                        {permissionGroups.map((group) => (
+                            <AccordionItem
+                                key={group.name}
+                                aria-label={group.name}
+                                startContent={
+                                    <LayoutGrid
+                                        size={18}
+                                        className="text-primary"
+                                    />
+                                }
+                                title={
+                                    <span className="font-bold text-sm uppercase tracking-tight">
+                                        {group.name} Actions
+                                    </span>
+                                }
+                                subtitle={
+                                    <span className="text-xs">
+                                        {group.permissions.length} individual
+                                        permissions
+                                    </span>
+                                }
+                                classNames={{
+                                    base: 'border border-divider shadow-sm mb-4',
+                                    content:
+                                        'grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 pb-6',
+                                }}
+                            >
+                                <Divider className="mb-4 col-span-full" />
+                                {group.permissions.map((perm) => (
+                                    <PermissionToggle
+                                        key={perm.displayName}
+                                        label={perm.displayName}
+                                        description={perm.description}
+                                        inheritedValue={memberPermissions.includes(
+                                            perm.entityAction
+                                        )} // Logic to check if role naturally has this
+                                    />
+                                ))}
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
                 </div>
             </div>
         </div>
     )
 }
 
-// --- Sub-components for cleaner code ---
+// --- Sub-components ---
 
 function AccessSummaryItem({
     label,
@@ -253,22 +276,34 @@ function AccessSummaryItem({
 
 function PermissionToggle({
     label,
+    description,
     inheritedValue,
 }: {
     label: string
+    description?: string
     inheritedValue: boolean
 }) {
     return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between p-2 rounded-xl hover:bg-default-50 transition-colors">
             <div className="flex flex-col">
                 <span className="text-sm font-bold text-slate-700">
                     {label}
                 </span>
                 <span className="text-[10px] text-text-subdued italic">
-                    {inheritedValue ? 'Default: Allowed' : 'Default: Denied'}
+                    {description}
                 </span>
             </div>
-            <Switch defaultSelected={inheritedValue} size="sm" />
+            <HeroTooltip
+                content={
+                    inheritedValue ? 'Inherited from Role' : 'Direct Access'
+                }
+            >
+                <Switch
+                    defaultSelected={inheritedValue}
+                    size="sm"
+                    color="primary"
+                />
+            </HeroTooltip>
         </div>
     )
 }

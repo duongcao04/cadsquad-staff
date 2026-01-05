@@ -29,7 +29,7 @@ INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "enti
 
 -- GROUP 1: RECRUITMENT (Jobs)
 (gen_random_uuid(), 'View Jobs',       'JOB_READ',    'JOB'::"EntityEnum", 'read',    'job.read',    'group-0000-0000-0000-0000-000000000001', 'View jobs assigned'),
-(gen_random_uuid(), 'View Jobs',       'JOB_READ_ALL',    'JOB'::"EntityEnum", 'readAll',    'job.readAll',    'group-0000-0000-0000-0000-000000000001', 'View all jobs (both assigned or not assigned)'),
+(gen_random_uuid(), 'View All Jobs',       'JOB_READ_ALL',    'JOB'::"EntityEnum", 'readAll',    'job.readAll',    'group-0000-0000-0000-0000-000000000001', 'View all jobs (both assigned or not assigned)'),
 (gen_random_uuid(), 'View Job Sensitive data',       'JOB_READ_SENSITIVE_DATA',    'JOB'::"EntityEnum", 'readSensitive',    'job.readSensitive',    'group-0000-0000-0000-0000-000000000001', 'View all job sensitive data'),
 (gen_random_uuid(), 'Create Jobs',     'JOB_CREATE',  'JOB'::"EntityEnum", 'create',  'job.create',  'group-0000-0000-0000-0000-000000000001', 'Create jobs'),
 (gen_random_uuid(), 'Update Jobs',     'JOB_UPDATE',  'JOB'::"EntityEnum", 'update',  'job.update',  'group-0000-0000-0000-0000-000000000001', 'Update jobs'),
@@ -43,6 +43,8 @@ INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "enti
 -- GROUP 2: STAFF (Users)
 (gen_random_uuid(), 'View Users',      'USER_READ',   'USER'::"EntityEnum", 'read',    'user.read',    'group-0000-0000-0000-0000-000000000002', 'View staff'),
 (gen_random_uuid(), 'Create Users',    'USER_CREATE', 'USER'::"EntityEnum", 'create',  'user.create',  'group-0000-0000-0000-0000-000000000002', 'Create staff'),
+(gen_random_uuid(), 'Reset user password',    'USER_RESET_PASSWORD', 'USER'::"EntityEnum", 'resetPassword',  'user.resetPassword',  'group-0000-0000-0000-0000-000000000001', 'Force reset user password'),
+(gen_random_uuid(), 'Block user',    'USER_BLOCK', 'USER'::"EntityEnum", 'block',  'user.block',  'group-0000-0000-0000-0000-000000000001', 'Block user'),
 (gen_random_uuid(), 'Update Users',    'USER_UPDATE', 'USER'::"EntityEnum", 'update',  'user.update',  'group-0000-0000-0000-0000-000000000002', 'Update staff'),
 (gen_random_uuid(), 'Delete Users',    'USER_DELETE', 'USER'::"EntityEnum", 'delete',  'user.delete',  'group-0000-0000-0000-0000-000000000002', 'Delete staff'),
 
@@ -64,7 +66,8 @@ INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "enti
 
 ON CONFLICT ("entityAction") DO UPDATE 
 SET "permissionGroupId" = EXCLUDED."permissionGroupId",
-    "displayName" = EXCLUDED."displayName";
+    "displayName" = EXCLUDED."displayName",
+    "description" = EXCLUDED."description";
 
 -- ==========================================
 -- 4. MAP PERMISSIONS TO ROLES

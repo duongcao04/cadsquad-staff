@@ -17,6 +17,8 @@ export const APP_PERMISSIONS = {
         CREATE: 'user.create',
         UPDATE: 'user.update',
         DELETE: 'user.delete',
+        RESET_PASSWORD: 'user.resetPassword',
+        BLOCK: 'user.block',
     },
     CLIENT: {
         READ: 'client.read',

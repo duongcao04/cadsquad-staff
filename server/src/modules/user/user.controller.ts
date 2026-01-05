@@ -32,6 +32,9 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { UserResponseDto } from './dto/user-response.dto'
 import { UserService } from './user.service'
 import { UserQueryDto } from './dto/user-query.dto'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
+import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
+import { APP_PERMISSIONS } from '../../utils/_app-permissions'
 
 @ApiTags('Users')
 @Controller('users')
@@ -97,8 +100,8 @@ export class UserController {
         status: 200,
         description: 'The password has been successfully reset.',
     })
-    @UseGuards(RolesGuard)
-    @Roles(RoleEnum.ADMIN)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.USER.RESET_PASSWORD)
     async resetPassword(
         @Param('id') id: string,
         @Body() dto: ResetPasswordDto
@@ -131,8 +134,8 @@ export class UserController {
         description: 'Return a single user.',
         type: UserResponseDto,
     })
-    @UseGuards(RolesGuard)
-    @Roles(RoleEnum.ADMIN)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.USER.READ)
     async findOne(@Param('identifier') identifier: string) {
         // Check if the parameter looks like a UUID
         if (isUUID(identifier)) {
@@ -152,8 +155,8 @@ export class UserController {
         description: 'The user has been successfully updated.',
         type: UserResponseDto,
     })
-    @UseGuards(RolesGuard)
-    @Roles(RoleEnum.ADMIN)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.USER.UPDATE)
     async update(
         @Param('username') username: string,
         @Body() updateUserDto: UpdateUserDto
@@ -162,8 +165,8 @@ export class UserController {
     }
 
     @Patch(':id/status')
-    @UseGuards(RolesGuard)
-    @Roles(RoleEnum.ADMIN)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.USER.BLOCK)
     @ResponseMessage('User status updated successfully')
     async toggleStatus(
         @Param('id') id: string,
@@ -183,8 +186,8 @@ export class UserController {
         status: 200,
         description: 'The user has been successfully deleted.',
     })
-    @UseGuards(RolesGuard)
-    @Roles(RoleEnum.ADMIN)
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.USER.DELETE)
     async remove(@Param('id') id: string) {
         return this.userService.delete(id)
     }

@@ -3,6 +3,7 @@ import { RoleEnum } from '@prisma/client'
 import { ApiProperty } from '@nestjs/swagger'
 import { DepartmentResponseDto } from '../../department/dto/department-response.dto'
 import { JobTitleResponseDto } from '../../job-title/dto/job-title-response.dto'
+import { RoleResponseDto } from '../../role-permissions/dtos/role-response.dto'
 
 export class UserResponseDto {
     @ApiProperty({
@@ -29,7 +30,7 @@ export class UserResponseDto {
 
     @ApiProperty({ description: 'Role of the user' })
     @Expose()
-    role: any
+    role: RoleResponseDto
 
     @ApiProperty({
         description: 'URL of the user avatar',
