@@ -8,6 +8,7 @@ import type {
 import type { IUserResponse } from '@/shared/interfaces'
 import queryString from 'query-string'
 import { TCreateUserInput } from '../../shared/components'
+import { TUserSecurityLog } from '../../shared/types'
 
 export interface IProfileOverview {
     summary: {
@@ -62,6 +63,11 @@ export const userApi = {
                 ApiResponse<IProfileOverview>
             >('/v1/analytics/profile-overview')
             .then((res) => res.data)
+    },
+    getSecurityLogs: () => {
+        return axiosClient.get<ApiResponse<TUserSecurityLog[]>>(
+            '/v1/users/security-logs'
+        )
     },
     toggleStatus: async (userId: string, forceStatus?: boolean) => {
         const url = forceStatus

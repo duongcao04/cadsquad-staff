@@ -6,6 +6,7 @@ import { IMAGES, toDate, toNullableDate } from '../../utils'
 import { mapDepartment } from './department-queries'
 import { mapJobTitle } from './job-title-queries'
 import { TUserQueryInput } from '../../validationSchemas'
+import { mapRole } from './role-queries'
 
 export const mapUser: (item?: IUserResponse) => TUser = (item) => {
     return {
@@ -18,11 +19,12 @@ export const mapUser: (item?: IUserResponse) => TUser = (item) => {
         department: mapDepartment(item?.department ?? undefined) ?? null,
         jobTitle: mapJobTitle(item?.jobTitle ?? undefined) ?? null,
         isActive: Boolean(item?.isActive),
-        role: item?.role ?? 'USER',
+        role: mapRole(item?.role),
         files: item?.files ?? [],
         accounts: item?.accounts ?? [],
         notifications: item?.notifications ?? [],
         configs: item?.configs ?? [],
+        securityLogs: item?.securityLogs ?? [],
         filesCreated: item?.filesCreated ?? [],
         jobActivityLog: item?.jobActivityLog ?? [],
         jobsCreated: item?.jobsCreated ?? [],
@@ -79,6 +81,15 @@ export const profileOptions = () => {
         select: (res) => {
             const userData = res?.data.result
             return mapUser(userData)
+        },
+    })
+}
+export const securityLogsListOptions = () => {
+    return queryOptions({
+        queryKey: ['user', 'securityLogs'],
+        queryFn: () => userApi.getSecurityLogs(),
+        select: (res) => {
+            return { securityLogs: res?.data.result }
         },
     })
 }

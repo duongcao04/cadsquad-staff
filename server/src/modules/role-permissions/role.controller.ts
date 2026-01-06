@@ -5,14 +5,12 @@ import {
     Get,
     Param,
     ParseIntPipe,
-    Patch,
     Post,
     UseGuards,
 } from '@nestjs/common'
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
 import { JwtGuard } from '../auth/jwt.guard'
 import { CreateRoleDto } from './dtos/create-role.dto'
-import { UpdateRoleDto } from './dtos/update-role.dto'
 import { PermissionService } from './permission.service'
 import { RoleService } from './role.service'
 

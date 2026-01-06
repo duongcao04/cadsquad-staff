@@ -4,7 +4,7 @@ import {
     rolesListOptions,
     userOptions,
 } from '@/lib/queries'
-import { HeroCard, HeroTooltip } from '@/shared/components'
+import { HeroCard } from '@/shared/components'
 import {
     Avatar,
     Button,
@@ -12,25 +12,33 @@ import {
     CardBody,
     Select,
     SelectItem,
-    Switch,
     Accordion,
     AccordionItem,
+    useDisclosure,
+    Chip,
     Divider,
 } from '@heroui/react'
-import { useSuspenseQueries } from '@tanstack/react-query'
+import {
+    useSuspenseQueries,
+    useMutation,
+    useQueryClient,
+} from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
-    AlertTriangle,
     ArrowLeft,
-    CheckCircle2,
-    History,
-    Save,
-    ShieldAlert,
-    ShieldCheck,
-    XCircle,
+    Shield,
+    UserCog,
     LayoutGrid,
+    AlertCircle,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { toast } from 'sonner' // Assuming you use Sonner or React-Hot-Toast
+import {
+    getPermissionStatus,
+    PermissionAction,
+} from '../../../../../../lib/utils/_user-access'
+import { PermissionRow } from '../../../../../../shared/components/admin/user-access/PermissionRow'
+import { ChangeRoleModal } from '../../../../../../shared/components/admin/user-access/modals/ChangeRoleModal'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/role-n-permission/users/$username'
@@ -46,7 +54,10 @@ export const Route = createFileRoute(
 export default function UserAccessPage() {
     const navigate = useNavigate()
     const { username } = Route.useParams()
+    const queryClient = useQueryClient()
+    const { isOpen, onOpen, onClose } = useDisclosure()
 
+    // 1. Fetch Data
     const [
         { data: user },
         {
@@ -61,20 +72,59 @@ export default function UserAccessPage() {
         ],
     })
 
-    const memberPermissions = useMemo(
-        () => user?.role?.permissions?.map((it) => it.entityAction) ?? [],
+    // 2. Derived State (Permissions)
+    // Flatten role permissions to simple array of strings: ['job.read', 'user.create']
+    const rolePermissions = useMemo(
+        () => user?.role?.permissions?.map((p) => p.entityAction) ?? [],
         [user]
     )
-    console.log(memberPermissions)
+    // Get user overrides (UserPermission table)
+    const userOverrides = useMemo(() => user?.userPermissions ?? [], [user])
+
+    // 3. Mutation: Update Permission
+    const updatePermissionMutation = useMutation({
+        mutationFn: async ({
+            permissionId,
+            action,
+        }: {
+            permissionId: string
+            action: PermissionAction
+        }) => {
+            // Replace with your actual API call
+            // await axios.post(`/users/${user.id}/permissions`, { permissionId, action });
+            console.log(
+                `Sending API: ID=${user.id} Perm=${permissionId} Action=${action}`
+            )
+            return new Promise((resolve) => setTimeout(resolve, 500)) // Fake delay
+        },
+        onSuccess: () => {
+            toast.success('Permissions updated')
+            queryClient.invalidateQueries({ queryKey: ['users', username] })
+        },
+        onError: () => toast.error('Failed to update permission'),
+    })
+
+    // 4. Mutation: Change Role
+    const changeRoleMutation = useMutation({
+        mutationFn: async (newRoleId: string) => {
+            // Replace with API call
+            console.log('Changing role to', newRoleId)
+        },
+        onSuccess: () => {
+            toast.success('Role updated and permissions reset')
+            queryClient.invalidateQueries({ queryKey: ['users', username] })
+            onClose()
+        },
+    })
 
     return (
-        <div className="p-6 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-24">
-            {/* --- Header Section --- */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="p-6 pb-24 max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-2">
+            {/* --- HEADER --- */}
+            <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button
                         isIconOnly
-                        variant="flat"
+                        variant="light"
                         radius="full"
                         onPress={() => navigate({ to: '..' })}
                     >
@@ -89,221 +139,232 @@ export default function UserAccessPage() {
                             className="w-16 h-16"
                         />
                         <div>
-                            <h1 className="text-2xl font-black tracking-tight">
-                                {user.displayName}
-                            </h1>
-                            <p className="text-text-subdued text-sm font-medium flex items-center gap-2">
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-2xl font-black tracking-tight">
+                                    {user.displayName}
+                                </h1>
+                                <Chip
+                                    size="sm"
+                                    color="primary"
+                                    variant="flat"
+                                    className="font-bold"
+                                >
+                                    {user.role.displayName}
+                                </Chip>
+                            </div>
+                            <p className="text-default-500 text-sm font-medium">
                                 @{user.username} •{' '}
-                                <span className="text-primary font-bold">
-                                    {user.department?.displayName}
-                                </span>
+                                {user.department?.displayName}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="flat" startContent={<History size={18} />}>
-                        Access Logs
-                    </Button>
-                    <Button
-                        color="primary"
-                        size="lg"
-                        className="font-bold px-8 shadow-xl shadow-primary/30"
-                        startContent={<Save size={18} />}
-                    >
-                        Save Changes
-                    </Button>
-                </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* --- Left Column: Summary --- */}
-                <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* --- LEFT: ROLE & SUMMARY (4 Cols) --- */}
+                <div className="lg:col-span-4 space-y-6">
                     <HeroCard
-                        title="Primary Identity"
-                        className="border-divider"
+                        title="Role Assignment"
+                        icon={<UserCog size={18} />}
                     >
-                        <CardBody className="p-6 space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-xs font-black uppercase text-text-subdued tracking-widest">
-                                    Assign Primary Role
-                                </label>
+                        <CardBody className="p-4 space-y-4">
+                            <p className="text-sm text-default-500">
+                                The primary role defines the baseline
+                                permissions. To verify changes, use the
+                                'Effective Access' view.
+                            </p>
+
+                            {/* Fake Select that triggers Modal */}
+                            <div className="relative">
                                 <Select
-                                    defaultSelectedKeys={[user.role.code]}
+                                    label="Primary Role"
+                                    selectedKeys={[String(user.role.id)]} // Ensure string/number match
                                     variant="bordered"
-                                    className="w-full"
+                                    disallowEmptySelection
+                                    classNames={{ trigger: 'cursor-pointer' }}
                                 >
                                     {roles.map((role) => (
                                         <SelectItem
-                                            key={role.code}
+                                            key={String(role.id)}
                                             textValue={role.displayName}
                                         >
                                             {role.displayName}
                                         </SelectItem>
                                     ))}
                                 </Select>
-                                <p className="text-[10px] text-warning-600 flex items-start gap-1 bg-warning-50 p-2 rounded-lg mt-2">
-                                    <AlertTriangle
-                                        size={12}
-                                        className="shrink-0 mt-0.5"
-                                    />
-                                    Role changes reset custom overrides to the
-                                    new role's defaults.
-                                </p>
+                                {/* Overlay div to capture click for Modal */}
+                                <div
+                                    className="absolute inset-0 z-10 cursor-pointer"
+                                    onClick={onOpen}
+                                />
+                            </div>
+
+                            <div className="flex items-start gap-2 p-2 bg-default-100 rounded-md text-xs text-default-500">
+                                <AlertCircle
+                                    size={14}
+                                    className="mt-0.5 shrink-0"
+                                />
+                                <span>
+                                    Clicking the selector will open a
+                                    confirmation dialog.
+                                </span>
                             </div>
                         </CardBody>
                     </HeroCard>
 
-                    <Card className="bg-slate-900 text-white border-none p-6 rounded-4xl">
-                        <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
-                            <ShieldCheck size={20} className="text-primary" />{' '}
-                            Access Summary
-                        </h4>
-                        <p className="text-slate-400 text-xs mb-4">
-                            Effective permissions for this session.
-                        </p>
-                        <ul className="space-y-3">
-                            <AccessSummaryItem
-                                label="Global Moderation"
-                                active
-                            />
-                            <AccessSummaryItem
-                                label="Community Management"
-                                active={false}
-                            />
-                            <AccessSummaryItem
-                                label="Financial Access"
-                                active={false}
-                            />
-                        </ul>
+                    <Card className="bg-slate-900 text-white border-none p-6 shadow-xl rounded-2xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-primary/20 rounded-lg text-primary">
+                                <Shield size={24} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-lg">
+                                    Access Summary
+                                </h4>
+                                <p className="text-xs text-slate-400">
+                                    Live calculations
+                                </p>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between text-sm border-b border-white/10 pb-2">
+                                <span className="text-slate-400">
+                                    Base Role
+                                </span>
+                                <span className="font-bold">
+                                    {user.role.displayName}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm border-b border-white/10 pb-2">
+                                <span className="text-slate-400">
+                                    Direct Grants
+                                </span>
+                                <span className="font-bold text-success">
+                                    {
+                                        userOverrides.filter((o) => !o.isDenied)
+                                            .length
+                                    }
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm pb-2">
+                                <span className="text-slate-400">
+                                    Explicit Denials
+                                </span>
+                                <span className="font-bold text-danger">
+                                    {
+                                        userOverrides.filter((o) => o.isDenied)
+                                            .length
+                                    }
+                                </span>
+                            </div>
+                        </div>
                     </Card>
                 </div>
 
-                {/* --- Right Column: Accordion Permissions --- */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="flex items-center gap-3">
-                        <ShieldAlert size={24} className="text-primary" />
+                {/* --- RIGHT: PERMISSION MATRIX (8 Cols) --- */}
+                <div className="lg:col-span-8 space-y-6">
+                    <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl font-bold">
-                                Permission Overrides
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <LayoutGrid className="text-primary" />{' '}
+                                Permission Matrix
                             </h3>
-                            <p className="text-text-subdued text-xs font-medium">
-                                Toggle individual rights independent of role
-                                assignment.
+                            <p className="text-default-500 text-sm">
+                                Fine-tune access rights for this specific user.
                             </p>
+                        </div>
+
+                        {/* Legend */}
+                        <div className="hidden sm:flex gap-3 text-[10px] font-bold uppercase text-default-500 bg-content2 p-2 rounded-lg border border-default-200">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full bg-default-400" />{' '}
+                                Inherit
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full bg-success-500" />{' '}
+                                Grant
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2 h-2 rounded-full bg-danger-500" />{' '}
+                                Deny
+                            </div>
                         </div>
                     </div>
 
                     <Accordion
                         variant="splitted"
                         selectionMode="multiple"
-                        className="px-0"
                         defaultExpandedKeys={[permissionGroups[0]?.name]}
+                        itemClasses={{
+                            base: 'group mb-2',
+                            title: 'font-bold text-sm uppercase text-default-600',
+                            content: 'pb-4',
+                        }}
                     >
                         {permissionGroups.map((group) => (
                             <AccordionItem
                                 key={group.name}
                                 aria-label={group.name}
                                 startContent={
-                                    <LayoutGrid
-                                        size={18}
-                                        className="text-primary"
-                                    />
+                                    <div className="w-1 h-6 bg-primary rounded-full mr-2" />
                                 }
-                                title={
-                                    <span className="font-bold text-sm uppercase tracking-tight">
-                                        {group.name} Actions
-                                    </span>
-                                }
-                                subtitle={
-                                    <span className="text-xs">
-                                        {group.permissions.length} individual
-                                        permissions
-                                    </span>
-                                }
-                                classNames={{
-                                    base: 'border border-divider shadow-sm mb-4',
-                                    content:
-                                        'grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 pb-6',
-                                }}
+                                title={group.name}
+                                subtitle={`${group.permissions.length} permissions`}
                             >
-                                <Divider className="mb-4 col-span-full" />
-                                {group.permissions.map((perm) => (
-                                    <PermissionToggle
-                                        key={perm.displayName}
-                                        label={perm.displayName}
-                                        description={perm.description}
-                                        inheritedValue={memberPermissions.includes(
-                                            perm.entityAction
-                                        )} // Logic to check if role naturally has this
-                                    />
-                                ))}
+                                <Divider className="mb-4" />
+                                <div className="grid grid-cols-1 gap-2">
+                                    {group.permissions.map((perm) => {
+                                        // Calculate Status logic
+                                        const { status, effective } =
+                                            getPermissionStatus(
+                                                perm.entityAction,
+                                                rolePermissions,
+                                                userOverrides
+                                            )
+
+                                        return (
+                                            <PermissionRow
+                                                key={perm.id}
+                                                label={perm.displayName}
+                                                description={perm.description}
+                                                status={status}
+                                                effectiveValue={effective}
+                                                onChange={(action) =>
+                                                    updatePermissionMutation.mutate(
+                                                        {
+                                                            permissionId:
+                                                                perm.id,
+                                                            action,
+                                                        }
+                                                    )
+                                                }
+                                                isLoading={
+                                                    updatePermissionMutation.isPending &&
+                                                    updatePermissionMutation
+                                                        .variables
+                                                        ?.permissionId ===
+                                                        perm.id
+                                                }
+                                            />
+                                        )
+                                    })}
+                                </div>
                             </AccordionItem>
                         ))}
                     </Accordion>
                 </div>
             </div>
-        </div>
-    )
-}
 
-// --- Sub-components ---
-
-function AccessSummaryItem({
-    label,
-    active,
-}: {
-    label: string
-    active: boolean
-}) {
-    return (
-        <li className="flex items-center justify-between text-xs font-medium">
-            <span
-                className={
-                    active ? 'text-slate-200' : 'text-slate-500 line-through'
-                }
-            >
-                {label}
-            </span>
-            {active ? (
-                <CheckCircle2 size={14} className="text-success" />
-            ) : (
-                <XCircle size={14} className="text-slate-600" />
-            )}
-        </li>
-    )
-}
-
-function PermissionToggle({
-    label,
-    description,
-    inheritedValue,
-}: {
-    label: string
-    description?: string
-    inheritedValue: boolean
-}) {
-    return (
-        <div className="flex items-center justify-between p-2 rounded-xl hover:bg-default-50 transition-colors">
-            <div className="flex flex-col">
-                <span className="text-sm font-bold text-slate-700">
-                    {label}
-                </span>
-                <span className="text-[10px] text-text-subdued italic">
-                    {description}
-                </span>
-            </div>
-            <HeroTooltip
-                content={
-                    inheritedValue ? 'Inherited from Role' : 'Direct Access'
-                }
-            >
-                <Switch
-                    defaultSelected={inheritedValue}
-                    size="sm"
-                    color="primary"
-                />
-            </HeroTooltip>
+            {/* --- Safety Modal --- */}
+            <ChangeRoleModal
+                isOpen={isOpen}
+                onClose={onClose}
+                onConfirm={(newId) => changeRoleMutation.mutate(newId)}
+                currentRoleId={user.role.id}
+                roles={roles}
+                isPending={changeRoleMutation.isPending}
+            />
         </div>
     )
 }

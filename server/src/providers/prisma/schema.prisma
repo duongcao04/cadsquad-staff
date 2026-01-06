@@ -70,14 +70,40 @@ model User {
   reports   User[]  @relation("UserHierarchy")
 
   // Quan hệ Auth
-  sessions       Session[]
-  accounts       Account[]
-  jobDeliveries  JobDelivery[]
-  communities    CommunityMember[]
-  posts          Post[]
-  jobAssignments JobAssignment[]
-  role        Role?             @relation(fields: [roleId], references: [id])
-  roleId         String?
+  sessions        Session[]
+  accounts        Account[]
+  jobDeliveries   JobDelivery[]
+  communities     CommunityMember[]
+  posts           Post[]
+  jobAssignments  JobAssignment[]
+  role            Role?             @relation(fields: [roleId], references: [id])
+  roleId          String?
+  // This for Grant permissions
+  userPermissions UserPermission[]
+  securityLogs    UserSecurityLog[]
+}
+
+model UserSecurityLog {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  event  String // e.g., "Login Success", "Password Changed", "Failed Attempt"
+  status SecurityLogStatus @default(SUCCESS)
+
+  ipAddress String?
+  userAgent String? // Thông tin trình duyệt/thiết bị
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum SecurityLogStatus {
+  SUCCESS
+  FAILED
+  WARNING
 }
 
 model Role {
@@ -105,8 +131,30 @@ model Permission {
   roles             Role[]
   permissionGroup   PermissionGroup? @relation(fields: [permissionGroupId], references: [id])
   permissionGroupId String?
+  userPermissions   UserPermission[]
 
   @@unique([entity, action])
+}
+
+// Bảng này lưu các quyền "đặc biệt" của user (khác với Role)
+model UserPermission {
+  id String @id @default(uuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  // QUAN TRỌNG:
+  // false (Mặc định): Cấp thêm quyền này cho user (Grant/Bonus)
+  // true: Cấm user dùng quyền này, kể cả khi Role của họ có quyền đó (Deny/Exclude)
+  isDenied Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, permissionId]) // 1 user chỉ override 1 quyền 1 lần
 }
 
 model PermissionGroup {
@@ -133,18 +181,20 @@ enum EntityEnum {
   PAYMENT_CHANNEL
   DEPARTMENT
   JOB_TITLE
+  JOB_TYPE // <--- Added this (Fixes your SQL error)
+  JOB_STATUS // <--- Added this (For status management)
 
   // Social / Community
   COMMUNITY
   TOPIC
   POST
-  COMMENT // Covers JobComment and potential future Post comments
+  COMMENT
 
   // Assets & System
-  FILE // FileSystem
+  FILE
   NOTIFICATION
-  SYSTEM // For configs, logs, maintenance
-  ANALYTICS // For dashboard/reports viewing
+  SYSTEM
+  ANALYTICS
 }
 
 // Model Session bắt buộc cho Better Auth

@@ -1,9 +1,9 @@
 import { Body, Controller, Patch, Post, Req, UseGuards } from '@nestjs/common'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
-import { JwtGuard } from '../auth/jwt.guard'
 import { CreateUserDeviceDto } from '../user-devices/dto/create-user-device.dto'
 import { UserDevicesService } from './user-devices.service'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
+import { JwtGuard } from '../auth/jwt.guard'
 
 @Controller('user-devices')
 @UseGuards(JwtGuard)

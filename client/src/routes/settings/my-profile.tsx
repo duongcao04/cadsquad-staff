@@ -1,4 +1,20 @@
 import {
+    dateFormatter,
+    getPageTitle,
+    INTERNAL_URLS,
+    optimizeCloudinary,
+    phoneNumberFormatter,
+    updateProfileSchema,
+    useUpdateProfileMutation,
+    useUploadImageMutation,
+} from '@/lib'
+import { profileOptions } from '@/lib/queries/options/user-queries'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    UploadAvatarModal,
+} from '@/shared/components'
+import {
     addToast,
     Avatar,
     Button,
@@ -14,35 +30,17 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import {
+    ALargeSmallIcon,
     Briefcase,
     Building,
     Calendar,
     Camera,
-    Github,
     House,
-    Linkedin,
     Mail,
     Phone,
     Save,
     User,
 } from 'lucide-react'
-
-import {
-    dateFormatter,
-    getPageTitle,
-    INTERNAL_URLS,
-    optimizeCloudinary,
-    UpdateUserSchema,
-    useUpdateAvatarMutation,
-    useUpdateUserMutation,
-    useUploadImageMutation,
-} from '@/lib'
-import { profileOptions } from '@/lib/queries/options/user-queries'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    UploadAvatarModal,
-} from '@/shared/components'
 
 export const Route = createFileRoute('/settings/my-profile')({
     head: () => ({
@@ -64,8 +62,7 @@ function SettingsProfilePage() {
     })
 
     const uploadImageMutation = useUploadImageMutation()
-    const updateAvatarMutation = useUpdateAvatarMutation()
-    const updateUserMutation = useUpdateUserMutation()
+    const updateProfileMutation = useUpdateProfileMutation()
 
     // Avatar Modal State
     const {
@@ -85,9 +82,8 @@ function SettingsProfilePage() {
 
             // Step 2: Update the user record with this URL
             console.log('Updating user profile...', newAvatarUrl)
-            await updateAvatarMutation.mutateAsync({
-                username: user.username,
-                avatarUrl: newAvatarUrl,
+            await updateProfileMutation.mutateAsync({
+                avatar: newAvatarUrl,
             })
         } catch (error) {
             console.error(error)
@@ -98,39 +94,24 @@ function SettingsProfilePage() {
         }
     }
 
-    // Prepare Social Links from Config
-    const socialConfig = user?.configs?.find(
-        (c: any) => c.code === 'USER_PROFILE_LINKS'
-    )
-    const socialValues = (socialConfig?.value as any) || {}
-
     const formik = useFormik({
         enableReinitialize: true,
         initialValues: {
             displayName: user?.displayName || '',
             username: user?.username || '',
-            email: user?.email || '',
-            phoneNumber: user?.phoneNumber || '',
-            // Socials
-            linkedin: socialValues.linkedin || '',
-            github: socialValues.github || '',
-            // Read-only/Hidden fields for schema compliance
-            role: user?.role || 'USER',
-            isActive: true,
+            email: user?.email || '', // Sử dụng formatter để hiển thị số điện thoại quốc tế (ví dụ: +84 862...)
+            phoneNumber: phoneNumberFormatter(user?.phoneNumber || '')
+                .formatted,
         },
         // We reuse the schema but might want to omit role/active checks for self-update
-        validationSchema: UpdateUserSchema,
+        validationSchema: updateProfileSchema,
         onSubmit: (values) => {
-            updateUserMutation.mutateAsync({
-                username: user.username,
-                data: {
-                    displayName: values.displayName,
-                    phoneNumber: user.phoneNumber ?? '',
-                },
+            updateProfileMutation.mutateAsync({
+                displayName: values.displayName,
+                phoneNumber: values.phoneNumber,
             })
         },
     })
-    console.log(formik.errors)
 
     if (isLoading) return <div className="p-8">Loading profile...</div>
 
@@ -208,7 +189,7 @@ function SettingsProfilePage() {
                                     color="primary"
                                     className="mb-6"
                                 >
-                                    {user?.role}
+                                    {user?.role.displayName}
                                 </Chip>
 
                                 <Divider className="my-3" />
@@ -245,7 +226,10 @@ function SettingsProfilePage() {
                     </div>
 
                     {/* --- RIGHT: Edit Form --- */}
-                    <div className="md:col-span-2">
+                    <form
+                        onSubmit={formik.handleSubmit}
+                        className="md:col-span-2"
+                    >
                         <Card className="shadow-sm border border-border-default">
                             <CardHeader className="px-6 py-4 border-b border-border-default">
                                 <h3 className="font-bold text-text-default text-lg">
@@ -255,11 +239,18 @@ function SettingsProfilePage() {
                             <CardBody className="p-6 gap-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <Input
+                                        isRequired
+                                        name="displayName"
                                         label="Display Name"
-                                        labelPlacement="outside"
+                                        labelPlacement="outside-top"
                                         placeholder="Your full name"
                                         variant="bordered"
-                                        name="displayName"
+                                        startContent={
+                                            <ALargeSmallIcon
+                                                size={16}
+                                                className="text-text-subdued"
+                                            />
+                                        }
                                         value={formik.values.displayName}
                                         onValueChange={(v) =>
                                             formik.setFieldValue(
@@ -267,30 +258,60 @@ function SettingsProfilePage() {
                                                 v
                                             )
                                         }
-                                        isInvalid={!!formik.errors.displayName}
+                                        isInvalid={
+                                            Boolean(
+                                                formik.touched.displayName
+                                            ) &&
+                                            Boolean(formik.errors.displayName)
+                                        }
                                         errorMessage={
-                                            formik.errors.displayName as string
+                                            Boolean(
+                                                formik.touched.displayName
+                                            ) &&
+                                            (formik.errors
+                                                .displayName as string)
                                         }
                                     />
                                     <Input
+                                        name="phoneNumber"
                                         label="Phone Number"
-                                        labelPlacement="outside"
-                                        placeholder="+1 234 567 890"
+                                        labelPlacement="outside-top"
+                                        placeholder="0123 456 789"
                                         variant="bordered"
+                                        value={formik.values.phoneNumber}
                                         startContent={
                                             <Phone
                                                 size={16}
-                                                className="text-slate-400"
+                                                className="text-text-subdued"
                                             />
                                         }
-                                        name="phoneNumber"
-                                        value={formik.values.phoneNumber}
                                         onValueChange={(v) =>
                                             formik.setFieldValue(
                                                 'phoneNumber',
                                                 v
                                             )
                                         }
+                                        // Khi rời khỏi ô nhập liệu, tự động chuyển 0 -> +84
+                                        onBlur={() => {
+                                            const result = phoneNumberFormatter(
+                                                formik.values.phoneNumber,
+                                                'VN'
+                                            )
+                                            if (result.formatted !== '-') {
+                                                formik.setFieldValue(
+                                                    'phoneNumber',
+                                                    result.formatted
+                                                )
+                                            }
+                                        }}
+                                        isInvalid={
+                                            formik.touched.phoneNumber &&
+                                            !!formik.errors.phoneNumber
+                                        }
+                                        errorMessage={
+                                            formik.errors.phoneNumber as string
+                                        }
+                                        description="Automatically converts 0 to +84 for Vietnam numbers"
                                     />
                                     <Input
                                         label="Email"
@@ -300,7 +321,7 @@ function SettingsProfilePage() {
                                         startContent={
                                             <Mail
                                                 size={16}
-                                                className="text-slate-400"
+                                                className="text-text-subdued"
                                             />
                                         }
                                         value={formik.values.email}
@@ -315,7 +336,7 @@ function SettingsProfilePage() {
                                         startContent={
                                             <User
                                                 size={16}
-                                                className="text-slate-400"
+                                                className="text-text-subdued"
                                             />
                                         }
                                         value={formik.values.username}
@@ -323,72 +344,20 @@ function SettingsProfilePage() {
                                         className="opacity-70"
                                     />
                                 </div>
-
-                                <Divider />
-
-                                <div>
-                                    <h4 className="font-semibold text-primary mb-4">
-                                        Social Profiles
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <Input
-                                            label="LinkedIn"
-                                            labelPlacement="outside"
-                                            placeholder="https://linkedin.com/in/..."
-                                            variant="bordered"
-                                            startContent={
-                                                <Linkedin
-                                                    size={16}
-                                                    className="text-blue-600"
-                                                />
-                                            }
-                                            name="linkedin"
-                                            value={formik.values.linkedin}
-                                            onValueChange={(v) =>
-                                                formik.setFieldValue(
-                                                    'linkedin',
-                                                    v
-                                                )
-                                            }
-                                            isInvalid={!!formik.errors.linkedin}
-                                            errorMessage={
-                                                formik.errors.linkedin as string
-                                            }
-                                        />
-                                        <Input
-                                            label="GitHub"
-                                            labelPlacement="outside"
-                                            placeholder="https://github.com/..."
-                                            variant="bordered"
-                                            startContent={
-                                                <Github
-                                                    size={16}
-                                                    className="text-text-subdued"
-                                                />
-                                            }
-                                            name="github"
-                                            value={formik.values.github}
-                                            onValueChange={(v) =>
-                                                formik.setFieldValue(
-                                                    'github',
-                                                    v
-                                                )
-                                            }
-                                            isInvalid={!!formik.errors.github}
-                                            errorMessage={
-                                                formik.errors.github as string
-                                            }
-                                        />
-                                    </div>
-                                </div>
-
                                 <div className="flex justify-end pt-4">
                                     <Button
                                         color="primary"
                                         onPress={() => formik.handleSubmit()}
-                                        isLoading={updateUserMutation.isPending}
+                                        isDisabled={
+                                            !formik.dirty ||
+                                            !formik.isValid ||
+                                            updateProfileMutation.isPending
+                                        }
+                                        isLoading={
+                                            updateProfileMutation.isPending
+                                        }
                                         startContent={
-                                            !updateUserMutation.isPending && (
+                                            !updateProfileMutation.isPending && (
                                                 <Save size={18} />
                                             )
                                         }
@@ -398,7 +367,7 @@ function SettingsProfilePage() {
                                 </div>
                             </CardBody>
                         </Card>
-                    </div>
+                    </form>
                 </div>
 
                 {/* --- AVATAR UPLOAD MODAL --- */}

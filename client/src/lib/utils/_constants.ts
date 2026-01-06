@@ -7,6 +7,7 @@ export const LS_OIDC_REDIRECT_URI_KEY = 'oidc:redirect_uri' as const
 
 export const COOKIES = {
     authentication: 'csd-authTk',
+    sessionId: 'csd-sseIds',
 }
 
 export const EXTERNAL_URLS = {

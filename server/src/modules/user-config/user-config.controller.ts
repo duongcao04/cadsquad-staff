@@ -5,7 +5,6 @@ import {
     Get,
     HttpCode,
     Param,
-    ParseIntPipe,
     Patch,
     Post,
     Req,
@@ -18,12 +17,12 @@ import {
     ApiTags,
 } from '@nestjs/swagger'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
-import { JwtGuard } from '../auth/jwt.guard'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
-import { UserConfigService } from './user-config.service'
+import { JwtGuard } from '../auth/jwt.guard'
 import { CreateConfigDto } from './dto/create-config.dto'
 import { UpdateConfigDto } from './dto/update-user-config.dto'
 import { UserConfigResponseDto } from './dto/user-config-response.dto'
+import { UserConfigService } from './user-config.service'
 
 @ApiTags('Configs')
 @UseGuards(JwtGuard)

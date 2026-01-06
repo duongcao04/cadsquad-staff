@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { cookie } from '@/lib/cookie'
 
-import { apiBaseUrl, COOKIES } from './utils'
+import { apiBaseUrl, COOKIES, INTERNAL_URLS } from './utils'
 
 export type ApiResponse<T = unknown, D = Record<string, unknown>> = {
     success: boolean
@@ -25,50 +25,61 @@ export const axiosClient = axios.create({
     timeout: 5000, // Request timeout
     withCredentials: true, // Allow sending cookies
 })
-
+// Sửa đổi interceptor cho axiosClient
 axiosClient.interceptors.request.use(
     (config) => {
-        // 1. Get token from cookie
+        // 1. Lấy Access Token từ cookie
         const token = cookie.get(COOKIES.authentication)
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
+
+        // 2. Lấy Session ID từ cookie (Đã lưu khi login)
+        const sessionId = cookie.get(COOKIES.sessionId) // Đảm bảo bạn đã định nghĩa key này trong COOKIES
+        if (sessionId) {
+            config.headers['x-session-id'] = sessionId
+        }
+
         config.headers['Content-Type'] = 'application/json'
-        // 2. If token -> put token into header for Authentication
         return config
     },
     (error) => {
-        if (error?.response) return Promise.reject(error.response)
         return Promise.reject(error)
     }
 )
-
 axiosClient.interceptors.response.use(
-    (response) => {
-        return response
-    },
+    (response) => response,
     (error) => {
-        // Any status code outside 2xx triggers this
+        // Kiểm tra lỗi xác thực 401
+        if (error.response?.status === 401) {
+            // 1. Xóa sạch các cookie liên quan đến phiên làm việc
+            cookie.remove(COOKIES.authentication)
+            cookie.remove(COOKIES.sessionId)
+
+            // 2. Kiểm tra nếu không phải đang ở trang login thì mới redirect
+            const isAtLoginPage =
+                window.location.pathname === INTERNAL_URLS.login
+
+            if (!isAtLoginPage) {
+                // Lưu lại trang hiện tại để sau khi login xong có thể quay lại
+                const currentPath = encodeURIComponent(window.location.pathname)
+                window.location.href = `${INTERNAL_URLS.login}?redirect=${currentPath}`
+            }
+        }
+
+        // Các xử lý lỗi khác giữ nguyên
         if (error.response) {
-            // Server responded with a status code outside 2xx
             console.error(
                 'Response error:',
                 error.response.status,
                 error.response.data
             )
-            return Promise.reject(error.response.data) // or full error.response
-        } else if (error.request) {
-            // Request was made but no response received
-            console.error('No response received:', error.request)
-            return Promise.reject({ message: 'No response from server' })
-        } else {
-            // Something else happened while setting up the request
-            console.error('Axios error:', error.message)
-            return Promise.reject({ message: error.message })
+            return Promise.reject(error.response.data)
         }
+        // ... (phần còn lại của code cũ)
+        return Promise.reject(error)
     }
 )
-
 
 // Create a separate instance specifically for Multipart forms
 export const axiosClientMultipart = axios.create({
@@ -76,7 +87,6 @@ export const axiosClientMultipart = axios.create({
     timeout: 30000, // Uploads might take longer, so increased timeout is good
     withCredentials: true,
 })
-
 
 /**
  * This is for Form-data
@@ -88,7 +98,7 @@ axiosClientMultipart.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
         }
-        // CRITICAL: We do NOT set 'Content-Type' here. 
+        // CRITICAL: We do NOT set 'Content-Type' here.
         // We let the browser detect FormData and set it automatically.
         return config
     },
@@ -105,7 +115,11 @@ axiosClientMultipart.interceptors.response.use(
     },
     (error) => {
         if (error.response) {
-            console.error('Upload Error:', error.response.status, error.response.data)
+            console.error(
+                'Upload Error:',
+                error.response.status,
+                error.response.data
+            )
             return Promise.reject(error.response.data)
         } else if (error.request) {
             console.error('No response received:', error.request)

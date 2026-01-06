@@ -10,7 +10,6 @@ interface ProtectedRouteProps {
     permissions?: AppPermission | AppPermission[]
     requireAll?: boolean
 }
-
 export default function ProtectedRoute({
     children,
     permissions = [],
@@ -22,30 +21,32 @@ export default function ProtectedRoute({
         usePermission()
     const [isChecking, setIsChecking] = useState(true)
 
-    // Memoize mảng quyền dựa trên giá trị chuỗi thực tế của chúng
     const permsArray = useMemo(
         () => (Array.isArray(permissions) ? permissions : [permissions]),
-        [JSON.stringify(permissions)] // So sánh giá trị thay vì tham chiếu mảng
+        [JSON.stringify(permissions)]
     )
 
     useEffect(() => {
         const validate = async () => {
             const token = cookie.get(COOKIES.authentication)
+            const sessionId = cookie.get(COOKIES.sessionId) // Lấy sessionId từ cookie
 
-            // 1. Kiểm tra Token vật lý
-            if (!token) {
+            // 1. Kiểm tra Token và SessionId vật lý
+            // Nếu thiếu 1 trong 2, coi như phiên không hợp lệ
+            if (!token || !sessionId) {
                 router.navigate({
                     href: `${INTERNAL_URLS.login}?redirect=${encodeURIComponent(pathname)}`,
                 })
                 return
             }
 
-            // 2. Chờ load Profile (Tránh redirect nhầm khi đang fetch)
+            // 2. Chờ load Profile (Lúc này API profile sẽ đi qua JwtGuard ở Backend
+            // để check sid trong Redis, nếu sid bị revoke, API này sẽ trả về 401)
             if (loadingProfile) return
 
-            // 3. Kiểm tra User tồn tại
+            // 3. Kiểm tra User tồn tại (được trả về sau khi API profile thành công)
             if (!user) {
-                addToast({ title: 'Phiên đăng nhập hết hạn', color: 'danger' })
+                // Nếu API trả về lỗi (do bị revoke ở backend), user sẽ null
                 router.navigate({ href: INTERNAL_URLS.login })
                 return
             }
@@ -68,7 +69,6 @@ export default function ProtectedRoute({
                 return
             }
 
-            // Tắt trạng thái checking khi mọi điều kiện đã PASS
             setIsChecking(false)
         }
 
@@ -84,7 +84,6 @@ export default function ProtectedRoute({
         hasAllPermissions,
     ])
 
-    // Render loading screen nếu đang tải profile hoặc đang trong quá trình validate quyền
     if (loadingProfile || isChecking) return <LoadingScreen />
 
     return <>{children}</>

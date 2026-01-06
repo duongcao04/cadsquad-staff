@@ -18,6 +18,10 @@ import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserQueryDto } from './dto/user-query.dto'
 import { UserResponseDto } from './dto/user-response.dto'
+import {
+    AssignUserPermissionDto,
+    PermissionAction,
+} from './dto/assign-user-permission.dto'
 
 @Injectable()
 export class UserService {
@@ -243,6 +247,71 @@ export class UserService {
             return userRes as unknown as User
         } catch (error) {
             throw new NotFoundException('User not found')
+        }
+    }
+
+    async manageUserPermission(userId: string, dto: AssignUserPermissionDto) {
+        // 1. Check if User exists
+        const user = await this.prismaService.user.findUnique({
+            where: { id: userId },
+        })
+        if (!user) throw new NotFoundException('User not found')
+
+        // 2. Check if Permission exists
+        const permission = await this.prismaService.permission.findUnique({
+            where: { id: dto.permissionId },
+        })
+        if (!permission) throw new NotFoundException('Permission not found')
+
+        // 3. Handle Logic based on Action
+        if (dto.action === PermissionAction.INHERIT) {
+            // INHERIT: Remove the override record so it falls back to Role
+            try {
+                await this.prismaService.userPermission.delete({
+                    where: {
+                        userId_permissionId: {
+                            userId,
+                            permissionId: dto.permissionId,
+                        },
+                    },
+                })
+                return {
+                    message:
+                        'Permission override removed. Now inheriting from Role.',
+                }
+            } catch (error) {
+                // Record might not exist, which is fine
+                return {
+                    message: 'Permission was already inheriting from Role.',
+                }
+            }
+        } else {
+            // GRANT or DENY: Upsert the record
+            const isDenied = dto.action === PermissionAction.DENY
+
+            const result = await this.prismaService.userPermission.upsert({
+                where: {
+                    userId_permissionId: {
+                        userId,
+                        permissionId: dto.permissionId,
+                    },
+                },
+                update: {
+                    isDenied, // Update existing status
+                },
+                create: {
+                    userId,
+                    permissionId: dto.permissionId,
+                    isDenied,
+                },
+            })
+
+            return {
+                message: isDenied
+                    ? 'Permission explicitly DENIED.'
+                    : 'Permission explicitly GRANTED.',
+                data: result,
+            }
         }
     }
 

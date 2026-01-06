@@ -4,6 +4,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { DepartmentResponseDto } from '../../department/dto/department-response.dto'
 import { JobTitleResponseDto } from '../../job-title/dto/job-title-response.dto'
 import { RoleResponseDto } from '../../role-permissions/dtos/role-response.dto'
+import { SecurityLogResponseDto } from './security-log/security-log-response.dto'
 
 export class UserResponseDto {
     @ApiProperty({
@@ -43,6 +44,12 @@ export class UserResponseDto {
     @ApiProperty({ description: 'Job titles of the user', required: false })
     @Expose()
     jobTitle?: JobTitleResponseDto
+
+    @ApiProperty({
+        description: 'User security logs such as Login, Reset password, etc',
+    })
+    @Expose()
+    securityLogs?: SecurityLogResponseDto[]
 
     @ApiProperty({ description: 'Department of the user', required: false })
     @Expose()

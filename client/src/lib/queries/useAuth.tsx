@@ -5,12 +5,14 @@ import { useMemo } from 'react'
 import { authApi } from '@/lib/api'
 import { cookie } from '@/lib/cookie'
 import { COOKIES, IMAGES } from '@/lib/utils'
-import type { TLoginInput } from '@/lib/validationSchemas'
+import type { TLoginInput, TUpdateProfileInput } from '@/lib/validationSchemas'
 import { RoleEnum } from '@/shared/enums'
 import type { TUser } from '@/shared/types'
 
 import { queryClient } from '../../main'
 import { onErrorToast } from './helper'
+import { ApiResponse } from '../axios'
+import { addToast } from '@heroui/react'
 
 function parseExpires(expiresAt: string | number) {
     if (typeof expiresAt === 'number') {
@@ -20,29 +22,53 @@ function parseExpires(expiresAt: string | number) {
     }
     return new Date(expiresAt)
 }
-
 export const useLogin = () => {
     const mutation = useMutation({
         mutationFn: (data: TLoginInput) => authApi.login(data),
         onSuccess: (res) => {
+            // 1. Trích xuất dữ liệu từ body
             const {
                 accessToken: { token, expiresAt },
+                sessionId, // Backend nên trả về sessionId trong body hoặc trích xuất từ res.headers
             } = res.data.result
-            // Set cookie for authentication
+
+            // 2. Set cookie cho Authentication (Token)
             cookie.set(COOKIES.authentication, token, {
                 path: '/',
                 expires: parseExpires(expiresAt),
+                sameSite: 'strict', // Khuyên dùng để tăng bảo mật
             })
+
+            // 3. Set cookie cho Session ID
+            // Nếu Backend trả về sessionId trong result body:
+            if (sessionId) {
+                cookie.set(COOKIES.sessionId, sessionId, {
+                    path: '/',
+                    expires: parseExpires(expiresAt), // Hết hạn cùng token
+                })
+            }
+            // Hoặc nếu bạn muốn lấy từ Response Header (x-session-id):
+            else {
+                const headerSessionId = res.headers['x-session-id']
+                if (headerSessionId) {
+                    cookie.set(COOKIES.sessionId, headerSessionId, {
+                        path: '/',
+                        expires: parseExpires(expiresAt),
+                    })
+                }
+            }
         },
         onError: (err) => {
             onErrorToast(err, (err as unknown as { error: string }).error)
         },
     })
+
     return {
         ...mutation,
         accessToken: mutation.data?.data.result.accessToken.token,
     }
 }
+
 export const useLogout = () => {
     return useMutation({
         mutationFn: async () => {
@@ -84,7 +110,8 @@ export function useProfile() {
             accounts: data?.accounts ?? [],
             createdAt: data?.createdAt ? new Date(data?.createdAt) : null,
             updatedAt: data?.updatedAt ? new Date(data?.updatedAt) : null,
-            role: data?.role ?? RoleEnum.USER,
+            role: data?.role,
+            securityLogs: data?.securityLogs ?? [],
             filesCreated: data?.filesCreated ?? [],
             isActive: data?.isActive ?? false,
             jobActivityLog: data?.jobActivityLog ?? [],
@@ -138,4 +165,25 @@ export function useAuth() {
         loadingProfile: loadingProfile || fetchingProfile,
         userRole,
     }
+}
+
+export const useUpdateProfileMutation = (
+    onSuccess?: (res: ApiResponse<TUser>) => void
+) => {
+    return useMutation({
+        mutationFn: async (data: TUpdateProfileInput) =>
+            await authApi.updateProfile(data),
+        onSuccess: (res) => {
+            queryClient.refetchQueries({ queryKey: ['profile'] })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: res.message,
+                    color: 'success',
+                })
+            }
+        },
+        onError: (err) => onErrorToast(err, 'Failed to update profile'),
+    })
 }

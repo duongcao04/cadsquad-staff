@@ -6,6 +6,7 @@ import type {
     TJobActivityLog,
     TJobTitle,
     TUserConfig,
+    TUserSecurityLog,
 } from '../types'
 import { TRole } from '../types/_role.type'
 
@@ -34,6 +35,8 @@ export interface IUserResponse {
 
     /** Job title information (nullable) */
     jobTitleId?: string | null
+
+    securityLogs?: TUserSecurityLog[]
 
     /** Job title information (nullable) */
     jobTitle?: TJobTitle | null

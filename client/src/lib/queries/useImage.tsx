@@ -1,19 +1,10 @@
-import { addToast } from '@heroui/react'
 import { useMutation } from '@tanstack/react-query'
-
 import { imageApi } from '../api'
-import { type ApiError } from '../axios'
+import { onErrorToast } from './helper'
 
 export const useUploadImageMutation = () => {
     return useMutation({
         mutationFn: (image: File) => imageApi.upload(image),
-        onError(error) {
-            const errorRes = error as unknown as ApiError
-            addToast({
-                title: errorRes.error,
-                description: `Error: ${errorRes.message}`,
-                color: 'danger',
-            })
-        },
+        onError: (error) => onErrorToast(error, 'Failed to upload avatar'),
     })
 }

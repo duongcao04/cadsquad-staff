@@ -15,24 +15,26 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger'
-import { AdminGuard } from '../auth/admin.guard'
-import { JwtGuard } from '../auth/jwt.guard'
+import { isUUID } from 'class-validator'
+import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
+import { APP_PERMISSIONS } from '../../utils/_app-permissions'
+import { JwtGuard } from '../auth/jwt.guard'
 import { DepartmentService } from './department.service'
 import { CreateDepartmentDto } from './dto/create-department.dto'
 import { DepartmentResponseDto } from './dto/department-response.dto'
 import { UpdateDepartmentDto } from './dto/update-department.dto'
-import { isUUID } from 'class-validator'
 
 @ApiTags('Departments')
 @Controller('departments')
+@UseGuards(JwtGuard)
 export class DepartmentController {
     constructor(private readonly departmentService: DepartmentService) {}
 
     @Post()
     @HttpCode(201)
     @ResponseMessage('Insert new department successfully')
-    @UseGuards(JwtGuard, AdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new department' })
     @ApiResponse({
@@ -40,6 +42,8 @@ export class DepartmentController {
         description: 'The department has been successfully created.',
         type: DepartmentResponseDto,
     })
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.CREATE)
     async create(@Body() createDepartmentDto: CreateDepartmentDto) {
         return this.departmentService.create(createDepartmentDto)
     }
@@ -55,6 +59,8 @@ export class DepartmentController {
         description: 'Return a list of departments.',
         type: [DepartmentResponseDto],
     })
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.READ)
     async findAll() {
         return this.departmentService.findAll()
     }
@@ -70,6 +76,8 @@ export class DepartmentController {
         description: 'Return a single department.',
         type: DepartmentResponseDto,
     })
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.READ)
     async findOne(@Param('identifier') identifier: string) {
         // Check if the parameter looks like a UUID
         if (isUUID(identifier)) {
@@ -82,7 +90,6 @@ export class DepartmentController {
     @Patch(':id')
     @HttpCode(200)
     @ResponseMessage('Update department successfully')
-    @UseGuards(JwtGuard, AdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update a department' })
     @ApiResponse({
@@ -90,6 +97,8 @@ export class DepartmentController {
         description: 'The department has been successfully updated.',
         type: DepartmentResponseDto,
     })
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.UPDATE)
     async update(
         @Param('id') id: string,
         @Body() updateDepartmentDto: UpdateDepartmentDto
@@ -100,13 +109,14 @@ export class DepartmentController {
     @Delete(':id')
     @HttpCode(200)
     @ResponseMessage('Delete department successfully')
-    @UseGuards(JwtGuard, AdminGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Delete a department' })
     @ApiResponse({
         status: 200,
         description: 'The department has been successfully deleted.',
     })
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.DELETE)
     async remove(@Param('id') id: string) {
         return this.departmentService.delete(id)
     }

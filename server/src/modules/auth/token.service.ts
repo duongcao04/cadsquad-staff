@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { User } from '@prisma/client'
-import { UserService } from '../user/user.service'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 
 @Injectable()
@@ -38,7 +37,6 @@ export class TokenService {
             permissions: userPermissions,
             iat: Date.now(),
         }
-        console.log(payload)
 
         try {
             const token = await this.jwtService.signAsync(payload)

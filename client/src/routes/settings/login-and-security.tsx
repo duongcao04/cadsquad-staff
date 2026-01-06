@@ -11,6 +11,7 @@ import {
     ModalContent,
     ModalFooter,
     ModalHeader,
+    Spinner,
     Switch,
     Table,
     TableBody,
@@ -34,11 +35,13 @@ import {
     LogOut,
     MapPin,
     Shield,
+    ShieldAlertIcon,
     Smartphone,
 } from 'lucide-react'
 import { useState } from 'react'
 
 import {
+    dateFormatter,
     getPageTitle,
     INTERNAL_URLS,
     TUpdatePasswordInput,
@@ -50,6 +53,9 @@ import {
     HeroBreadcrumbs,
     HeroPasswordInput,
 } from '../../shared/components'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { securityLogsListOptions } from '../../lib/queries'
+import { TUserSecurityLog } from '../../shared/types'
 
 export const Route = createFileRoute('/settings/login-and-security')({
     head: () => ({
@@ -93,40 +99,14 @@ const ACTIVE_SESSIONS = [
     },
 ]
 
-const LOGIN_HISTORY = [
-    {
-        id: 1,
-        event: 'Login Success',
-        date: 'Oct 24, 2025 09:30 AM',
-        ip: '115.79.x.x',
-        status: 'SUCCESS',
-    },
-    {
-        id: 2,
-        event: 'Password Changed',
-        date: 'Oct 20, 2025 02:15 PM',
-        ip: '115.79.x.x',
-        status: 'SUCCESS',
-    },
-    {
-        id: 3,
-        event: 'Failed Attempt',
-        date: 'Oct 18, 2025 11:00 PM',
-        ip: '113.22.x.x',
-        status: 'FAILED',
-    },
-    {
-        id: 4,
-        event: '2FA Enabled',
-        date: 'Oct 15, 2025 10:00 AM',
-        ip: '115.79.x.x',
-        status: 'SUCCESS',
-    },
-]
-
 function SecuritySettingsPage() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure() // For 2FA Modal
     const [is2FAEnabled, setIs2FAEnabled] = useState(true)
+
+    const {
+        data: { securityLogs },
+        isLoading,
+    } = useSuspenseQuery({ ...securityLogsListOptions() })
 
     return (
         <>
@@ -150,7 +130,7 @@ function SecuritySettingsPage() {
                 <HeroBreadcrumbItem>Login & Security</HeroBreadcrumbItem>
             </HeroBreadcrumbs>
 
-            <div className="mt-5">
+            <div className="size-full mt-5">
                 {/* Header */}
                 <div>
                     <h1 className="text-xl font-bold text-text-default mb-1">
@@ -322,18 +302,55 @@ function SecuritySettingsPage() {
                     </CardHeader>
                     <CardBody className="p-0">
                         <Table
-                            aria-label="Login History"
-                            shadow="none"
+                            aria-label="User security logs table"
                             removeWrapper
+                            className="min-h-50"
                         >
                             <TableHeader>
-                                <TableColumn>EVENT</TableColumn>
-                                <TableColumn>DATE</TableColumn>
-                                <TableColumn>IP ADDRESS</TableColumn>
-                                <TableColumn align="end">STATUS</TableColumn>
+                                <TableColumn className="bg-transparent text-[11px] font-bold">
+                                    EVENT
+                                </TableColumn>
+                                <TableColumn className="bg-transparent text-[11px] font-bold">
+                                    DATE
+                                </TableColumn>
+                                <TableColumn className="bg-transparent text-[11px] font-bold">
+                                    IP ADDRESS
+                                </TableColumn>
+                                <TableColumn className="bg-transparent text-[11px] font-bold text-right">
+                                    STATUS
+                                </TableColumn>
                             </TableHeader>
-                            <TableBody>
-                                {LOGIN_HISTORY.map((log) => (
+
+                            <TableBody
+                                items={securityLogs ?? []}
+                                isLoading={isLoading}
+                                loadingContent={
+                                    <Spinner
+                                        label="Loading activity..."
+                                        size="sm"
+                                    />
+                                }
+                                emptyContent={
+                                    <div className="flex flex-col items-center justify-center py-10 gap-2">
+                                        <div className="p-3 bg-default-100 rounded-full">
+                                            <ShieldAlertIcon
+                                                size={32}
+                                                className="text-text-subdued"
+                                            />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-semibold text-text-default">
+                                                No activity found
+                                            </p>
+                                            <p className="text-xs text-text-subdued">
+                                                Your security logs will appear
+                                                here.
+                                            </p>
+                                        </div>
+                                    </div>
+                                }
+                            >
+                                {(log: TUserSecurityLog) => (
                                     <TableRow
                                         key={log.id}
                                         className="hover:bg-slate-50"
@@ -347,12 +364,14 @@ function SecuritySettingsPage() {
                                         </TableCell>
                                         <TableCell>
                                             <span className="text-slate-500 text-xs">
-                                                {log.date}
+                                                {dateFormatter(log.createdAt, {
+                                                    format: 'longDateTime',
+                                                })}
                                             </span>
                                         </TableCell>
                                         <TableCell>
                                             <span className="font-mono text-slate-500 text-xs bg-slate-100 px-2 py-1 rounded">
-                                                {log.ip}
+                                                {log.ipAddress}
                                             </span>
                                         </TableCell>
                                         <TableCell>
@@ -383,7 +402,7 @@ function SecuritySettingsPage() {
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                )}
                             </TableBody>
                         </Table>
                     </CardBody>
@@ -537,7 +556,11 @@ function UpdatePasswordForm() {
                             color="primary"
                             size="sm"
                             isLoading={updatePasswordMutation.isPending}
-                            isDisabled={updatePasswordMutation.isPending}
+                            isDisabled={
+                                !formik.dirty ||
+                                !formik.isValid ||
+                                updatePasswordMutation.isPending
+                            }
                         >
                             Update Password
                         </Button>

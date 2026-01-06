@@ -24,10 +24,12 @@ import { UserModule } from './modules/user/user.module'
 import { CloudinaryModule } from './providers/cloudinary/cloudinary.module'
 import { MailModule } from './providers/mail/mail.module'
 import { PrismaModule } from './providers/prisma/prisma.module'
+import { RedisModule } from './providers/redis/redis.module'
 
 @Module({
     imports: [
         PrismaModule,
+        RedisModule,
         MailModule,
         CloudinaryModule,
         AblyModule,

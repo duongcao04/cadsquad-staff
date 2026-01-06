@@ -5,21 +5,26 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common'
-import { RegisterUserDto } from './dto/register-user.dto'
-import { PrismaService } from '../../providers/prisma/prisma.service'
-import { Prisma, User } from '@prisma/client'
-import { LoginUserDto } from './dto/login-user.dto'
-import { BcryptService } from './bcrypt.service'
-import { TokenService } from './token.service'
-import { UserResponseDto } from '../user/dto/user-response.dto'
+import { Prisma, SecurityLogStatus, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
+import { PrismaService } from '../../providers/prisma/prisma.service'
+import { UserResponseDto } from '../user/dto/user-response.dto'
+import { BcryptService } from './bcrypt.service'
+import { LoginUserDto } from './dto/login-user.dto'
+import { RegisterUserDto } from './dto/register-user.dto'
+import { TokenService } from './token.service'
+import { UpdateProfileDto } from './dto/update-profile.dto'
+import { UserSecurityService } from '../user/user-security.service'
+import { SessionService } from './session.service'
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly bcryptService: BcryptService,
-        private tokenService: TokenService
+        private readonly tokenService: TokenService,
+        private readonly userSecurityService: UserSecurityService,
+        private sessionService: SessionService
     ) {}
 
     async register(registerDto: RegisterUserDto) {
@@ -63,12 +68,13 @@ export class AuthService {
         }
     }
 
-    async login(loginDto: LoginUserDto) {
+    async login(ip: string, userAgent: string, loginDto: LoginUserDto) {
         // 1. Check user existing
         const existingUser = await this.prismaService.user.findUnique({
             where: { email: loginDto.email },
         })
         if (!existingUser) {
+            // Save User Security Log
             throw new UnauthorizedException('Incorrect email or password')
         }
         // 2. Compare inputPassword and databasePassword
@@ -77,18 +83,45 @@ export class AuthService {
             existingUser.password
         )
         if (!isCertificate) {
+            await this.userSecurityService.createLog({
+                userId: existingUser.id,
+                event: 'Login Failed',
+                status: SecurityLogStatus.FAILED,
+                ipAddress: ip,
+                userAgent,
+            })
             throw new UnauthorizedException('Incorrect email or password')
         }
 
-        // 3. Return token
+        // Save User Security Log
+        await this.userSecurityService.createLog({
+            userId: existingUser.id,
+            event: 'Login Success',
+            status: SecurityLogStatus.SUCCESS,
+            ipAddress: ip,
+            userAgent,
+        })
+        // 4. Return token
         try {
             const accessToken =
                 await this.tokenService.getAccessToken(existingUser)
 
+            // 3. Lưu Session vào Redis
+            const sessionData = {
+                userId: existingUser.id,
+                accessToken, // Lưu token để có thể thu hồi (revoke)
+                ipAddress: ip,
+                device: userAgent,
+                lastActive: new Date(),
+            }
+            const sessionId = await this.sessionService.saveSession(
+                existingUser.id,
+                sessionData
+            )
             // Update last logged in timestamp
             await this.updateLastLoggedIn(existingUser.id)
 
-            return { accessToken }
+            return { accessToken, sessionId, user: existingUser }
         } catch (error) {
             throw new UnauthorizedException('Incorrect email or password', {
                 description: error,
@@ -131,6 +164,7 @@ export class AuthService {
                             permissions: true,
                         },
                     },
+                    securityLogs: true,
                 },
             })
             const userRes = plainToInstance(UserResponseDto, userData, {
@@ -140,5 +174,63 @@ export class AuthService {
         } catch (error) {
             throw new NotFoundException('User not found')
         }
+    }
+
+    async updateProfile(userId: string, data: UpdateProfileDto) {
+        return await this.prismaService.user.update({
+            where: { id: userId },
+            data: {
+                displayName: data.displayName,
+                avatar: data.avatar,
+                phoneNumber: data.phoneNumber,
+            },
+            include: {
+                role: {
+                    include: { permissions: true },
+                },
+                department: true,
+                jobTitle: true,
+            },
+        })
+    }
+    async getEffectivePermissions(userId: string) {
+        // 1. Lấy User + Role + UserOverride
+        const user = await this.prismaService.user.findUnique({
+            where: { id: userId },
+            include: {
+                role: {
+                    include: { permissions: true }, // Lấy quyền gốc từ Role
+                },
+                userPermissions: {
+                    include: { permission: true }, // Lấy quyền riêng
+                },
+            },
+        })
+
+        if (!user) return []
+
+        // 2. Tách quyền riêng thành 2 nhóm: Grant và Deny
+        const grantedOverrides = user.userPermissions
+            .filter((up) => !up.isDenied)
+            .map((up) => up.permission.entityAction) // ['job.read']
+
+        const deniedOverrides = user.userPermissions
+            .filter((up) => up.isDenied)
+            .map((up) => up.permission.entityAction) // ['user.delete']
+
+        // 3. Lấy danh sách quyền từ Role (dạng string code)
+        const rolePermissions =
+            user.role?.permissions.map((p) => p.entityAction) || []
+
+        // 4. Gộp quyền (Role + Grant)
+        const allAllowed = new Set([...rolePermissions, ...grantedOverrides])
+
+        // 5. Trừ đi quyền bị cấm (Exclude)
+        deniedOverrides.forEach((deniedCode) => {
+            allAllowed.delete(deniedCode)
+        })
+
+        // Trả về mảng quyền cuối cùng
+        return Array.from(allAllowed)
     }
 }

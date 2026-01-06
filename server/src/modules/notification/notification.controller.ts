@@ -17,11 +17,10 @@ import {
     ApiTags,
 } from '@nestjs/swagger'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
-import { JwtGuard } from '../auth/jwt.guard'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
+import { JwtGuard } from '../auth/jwt.guard'
 import { CreateNotificationDto } from './dto/create-notification.dto'
 import { NotificationResponseDto } from './dto/notification-response.dto'
-import { UpdateNotificationDto } from './dto/update-notification.dto'
 import { NotificationService } from './notification.service'
 
 @ApiTags('Notifications')

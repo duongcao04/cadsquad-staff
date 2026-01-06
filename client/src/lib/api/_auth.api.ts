@@ -6,7 +6,7 @@ import type {
 } from '@/shared/interfaces'
 import type { TUser } from '@/shared/types'
 
-import type { TLoginInput } from '../validationSchemas'
+import type { TLoginInput, TUpdateProfileInput } from '../validationSchemas'
 
 export const authApi = {
     validateToken: async (token: string) => {
@@ -32,5 +32,10 @@ export const authApi = {
     },
     getProfile: () => {
         return axiosClient.get<ApiResponse<TUser>>('/v1/auth/profile')
+    },
+    updateProfile: async (data: TUpdateProfileInput) => {
+        return axiosClient
+            .patch<ApiResponse<TUser>>('/v1/auth/profile', data)
+            .then((res) => res.data)
     },
 }

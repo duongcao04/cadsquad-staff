@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
-import { Header } from '../shared/components'
+import { Header, ScrollArea, ScrollBar } from '../shared/components'
 import SettingsSidebar from '../shared/components/settings/layouts/SettingsSidebar'
 import { AuthGuard } from '../shared/guards'
 
@@ -28,7 +28,7 @@ function SettingsLayout() {
                             Manage your account preferences
                         </p>
                     </div>
-                    <div className="mt-5 grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 items-start">
+                    <div className="size-full mt-5 grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 items-start">
                         {/* Sticky Sidebar */}
                         <div className="fixed top-38 w-70">
                             <SettingsSidebar />
@@ -36,8 +36,12 @@ function SettingsLayout() {
                         <div />
 
                         {/* Main Content Area */}
-                        <main className="size-full py-6 px-1 flex-1 min-w-0 bg-background-muted min-h-[calc(100vh-124px)]">
-                            <Outlet />
+                        <main className="size-full py-6 px-1 flex-1 min-w-0 bg-background-muted">
+                            <ScrollArea className="size-full">
+                                <ScrollBar orientation="horizontal" />
+                                <ScrollBar orientation="vertical" />
+                                <Outlet />
+                            </ScrollArea>
                         </main>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ import {
     Get,
     HttpCode,
     Param,
+    ParseUUIDPipe,
     Patch,
     Post,
     Query,
@@ -17,30 +18,32 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger'
-import { RoleEnum } from '@prisma/client'
 import { isUUID } from 'class-validator'
+import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
-import { Roles } from '../auth/decorators/roles.decorator'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
+import { APP_PERMISSIONS } from '../../utils/_app-permissions'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { JwtGuard } from '../auth/jwt.guard'
-import { RolesGuard } from '../auth/roles.guard'
+import { AssignUserPermissionDto } from './dto/assign-user-permission.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { ProtectUserResponseDto } from './dto/protect-user-response.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
-import { UserResponseDto } from './dto/user-response.dto'
-import { UserService } from './user.service'
 import { UserQueryDto } from './dto/user-query.dto'
-import { PermissionsGuard } from '../../common/guards/permissions.guard'
-import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
-import { APP_PERMISSIONS } from '../../utils/_app-permissions'
+import { UserResponseDto } from './dto/user-response.dto'
+import { UserSecurityService } from './user-security.service'
+import { UserService } from './user.service'
 
 @ApiTags('Users')
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        private readonly userSecurityService: UserSecurityService
+    ) {}
 
     @Post()
     @HttpCode(201)
@@ -60,6 +63,16 @@ export class UserController {
         return this.userService.create(createUserDto, isSendInviteEmail)
     }
 
+    @Get('security-logs')
+    @ApiOperation({ summary: 'Get recent security activities' })
+    async getRecentActivity(
+        @Req() request: Request,
+        @Query('limit') limit: number = 10
+    ) {
+        const userPayload: TokenPayload = await request['user']
+        return this.userSecurityService.getSecurityLogs(userPayload.sub, limit)
+    }
+
     @Get()
     @HttpCode(200)
     @ResponseMessage('Get list of users successfully')
@@ -72,6 +85,16 @@ export class UserController {
     })
     async findAll(@Query() query: UserQueryDto) {
         return this.userService.findAll(query)
+    }
+
+    @Post(':id/permissions')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions('user.update')
+    async managePermission(
+        @Param('id', ParseUUIDPipe) userId: string,
+        @Body() dto: AssignUserPermissionDto
+    ) {
+        return this.userService.manageUserPermission(userId, dto)
     }
 
     @Patch('update-password')

@@ -1,11 +1,11 @@
 import {
     Controller,
-    Post,
-    Param,
     Delete,
-    UseInterceptors,
+    Param,
+    Post,
     UploadedFile,
     UseGuards,
+    UseInterceptors,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import {
@@ -14,9 +14,9 @@ import {
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger'
-import { UploadService } from './upload.service'
-import { UploadResponseDto } from './dto/upload-response.dto'
 import { JwtGuard } from '../auth/jwt.guard'
+import { UploadResponseDto } from './dto/upload-response.dto'
+import { UploadService } from './upload.service'
 
 @ApiTags('Upload')
 @Controller('upload')

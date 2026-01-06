@@ -44,3 +44,11 @@ export type TUser = Omit<
     Required<IUserResponse>,
     'password' | 'departmentId' | 'jobTitleId'
 >
+
+export type TUserSecurityLog = {
+    id: string
+    event: string
+    createdAt: string
+    ipAddress: string
+    status: string
+}

@@ -13,7 +13,11 @@ import type {
     TUpdateUserInput,
 } from '../validationSchemas'
 import { onErrorToast } from './helper'
-import { mapUser, userOptions, usersListOptions } from './options/user-queries'
+import {
+    mapUser,
+    profileOptions,
+    usersListOptions,
+} from './options/user-queries'
 
 export const useUsers = () => {
     // Gọi Options
@@ -85,7 +89,7 @@ export const useUpdateAvatarMutation = (
             }
             if (username) {
                 await queryClient.invalidateQueries({
-                    queryKey: userOptions(username).queryKey,
+                    queryKey: profileOptions().queryKey,
                 })
             }
         },

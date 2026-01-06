@@ -1,8 +1,9 @@
--- rolePermission.sql (UUID Version)
+-- rolePermission.sql (Full Version)
 
--- ==========================================
--- 1. INSERT ROLES (Using hardcoded UUIDs for mapping)
--- ==========================================
+-- ==============================================================================================
+-- 1. INSERT ROLES
+-- Strategy: Use fixed UUIDs so we can reference them easily in the mapping step.
+-- ==============================================================================================
 INSERT INTO "Role" ("id", "displayName", "code", "hexColor") VALUES 
 ('role-0000-0000-0000-0000-000000000001', 'Administrator', 'admin',      '#ef4444'),
 ('role-0000-0000-0000-0000-000000000002', 'Staff',         'staff',      '#3b82f6'),
@@ -10,9 +11,11 @@ INSERT INTO "Role" ("id", "displayName", "code", "hexColor") VALUES
 ON CONFLICT ("code") DO UPDATE 
 SET "displayName" = EXCLUDED."displayName", "hexColor" = EXCLUDED."hexColor";
 
--- ==========================================
+
+-- ==============================================================================================
 -- 2. INSERT PERMISSION GROUPS
--- ==========================================
+-- Strategy: Use fixed UUIDs to link Permissions to these Groups below.
+-- ==============================================================================================
 INSERT INTO "PermissionGroup" ("id", "displayName", "code", "order", "updatedAt") VALUES 
 ('group-0000-0000-0000-0000-000000000001', 'Recruitment Management', 'GROUP_RECRUITMENT', 1, NOW()),
 ('group-0000-0000-0000-0000-000000000002', 'Staff Management',       'GROUP_STAFF',       2, NOW()),
@@ -22,79 +25,113 @@ INSERT INTO "PermissionGroup" ("id", "displayName", "code", "order", "updatedAt"
 ON CONFLICT ("code") DO UPDATE 
 SET "displayName" = EXCLUDED."displayName", "order" = EXCLUDED."order";
 
--- ==========================================
--- 3. INSERT PERMISSIONS (With Group IDs)
--- ==========================================
+
+-- ==============================================================================================
+-- 3. INSERT PERMISSIONS
+-- Note: Requires casting string to ::"EntityEnum".
+-- We use gen_random_uuid() for IDs because we look them up by 'entityAction' later.
+-- ==============================================================================================
 INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "entityAction", "permissionGroupId", "description") VALUES 
 
--- GROUP 1: RECRUITMENT (Jobs)
-(gen_random_uuid(), 'View Jobs',       'JOB_READ',    'JOB'::"EntityEnum", 'read',    'job.read',    'group-0000-0000-0000-0000-000000000001', 'View jobs assigned'),
-(gen_random_uuid(), 'View All Jobs',       'JOB_READ_ALL',    'JOB'::"EntityEnum", 'readAll',    'job.readAll',    'group-0000-0000-0000-0000-000000000001', 'View all jobs (both assigned or not assigned)'),
-(gen_random_uuid(), 'View Job Sensitive data',       'JOB_READ_SENSITIVE_DATA',    'JOB'::"EntityEnum", 'readSensitive',    'job.readSensitive',    'group-0000-0000-0000-0000-000000000001', 'View all job sensitive data'),
-(gen_random_uuid(), 'Create Jobs',     'JOB_CREATE',  'JOB'::"EntityEnum", 'create',  'job.create',  'group-0000-0000-0000-0000-000000000001', 'Create jobs'),
-(gen_random_uuid(), 'Update Jobs',     'JOB_UPDATE',  'JOB'::"EntityEnum", 'update',  'job.update',  'group-0000-0000-0000-0000-000000000001', 'Update jobs'),
-(gen_random_uuid(), 'Deliver Jobs',     'JOB_DELIVER',  'JOB'::"EntityEnum", 'deliver',  'job.deliver',  'group-0000-0000-0000-0000-000000000001', 'Deliver jobs'),
-(gen_random_uuid(), 'Update Jobs',     'JOB_PAID',  'JOB'::"EntityEnum", 'paid',  'job.paid',  'group-0000-0000-0000-0000-000000000001', 'Paid jobs'),
-(gen_random_uuid(), 'Update Jobs',     'JOB_REVIEW',  'JOB'::"EntityEnum", 'review',  'job.review',  'group-0000-0000-0000-0000-000000000001', 'Approve or Reject job when job in Wait_review status'),
-(gen_random_uuid(), 'Delete Jobs',     'JOB_DELETE',  'JOB'::"EntityEnum", 'delete',  'job.delete',  'group-0000-0000-0000-0000-000000000001', 'Delete jobs'),
-(gen_random_uuid(), 'Publish Jobs',    'JOB_PUBLISH', 'JOB'::"EntityEnum", 'publish', 'job.publish', 'group-0000-0000-0000-0000-000000000001', 'Publish jobs'),
-(gen_random_uuid(), 'Assign member',    'JOB_ASSIGN_MEMBER', 'JOB'::"EntityEnum", 'assignMember', 'job.assignMember', 'group-0000-0000-0000-0000-000000000001', 'Assign member to job'),
+-- === GROUP 1: RECRUITMENT (Jobs) ===
+(gen_random_uuid(), 'View Jobs',               'JOB_READ',                'JOB'::"EntityEnum", 'read',          'job.read',          'group-0000-0000-0000-0000-000000000001', 'View jobs assigned'),
+(gen_random_uuid(), 'View All Jobs',           'JOB_READ_ALL',            'JOB'::"EntityEnum", 'readAll',       'job.readAll',       'group-0000-0000-0000-0000-000000000001', 'View all jobs (assigned & unassigned)'),
+(gen_random_uuid(), 'View Sensitive Data',     'JOB_READ_SENSITIVE',      'JOB'::"EntityEnum", 'readSensitive', 'job.readSensitive', 'group-0000-0000-0000-0000-000000000001', 'View salary/cost info'),
+(gen_random_uuid(), 'Create Jobs',             'JOB_CREATE',              'JOB'::"EntityEnum", 'create',        'job.create',        'group-0000-0000-0000-0000-000000000001', 'Create new jobs'),
+(gen_random_uuid(), 'Update Jobs',             'JOB_UPDATE',              'JOB'::"EntityEnum", 'update',        'job.update',        'group-0000-0000-0000-0000-000000000001', 'Update job details'),
+(gen_random_uuid(), 'Delete Jobs',             'JOB_DELETE',              'JOB'::"EntityEnum", 'delete',        'job.delete',        'group-0000-0000-0000-0000-000000000001', 'Delete jobs'),
+(gen_random_uuid(), 'Publish Jobs',            'JOB_PUBLISH',             'JOB'::"EntityEnum", 'publish',       'job.publish',       'group-0000-0000-0000-0000-000000000001', 'Publish jobs to public'),
+(gen_random_uuid(), 'Deliver Jobs',            'JOB_DELIVER',             'JOB'::"EntityEnum", 'deliver',       'job.deliver',       'group-0000-0000-0000-0000-000000000001', 'Submit deliverables'),
+(gen_random_uuid(), 'Mark Paid',               'JOB_PAID',                'JOB'::"EntityEnum", 'paid',          'job.paid',          'group-0000-0000-0000-0000-000000000001', 'Mark job as paid'),
+(gen_random_uuid(), 'Review Jobs',             'JOB_REVIEW',              'JOB'::"EntityEnum", 'review',        'job.review',        'group-0000-0000-0000-0000-000000000001', 'Approve/Reject deliverables'),
+(gen_random_uuid(), 'Assign Member',           'JOB_ASSIGN_MEMBER',       'JOB'::"EntityEnum", 'assignMember',  'job.assignMember',  'group-0000-0000-0000-0000-000000000001', 'Assign staff to jobs'),
 
--- GROUP 2: STAFF (Users)
-(gen_random_uuid(), 'View Users',      'USER_READ',   'USER'::"EntityEnum", 'read',    'user.read',    'group-0000-0000-0000-0000-000000000002', 'View staff'),
-(gen_random_uuid(), 'Create Users',    'USER_CREATE', 'USER'::"EntityEnum", 'create',  'user.create',  'group-0000-0000-0000-0000-000000000002', 'Create staff'),
-(gen_random_uuid(), 'Reset user password',    'USER_RESET_PASSWORD', 'USER'::"EntityEnum", 'resetPassword',  'user.resetPassword',  'group-0000-0000-0000-0000-000000000001', 'Force reset user password'),
-(gen_random_uuid(), 'Block user',    'USER_BLOCK', 'USER'::"EntityEnum", 'block',  'user.block',  'group-0000-0000-0000-0000-000000000001', 'Block user'),
-(gen_random_uuid(), 'Update Users',    'USER_UPDATE', 'USER'::"EntityEnum", 'update',  'user.update',  'group-0000-0000-0000-0000-000000000002', 'Update staff'),
-(gen_random_uuid(), 'Delete Users',    'USER_DELETE', 'USER'::"EntityEnum", 'delete',  'user.delete',  'group-0000-0000-0000-0000-000000000002', 'Delete staff'),
+-- === GROUP 2: STAFF MANAGEMENT (Users) ===
+(gen_random_uuid(), 'View Users',              'USER_READ',               'USER'::"EntityEnum", 'read',          'user.read',          'group-0000-0000-0000-0000-000000000002', 'View staff list'),
+(gen_random_uuid(), 'Create Users',            'USER_CREATE',             'USER'::"EntityEnum", 'create',        'user.create',        'group-0000-0000-0000-0000-000000000002', 'Invite new staff'),
+(gen_random_uuid(), 'Update Users',            'USER_UPDATE',             'USER'::"EntityEnum", 'update',        'user.update',        'group-0000-0000-0000-0000-000000000002', 'Update staff profiles'),
+(gen_random_uuid(), 'Delete Users',            'USER_DELETE',             'USER'::"EntityEnum", 'delete',        'user.delete',        'group-0000-0000-0000-0000-000000000002', 'Remove staff'),
+(gen_random_uuid(), 'Reset Password',          'USER_RESET_PASSWORD',     'USER'::"EntityEnum", 'resetPassword', 'user.resetPassword', 'group-0000-0000-0000-0000-000000000002', 'Force reset password'),
+(gen_random_uuid(), 'Block User',              'USER_BLOCK',              'USER'::"EntityEnum", 'block',         'user.block',         'group-0000-0000-0000-0000-000000000002', 'Block/Ban user access'),
 
--- GROUP 3: FINANCE (Clients, Payments)
-(gen_random_uuid(), 'View Clients',    'CLIENT_READ',  'CLIENT'::"EntityEnum", 'read',   'client.read',   'group-0000-0000-0000-0000-000000000003', 'View clients'),
-(gen_random_uuid(), 'Manage Clients',  'CLIENT_WRITE', 'CLIENT'::"EntityEnum", 'write',  'client.write',  'group-0000-0000-0000-0000-000000000003', 'Manage clients'),
-(gen_random_uuid(), 'View Payments',   'PAY_READ',     'PAYMENT_CHANNEL'::"EntityEnum", 'read', 'payment.read', 'group-0000-0000-0000-0000-000000000003', 'View payments'),
-(gen_random_uuid(), 'Manage Payments', 'PAY_WRITE',    'PAYMENT_CHANNEL'::"EntityEnum", 'write', 'payment.write', 'group-0000-0000-0000-0000-000000000003', 'Manage payments'),
+-- === GROUP 3: FINANCE & CRM ===
+(gen_random_uuid(), 'View Clients',            'CLIENT_READ',             'CLIENT'::"EntityEnum", 'read',        'client.read',        'group-0000-0000-0000-0000-000000000003', 'View clients'),
+(gen_random_uuid(), 'Manage Clients',          'CLIENT_WRITE',            'CLIENT'::"EntityEnum", 'write',       'client.write',       'group-0000-0000-0000-0000-000000000003', 'Create/Edit clients'),
+(gen_random_uuid(), 'View Payments',           'PAY_READ',                'PAYMENT_CHANNEL'::"EntityEnum", 'read', 'payment.read',     'group-0000-0000-0000-0000-000000000003', 'View payment methods'),
+(gen_random_uuid(), 'View all Payments',           'PAY_READ_ALL',                'PAYMENT_CHANNEL'::"EntityEnum", 'readAll', 'payment.readAll',     'group-0000-0000-0000-0000-000000000003', 'View all payment methods'),
+(gen_random_uuid(), 'Create Payment',         'PAY_CREATE',               'PAYMENT_CHANNEL'::"EntityEnum", 'create','payment.create',    'group-0000-0000-0000-0000-000000000003', 'Create payment methods'),
+(gen_random_uuid(), 'Update Payment',         'PAY_UPDATE',               'PAYMENT_CHANNEL'::"EntityEnum", 'update','payment.update',    'group-0000-0000-0000-0000-000000000003', 'Update payment methods'),
+(gen_random_uuid(), 'Delete Payment',         'PAY_DELETE',               'PAYMENT_CHANNEL'::"EntityEnum", 'delete','payment.delete',    'group-0000-0000-0000-0000-000000000003', 'Delete payment methods'),
 
--- GROUP 4: SOCIAL
-(gen_random_uuid(), 'View Community',  'COMM_READ',   'COMMUNITY'::"EntityEnum", 'read',     'community.read',     'group-0000-0000-0000-0000-000000000004', 'View comms'),
-(gen_random_uuid(), 'Create Community','COMM_CREATE', 'COMMUNITY'::"EntityEnum", 'create',   'community.create',   'group-0000-0000-0000-0000-000000000004', 'Create comms'),
-(gen_random_uuid(), 'Post Content',    'POST_CREATE', 'POST'::"EntityEnum",      'create',   'post.create',        'group-0000-0000-0000-0000-000000000004', 'Create posts'),
+-- === GROUP 4: COMMUNITY & SOCIAL ===
+(gen_random_uuid(), 'View Community',          'COMM_READ',               'COMMUNITY'::"EntityEnum", 'read',     'community.read',     'group-0000-0000-0000-0000-000000000004', 'View communities'),
+(gen_random_uuid(), 'Create Community',        'COMM_CREATE',             'COMMUNITY'::"EntityEnum", 'create',   'community.create',   'group-0000-0000-0000-0000-000000000004', 'Create communities'),
+(gen_random_uuid(), 'Create Post',             'POST_CREATE',             'POST'::"EntityEnum",      'create',   'post.create',        'group-0000-0000-0000-0000-000000000004', 'Create posts'),
 
--- GROUP 5: SYSTEM
-(gen_random_uuid(), 'View Files',      'FILE_READ',   'FILE'::"EntityEnum",      'read',     'file.read',       'group-0000-0000-0000-0000-000000000005', 'View files'),
-(gen_random_uuid(), 'Upload Files',    'FILE_WRITE',  'FILE'::"EntityEnum",      'write',    'file.write',      'group-0000-0000-0000-0000-000000000005', 'Upload files'),
-(gen_random_uuid(), 'System Config',   'SYS_MANAGE',  'SYSTEM'::"EntityEnum",    'manage',   'system.manage',   'group-0000-0000-0000-0000-000000000005', 'Configs')
+-- === GROUP 5: SYSTEM SETTINGS ===
+-- Files & Configs
+(gen_random_uuid(), 'View Files',              'FILE_READ',               'FILE'::"EntityEnum",      'read',     'file.read',          'group-0000-0000-0000-0000-000000000005', 'View files'),
+(gen_random_uuid(), 'Upload Files',            'FILE_WRITE',              'FILE'::"EntityEnum",      'write',    'file.write',         'group-0000-0000-0000-0000-000000000005', 'Upload files'),
+(gen_random_uuid(), 'System Config',           'SYS_MANAGE',              'SYSTEM'::"EntityEnum",    'manage',   'system.manage',      'group-0000-0000-0000-0000-000000000005', 'Manage configs'),
+
+-- Departments
+(gen_random_uuid(), 'View Departments',        'DEPT_READ',               'DEPARTMENT'::"EntityEnum", 'read',    'department.read',    'group-0000-0000-0000-0000-000000000005', 'View departments'),
+(gen_random_uuid(), 'Create Department',       'DEPT_CREATE',             'DEPARTMENT'::"EntityEnum", 'create',  'department.create',  'group-0000-0000-0000-0000-000000000005', 'Create departments'),
+(gen_random_uuid(), 'Update Department',       'DEPT_UPDATE',             'DEPARTMENT'::"EntityEnum", 'update',  'department.update',  'group-0000-0000-0000-0000-000000000005', 'Update departments'),
+(gen_random_uuid(), 'Delete Department',       'DEPT_DELETE',             'DEPARTMENT'::"EntityEnum", 'delete',  'department.delete',  'group-0000-0000-0000-0000-000000000005', 'Delete departments'),
+
+-- Job Titles
+(gen_random_uuid(), 'View Job Titles',         'TITLE_READ',              'JOB_TITLE'::"EntityEnum", 'read',     'jobTitle.read',      'group-0000-0000-0000-0000-000000000005', 'View job titles'),
+(gen_random_uuid(), 'Create Job Title',        'TITLE_CREATE',            'JOB_TITLE'::"EntityEnum", 'create',   'jobTitle.create',    'group-0000-0000-0000-0000-000000000005', 'Create job titles'),
+(gen_random_uuid(), 'Update Job Title',        'TITLE_UPDATE',            'JOB_TITLE'::"EntityEnum", 'update',   'jobTitle.update',    'group-0000-0000-0000-0000-000000000005', 'Update job titles'),
+(gen_random_uuid(), 'Delete Job Title',        'TITLE_DELETE',            'JOB_TITLE'::"EntityEnum", 'delete',   'jobTitle.delete',    'group-0000-0000-0000-0000-000000000005', 'Delete job titles'),
+
+-- Job Types (Assuming JOB_TYPE was added to EntityEnum)
+(gen_random_uuid(), 'View Job Types',          'JOB_TYPE_READ',           'JOB_TYPE'::"EntityEnum",  'read',     'jobType.read',       'group-0000-0000-0000-0000-000000000005', 'View job types'),
+(gen_random_uuid(), 'Create Job Type',         'JOB_TYPE_CREATE',         'JOB_TYPE'::"EntityEnum",  'create',   'jobType.create',     'group-0000-0000-0000-0000-000000000005', 'Create job types'),
+(gen_random_uuid(), 'Update Job Type',         'JOB_TYPE_UPDATE',         'JOB_TYPE'::"EntityEnum",  'update',   'jobType.update',     'group-0000-0000-0000-0000-000000000005', 'Update job types'),
+(gen_random_uuid(), 'Delete Job Type',         'JOB_TYPE_DELETE',         'JOB_TYPE'::"EntityEnum",  'delete',   'jobType.delete',     'group-0000-0000-0000-0000-000000000005', 'Delete job types')
 
 ON CONFLICT ("entityAction") DO UPDATE 
 SET "permissionGroupId" = EXCLUDED."permissionGroupId",
     "displayName" = EXCLUDED."displayName",
-    "description" = EXCLUDED."description";
+    "description" = EXCLUDED."description",
+    "code" = EXCLUDED."code";
 
--- ==========================================
+
+-- ==============================================================================================
 -- 4. MAP PERMISSIONS TO ROLES
--- ==========================================
+-- ==============================================================================================
 
 -- A. ADMIN: Gets ALL permissions
 INSERT INTO "_PermissionToRole" ("A", "B")
 SELECT id, 'role-0000-0000-0000-0000-000000000001' FROM "Permission"
 ON CONFLICT DO NOTHING;
 
--- B. STAFF: Gets Basic permissions
+-- B. STAFF: Gets Basic Operational Permissions
 INSERT INTO "_PermissionToRole" ("A", "B")
 SELECT id, 'role-0000-0000-0000-0000-000000000002' FROM "Permission"
 WHERE "entityAction" IN (
-    'job.read', 'job.create', 'job.update',
+    -- Jobs (Basic)
+    'job.read', 'job.create', 'job.update', 'job.deliver', 
+    -- User (Self-view implied, but reading list is okay)
     'user.read',
+    -- CRM
     'client.read',
+    -- Social
     'community.read', 'post.create',
-    'file.read', 'file.write'
+    -- System
+    'file.read', 'file.write',
+    -- View lookups (Titles, Depts, Types)
+    'department.read', 'jobTitle.read', 'jobType.read'
 )
 ON CONFLICT DO NOTHING;
 
--- C. ACCOUNTANT: Gets Finance permissions
+-- C. ACCOUNTANT: Gets Finance & Read-Only Access
 INSERT INTO "_PermissionToRole" ("A", "B")
 SELECT id, 'role-0000-0000-0000-0000-000000000003' FROM "Permission"
 WHERE "entityAction" IN (
-    'job.read',
+    'job.read', 'job.readAll', 'job.readSensitive', 'job.paid',
     'client.read', 'client.write',
     'payment.read', 'payment.write'
 )

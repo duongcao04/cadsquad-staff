@@ -1,37 +1,45 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
+    Headers,
     HttpCode,
-    HttpException,
-    HttpStatus,
+    Ip,
+    Param,
+    Patch,
     Post,
     Req,
-    Request,
     Res,
     UseGuards,
 } from '@nestjs/common'
-import { AuthGuard } from '@nestjs/passport'
 import {
     ApiBearerAuth,
     ApiOperation,
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger'
+import type { Response } from 'express'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { UserResponseDto } from '../user/dto/user-response.dto'
+import { UserSecurityService } from '../user/user-security.service'
 import { UserService } from '../user/user.service'
 import { AuthService } from './auth.service'
 import { LoginUserDto } from './dto/login-user.dto'
 import { RegisterUserDto } from './dto/register-user.dto'
+import { TokenPayload } from './dto/token-payload.dto'
+import { UpdateProfileDto } from './dto/update-profile.dto'
 import { JwtGuard } from './jwt.guard'
+import { SessionService } from './session.service'
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly sessionService: SessionService, // Inject
+        private readonly securityService: UserSecurityService // Inject
     ) {}
     // New function to validate a token
     @Get('validate-token')
@@ -59,52 +67,44 @@ export class AuthController {
         const register = this.authService.register(dto)
         return register
     }
-
     @Post('login')
     @HttpCode(200)
     @ResponseMessage('Login successfully')
     @ApiOperation({ summary: 'Log in a user' })
-    @ApiResponse({ status: 200, description: 'User logged in successfully' })
-    login(@Body() dto: LoginUserDto) {
-        const login = this.authService.login(dto)
-        return login
-    }
+    async login(
+        @Ip() ip: string,
+        @Headers('user-agent') userAgent: string,
+        @Body() dto: LoginUserDto,
+        @Res({ passthrough: true }) res: Response
+    ) {
+        // 1. Thực hiện Login logic cũ (Validate user + Generate JWT)
+        const loginResult = await this.authService.login(ip, userAgent, dto)
 
-    @Get('azure/callback')
-    @UseGuards(AuthGuard('azure-ad'))
-    @ApiOperation({ summary: 'Azure AD callback URL' })
-    @ApiResponse({
-        status: 302,
-        description: 'Redirects after successful authentication',
-    })
-    async azureCallback(@Request() req, @Res() res: Response) {
-        try {
-            const user = req.user
-            if (!user) {
-                throw new HttpException(
-                    'Authentication failed',
-                    HttpStatus.UNAUTHORIZED
-                )
+        // Gắn sessionId vào Response Header
+        res.setHeader('x-session-id', loginResult.sessionId)
+
+        // 2. Lưu Session vào Redis
+        // Lưu ý: loginResult nên chứa thông tin User trả về từ AuthService
+        const sessionId = await this.sessionService.saveSession(
+            loginResult.user.id,
+            {
+                userId: loginResult.user.id,
+                device: userAgent || 'Unknown Device',
+                ipAddress: ip,
+                lastActive: new Date(),
             }
+        )
 
-            // Generate JWT token
-            const payload = {
-                sub: user.id,
-                email: user.email,
-                displayName: user.displayName,
-            }
-            // const accessToken = this.jwtService.sign(payload);
+        // 3. Ghi Security Log thành công
+        await this.securityService.createLog({
+            userId: loginResult.user.id,
+            event: 'Login Success',
+            status: 'SUCCESS',
+            ipAddress: ip,
+            userAgent: userAgent,
+        })
 
-            return {}
-
-            // Option 2: Redirect with token (uncomment to use)
-            // res.redirect(`/?token=${accessToken}`);
-        } catch (error) {
-            throw new HttpException(
-                'Authentication error',
-                HttpStatus.INTERNAL_SERVER_ERROR
-            )
-        }
+        return { accessToken: loginResult.accessToken, sessionId }
     }
 
     @Get('profile')
@@ -126,12 +126,73 @@ export class AuthController {
         return user
     }
 
-    @Get('profile/azure')
-    @UseGuards(AuthGuard('azure'))
+    @Patch('profile')
+    @ApiOperation({ summary: 'Update profile successfully' })
+    @ResponseMessage('Update profile successfully')
+    @UseGuards(JwtGuard)
     @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get Azure profile' })
-    @ApiResponse({ status: 200, description: 'Return Azure user profile' })
-    getAzureProfile(@Req() req: Request) {
-        return req['user'] // Comes from Azure AD token
+    async updateProfile(
+        @Req() request: any,
+        @Ip() ip: string,
+        @Body() dto: UpdateProfileDto
+    ) {
+        const userPayload: TokenPayload = request.user
+        const result = await this.authService.updateProfile(
+            userPayload.sub,
+            dto
+        )
+
+        // Ghi Log khi cập nhật Profile
+        await this.securityService.createLog({
+            userId: userPayload.sub,
+            event: 'Profile Updated',
+            status: 'SUCCESS',
+            ipAddress: ip,
+        })
+
+        return result
+    }
+
+    @Get('permissions')
+    @HttpCode(200)
+    @UseGuards(JwtGuard)
+    @ResponseMessage('Get user permissions successfully')
+    async getUserPermissions(@Req() request: Request) {
+        const userPayload = await request['user']
+        const user = this.authService.getEffectivePermissions(userPayload.sub)
+        return user
+    }
+    // --- NEW: Quản lý Active Sessions ---
+
+    @Get('sessions')
+    @UseGuards(JwtGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Get active sessions from Redis' })
+    async getSessions(@Req() request: any) {
+        const userPayload: TokenPayload = request.user
+        return this.sessionService.getActiveSessions(userPayload.sub)
+    }
+
+    @Delete('sessions/:sessionId')
+    @UseGuards(JwtGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Revoke a specific session (Logout device)' })
+    async revokeSession(
+        @Req() request: Request,
+        @Param('sessionId') sessionId: string,
+        @Ip() ip: string
+    ) {
+        const userPayload: TokenPayload = request['user']
+        await this.sessionService.revokeSession(userPayload.sub, sessionId)
+
+        // Ghi Log bảo mật
+        await this.securityService.createLog({
+            userId: userPayload.sub,
+            event: 'Session Revoked / Remote Logout',
+            status: 'SUCCESS',
+            ipAddress: ip,
+        })
+
+        return { message: 'Session revoked successfully' }
     }
 }

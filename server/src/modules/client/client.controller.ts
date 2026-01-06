@@ -9,12 +9,13 @@ import {
     Patch,
 } from '@nestjs/common'
 import { ClientService } from './client.service'
-import { JwtGuard } from '../auth/jwt.guard'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { UpdateClientDto } from './dto/update-client.dto'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
-import { RolesGuard } from '../auth/roles.guard'
-import { Roles } from '../auth/decorators/roles.decorator'
+import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
+import { APP_PERMISSIONS } from '../../utils/_app-permissions'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
+import { JwtGuard } from '../auth/jwt.guard'
 
 @Controller('clients')
 @UseGuards(JwtGuard)
@@ -23,12 +24,16 @@ export class ClientController {
 
     @Get()
     @ResponseMessage('Get all clients successfully')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.CLIENT.READ)
     async getAll() {
         return this.clientService.findAll()
     }
 
     @Get('search-by-name')
     @ResponseMessage('Search client by name results')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.CLIENT.READ)
     async getByName(@Query('name') name: string) {
         if (!name) return { result: null }
 
@@ -38,14 +43,16 @@ export class ClientController {
 
     @Get(':id')
     @ResponseMessage('Get client details successfully')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.CLIENT.READ)
     async getOne(@Param('id') id: string) {
         return this.clientService.findOne(id)
     }
 
     @Patch(':id')
-    @UseGuards(RolesGuard)
-    @Roles('ADMIN')
     @ResponseMessage('Client updated successfully')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(APP_PERMISSIONS.CLIENT.WRITE)
     async updateClient(
         @Req() request: Request,
         @Param('id') id: string,
