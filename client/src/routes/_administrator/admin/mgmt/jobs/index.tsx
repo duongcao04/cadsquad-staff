@@ -1,3 +1,9 @@
+import { getPageTitle } from '@/lib'
+import { jobsListOptions } from '@/lib/queries'
+import { AdminPageHeading } from '@/shared/components'
+import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import AdminManagementJobsTable from '@/shared/components/management-jobs/AdminManagementJobsTable'
+import { TJob } from '@/shared/types'
 import {
     Badge,
     Button,
@@ -10,20 +16,9 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
-
-import { getPageTitle, INTERNAL_URLS } from '@/lib'
-import { jobsListOptions } from '@/lib/queries'
-import {
-    AdminPageHeading,
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-} from '@/shared/components'
-import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import AdminManagementJobsTable from '@/shared/components/management-jobs/AdminManagementJobsTable'
-import { TJob } from '@/shared/types'
 
 const DEFAULT_SORT = 'displayName:asc'
 
@@ -184,19 +179,7 @@ function ManageJobsPage() {
                 }
             />
 
-            <HeroBreadcrumbs className="pt-3 px-7 text-xs">
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.admin}
-                        className="text-text-subdued!"
-                    >
-                        Admin
-                    </Link>
-                </HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>Jobs</HeroBreadcrumbItem>
-            </HeroBreadcrumbs>
-
-            <AdminContentContainer className="mt-1">
+            <AdminContentContainer>
                 <AdminManagementJobsTable
                     onClearSearch={handleClearSearch}
                     onBulkAction={onBulkAction}

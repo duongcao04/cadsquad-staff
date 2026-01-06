@@ -19,7 +19,17 @@ export const CreateUserSchema = yup.object().shape({
 })
 export type TCreateUserInput = yup.InferType<typeof CreateUserSchema>
 
-export const UpdateUserSchema = CreateUserSchema.partial()
+export const UpdateUserSchema = yup.object().shape({
+    email: yup.string().optional(),
+    avatar: yup.string().optional(),
+    username: yup.string().optional(),
+    password: yup.string().optional(),
+    displayName: yup.string().optional(),
+    jobTitleId: yup.string().optional(),
+    departmentId: yup.string().optional(),
+    phoneNumber: yup.string().optional(),
+    roleId: yup.string().optional(),
+})
 export type TUpdateUserInput = yup.InferType<typeof UpdateUserSchema>
 
 // Define the available roles to match your backend/Prisma enum

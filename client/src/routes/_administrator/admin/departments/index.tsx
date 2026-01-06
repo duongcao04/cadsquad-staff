@@ -1,9 +1,16 @@
-import { INTERNAL_URLS } from '@/lib'
+import {
+    CreateDepartmentSchema,
+    INTERNAL_URLS,
+    TCreateDepartmentInput,
+} from '@/lib'
 import { departmentsListOptions } from '@/lib/queries'
 import {
     AdminPageHeading,
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
 } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import { TDepartment } from '@/shared/types'
@@ -13,11 +20,6 @@ import {
     Card,
     CardBody,
     Input,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
     Popover,
     PopoverContent,
     PopoverTrigger,
@@ -31,8 +33,18 @@ import {
     useDisclosure,
 } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { Edit, Hash, Palette, Plus, Search, Trash2, Users } from 'lucide-react'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { useFormik } from 'formik'
+import {
+    Edit,
+    Eye,
+    Hash,
+    Palette,
+    Plus,
+    Search,
+    Trash2,
+    Users,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 export const Route = createFileRoute('/_administrator/admin/departments/')({
@@ -57,22 +69,25 @@ const PRESET_COLORS = [
 ]
 
 function DepartmentsSettingsPage() {
+    const router = useRouter()
     const {
-        data: { departments: defaultDepartments },
+        data: { departments },
     } = useSuspenseQuery({
         ...departmentsListOptions(),
     })
-    const [departments, setDepartments] = useState(defaultDepartments)
     const [searchQuery, setSearchQuery] = useState('')
-    const { isOpen, onOpen, onOpenChange } = useDisclosure()
     const [editingDept, setEditingDept] = useState<TDepartment | null>(null)
-
-    // Form State
-    const [formData, setFormData] = useState<Partial<TDepartment>>({
-        displayName: '',
+    const [formValues, setFormValues] = useState<TCreateDepartmentInput>({
         code: '',
-        hexColor: '#3B82F6',
+        displayName: '',
+        hexColor: '#EF4444',
         notes: '',
+    })
+
+    console.log(departments)
+
+    const createDepartmentDisclosure = useDisclosure({
+        id: 'CreateDepartmentModal',
     })
 
     // --- Filtering ---
@@ -89,225 +104,69 @@ function DepartmentsSettingsPage() {
     // --- Handlers ---
     const handleOpenAdd = () => {
         setEditingDept(null)
-        setFormData({
-            displayName: '',
+        setFormValues({
             code: '',
-            hexColor: '#3B82F6',
+            displayName: '',
+            hexColor: '#EF4444',
             notes: '',
         })
-        onOpen()
+        createDepartmentDisclosure.onOpen()
     }
 
     const handleOpenEdit = (dept: TDepartment) => {
         setEditingDept(dept)
-        setFormData({ ...dept })
-        onOpen()
+        setFormValues({
+            code: dept.code,
+            displayName: dept.displayName,
+            hexColor: dept.hexColor,
+            notes: dept.notes ?? undefined,
+        })
+        createDepartmentDisclosure.onOpen()
     }
 
-    const handleSave = () => {
-        if (editingDept) {
-            // Edit Logic
-            setDepartments(
-                departments.map((d) =>
-                    d.id === editingDept.id
-                        ? ({ ...d, ...formData } as TDepartment)
-                        : d
-                )
-            )
-        } else {
-            // Create Logic
-            const newDept = {
-                ...formData,
-                id: Math.random().toString(36).substr(2, 9),
-                memberCount: 0,
-            } as unknown as TDepartment
-            setDepartments([...departments, newDept])
-        }
-        onOpenChange()
-    }
+    // const handleSave = () => {
+    //     if (editingDept) {
+    //         // Edit Logic
+    //         setDepartments(
+    //             departments.map((d) =>
+    //                 d.id === editingDept.id
+    //                     ? ({ ...d, ...formData } as TDepartment)
+    //                     : d
+    //             )
+    //         )
+    //     } else {
+    //         // Create Logic
+    //         const newDept = {
+    //             ...formData,
+    //             id: Math.random().toString(36).substr(2, 9),
+    //             memberCount: 0,
+    //         } as unknown as TDepartment
+    //         setDepartments([...departments, newDept])
+    //     }
+    //     onOpenChange()
+    // }
 
-    const handleDelete = (id: string) => {
-        if (
-            window.confirm(
-                'Are you sure? This will remove the department tag from all users.'
-            )
-        ) {
-            setDepartments(departments.filter((d) => d.id !== id))
-        }
-    }
+    // const handleDelete = (id: string) => {
+    //     if (
+    //         window.confirm(
+    //             'Are you sure? This will remove the department tag from all users.'
+    //         )
+    //     ) {
+    //         setDepartments(departments.filter((d) => d.id !== id))
+    //     }
+    // }
 
     return (
         <>
             {/* --- Add/Edit Modal --- */}
-            <Modal
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
-                placement="center"
-            >
-                <ModalContent>
-                    {(onClose) => (
-                        <>
-                            <ModalHeader className="flex flex-col gap-1">
-                                {editingDept
-                                    ? 'Edit Department'
-                                    : 'New Department'}
-                            </ModalHeader>
-                            <ModalBody>
-                                <div className="space-y-4">
-                                    {/* Name & Code Row */}
-                                    <div className="flex gap-4">
-                                        <Input
-                                            label="Name"
-                                            placeholder="e.g. Design Team"
-                                            labelPlacement="outside"
-                                            variant="bordered"
-                                            className="flex-1"
-                                            value={formData.displayName}
-                                            onValueChange={(v) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    displayName: v,
-                                                })
-                                            }
-                                        />
-                                        <Input
-                                            label="Code"
-                                            placeholder="e.g. DES"
-                                            labelPlacement="outside"
-                                            variant="bordered"
-                                            className="w-24"
-                                            startContent={
-                                                <Hash
-                                                    size={14}
-                                                    className="text-text-subdued"
-                                                />
-                                            }
-                                            value={formData.code}
-                                            onValueChange={(v) =>
-                                                setFormData({
-                                                    ...formData,
-                                                    code: v.toUpperCase(),
-                                                })
-                                            }
-                                        />
-                                    </div>
-
-                                    {/* Description */}
-                                    <Textarea
-                                        label="Description"
-                                        placeholder="What does this team do?"
-                                        labelPlacement="outside"
-                                        variant="bordered"
-                                        minRows={2}
-                                        value={formData.notes ?? ''}
-                                        onValueChange={(v) =>
-                                            setFormData({
-                                                ...formData,
-                                                notes: v,
-                                            })
-                                        }
-                                    />
-
-                                    {/* Color Picker */}
-                                    <div>
-                                        <label className="text-small font-medium text-foreground mb-2 block">
-                                            Theme Color
-                                        </label>
-                                        <Popover
-                                            placement="bottom"
-                                            showArrow={true}
-                                        >
-                                            <PopoverTrigger>
-                                                <Button
-                                                    variant="bordered"
-                                                    className="w-full justify-start"
-                                                    startContent={
-                                                        <div
-                                                            className="w-5 h-5 rounded-full border border-border-default"
-                                                            style={{
-                                                                backgroundColor:
-                                                                    formData.hexColor,
-                                                            }}
-                                                        ></div>
-                                                    }
-                                                >
-                                                    {formData.hexColor}
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-64">
-                                                <div className="px-1 py-2 w-full">
-                                                    <p className="text-small font-bold text-foreground mb-2">
-                                                        Select Color
-                                                    </p>
-                                                    <div className="grid grid-cols-5 gap-2">
-                                                        {PRESET_COLORS.map(
-                                                            (color) => (
-                                                                <button
-                                                                    key={color}
-                                                                    className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${formData.hexColor === color ? 'border-slate-800' : 'border-transparent'}`}
-                                                                    style={{
-                                                                        backgroundColor:
-                                                                            color,
-                                                                    }}
-                                                                    onClick={() =>
-                                                                        setFormData(
-                                                                            {
-                                                                                ...formData,
-                                                                                hexColor:
-                                                                                    color,
-                                                                            }
-                                                                        )
-                                                                    }
-                                                                />
-                                                            )
-                                                        )}
-                                                    </div>
-                                                    <div className="mt-3 pt-3 border-t border-border-default">
-                                                        <Input
-                                                            size="sm"
-                                                            label="Custom Hex"
-                                                            variant="flat"
-                                                            value={
-                                                                formData.hexColor
-                                                            }
-                                                            onValueChange={(
-                                                                v
-                                                            ) =>
-                                                                setFormData({
-                                                                    ...formData,
-                                                                    hexColor: v,
-                                                                })
-                                                            }
-                                                            startContent={
-                                                                <Palette
-                                                                    size={14}
-                                                                />
-                                                            }
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
-                            </ModalBody>
-                            <ModalFooter>
-                                <Button
-                                    color="danger"
-                                    variant="light"
-                                    onPress={onClose}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button color="primary" onPress={handleSave}>
-                                    Save Department
-                                </Button>
-                            </ModalFooter>
-                        </>
-                    )}
-                </ModalContent>
-            </Modal>
-
+            {createDepartmentDisclosure.isOpen && (
+                <CreateDepartmentModal
+                    isOpen={createDepartmentDisclosure.isOpen}
+                    onClose={createDepartmentDisclosure.onClose}
+                    isEditing={Boolean(editingDept)}
+                    initialValues={formValues}
+                />
+            )}
             <AdminPageHeading
                 title={
                     <Badge
@@ -324,19 +183,7 @@ function DepartmentsSettingsPage() {
                 }
             />
 
-            <HeroBreadcrumbs className="pt-5 px-7 text-xs">
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.admin}
-                        className="text-text-subdued!"
-                    >
-                        Admin
-                    </Link>
-                </HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>Departments</HeroBreadcrumbItem>
-            </HeroBreadcrumbs>
-
-            <AdminContentContainer className="mt-3 min-h-screen space-y-8">
+            <AdminContentContainer className="mt-2">
                 {/* --- Header --- */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <Button
@@ -350,7 +197,7 @@ function DepartmentsSettingsPage() {
                 </div>
 
                 {/* --- Content Card --- */}
-                <Card className="shadow-sm border border-border-default">
+                <Card className="mt-5 shadow-sm border border-border-default">
                     <CardBody className="p-0">
                         {/* Toolbar */}
                         <div className="p-4 border-b border-border-default flex justify-between items-center bg-background-muted rounded-t-lg">
@@ -431,11 +278,25 @@ function DepartmentsSettingsPage() {
                                                     size={16}
                                                     className="text-text-subdued"
                                                 />
-                                                {dept.users.length}
+                                                {dept._count.users}
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    onPress={() =>
+                                                        router.navigate({
+                                                            href: INTERNAL_URLS.departmentItemManage(
+                                                                dept.code
+                                                            ),
+                                                        })
+                                                    }
+                                                >
+                                                    <Eye size={16} />
+                                                </Button>
                                                 <Button
                                                     isIconOnly
                                                     size="sm"
@@ -451,9 +312,9 @@ function DepartmentsSettingsPage() {
                                                     size="sm"
                                                     variant="light"
                                                     color="danger"
-                                                    onPress={() =>
-                                                        handleDelete(dept.id)
-                                                    }
+                                                    // onPress={() =>
+                                                    //     handleDelete(dept.id)
+                                                    // }
                                                 >
                                                     <Trash2 size={16} />
                                                 </Button>
@@ -467,5 +328,198 @@ function DepartmentsSettingsPage() {
                 </Card>
             </AdminContentContainer>
         </>
+    )
+}
+
+type CreateDepartmentModalProps = {
+    isOpen: boolean
+    onClose: () => void
+    isEditing: boolean
+    initialValues?: TCreateDepartmentInput
+}
+function CreateDepartmentModal({
+    isOpen,
+    onClose,
+    isEditing,
+    initialValues = {
+        displayName: '',
+        code: '',
+        hexColor: '#3B82F6',
+        notes: '',
+    },
+}: CreateDepartmentModalProps) {
+    // Form State
+    const [formData, setFormData] = useState<Partial<TDepartment>>()
+    const formik = useFormik<TCreateDepartmentInput>({
+        initialValues: initialValues,
+        enableReinitialize: true,
+        validationSchema: CreateDepartmentSchema,
+        onSubmit: async (values) => {
+            console.log(values)
+        },
+    })
+
+    return (
+        <HeroModal
+            isOpen={isOpen}
+            onClose={onClose}
+            placement="center"
+            size="lg"
+        >
+            <HeroModalContent>
+                {(onClose) => (
+                    <>
+                        <HeroModalHeader className="flex flex-col gap-1">
+                            {isEditing ? 'Edit Department' : 'New Department'}
+                        </HeroModalHeader>
+                        <HeroModalBody>
+                            <form
+                                onSubmit={formik.handleSubmit}
+                                className="space-y-4"
+                            >
+                                {/* Name & Code Row */}
+                                <div className="flex gap-4">
+                                    <Input
+                                        name="displayName"
+                                        label="Display name"
+                                        placeholder="e.g. Design Team"
+                                        labelPlacement="outside-top"
+                                        variant="bordered"
+                                        className="flex-1"
+                                        value={formik.values.displayName}
+                                        onChange={formik.handleChange}
+                                    />
+                                    <Input
+                                        name="code"
+                                        label="Code"
+                                        placeholder="e.g. DES"
+                                        labelPlacement="outside-top"
+                                        variant="bordered"
+                                        className="w-32"
+                                        startContent={
+                                            <Hash
+                                                size={14}
+                                                className="text-text-subdued"
+                                            />
+                                        }
+                                        value={formik.values.code}
+                                        onChange={formik.handleChange}
+                                    />
+                                </div>
+
+                                {/* Description */}
+                                <Textarea
+                                    name="notes"
+                                    label="Description"
+                                    placeholder="What does this team do?"
+                                    labelPlacement="outside-top"
+                                    variant="bordered"
+                                    minRows={2}
+                                    classNames={{
+                                        input: 'py-2',
+                                    }}
+                                    value={formik.values.notes}
+                                    onChange={formik.handleChange}
+                                />
+
+                                {/* Color Picker */}
+                                <div>
+                                    <label className="text-small font-medium text-foreground mb-2 block">
+                                        Theme Color
+                                    </label>
+                                    <Popover
+                                        placement="bottom"
+                                        showArrow={true}
+                                    >
+                                        <PopoverTrigger>
+                                            <Button
+                                                variant="bordered"
+                                                className="w-full justify-start"
+                                                startContent={
+                                                    <div
+                                                        className="w-5 h-5 rounded-full border border-border-default"
+                                                        style={{
+                                                            backgroundColor:
+                                                                formik.values
+                                                                    .hexColor,
+                                                        }}
+                                                    ></div>
+                                                }
+                                            >
+                                                {formik.values.hexColor}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-64">
+                                            <div className="px-1 py-2 w-full">
+                                                <p className="text-small font-bold text-foreground mb-2">
+                                                    Select Color
+                                                </p>
+                                                <div className="grid grid-cols-5 gap-2">
+                                                    {PRESET_COLORS.map(
+                                                        (color) => (
+                                                            <button
+                                                                key={color}
+                                                                className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${formik.values.hexColor === color ? 'border-slate-800' : 'border-transparent'}`}
+                                                                style={{
+                                                                    backgroundColor:
+                                                                        color,
+                                                                }}
+                                                                onClick={() =>
+                                                                    setFormData(
+                                                                        {
+                                                                            ...formData,
+                                                                            hexColor:
+                                                                                color,
+                                                                        }
+                                                                    )
+                                                                }
+                                                            />
+                                                        )
+                                                    )}
+                                                </div>
+                                                <div className="mt-3 pt-3 border-t border-border-default">
+                                                    <Input
+                                                        size="sm"
+                                                        label="Custom Hex"
+                                                        variant="flat"
+                                                        value={
+                                                            formik.values
+                                                                .hexColor
+                                                        }
+                                                        onValueChange={(v) =>
+                                                            setFormData({
+                                                                ...formData,
+                                                                hexColor: v,
+                                                            })
+                                                        }
+                                                        startContent={
+                                                            <Palette
+                                                                size={14}
+                                                            />
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            </form>
+                        </HeroModalBody>
+                        <HeroModalFooter>
+                            <Button
+                                color="danger"
+                                variant="light"
+                                onPress={onClose}
+                            >
+                                Cancel
+                            </Button>
+                            <Button color="primary" type="submit">
+                                Save Department
+                            </Button>
+                        </HeroModalFooter>
+                    </>
+                )}
+            </HeroModalContent>
+        </HeroModal>
     )
 }

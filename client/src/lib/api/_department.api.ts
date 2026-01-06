@@ -14,15 +14,15 @@ export const departmentApi = {
     },
 
     findAll: async () => {
-        return axiosClient.get<ApiResponse<IDepartmentResponse[]>>(
-            '/v1/departments'
-        ).then(res => res.data)
+        return axiosClient
+            .get<ApiResponse<IDepartmentResponse[]>>('/v1/departments')
+            .then((res) => res.data)
     },
 
     findOne: async (id: string) => {
-        return axiosClient.get<ApiResponse<IDepartmentResponse>>(
-            `/v1/departments/${id}`
-        ).then(res => res.data)
+        return axiosClient
+            .get<ApiResponse<IDepartmentResponse>>(`/v1/departments/${id}`)
+            .then((res) => res.data)
     },
 
     update: (id: string, data: TUpdateDepartmentInput) => {

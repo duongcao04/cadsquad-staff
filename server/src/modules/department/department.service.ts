@@ -18,7 +18,9 @@ export class DepartmentService {
     }
 
     async findAll(): Promise<Department[]> {
-        const departments = await this.prismaService.department.findMany()
+        const departments = await this.prismaService.department.findMany({
+            include: { _count: { select: { users: true } }, users: true },
+        })
         return departments.map((d) =>
             plainToInstance(DepartmentResponseDto, d, {
                 excludeExtraneousValues: true,
@@ -29,7 +31,7 @@ export class DepartmentService {
     async findById(id: string): Promise<Department> {
         const department = await this.prismaService.department.findUnique({
             where: { id },
-            include: { users: true },
+            include: { _count: { select: { users: true } }, users: true },
         })
         if (!department) throw new NotFoundException('Department not found')
         return plainToInstance(DepartmentResponseDto, department, {
@@ -40,7 +42,7 @@ export class DepartmentService {
     async findByCode(code: string): Promise<Department> {
         const department = await this.prismaService.department.findUnique({
             where: { code },
-            include: { users: true },
+            include: { _count: { select: { users: true } }, users: true },
         })
         if (!department) throw new NotFoundException('Department not found')
         return plainToInstance(DepartmentResponseDto, department, {

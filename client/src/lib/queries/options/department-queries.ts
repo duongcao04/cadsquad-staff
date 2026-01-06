@@ -3,6 +3,7 @@ import { IDepartmentResponse } from '../../../shared/interfaces'
 import { TDepartment } from '../../../shared/types'
 import { departmentApi } from '../../api'
 import { COLORS, toDate } from '../../utils'
+import { mapUser } from './user-queries'
 
 export const mapDepartment: (item?: IDepartmentResponse) => TDepartment = (
     item
@@ -10,9 +11,10 @@ export const mapDepartment: (item?: IDepartmentResponse) => TDepartment = (
     id: item?.id ?? 'N/A',
     code: item?.code ?? 'UNKNOWN',
     displayName: item?.displayName ?? 'Unknown department',
-    users: item?.users ?? [],
+    users: item?.users?.map(mapUser) ?? [],
     hexColor: item?.hexColor ?? COLORS.white,
     notes: item?.notes ?? null,
+    _count: { users: item?._count?.users ?? 0 },
     createdAt: toDate(item?.createdAt),
     updatedAt: toDate(item?.updatedAt),
 })
@@ -38,7 +40,11 @@ export const departmentOptions = (identify: string) => {
         queryFn: () => departmentApi.findOne(identify),
         select: (res) => {
             const departmentData = res?.result
-            return mapDepartment(departmentData)
+            const department = mapDepartment(departmentData)
+            return {
+                department,
+                totalMember: department._count.users,
+            }
         },
     })
 }

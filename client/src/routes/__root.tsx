@@ -28,90 +28,96 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
     component: () => (
         <>
             <HeadContent />
-            <div
-                id="app"
-                className="max-w-screen max-h-screen w-screen h-screen bg-background-muted scroll-smooth"
-            >
-                <ThemeColorProvider>
-                    <AblyProvider client={ablyClient}>
-                        <QueryClientProvider client={queryClient}>
-                            <NextThemesProvider
-                                attribute="class"
-                                defaultTheme="light"
-                                enableSystem={true}
-                            >
-                                <HeroUIProvider>
-                                    <AntdProvider>
-                                        <ToastProvider
-                                            placement="bottom-right"
-                                            maxVisibleToasts={10}
-                                            toastOffset={20}
-                                            toastProps={{
-                                                radius: 'sm',
-                                                timeout: 1200,
-                                                variant: 'flat',
-                                                classNames: {
-                                                    closeButton:
-                                                        'opacity-100 absolute right-4 top-1/2 -translate-y-1/2',
-                                                },
-                                            }}
-                                            regionProps={{
-                                                classNames: {
-                                                    base: '!z-[10000]',
-                                                },
-                                            }}
-                                        />
-                                        <Toaster
-                                            position="top-right"
-                                            icons={{
-                                                success: (
-                                                    <CheckCircle2
-                                                        size={18}
-                                                        className="text-success"
-                                                    />
-                                                ),
-                                                info: (
-                                                    <Info
-                                                        size={18}
-                                                        className="text-primary"
-                                                    />
-                                                ),
-                                                warning: (
-                                                    <AlertCircle
-                                                        size={18}
-                                                        className="text-warning"
-                                                    />
-                                                ),
-                                                error: (
-                                                    <XCircle
-                                                        size={18}
-                                                        className="text-danger"
-                                                    />
-                                                ),
-                                                loading: (
-                                                    <Loader2
-                                                        size={18}
-                                                        className="animate-spin text-primary"
-                                                    />
-                                                ),
-                                            }}
-                                            toastOptions={{
-                                                // Default HeroUI-like styling
-                                                className:
-                                                    'rounded-2xl border-small border-default-100 bg-background text-foreground shadow-xl',
-                                            }}
-                                        />
+            <ThemeColorProvider>
+                <AblyProvider client={ablyClient}>
+                    <QueryClientProvider client={queryClient}>
+                        <NextThemesProvider
+                            attribute="class"
+                            defaultTheme="light"
+                            enableSystem={true}
+                        >
+                            <HeroUIProvider>
+                                <AntdProvider>
+                                    <ToastProvider
+                                        placement="bottom-right"
+                                        maxVisibleToasts={10}
+                                        toastOffset={20}
+                                        toastProps={{
+                                            radius: 'sm',
+                                            timeout: 1200,
+                                            variant: 'flat',
+                                            classNames: {
+                                                closeButton:
+                                                    'opacity-100 absolute right-4 top-1/2 -translate-y-1/2',
+                                            },
+                                        }}
+                                        regionProps={{
+                                            classNames: {
+                                                base: '!z-[10000]',
+                                            },
+                                        }}
+                                    />
+                                    <Toaster
+                                        position="top-right"
+                                        icons={{
+                                            success: (
+                                                <CheckCircle2
+                                                    size={18}
+                                                    className="text-success"
+                                                />
+                                            ),
+                                            info: (
+                                                <Info
+                                                    size={18}
+                                                    className="text-primary"
+                                                />
+                                            ),
+                                            warning: (
+                                                <AlertCircle
+                                                    size={18}
+                                                    className="text-warning"
+                                                />
+                                            ),
+                                            error: (
+                                                <XCircle
+                                                    size={18}
+                                                    className="text-danger"
+                                                />
+                                            ),
+                                            loading: (
+                                                <Loader2
+                                                    size={18}
+                                                    className="animate-spin text-primary"
+                                                />
+                                            ),
+                                        }}
+                                        toastOptions={{
+                                            // Default HeroUI-like styling
+                                            className:
+                                                'rounded-2xl border-small border-default-100 bg-background text-foreground shadow-xl',
+                                        }}
+                                    />
+                                    <div
+                                        id="app"
+                                        className="max-w-screen max-h-screen min-h-screen overflow-auto bg-background-muted scroll-smooth"
+                                    >
+                                        {/* hidden scrollbar */}
+                                        {/* <style jsx global>{`
+                                            body::-webkit-scrollbar {
+                                                display: none;
+                                            }
+                                        `}</style> */}
                                         <Outlet />
-                                    </AntdProvider>
-                                </HeroUIProvider>
-                            </NextThemesProvider>
+                                    </div>
+                                </AntdProvider>
+                            </HeroUIProvider>
+                        </NextThemesProvider>
 
-                            <ReactQueryDevtools />
-                            {/* <TanStackRouterDevtools /> */}
-                        </QueryClientProvider>
-                    </AblyProvider>
-                </ThemeColorProvider>
-            </div>
+                        <ReactQueryDevtools />
+                        {/* <TanStackRouterDevtools /> */}
+                    </QueryClientProvider>
+                </AblyProvider>
+            </ThemeColorProvider>
         </>
     ),
 })

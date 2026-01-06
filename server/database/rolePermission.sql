@@ -1,20 +1,19 @@
--- rolePermission.sql (Full Version)
+-- rolePermission.sql (Keep existing, Fill missing)
 
 -- ==============================================================================================
 -- 1. INSERT ROLES
--- Strategy: Use fixed UUIDs so we can reference them easily in the mapping step.
+-- Strategy: Use fixed UUIDs. If role exists (by code), DO NOTHING (Preserve DB state).
 -- ==============================================================================================
 INSERT INTO "Role" ("id", "displayName", "code", "hexColor") VALUES 
 ('role-0000-0000-0000-0000-000000000001', 'Administrator', 'admin',      '#ef4444'),
 ('role-0000-0000-0000-0000-000000000002', 'Staff',         'staff',      '#3b82f6'),
 ('role-0000-0000-0000-0000-000000000003', 'Accountant',    'accounting', '#10b981')
-ON CONFLICT ("code") DO UPDATE 
-SET "displayName" = EXCLUDED."displayName", "hexColor" = EXCLUDED."hexColor";
+ON CONFLICT ("code") DO NOTHING;
 
 
 -- ==============================================================================================
 -- 2. INSERT PERMISSION GROUPS
--- Strategy: Use fixed UUIDs to link Permissions to these Groups below.
+-- Strategy: If group exists, DO NOTHING.
 -- ==============================================================================================
 INSERT INTO "PermissionGroup" ("id", "displayName", "code", "order", "updatedAt") VALUES 
 ('group-0000-0000-0000-0000-000000000001', 'Recruitment Management', 'GROUP_RECRUITMENT', 1, NOW()),
@@ -22,14 +21,12 @@ INSERT INTO "PermissionGroup" ("id", "displayName", "code", "order", "updatedAt"
 ('group-0000-0000-0000-0000-000000000003', 'Finance & CRM',          'GROUP_FINANCE',     3, NOW()),
 ('group-0000-0000-0000-0000-000000000004', 'Community & Social',     'GROUP_SOCIAL',      4, NOW()),
 ('group-0000-0000-0000-0000-000000000005', 'System Settings',        'GROUP_SYSTEM',      99, NOW())
-ON CONFLICT ("code") DO UPDATE 
-SET "displayName" = EXCLUDED."displayName", "order" = EXCLUDED."order";
+ON CONFLICT ("code") DO NOTHING;
 
 
 -- ==============================================================================================
 -- 3. INSERT PERMISSIONS
--- Note: Requires casting string to ::"EntityEnum".
--- We use gen_random_uuid() for IDs because we look them up by 'entityAction' later.
+-- Strategy: Identify by 'entityAction' (e.g., job.read). If exists, DO NOTHING.
 -- ==============================================================================================
 INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "entityAction", "permissionGroupId", "description") VALUES 
 
@@ -54,14 +51,20 @@ INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "enti
 (gen_random_uuid(), 'Reset Password',          'USER_RESET_PASSWORD',     'USER'::"EntityEnum", 'resetPassword', 'user.resetPassword', 'group-0000-0000-0000-0000-000000000002', 'Force reset password'),
 (gen_random_uuid(), 'Block User',              'USER_BLOCK',              'USER'::"EntityEnum", 'block',         'user.block',         'group-0000-0000-0000-0000-000000000002', 'Block/Ban user access'),
 
+
+-- === GROUP: ANALYSIS ===
+(gen_random_uuid(), 'Read Analysis',            'ANALYTICS_READ',             'ANALYTICS'::"EntityEnum", 'read',        'analytics.read',        'group-0000-0000-0000-0000-000000000003', 'Read Analysis'),
+(gen_random_uuid(), 'Report Analysis',            'ANALYTICS_REPORT',             'ANALYTICS'::"EntityEnum", 'report',        'analytics.report',        'group-0000-0000-0000-0000-000000000003', 'Report Analysis'),
 -- === GROUP 3: FINANCE & CRM ===
 (gen_random_uuid(), 'View Clients',            'CLIENT_READ',             'CLIENT'::"EntityEnum", 'read',        'client.read',        'group-0000-0000-0000-0000-000000000003', 'View clients'),
 (gen_random_uuid(), 'Manage Clients',          'CLIENT_WRITE',            'CLIENT'::"EntityEnum", 'write',       'client.write',       'group-0000-0000-0000-0000-000000000003', 'Create/Edit clients'),
-(gen_random_uuid(), 'View Payments',           'PAY_READ',                'PAYMENT_CHANNEL'::"EntityEnum", 'read', 'payment.read',     'group-0000-0000-0000-0000-000000000003', 'View payment methods'),
-(gen_random_uuid(), 'View all Payments',           'PAY_READ_ALL',                'PAYMENT_CHANNEL'::"EntityEnum", 'readAll', 'payment.readAll',     'group-0000-0000-0000-0000-000000000003', 'View all payment methods'),
-(gen_random_uuid(), 'Create Payment',         'PAY_CREATE',               'PAYMENT_CHANNEL'::"EntityEnum", 'create','payment.create',    'group-0000-0000-0000-0000-000000000003', 'Create payment methods'),
-(gen_random_uuid(), 'Update Payment',         'PAY_UPDATE',               'PAYMENT_CHANNEL'::"EntityEnum", 'update','payment.update',    'group-0000-0000-0000-0000-000000000003', 'Update payment methods'),
-(gen_random_uuid(), 'Delete Payment',         'PAY_DELETE',               'PAYMENT_CHANNEL'::"EntityEnum", 'delete','payment.delete',    'group-0000-0000-0000-0000-000000000003', 'Delete payment methods'),
+
+-- Payment Channels (Granular)
+(gen_random_uuid(), 'View Payment Channels',   'PAY_READ',                'PAYMENT_CHANNEL'::"EntityEnum", 'read',      'payment.read',      'group-0000-0000-0000-0000-000000000003', 'View available payment methods'),
+(gen_random_uuid(), 'View All Payments',       'PAY_READ_ALL',            'PAYMENT_CHANNEL'::"EntityEnum", 'readAll',   'payment.readAll',   'group-0000-0000-0000-0000-000000000003', 'View all payment details including sensitive info'),
+(gen_random_uuid(), 'Create Payment Channel',  'PAY_CREATE',              'PAYMENT_CHANNEL'::"EntityEnum", 'create',    'payment.create',    'group-0000-0000-0000-0000-000000000003', 'Create new payment channel'),
+(gen_random_uuid(), 'Update Payment Channel',  'PAY_UPDATE',              'PAYMENT_CHANNEL'::"EntityEnum", 'update',    'payment.update',    'group-0000-0000-0000-0000-000000000003', 'Update payment channel details'),
+(gen_random_uuid(), 'Delete Payment Channel',  'PAY_DELETE',              'PAYMENT_CHANNEL'::"EntityEnum", 'delete',    'payment.delete',    'group-0000-0000-0000-0000-000000000003', 'Delete payment channel'),
 
 -- === GROUP 4: COMMUNITY & SOCIAL ===
 (gen_random_uuid(), 'View Community',          'COMM_READ',               'COMMUNITY'::"EntityEnum", 'read',     'community.read',     'group-0000-0000-0000-0000-000000000004', 'View communities'),
@@ -86,21 +89,24 @@ INSERT INTO "Permission" ("id", "displayName", "code", "entity", "action", "enti
 (gen_random_uuid(), 'Update Job Title',        'TITLE_UPDATE',            'JOB_TITLE'::"EntityEnum", 'update',   'jobTitle.update',    'group-0000-0000-0000-0000-000000000005', 'Update job titles'),
 (gen_random_uuid(), 'Delete Job Title',        'TITLE_DELETE',            'JOB_TITLE'::"EntityEnum", 'delete',   'jobTitle.delete',    'group-0000-0000-0000-0000-000000000005', 'Delete job titles'),
 
--- Job Types (Assuming JOB_TYPE was added to EntityEnum)
+-- Job Types
 (gen_random_uuid(), 'View Job Types',          'JOB_TYPE_READ',           'JOB_TYPE'::"EntityEnum",  'read',     'jobType.read',       'group-0000-0000-0000-0000-000000000005', 'View job types'),
 (gen_random_uuid(), 'Create Job Type',         'JOB_TYPE_CREATE',         'JOB_TYPE'::"EntityEnum",  'create',   'jobType.create',     'group-0000-0000-0000-0000-000000000005', 'Create job types'),
 (gen_random_uuid(), 'Update Job Type',         'JOB_TYPE_UPDATE',         'JOB_TYPE'::"EntityEnum",  'update',   'jobType.update',     'group-0000-0000-0000-0000-000000000005', 'Update job types'),
-(gen_random_uuid(), 'Delete Job Type',         'JOB_TYPE_DELETE',         'JOB_TYPE'::"EntityEnum",  'delete',   'jobType.delete',     'group-0000-0000-0000-0000-000000000005', 'Delete job types')
+(gen_random_uuid(), 'Delete Job Type',         'JOB_TYPE_DELETE',         'JOB_TYPE'::"EntityEnum",  'delete',   'jobType.delete',     'group-0000-0000-0000-0000-000000000005', 'Delete job types'),
 
-ON CONFLICT ("entityAction") DO UPDATE 
-SET "permissionGroupId" = EXCLUDED."permissionGroupId",
-    "displayName" = EXCLUDED."displayName",
-    "description" = EXCLUDED."description",
-    "code" = EXCLUDED."code";
+-- Job Statuses
+(gen_random_uuid(), 'View Job Statuses',       'STATUS_READ',             'JOB_STATUS'::"EntityEnum", 'read',    'jobStatus.read',     'group-0000-0000-0000-0000-000000000005', 'View job statuses'),
+(gen_random_uuid(), 'Create Job Status',       'STATUS_CREATE',           'JOB_STATUS'::"EntityEnum", 'create',  'jobStatus.create',   'group-0000-0000-0000-0000-000000000005', 'Create job statuses'),
+(gen_random_uuid(), 'Update Job Status',       'STATUS_UPDATE',           'JOB_STATUS'::"EntityEnum", 'update',  'jobStatus.update',   'group-0000-0000-0000-0000-000000000005', 'Update job statuses'),
+(gen_random_uuid(), 'Delete Job Status',       'STATUS_DELETE',           'JOB_STATUS'::"EntityEnum", 'delete',  'jobStatus.delete',   'group-0000-0000-0000-0000-000000000005', 'Delete job statuses')
+
+ON CONFLICT ("entityAction") DO NOTHING;
 
 
 -- ==============================================================================================
 -- 4. MAP PERMISSIONS TO ROLES
+-- Strategy: Fill if link does not exist. (ON CONFLICT DO NOTHING handle pair uniqueness)
 -- ==============================================================================================
 
 -- A. ADMIN: Gets ALL permissions
@@ -122,8 +128,8 @@ WHERE "entityAction" IN (
     'community.read', 'post.create',
     -- System
     'file.read', 'file.write',
-    -- View lookups (Titles, Depts, Types)
-    'department.read', 'jobTitle.read', 'jobType.read'
+    -- View lookups (Titles, Depts, Types, Statuses)
+    'department.read', 'jobTitle.read', 'jobType.read', 'jobStatus.read'
 )
 ON CONFLICT DO NOTHING;
 
@@ -131,8 +137,13 @@ ON CONFLICT DO NOTHING;
 INSERT INTO "_PermissionToRole" ("A", "B")
 SELECT id, 'role-0000-0000-0000-0000-000000000003' FROM "Permission"
 WHERE "entityAction" IN (
+    -- Job Access
     'job.read', 'job.readAll', 'job.readSensitive', 'job.paid',
+    -- Client Access
     'client.read', 'client.write',
-    'payment.read', 'payment.write'
+    -- Payment Access (Granular)
+    'payment.read', 'payment.readAll', 'payment.create', 'payment.update', 'payment.delete',
+    -- Analytics
+    'analytics.read','analytics.report'
 )
 ON CONFLICT DO NOTHING;

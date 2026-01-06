@@ -11,8 +11,8 @@ export class DepartmentResponseDto {
     @Expose()
     displayName: string
 
-	@Expose()
-    users: UserResponseDto
+    @Expose()
+    users: UserResponseDto[]
 
     @ApiProperty({
         description: 'Optional notes for the department',
@@ -24,6 +24,9 @@ export class DepartmentResponseDto {
     @ApiProperty({ description: 'Unique code for the department' })
     @Expose()
     code: string
+
+    @Expose()
+    _count: any
 
     @ApiProperty({
         description: 'Hex color code for the department',

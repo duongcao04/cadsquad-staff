@@ -107,7 +107,9 @@ export const Route = createFileRoute('/_administrator/admin/departments/$code')(
 
 function DepartmentDetailPage() {
     const { code } = Route.useParams()
-    const { data: department } = useSuspenseQuery({
+    const {
+        data: { department, totalMember },
+    } = useSuspenseQuery({
         ...departmentOptions(code),
     })
     const [selectedTab, setSelectedTab] = useState<string>('overview')
@@ -115,14 +117,6 @@ function DepartmentDetailPage() {
     return (
         <>
             <HeroBreadcrumbs className="pt-5 px-7 text-xs">
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.admin}
-                        className="text-text-subdued!"
-                    >
-                        Admin
-                    </Link>
-                </HeroBreadcrumbItem>
                 <HeroBreadcrumbItem>
                     <Link
                         to={INTERNAL_URLS.departmentsManage}
@@ -152,7 +146,7 @@ function DepartmentDetailPage() {
                                 {department.displayName}
                             </h1>
                             <p className="text-text-subdued text-sm mt-1 max-w-md line-clamp-1">
-                                {DEPT_INFO.description}
+                                {department.notes}
                             </p>
                         </div>
                     </div>
@@ -203,7 +197,7 @@ function DepartmentDetailPage() {
                             <StatCard
                                 icon={Users}
                                 label="Total Members"
-                                value={DEPT_INFO.stats.members}
+                                value={totalMember}
                                 color="bg-blue-500 text-blue-500"
                             />
                             <StatCard
@@ -331,7 +325,7 @@ function DepartmentDetailPage() {
                                         <TableColumn>ACTIONS</TableColumn>
                                     </TableHeader>
                                     <TableBody>
-                                        {department.users.map((member) => (
+                                        {department?.users?.map((member) => (
                                             <TableRow key={member.id}>
                                                 <TableCell>
                                                     <User
@@ -353,7 +347,10 @@ function DepartmentDetailPage() {
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className="text-text-subdued text-sm">
-                                                        {member.role}
+                                                        {
+                                                            member.role
+                                                                .displayName
+                                                        }
                                                     </span>
                                                 </TableCell>
                                                 <TableCell>

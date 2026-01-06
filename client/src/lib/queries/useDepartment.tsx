@@ -8,6 +8,7 @@ import {
 } from '@/lib/validationSchemas'
 
 import { mapDepartment } from './options/department-queries'
+import { onErrorToast } from './helper'
 
 export const useDepartments = () => {
     const { data, isFetching, isLoading } = useQuery({
@@ -73,13 +74,14 @@ export const useDeleteDepartment = () => {
     })
 }
 
-export const useCreateDepartment = () => {
+export const useCreateDepartmentMutation = () => {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: (data: TCreateDepartmentInput) =>
             departmentApi.create(data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['departments'] })
+            queryClient.refetchQueries({ queryKey: ['departments'] })
         },
+        onError: (err) => onErrorToast(err, 'Create department failed'),
     })
 }

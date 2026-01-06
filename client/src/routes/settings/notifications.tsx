@@ -1,9 +1,5 @@
 import {
     Button,
-    Card,
-    CardBody,
-    CardHeader,
-    Chip,
     Divider,
     Select,
     SelectItem,
@@ -17,19 +13,23 @@ import {
     Briefcase,
     Clock,
     House,
-    Laptop,
     Mail,
     MessageSquare,
     Moon,
     Save,
     Smartphone,
-    Trash2,
     Zap,
 } from 'lucide-react'
 import { useState } from 'react'
 
 import { getPageTitle, INTERNAL_URLS } from '../../lib'
-import { HeroBreadcrumbItem, HeroBreadcrumbs } from '../../shared/components'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
+} from '../../shared/components'
 
 export const Route = createFileRoute('/settings/notifications')({
     head: () => ({
@@ -113,34 +113,6 @@ const INITIAL_PREFS = {
     ],
 }
 
-// --- Mock Data: Devices (Stored in UserDevices / BrowserSubscribes) ---
-const DEVICES = [
-    {
-        id: '1',
-        name: 'Chrome on Windows',
-        type: 'BROWSER',
-        lastActive: 'Just now',
-        current: true,
-        icon: Laptop,
-    },
-    {
-        id: '2',
-        name: 'iPhone 13 Pro',
-        type: 'MOBILE',
-        lastActive: '2 hours ago',
-        current: false,
-        icon: Smartphone,
-    },
-    {
-        id: '3',
-        name: 'Safari on MacBook',
-        type: 'BROWSER',
-        lastActive: '1 week ago',
-        current: false,
-        icon: Laptop,
-    },
-]
-
 function NotificationSettingsPage() {
     const [prefs, setPrefs] = useState(INITIAL_PREFS)
     const [isSaving, setIsSaving] = useState(false)
@@ -208,16 +180,16 @@ function NotificationSettingsPage() {
                     {/* --- LEFT COLUMN: General Settings --- */}
                     <div className="lg:col-span-1 space-y-6">
                         {/* Master Channels */}
-                        <Card className="shadow-sm border border-border-default">
-                            <CardHeader className="pb-0 pt-4 px-4 flex-col items-start">
+                        <HeroCard>
+                            <HeroCardHeader className="pb-0 pt-4 px-4 flex-col items-start">
                                 <h4 className="font-bold text-base">
                                     Enable Channels
                                 </h4>
                                 <p className="text-tiny text-default-500">
                                     Global master switches
                                 </p>
-                            </CardHeader>
-                            <CardBody className="py-4 gap-4">
+                            </HeroCardHeader>
+                            <HeroCardBody className="py-4 gap-4">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -263,12 +235,12 @@ function NotificationSettingsPage() {
                                         }
                                     />
                                 </div>
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
 
                         {/* Do Not Disturb */}
-                        <Card className="shadow-sm border border-border-default">
-                            <CardHeader className="pb-0 pt-4 px-4 flex justify-between items-start">
+                        <HeroCard>
+                            <HeroCardHeader className="pb-0 pt-4 px-4 flex justify-between items-start">
                                 <div>
                                     <h4 className="font-bold text-base">
                                         Quiet Hours
@@ -287,8 +259,8 @@ function NotificationSettingsPage() {
                                         })
                                     }
                                 />
-                            </CardHeader>
-                            <CardBody
+                            </HeroCardHeader>
+                            <HeroCardBody
                                 className={`py-4 gap-4 ${!prefs.dnd.enabled ? 'opacity-50 pointer-events-none' : ''}`}
                             >
                                 <div className="grid grid-cols-2 gap-4">
@@ -330,15 +302,15 @@ function NotificationSettingsPage() {
                                         <strong>{prefs.dnd.timezone}</strong>
                                     </span>
                                 </div>
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
                     </div>
 
                     {/* --- RIGHT COLUMN: Granular Matrix --- */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Notification Matrix */}
-                        <Card className="shadow-sm border border-border-default">
-                            <CardHeader className="px-6 py-4 border-b border-border-default bg-background-muted">
+                        <HeroCard className="px-0">
+                            <HeroCardHeader className="px-6 py-4 border-b border-border-default bg-background-muted">
                                 <div className="flex-1">
                                     <h4 className="font-bold text-base text-text-default">
                                         Trigger Rules
@@ -360,9 +332,9 @@ function NotificationSettingsPage() {
                                         <Smartphone size={16} /> Push
                                     </div>
                                 </div>
-                            </CardHeader>
+                            </HeroCardHeader>
 
-                            <CardBody className="p-0">
+                            <HeroCardBody className="p-0">
                                 {prefs.triggers.map((trigger, idx) => (
                                     <div
                                         key={trigger.id}
@@ -426,62 +398,8 @@ function NotificationSettingsPage() {
                                         </div>
                                     </div>
                                 ))}
-                            </CardBody>
-                        </Card>
-
-                        {/* Active Devices */}
-                        <Card className="shadow-sm border border-border-default">
-                            <CardHeader className="px-6 pt-6 pb-2">
-                                <h4 className="font-bold text-base text-text-default">
-                                    Active Devices
-                                </h4>
-                            </CardHeader>
-                            <CardBody className="px-6 pb-6">
-                                <div className="space-y-4">
-                                    {DEVICES.map((device) => (
-                                        <div
-                                            key={device.id}
-                                            className="flex items-center justify-between p-3 border border-border-default rounded-xl"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-text-subdued">
-                                                    <device.icon size={20} />
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="font-bold text-sm text-text-default">
-                                                            {device.name}
-                                                        </p>
-                                                        {device.current && (
-                                                            <Chip
-                                                                size="sm"
-                                                                color="success"
-                                                                variant="flat"
-                                                                className="h-5 text-[10px]"
-                                                            >
-                                                                This Device
-                                                            </Chip>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs text-text-subdued">
-                                                        Last active:{' '}
-                                                        {device.lastActive}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <Button
-                                                isIconOnly
-                                                size="sm"
-                                                variant="light"
-                                                color="danger"
-                                            >
-                                                <Trash2 size={16} />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
                     </div>
                 </div>
             </div>

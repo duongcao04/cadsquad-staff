@@ -19,7 +19,6 @@ import {
     TableColumn,
     TableHeader,
     TableRow,
-    Tooltip,
     useDisclosure,
 } from '@heroui/react'
 import { useSuspenseQueries } from '@tanstack/react-query'
@@ -29,7 +28,6 @@ import {
     AlertTriangle,
     CheckCircle2,
     Clock,
-    Globe,
     House,
     KeyRound,
     LogOut,
@@ -59,6 +57,7 @@ import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
     HeroPasswordInput,
+    HeroTooltip,
 } from '../../shared/components'
 import { TUserSecurityLog } from '../../shared/types'
 
@@ -159,13 +158,13 @@ function SecuritySettingsPage() {
                                     <div className="flex justify-between items-center mb-4">
                                         <div className="pr-4">
                                             <p
-                                                className={`font-bold text-sm ${is2FAEnabled ? 'text-success-600' : 'text-slate-500'}`}
+                                                className={`font-bold text-sm ${is2FAEnabled ? 'text-success-600' : 'text-text-subdued'}`}
                                             >
                                                 {is2FAEnabled
                                                     ? 'Enabled'
                                                     : 'Disabled'}
                                             </p>
-                                            <p className="text-xs text-slate-500 mt-1">
+                                            <p className="text-xs text-text-subdued mt-1">
                                                 Secure your account with an
                                                 authenticator app (Google Auth,
                                                 Authy).
@@ -218,10 +217,19 @@ function SecuritySettingsPage() {
                 {/* Active Sessions */}
                 <Card className="mt-6 shadow-sm border border-border-default">
                     <CardHeader className="px-6 pt-6 pb-2 flex justify-between items-center">
-                        <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
-                            <Globe size={20} className="text-blue-500" />
-                            Active Sessions
-                        </h4>
+                        <div className="flex flex-col items-start">
+                            <h2 className="text-lg font-bold flex items-center gap-2">
+                                <ShieldAlertIcon
+                                    size={20}
+                                    className="text-text-subdued"
+                                />
+                                Active Sessions
+                            </h2>
+                            <p className="text-small text-text-subdued">
+                                Manage devices currently logged into your
+                                account.
+                            </p>
+                        </div>
                         <Button
                             size="sm"
                             variant="light"
@@ -251,17 +259,17 @@ function SecuritySettingsPage() {
                                 return (
                                     <div
                                         key={session.ipAddress}
-                                        className="flex items-center justify-between p-3 border border-border-default rounded-xl hover:bg-slate-50 transition-colors"
+                                        className="flex items-center justify-between p-3 border border-border-default rounded-xl hover:bg-background-hovered transition-colors"
                                     >
                                         <div className="flex items-center gap-4">
                                             <div
-                                                className={`w-10 h-10 rounded-full flex items-center justify-center ${isCurrentSession ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}
+                                                className={`w-10 h-10 rounded-full flex items-center justify-center ${isCurrentSession ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-text-subdued dark:text-text-7'}`}
                                             >
                                                 <Icon size={20} />
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <p className="font-bold text-slate-700 text-sm">
+                                                    <p className="font-bold text-text-default text-sm">
                                                         {session.device}
                                                     </p>
                                                     {isCurrentSession && (
@@ -293,7 +301,7 @@ function SecuritySettingsPage() {
                                             </div>
                                         </div>
                                         {!isCurrentSession && (
-                                            <Tooltip content="Revoke Access">
+                                            <HeroTooltip content="Revoke Access">
                                                 <Button
                                                     isIconOnly
                                                     size="sm"
@@ -314,7 +322,7 @@ function SecuritySettingsPage() {
                                                         <LogOut size={16} />
                                                     )}
                                                 </Button>
-                                            </Tooltip>
+                                            </HeroTooltip>
                                         )}
                                     </div>
                                 )
@@ -327,17 +335,17 @@ function SecuritySettingsPage() {
                 <Card className="mt-6 shadow-sm border border-border-default">
                     <CardHeader className="px-6 pt-6 pb-2">
                         <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
-                            <Clock size={20} className="text-slate-500" />{' '}
+                            <Clock size={20} className="text-text-subdued" />{' '}
                             Recent Activity
                         </h4>
                     </CardHeader>
-                    <CardBody className="p-2">
+                    <CardBody className="p-0">
                         <Table
                             aria-label="User security logs table"
                             removeWrapper
                             className="min-h-50"
                         >
-                            <TableHeader>
+                            <TableHeader className="px-12">
                                 <TableColumn className="bg-transparent text-[11px] font-bold">
                                     EVENT
                                 </TableColumn>
@@ -384,24 +392,24 @@ function SecuritySettingsPage() {
                                 {(log: TUserSecurityLog) => (
                                     <TableRow
                                         key={log.id}
-                                        className="hover:bg-slate-50"
+                                        className="hover:bg-background-hovered px-6"
                                     >
                                         <TableCell>
                                             <span
-                                                className={`font-semibold text-sm ${log.status === 'FAILED' ? 'text-red-500' : 'text-slate-700'}`}
+                                                className={`font-semibold text-sm ${log.status === 'FAILED' ? 'text-red-500' : 'text-text-default'}`}
                                             >
                                                 {log.event}
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="text-slate-500 text-xs">
+                                            <span className="text-text-subdued text-xs">
                                                 {dateFormatter(log.createdAt, {
                                                     format: 'longDateTime',
                                                 })}
                                             </span>
                                         </TableCell>
                                         <TableCell>
-                                            <span className="font-mono text-slate-500 text-xs bg-slate-100 px-2 py-1 rounded">
+                                            <span className="text-text-default text-xs bg-background/80 border border-border-muted px-2 py-1 rounded">
                                                 {log.ipAddress}
                                             </span>
                                         </TableCell>

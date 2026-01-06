@@ -15,11 +15,6 @@ function SettingsLayout() {
     return (
         <AuthGuard>
             <div className="fixed top-0 w-full z-50">
-                <style jsx global>{`
-                    body::-webkit-scrollbar {
-                        display: none;
-                    }
-                `}</style>
                 {!isSmallView ? <Header /> : <MobileHeader />}
             </div>
             {/* Height for header */}
@@ -47,7 +42,7 @@ function SettingsLayout() {
                         {/* Main Content Area */}
                         <main className="size-full py-6 px-1 flex-1 min-w-0 bg-background-muted">
                             <ScrollArea
-                                className="w-full"
+                                className="size-full"
                                 style={{
                                     height: !isSmallView
                                         ? 'calc(100vh-57px)'

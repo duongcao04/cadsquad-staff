@@ -8,6 +8,7 @@ import { UserConfigModule } from '../user-config/user-config.module'
 import { NotificationModule } from '../notification/notification.module'
 import { JobTypeModule } from '../job-type/job-type.module'
 import { JobCommentService } from './job-comment.service'
+import { JobReminderService } from './job-reminder.service'
 
 @Module({
     imports: [
@@ -18,7 +19,12 @@ import { JobCommentService } from './job-comment.service'
         JobTypeModule,
     ],
     controllers: [JobController],
-    providers: [JobService, ActivityLogService, JobCommentService],
+    providers: [
+        JobService,
+        ActivityLogService,
+        JobCommentService,
+        JobReminderService,
+    ],
     exports: [JobService, ActivityLogService, JobCommentService],
 })
 export class JobModule {}

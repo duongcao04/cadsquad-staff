@@ -1,23 +1,23 @@
 import { COLORS, INTERNAL_URLS, optimizeCloudinary } from '@/lib'
 import { departmentsListOptions, usersListOptions } from '@/lib/queries'
 import {
+    DepartmentChip,
     HeroCard,
     HeroCardBody,
     HeroCardFooter,
     HeroCardHeader,
+    RoleChip,
 } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
 import { DeactivateUserModal } from '@/shared/components/staff-directory/DeactiveUserModal'
 import { EmailUserModal } from '@/shared/components/staff-directory/EmailUserModal'
 import { SendNotificationModal } from '@/shared/components/staff-directory/SendNotificationModal'
-import { RoleEnum } from '@/shared/enums'
 import { TUser } from '@/shared/types'
 import {
     Avatar,
     Button,
     Card,
-    Chip,
     Dropdown,
     DropdownItem,
     DropdownMenu,
@@ -164,15 +164,6 @@ function StaffDirectoryPage() {
                 page: 1,
             }),
         })
-    }
-
-    const getRoleColor = (role: RoleEnum) => {
-        const colors: Record<string, any> = {
-            ADMIN: 'danger',
-            ACCOUNTING: 'warning',
-            USER: 'primary',
-        }
-        return colors[role] || 'default'
     }
 
     return (
@@ -351,9 +342,9 @@ function StaffDirectoryPage() {
                                                       {user.displayName}
                                                   </h4>
                                               </Link>
-                                              <h5 className="text-[10px] uppercase font-black text-text-subdued tracking-widest truncate w-32">
+                                              <h5 className="text-xs text-text-subdued font-medium">
                                                   {user.jobTitle?.displayName ||
-                                                      'Staff'}
+                                                      'N/A'}
                                               </h5>
                                           </div>
                                       </div>
@@ -376,26 +367,12 @@ function StaffDirectoryPage() {
 
                                   <HeroCardBody className="px-5 pt-2 pb-4 space-y-4">
                                       <div className="flex flex-wrap gap-2">
-                                          <Chip
-                                              size="sm"
-                                              variant="flat"
-                                              style={{
-                                                  backgroundColor: `${user.department?.hexColor}20`,
-                                                  color: user.department
-                                                      ?.hexColor,
-                                              }}
-                                              className="border-none font-bold"
-                                          >
-                                              {user.department?.displayName}
-                                          </Chip>
-                                          <Chip
-                                              size="sm"
-                                              variant="dot"
-                                              color={getRoleColor(user.role)}
-                                              className="capitalize border-none font-bold"
-                                          >
-                                              {user.role.toLowerCase()}
-                                          </Chip>
+                                          {user.department && (
+                                              <DepartmentChip
+                                                  data={user.department}
+                                              />
+                                          )}
+                                          <RoleChip data={user.role} />
                                       </div>
                                       <div className="space-y-2 text-xs text-default-500">
                                           <div className="flex items-center gap-2 truncate">

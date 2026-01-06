@@ -41,6 +41,8 @@ export interface IDepartmentResponse {
      */
     users?: TUser[]
 
+    _count: { users: number }
+
     /**
      * The timestamp when the department was created.
      * @type {Date}

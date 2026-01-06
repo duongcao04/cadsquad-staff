@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { AlertCircle, BanknoteArrowDown,Briefcase, Clock } from 'lucide-react'
+import { AlertCircle, BanknoteArrowDown, Briefcase, Clock } from 'lucide-react'
 
 import { INTERNAL_URLS } from '../../../../lib'
 
@@ -30,9 +30,12 @@ export const TopStats = ({
                     </p>
                 </div>
                 <div className="h-full flex flex-col justify-end">
-                    <span className="text-xs text-primary font-bold cursor-pointer hover:underline flex items-center gap-1">
+                    <Link
+                        to={INTERNAL_URLS.jobManage}
+                        className="text-xs text-primary! font-bold cursor-pointer hover:underline flex items-center gap-1"
+                    >
                         View details →
-                    </span>
+                    </Link>
                 </div>
             </div>
 

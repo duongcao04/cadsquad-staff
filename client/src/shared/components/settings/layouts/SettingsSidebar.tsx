@@ -1,4 +1,4 @@
-import { cn,Listbox, ListboxItem, ListboxSection } from '@heroui/react'
+import { cn, Listbox, ListboxItem, ListboxSection } from '@heroui/react'
 import { useRouter, useRouterState } from '@tanstack/react-router'
 import {
     Bell,
@@ -7,8 +7,7 @@ import {
     Lock,
     LogOut,
     Palette,
-    ShieldAlert,
-    User,
+    User
 } from 'lucide-react'
 
 import { envConfig, INTERNAL_URLS } from '@/lib'
@@ -52,17 +51,6 @@ const SETTINGS_MENU = [
                 label: 'Language & Region',
                 icon: Globe,
                 href: INTERNAL_URLS.languageAndRegionSettings,
-            },
-        ],
-    },
-    {
-        title: 'App',
-        items: [
-            {
-                key: 'privacy',
-                label: 'Privacy & Data',
-                icon: ShieldAlert,
-                href: '/settings/privacy',
             },
         ],
     },

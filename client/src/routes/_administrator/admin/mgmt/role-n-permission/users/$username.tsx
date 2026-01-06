@@ -4,41 +4,38 @@ import {
     rolesListOptions,
     userOptions,
 } from '@/lib/queries'
+import { getPermissionStatus, PermissionAction } from '@/lib/utils/_user-access'
 import { HeroCard } from '@/shared/components'
+import { PermissionRow } from '@/shared/components/admin/user-access/PermissionRow'
+import { ChangeRoleModal } from '@/shared/components/admin/user-access/modals/ChangeRoleModal'
 import {
+    Accordion,
+    AccordionItem,
     Avatar,
     Button,
     Card,
     CardBody,
-    Select,
-    SelectItem,
-    Accordion,
-    AccordionItem,
-    useDisclosure,
     Chip,
     Divider,
+    Select,
+    SelectItem,
+    useDisclosure,
 } from '@heroui/react'
 import {
-    useSuspenseQueries,
     useMutation,
     useQueryClient,
+    useSuspenseQueries,
 } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import {
+    AlertCircle,
     ArrowLeft,
+    LayoutGrid,
     Shield,
     UserCog,
-    LayoutGrid,
-    AlertCircle,
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { toast } from 'sonner' // Assuming you use Sonner or React-Hot-Toast
-import {
-    getPermissionStatus,
-    PermissionAction,
-} from '../../../../../../lib/utils/_user-access'
-import { PermissionRow } from '../../../../../../shared/components/admin/user-access/PermissionRow'
-import { ChangeRoleModal } from '../../../../../../shared/components/admin/user-access/modals/ChangeRoleModal'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/role-n-permission/users/$username'

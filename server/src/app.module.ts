@@ -25,9 +25,11 @@ import { CloudinaryModule } from './providers/cloudinary/cloudinary.module'
 import { MailModule } from './providers/mail/mail.module'
 import { PrismaModule } from './providers/prisma/prisma.module'
 import { RedisModule } from './providers/redis/redis.module'
+import { ScheduleModule } from '@nestjs/schedule'
 
 @Module({
     imports: [
+        ScheduleModule.forRoot(),
         PrismaModule,
         RedisModule,
         MailModule,

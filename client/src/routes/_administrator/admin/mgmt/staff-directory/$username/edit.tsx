@@ -3,26 +3,31 @@ import {
     dateFormatter,
     editUserSchema,
     getPageTitle,
-    INTERNAL_URLS,
     optimizeCloudinary,
-    RoleIcons,
-    ROLES_LIST,
     TEditUser,
     toFormikValidate,
     useUpdateAvatarMutation,
     useUpdateUserMutation,
     useUploadImageMutation,
 } from '@/lib'
-import { departmentsListOptions } from '@/lib/queries/options/department-queries'
-import { jobTitlesListOptions } from '@/lib/queries/options/job-title-queries'
-import { userOptions } from '@/lib/queries/options/user-queries'
 import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
+    departmentsListOptions,
+    jobTitlesListOptions,
+    rolesListOptions,
+    userOptions,
+    useToggleUserStatusMutation,
+} from '@/lib/queries'
+import {
+    ChangeRoleModal,
     HeroButton,
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
     HeroTooltip,
+    RoleChip,
 } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
+import { ChangeUserStatusModal } from '@/shared/components/modals/ChangeUserStatusModal'
 import { DeleteUserPermanentlyModal } from '@/shared/components/modals/DeleteUserPermanentlyModal'
 import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
 import { UploadAvatarModal } from '@/shared/components/modals/UploadAvatarModal'
@@ -32,9 +37,6 @@ import {
     addToast,
     Avatar,
     Button,
-    Card,
-    CardBody,
-    CardHeader,
     Chip,
     Divider,
     Input,
@@ -46,8 +48,12 @@ import {
     Tabs,
     useDisclosure,
 } from '@heroui/react'
-import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import {
+    useMutation,
+    useSuspenseQueries,
+    useSuspenseQuery,
+} from '@tanstack/react-query'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import {
     AlertCircle,
@@ -56,6 +62,7 @@ import {
     Briefcase,
     Building,
     Calendar,
+    EllipsisVerticalIcon,
     Info,
     InfoIcon,
     KeyRound,
@@ -63,14 +70,11 @@ import {
     Phone,
     Save,
     Shield,
-    ShieldAlertIcon,
     Trash2,
     Upload,
     User,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useToggleUserStatusMutation } from '../../../../../../lib/queries/useUser'
-import { ChangeUserStatusModal } from '../../../../../../shared/components/modals/ChangeUserStatusModal'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/$username/edit'
@@ -95,6 +99,7 @@ export const Route = createFileRoute(
 })
 
 function EditStaffPage() {
+    const router = useRouter()
     const { username } = Route.useParams()
 
     const toggleUserStatusMutation = useToggleUserStatusMutation()
@@ -203,35 +208,20 @@ function EditStaffPage() {
                     })}
                 />
             )}
-            <HeroBreadcrumbs className="pt-3 px-7 text-xs">
-                <HeroBreadcrumbItem>Management</HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.staffDirectory}
-                        className="text-text-subdued!"
-                    >
-                        Staff Directory
-                    </Link>
-                </HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>
-                    <span className="font-medium">@{user?.username}</span>
-                </HeroBreadcrumbItem>
-            </HeroBreadcrumbs>
 
-            <AdminContentContainer className="mt-1">
-                {/* --- Header --- */}
+            <AdminContentContainer>
+                {/* --- Heading --- */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
-                        <Link to={INTERNAL_URLS.staffDirectory}>
-                            <HeroButton
-                                isIconOnly
-                                variant="light"
-                                size="sm"
-                                color="default"
-                            >
-                                <ArrowLeft size={16} />
-                            </HeroButton>
-                        </Link>
+                        <HeroButton
+                            isIconOnly
+                            variant="light"
+                            size="sm"
+                            color="default"
+                            onPress={() => router.navigate({ href: '../..' })}
+                        >
+                            <ArrowLeft size={16} />
+                        </HeroButton>
                         <div className="flex items-center justify-start gap-2">
                             <p className="font-medium text-sm">
                                 Edit member details
@@ -251,9 +241,10 @@ function EditStaffPage() {
                         <HeroButton
                             color="primary"
                             size="sm"
-                            startContent={<Save size={18} />}
+                            variant="flat"
+                            endContent={<EllipsisVerticalIcon size={14} />}
                         >
-                            Save Changes
+                            Actions
                         </HeroButton>
                     </div>
                 </div>
@@ -261,8 +252,8 @@ function EditStaffPage() {
                 <div className="mt-3 grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* --- LEFT COLUMN: Profile Card (Static/Visual) --- */}
                     <div className="lg:col-span-1 space-y-6">
-                        <Card className="shadow-sm border border-slate-200">
-                            <CardBody className="flex flex-col items-center p-8 text-center">
+                        <HeroCard>
+                            <HeroCardBody className="flex flex-col items-center p-8 text-center">
                                 <div className="relative mb-4 group">
                                     <Avatar
                                         src={optimizeCloudinary(user.avatar, {
@@ -283,10 +274,10 @@ function EditStaffPage() {
                                     </div>
                                 </div>
 
-                                <h2 className="text-xl font-bold text-slate-900">
+                                <h2 className="text-xl font-bold text-text-default">
                                     {user.displayName}
                                 </h2>
-                                <p className="text-sm text-slate-500 mb-4">
+                                <p className="text-sm text-text-subdued mb-4">
                                     @{user.username}
                                 </p>
 
@@ -295,7 +286,7 @@ function EditStaffPage() {
                                         user.isActive ? 'success' : 'default'
                                     }
                                     variant="flat"
-                                    className="mb-6"
+                                    className="mb-6 text-sm"
                                 >
                                     {user.isActive
                                         ? 'Active Account'
@@ -318,9 +309,7 @@ function EditStaffPage() {
                                         <span className="text-text-subdued flex items-center gap-2">
                                             <Shield size={14} /> Role
                                         </span>
-                                        <span className="font-semibold text-text-default">
-                                            {user.role}
-                                        </span>
+                                        <RoleChip data={user.role} />
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-text-subdued flex items-center gap-2">
@@ -336,17 +325,17 @@ function EditStaffPage() {
                                         </div>
                                     </div>
                                 </div>
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
 
                         {/* Account Actions / Danger Zone */}
-                        <Card className="shadow-none border border-red-200 bg-red-50/50 dark:bg-red-50/70">
-                            <CardHeader className="px-6 pt-6 pb-0">
+                        <HeroCard className="shadow-none border border-red-200 bg-red-50/50 dark:bg-red-50/70">
+                            <HeroCardHeader className="px-6 pt-6 pb-0">
                                 <h4 className="font-bold text-red-900 text-sm flex items-center gap-2">
                                     <AlertCircle size={16} /> Danger Zone
                                 </h4>
-                            </CardHeader>
-                            <CardBody className="p-6">
+                            </HeroCardHeader>
+                            <HeroCardBody className="p-6">
                                 <p className="text-xs text-red-700 mb-4">
                                     Deactivating this user will revoke all
                                     access to the dashboard immediately.
@@ -375,14 +364,14 @@ function EditStaffPage() {
                                 >
                                     Delete User Permanently
                                 </Button>
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
                     </div>
 
                     {/* --- RIGHT COLUMN: Edit Form with Formik --- */}
                     <div className="lg:col-span-2">
-                        <Card className="shadow-sm border border-slate-200 min-h-150">
-                            <CardHeader className="p-0 border-b border-border-default">
+                        <HeroCard className="min-h-150">
+                            <HeroCardHeader className="p-0 border-b border-border-default">
                                 <Tabs
                                     aria-label="User Edit Tabs"
                                     variant="underlined"
@@ -425,9 +414,9 @@ function EditStaffPage() {
                                         }
                                     />
                                 </Tabs>
-                            </CardHeader>
+                            </HeroCardHeader>
 
-                            <CardBody className="p-6">
+                            <HeroCardBody className="p-6">
                                 {/* TAB: PERSONAL INFO */}
                                 {activeTab === 'profile' && (
                                     <EditProfileTab user={user} />
@@ -440,62 +429,10 @@ function EditStaffPage() {
 
                                 {/* TAB: SECURITY */}
                                 {activeTab === 'security' && (
-                                    <div className="space-y-6 animate-in fade-in">
-                                        <div>
-                                            <h3 className="font-bold text-slate-800 text-sm mb-4">
-                                                Password Management
-                                            </h3>
-                                            <div className="flex justify-between items-center p-4 border border-slate-200 rounded-xl">
-                                                <div>
-                                                    <p className="font-semibold text-slate-700">
-                                                        Send Password Reset
-                                                        Email
-                                                    </p>
-                                                    <p className="text-xs text-slate-500">
-                                                        User will receive a link
-                                                        to set a new password.
-                                                    </p>
-                                                </div>
-                                                <Button
-                                                    size="sm"
-                                                    variant="flat"
-                                                    color="primary"
-                                                >
-                                                    Send Link
-                                                </Button>
-                                            </div>
-                                        </div>
-
-                                        <Divider />
-
-                                        <div>
-                                            <h3 className="font-bold text-slate-800 text-sm mb-4">
-                                                Session Control
-                                            </h3>
-                                            <div className="flex justify-between items-center p-4 border border-slate-200 rounded-xl bg-slate-50">
-                                                <div>
-                                                    <p className="font-semibold text-slate-700">
-                                                        Force Logout
-                                                    </p>
-                                                    <p className="text-xs text-slate-500">
-                                                        Sign out this user from
-                                                        all active devices
-                                                        immediately.
-                                                    </p>
-                                                </div>
-                                                <Button
-                                                    size="sm"
-                                                    variant="bordered"
-                                                    color="danger"
-                                                >
-                                                    Log Out All
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <SecurityTab user={user} />
                                 )}
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
                     </div>
                 </div>
             </AdminContentContainer>
@@ -504,6 +441,7 @@ function EditStaffPage() {
 }
 
 function EditProfileTab({ user }: { user: TUser }) {
+    const router = useRouter()
     const updateUserMutation = useUpdateUserMutation()
     // 2. Initialize Formik
     const formik = useFormik<TEditUser>({
@@ -516,14 +454,23 @@ function EditProfileTab({ user }: { user: TUser }) {
         enableReinitialize: true,
         validate: toFormikValidate(editUserSchema),
         onSubmit: async (values) => {
-            console.log('Submitting validated data:', values)
             try {
                 // Call your mutation here
-                await updateUserMutation.mutateAsync({
-                    // Adjust according to what your mutation expects (e.g., username + body)
-                    username: user.username,
-                    data: values,
-                })
+                await updateUserMutation.mutateAsync(
+                    {
+                        username: user.username,
+                        data: values,
+                    },
+                    {
+                        onSuccess: () => {
+                            if (values.username !== user.username) {
+                                router.navigate({
+                                    href: '../..',
+                                })
+                            }
+                        },
+                    }
+                )
             } catch (error) {
                 console.error('Failed to update user', error)
             }
@@ -534,7 +481,7 @@ function EditProfileTab({ user }: { user: TUser }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
                     label="Full Name"
-                    labelPlacement="outside"
+                    labelPlacement="outside-top"
                     placeholder="e.g. Sarah Wilson"
                     variant="bordered"
                     name="displayName"
@@ -554,7 +501,7 @@ function EditProfileTab({ user }: { user: TUser }) {
                 />
                 <Input
                     label="Username"
-                    labelPlacement="outside"
+                    labelPlacement="outside-top"
                     placeholder="e.g. sarah_w"
                     variant="bordered"
                     name="username"
@@ -574,7 +521,7 @@ function EditProfileTab({ user }: { user: TUser }) {
                 />
                 <Input
                     label="Email Address"
-                    labelPlacement="outside"
+                    labelPlacement="outside-top"
                     placeholder="sarah@company.com"
                     description="Used for system notifications and secure account login."
                     variant="bordered"
@@ -590,7 +537,7 @@ function EditProfileTab({ user }: { user: TUser }) {
                 />
                 <Input
                     label="Phone Number"
-                    labelPlacement="outside"
+                    labelPlacement="outside-top"
                     placeholder="+84..."
                     variant="bordered"
                     description="Used for direct project coordination via WhatsApp/Phone."
@@ -651,7 +598,6 @@ function OrganizationDepartment({ user }: { user: TUser }) {
         initialValues: {
             departmentId: user.department?.id,
             jobTitleId: user.jobTitle?.id,
-            role: user.role,
         },
         enableReinitialize: true,
         onSubmit: async (values) => {
@@ -695,7 +641,7 @@ function OrganizationDepartment({ user }: { user: TUser }) {
                         </HeroTooltip>
                     </div>
                     <Select
-                        labelPlacement="outside"
+                        labelPlacement="outside-top"
                         placeholder="Select department"
                         variant="bordered"
                         description="Linked to departmental social hubs and reports."
@@ -742,7 +688,7 @@ function OrganizationDepartment({ user }: { user: TUser }) {
                         </HeroTooltip>
                     </div>
                     <Select
-                        labelPlacement="outside"
+                        labelPlacement="outside-top"
                         placeholder="Select title"
                         variant="bordered"
                         description="Defines the user's professional role in the workspace."
@@ -770,71 +716,9 @@ function OrganizationDepartment({ user }: { user: TUser }) {
                         }
                         errorMessage={formik.errors.jobTitleId}
                     >
-                        {jobTitles?.map((j) => (
+                        {jobTitles.map((j) => (
                             <SelectItem key={j.id} textValue={j.displayName}>
                                 {j.displayName}
-                            </SelectItem>
-                        )) || []}
-                    </Select>
-                </div>
-
-                {/* --- System Role Select --- */}
-                <div className="md:col-span-2 space-y-1">
-                    <div className="flex items-center gap-1">
-                        <span className="text-small font-medium text-danger-600">
-                            Security: System Role
-                        </span>
-                        <HeroTooltip
-                            color="danger"
-                            content="Warning: Escalating a role grants access to restricted billing and user data."
-                        >
-                            <ShieldAlertIcon
-                                size={14}
-                                className="text-danger cursor-help"
-                            />
-                        </HeroTooltip>
-                    </div>
-                    <Select
-                        labelPlacement="outside"
-                        variant="bordered"
-                        selectedKeys={[formik.values.role]}
-                        onSelectionChange={(keys) =>
-                            formik.setFieldValue('role', Array.from(keys)[0])
-                        }
-                        disallowEmptySelection
-                        startContent={(() => {
-                            const SelectedIcon =
-                                RoleIcons[
-                                    formik.values.role as keyof typeof RoleIcons
-                                ]
-                            return SelectedIcon ? (
-                                <SelectedIcon
-                                    size={16}
-                                    className="text-text-subdued"
-                                />
-                            ) : (
-                                <Shield
-                                    size={16}
-                                    className="text-text-subdued"
-                                />
-                            )
-                        })()}
-                        description="Admins manage system settings. Accounting manages finances. Users manage assigned jobs."
-                        isInvalid={!!formik.errors.role && formik.touched.role}
-                        errorMessage={formik.errors.role}
-                    >
-                        {ROLES_LIST.map((r) => (
-                            <SelectItem
-                                key={r.value}
-                                textValue={r.label}
-                                startContent={
-                                    <r.icon
-                                        size={14}
-                                        className="text-text-subdued"
-                                    />
-                                }
-                            >
-                                {r.label}
                             </SelectItem>
                         ))}
                     </Select>
@@ -853,5 +737,114 @@ function OrganizationDepartment({ user }: { user: TUser }) {
                 </HeroButton>
             </div>
         </div>
+    )
+}
+
+function SecurityTab({ user }: { user: TUser }) {
+    const {
+        data: { roles },
+    } = useSuspenseQuery({ ...rolesListOptions() })
+    const changeRoleModalDisclosure = useDisclosure({
+        id: 'ChangeRoleModal',
+    })
+    const changeRoleMutation = useMutation({
+        mutationFn: async (newRoleId: string) => {
+            // Replace with API call
+            console.log('Changing role to', newRoleId)
+        },
+        // onSuccess: () => {
+        //     toast.success('Role updated and permissions reset')
+        //     queryClient.invalidateQueries({ queryKey: ['users', username] })
+        //     onClose()
+        // },
+    })
+
+    return (
+        <>
+            {changeRoleModalDisclosure.isOpen && (
+                <ChangeRoleModal
+                    isOpen={changeRoleModalDisclosure.isOpen}
+                    onClose={changeRoleModalDisclosure.onClose}
+                    onConfirm={(newId) => changeRoleMutation.mutate(newId)}
+                    currentRoleId={user.role.id}
+                    roles={roles}
+                    isPending={changeRoleMutation.isPending}
+                />
+            )}
+            <div className="space-y-6 animate-in fade-in">
+                <div>
+                    <h3 className="font-bold text-text-default text-sm mb-4">
+                        Change Primary Role
+                    </h3>
+                    {/* Fake Select that triggers Modal */}
+                    <div className="relative">
+                        <Select
+                            label="Primary Role"
+                            selectedKeys={[String(user.role.id)]} // Ensure string/number match
+                            variant="bordered"
+                            disallowEmptySelection
+                            classNames={{ trigger: 'cursor-pointer' }}
+                        >
+                            {roles.map((role) => (
+                                <SelectItem
+                                    key={String(role.id)}
+                                    textValue={role.displayName}
+                                >
+                                    {role.displayName}
+                                </SelectItem>
+                            ))}
+                        </Select>
+                        {/* Overlay div to capture click for Modal */}
+                        <div
+                            className="absolute inset-0 z-10 cursor-pointer"
+                            onClick={changeRoleModalDisclosure.onOpen}
+                        />
+                    </div>
+                </div>
+
+                <Divider />
+
+                <div>
+                    <h3 className="font-bold text-text-default text-sm mb-4">
+                        Password Management
+                    </h3>
+                    <div className="flex justify-between items-center p-4 border border-border-default rounded-xl">
+                        <div>
+                            <p className="font-semibold text-slate-700">
+                                Send Password Reset Email
+                            </p>
+                            <p className="text-xs text-slate-500">
+                                User will receive a link to set a new password.
+                            </p>
+                        </div>
+                        <Button size="sm" variant="flat" color="primary">
+                            Send Link
+                        </Button>
+                    </div>
+                </div>
+
+                <Divider />
+
+                <div>
+                    <h3 className="font-bold text-text-default text-sm mb-4">
+                        Session Control
+                    </h3>
+                    <div className="flex justify-between items-center p-4 border border-border-default rounded-xl bg-slate-50">
+                        <div>
+                            <p className="font-semibold text-slate-700">
+                                Force Logout
+                            </p>
+                            <p className="text-xs text-slate-500">
+                                Sign out this user from all active devices
+                                immediately.
+                            </p>
+                        </div>
+                        <Button size="sm" variant="bordered" color="danger">
+                            Log Out All
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </>
     )
 }

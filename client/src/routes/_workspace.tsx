@@ -18,11 +18,6 @@ function WorkspaceLayout() {
 
     return (
         <AuthGuard>
-            <style jsx global>{`
-                body::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
             {!isSmallView ? <Header /> : <MobileHeader />}
             {/* Height for header */}
             <div className={!isSmallView ? 'h-14' : 'h-11'} />
