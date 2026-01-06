@@ -10,6 +10,10 @@ import { queryClient } from '../../main'
 import { onErrorToast } from './helper'
 import { ApiResponse } from '../axios'
 import { addToast } from '@heroui/react'
+import {
+    activeSessionsListOptions,
+    profileOptions,
+} from './options/user-queries'
 
 function parseExpires(expiresAt: string | number) {
     if (typeof expiresAt === 'number') {
@@ -75,6 +79,40 @@ export const useLogout = () => {
             queryClient.invalidateQueries?.()
             queryClient.removeQueries?.()
         },
+    })
+}
+
+export const useRevokeSessionMutation = () => {
+    return useMutation({
+        mutationKey: ['revokeSession'],
+        mutationFn: (sessionId: string) => authApi.revokeSession(sessionId),
+        onSuccess: (res) => {
+            addToast({ title: res.message, color: 'success' })
+            queryClient.refetchQueries({
+                queryKey: profileOptions().queryKey,
+            })
+            queryClient.refetchQueries({
+                queryKey: activeSessionsListOptions().queryKey,
+            })
+        },
+        onError: (err) => onErrorToast(err, 'Revoke session Failed'),
+    })
+}
+
+export const useRevokeAllSessionMutation = () => {
+    return useMutation({
+        mutationKey: ['revokeAllSession'],
+        mutationFn: () => authApi.revokeAllSession(),
+        onSuccess: (res) => {
+            addToast({ title: res.message, color: 'success' })
+            queryClient.refetchQueries({
+                queryKey: profileOptions().queryKey,
+            })
+            queryClient.refetchQueries({
+                queryKey: activeSessionsListOptions().queryKey,
+            })
+        },
+        onError: (err) => onErrorToast(err, 'Revoke all session Failed'),
     })
 }
 

@@ -3,20 +3,27 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Header, ScrollArea, ScrollBar } from '../shared/components'
 import SettingsSidebar from '../shared/components/settings/layouts/SettingsSidebar'
 import { AuthGuard } from '../shared/guards'
+import { useDevice } from '../shared/hooks'
+import MobileHeader from '../shared/components/layouts/Header/MobileHeader'
 
-// Lưu ý: path là id ảo, không xuất hiện trên URL
 export const Route = createFileRoute('/settings')({
     component: SettingsLayout,
 })
 
 function SettingsLayout() {
+    const { isSmallView } = useDevice()
     return (
         <AuthGuard>
             <div className="fixed top-0 w-full z-50">
-                <Header />
+                <style jsx global>{`
+                    body::-webkit-scrollbar {
+                        display: none;
+                    }
+                `}</style>
+                {!isSmallView ? <Header /> : <MobileHeader />}
             </div>
             {/* Height for header */}
-            <div className="h-14 bg-background" />
+            <div className={!isSmallView ? 'h-14' : 'h-11'} />
 
             <div className="size-full bg-background-muted">
                 <div className="size-full py-6 max-w-7xl mx-auto">
@@ -30,14 +37,23 @@ function SettingsLayout() {
                     </div>
                     <div className="size-full mt-5 grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 items-start">
                         {/* Sticky Sidebar */}
-                        <div className="fixed top-38 w-70">
-                            <SettingsSidebar />
-                        </div>
+                        {!isSmallView ? (
+                            <div className="fixed top-38 w-70">
+                                <SettingsSidebar />
+                            </div>
+                        ) : null}
                         <div />
 
                         {/* Main Content Area */}
                         <main className="size-full py-6 px-1 flex-1 min-w-0 bg-background-muted">
-                            <ScrollArea className="size-full">
+                            <ScrollArea
+                                className="w-full"
+                                style={{
+                                    height: !isSmallView
+                                        ? 'calc(100vh-57px)'
+                                        : 'calc(100vh-44px)',
+                                }}
+                            >
                                 <ScrollBar orientation="horizontal" />
                                 <ScrollBar orientation="vertical" />
                                 <Outlet />

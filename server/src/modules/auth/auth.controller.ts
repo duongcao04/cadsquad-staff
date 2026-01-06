@@ -7,6 +7,7 @@ import {
     HttpCode,
     Ip,
     Param,
+    ParseUUIDPipe,
     Patch,
     Post,
     Req,
@@ -82,29 +83,10 @@ export class AuthController {
 
         // Gắn sessionId vào Response Header
         res.setHeader('x-session-id', loginResult.sessionId)
-
-        // 2. Lưu Session vào Redis
-        // Lưu ý: loginResult nên chứa thông tin User trả về từ AuthService
-        const sessionId = await this.sessionService.saveSession(
-            loginResult.user.id,
-            {
-                userId: loginResult.user.id,
-                device: userAgent,
-                ipAddress: ip,
-                lastActive: new Date().toISOString(),
-            }
-        )
-
-        // 3. Ghi Security Log thành công
-        await this.securityService.createLog({
-            userId: loginResult.user.id,
-            event: 'Login Success',
-            status: 'SUCCESS',
-            ipAddress: ip,
-            userAgent: userAgent,
-        })
-
-        return { accessToken: loginResult.accessToken, sessionId }
+        return {
+            accessToken: loginResult.accessToken,
+            sessionId: loginResult.sessionId,
+        }
     }
 
     @Get('profile')
@@ -201,9 +183,10 @@ export class AuthController {
     @UseGuards(JwtGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Revoke a specific session (Logout device)' })
+    @ResponseMessage('Session revoked successfully')
     async revokeSession(
         @Req() request: Request,
-        @Param('sessionId') sessionId: string,
+        @Param('sessionId', ParseUUIDPipe) sessionId: string,
         @Ip() ip: string
     ) {
         const userPayload: TokenPayload = request['user']
@@ -217,6 +200,6 @@ export class AuthController {
             ipAddress: ip,
         })
 
-        return { message: 'Session revoked successfully' }
+        return
     }
 }

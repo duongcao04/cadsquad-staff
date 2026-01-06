@@ -11,6 +11,16 @@ export const authApi = {
     activeSessions: () => {
         return axiosClient.get<ApiResponse<TUserSession[]>>('/v1/auth/sessions')
     },
+    revokeSession: async (sessionId: string) => {
+        return axiosClient
+            .delete<ApiResponse>(`/v1/auth/sessions/${sessionId}`)
+            .then((res) => res.data)
+    },
+    revokeAllSession: async () => {
+        return axiosClient
+            .delete<ApiResponse>(`/v1/auth/sessions/all`)
+            .then((res) => res.data)
+    },
     validateToken: async (token: string) => {
         return axiosClient
             .get<ApiResponse<IValidateTokenResponse>>(

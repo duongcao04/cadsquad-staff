@@ -24,6 +24,7 @@ export class SessionService {
             key,
             JSON.stringify({
                 ...data,
+                sessionId,
                 device: `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`,
             }),
             'EX',

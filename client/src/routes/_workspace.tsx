@@ -14,7 +14,7 @@ export const Route = createFileRoute('/_workspace')({
 
 function WorkspaceLayout() {
     const sidebarStatus = useStore(appStore, (state) => state.sidebarStatus)
-    const { isLargeDevice } = useDevice()
+    const { isSmallView } = useDevice()
 
     return (
         <AuthGuard>
@@ -23,11 +23,11 @@ function WorkspaceLayout() {
                     display: none;
                 }
             `}</style>
-            {isLargeDevice ? <Header /> : <MobileHeader />}
+            {!isSmallView ? <Header /> : <MobileHeader />}
             {/* Height for header */}
-            <div className={isLargeDevice ? 'h-14' : 'h-11'} />
+            <div className={!isSmallView ? 'h-14' : 'h-11'} />
             <main className="size-full relative flex items-start justify-start">
-                {isLargeDevice ? (
+                {!isSmallView ? (
                     <div className="fixed top-14 z-50">
                         <Sidebar />
                     </div>
@@ -35,7 +35,7 @@ function WorkspaceLayout() {
                 <div
                     className="size-full bg-background-muted"
                     style={{
-                        paddingLeft: isLargeDevice
+                        paddingLeft: !isSmallView
                             ? sidebarStatus === 'expand'
                                 ? '300px'
                                 : '64px'
@@ -45,7 +45,7 @@ function WorkspaceLayout() {
                     <ScrollArea
                         className="w-full"
                         style={{
-                            height: isLargeDevice
+                            height: !isSmallView
                                 ? 'calc(100vh-57px)'
                                 : 'calc(100vh-44px)',
                         }}

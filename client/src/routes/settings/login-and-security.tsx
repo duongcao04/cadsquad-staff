@@ -22,6 +22,7 @@ import {
     Tooltip,
     useDisclosure,
 } from '@heroui/react'
+import { useSuspenseQueries } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import {
@@ -38,9 +39,8 @@ import {
     Smartphone,
 } from 'lucide-react'
 import { useState } from 'react'
-
-import { useSuspenseQueries } from '@tanstack/react-query'
 import {
+    cookie,
     dateFormatter,
     getPageTitle,
     INTERNAL_URLS,
@@ -51,7 +51,10 @@ import {
 import {
     activeSessionsListOptions,
     securityLogsListOptions,
+    useRevokeAllSessionMutation,
+    useRevokeSessionMutation,
 } from '../../lib/queries'
+import { COOKIES, getDeviceIcon } from '../../lib/utils'
 import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
@@ -70,9 +73,13 @@ export const Route = createFileRoute('/settings/login-and-security')({
     component: SecuritySettingsPage,
 })
 
+const enable2FA = false
 function SecuritySettingsPage() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure() // For 2FA Modal
     const [is2FAEnabled, setIs2FAEnabled] = useState(true)
+
+    const revokeSessionMutation = useRevokeSessionMutation()
+    const revokeAllSessionMutation = useRevokeAllSessionMutation()
 
     const [
         {
@@ -88,6 +95,13 @@ function SecuritySettingsPage() {
             { ...activeSessionsListOptions() },
         ],
     })
+
+    const handleRevokeSession = async (sessionId: string) => {
+        await revokeSessionMutation.mutateAsync(sessionId)
+    }
+    const handleRevokeAllSession = async () => {
+        await revokeAllSessionMutation.mutateAsync()
+    }
 
     return (
         <>
@@ -122,79 +136,83 @@ function SecuritySettingsPage() {
                     </p>
                 </div>
 
-                <div className="mt-7 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div
+                    className={`mt-7 grid grid-cols-1 ${enable2FA ? 'lg:grid-cols-2' : ''} gap-8`}
+                >
                     {/* --- LEFT COLUMN: Credentials --- */}
                     <UpdatePasswordForm />
                     {/* --- RIGHT COLUMN: Activity & Sessions --- */}
-                    <div className="size-full lg:col-span-1 space-y-6">
-                        {/* 2FA Settings */}
-                        <Card className="shadow-sm border border-border-default">
-                            <CardHeader className="px-6 pt-6 pb-2">
-                                <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
-                                    <Shield
-                                        size={20}
-                                        className="text-success"
-                                    />{' '}
-                                    Two-Factor Authentication
-                                </h4>
-                            </CardHeader>
-                            <CardBody className="px-6 pb-6">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="pr-4">
-                                        <p
-                                            className={`font-bold text-sm ${is2FAEnabled ? 'text-success-600' : 'text-slate-500'}`}
-                                        >
-                                            {is2FAEnabled
-                                                ? 'Enabled'
-                                                : 'Disabled'}
-                                        </p>
-                                        <p className="text-xs text-slate-500 mt-1">
-                                            Secure your account with an
-                                            authenticator app (Google Auth,
-                                            Authy).
-                                        </p>
-                                    </div>
-                                    <Switch
-                                        isSelected={is2FAEnabled}
-                                        onValueChange={setIs2FAEnabled}
-                                        color="success"
-                                    />
-                                </div>
-
-                                {!is2FAEnabled && (
-                                    <Button
-                                        variant="flat"
-                                        color="primary"
-                                        className="w-full"
-                                        onPress={onOpen}
-                                    >
-                                        Setup 2FA Now
-                                    </Button>
-                                )}
-
-                                {is2FAEnabled && (
-                                    <div className="bg-background-muted p-3 rounded-lg border border-border-default">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-text-default mb-2">
-                                            <Smartphone size={14} />
-                                            Recovery Codes
+                    {enable2FA && (
+                        <div className="size-full lg:col-span-1 space-y-6">
+                            {/* 2FA Settings */}
+                            <Card className="shadow-sm border border-border-default">
+                                <CardHeader className="px-6 pt-6 pb-2">
+                                    <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
+                                        <Shield
+                                            size={20}
+                                            className="text-success"
+                                        />{' '}
+                                        Two-Factor Authentication
+                                    </h4>
+                                </CardHeader>
+                                <CardBody className="px-6 pb-6">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="pr-4">
+                                            <p
+                                                className={`font-bold text-sm ${is2FAEnabled ? 'text-success-600' : 'text-slate-500'}`}
+                                            >
+                                                {is2FAEnabled
+                                                    ? 'Enabled'
+                                                    : 'Disabled'}
+                                            </p>
+                                            <p className="text-xs text-slate-500 mt-1">
+                                                Secure your account with an
+                                                authenticator app (Google Auth,
+                                                Authy).
+                                            </p>
                                         </div>
-                                        <p className="text-xs text-text-subdued mb-3">
-                                            You have 3 unused recovery codes
-                                            left. Generate new ones if you lost
-                                            them.
-                                        </p>
-                                        <Button
-                                            size="sm"
-                                            variant="bordered"
-                                            className="w-full border-border-default"
-                                        >
-                                            View Codes
-                                        </Button>
+                                        <Switch
+                                            isSelected={is2FAEnabled}
+                                            onValueChange={setIs2FAEnabled}
+                                            color="success"
+                                        />
                                     </div>
-                                )}
-                            </CardBody>
-                        </Card>
-                    </div>
+
+                                    {!is2FAEnabled && (
+                                        <Button
+                                            variant="flat"
+                                            color="primary"
+                                            className="w-full"
+                                            onPress={onOpen}
+                                        >
+                                            Setup 2FA Now
+                                        </Button>
+                                    )}
+
+                                    {is2FAEnabled && (
+                                        <div className="bg-background-muted p-3 rounded-lg border border-border-default">
+                                            <div className="flex items-center gap-2 text-xs font-bold text-text-default mb-2">
+                                                <Smartphone size={14} />
+                                                Recovery Codes
+                                            </div>
+                                            <p className="text-xs text-text-subdued mb-3">
+                                                You have 3 unused recovery codes
+                                                left. Generate new ones if you
+                                                lost them.
+                                            </p>
+                                            <Button
+                                                size="sm"
+                                                variant="bordered"
+                                                className="w-full border-border-default"
+                                            >
+                                                View Codes
+                                            </Button>
+                                        </div>
+                                    )}
+                                </CardBody>
+                            </Card>
+                        </div>
+                    )}
                 </div>
 
                 {/* Active Sessions */}
@@ -208,7 +226,15 @@ function SecuritySettingsPage() {
                             size="sm"
                             variant="light"
                             color="danger"
-                            startContent={<LogOut size={16} />}
+                            startContent={
+                                revokeSessionMutation.isPending ? (
+                                    <Spinner />
+                                ) : (
+                                    <LogOut size={16} />
+                                )
+                            }
+                            disabled={revokeSessionMutation.isPending}
+                            onPress={() => handleRevokeAllSession()}
                         >
                             Log Out All Devices
                         </Button>
@@ -216,7 +242,12 @@ function SecuritySettingsPage() {
                     <CardBody className="px-6 pb-6">
                         <div className="space-y-4">
                             {activeSessions.map((session) => {
-                                const currentSession = true
+                                const currentSessionId = cookie.get(
+                                    COOKIES.sessionId
+                                )
+                                const isCurrentSession =
+                                    session.sessionId === currentSessionId
+                                const Icon = getDeviceIcon(session.device)
                                 return (
                                     <div
                                         key={session.ipAddress}
@@ -224,16 +255,16 @@ function SecuritySettingsPage() {
                                     >
                                         <div className="flex items-center gap-4">
                                             <div
-                                                className={`w-10 h-10 rounded-full flex items-center justify-center ${currentSession ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}
+                                                className={`w-10 h-10 rounded-full flex items-center justify-center ${isCurrentSession ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}
                                             >
-                                                {/* <session.icon size={20} /> */}
+                                                <Icon size={20} />
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
                                                     <p className="font-bold text-slate-700 text-sm">
                                                         {session.device}
                                                     </p>
-                                                    {currentSession && (
+                                                    {isCurrentSession && (
                                                         <Chip
                                                             size="sm"
                                                             color="success"
@@ -244,30 +275,44 @@ function SecuritySettingsPage() {
                                                         </Chip>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                                                <div className="flex items-center gap-3 mt-1 text-xs text-text-subdued">
                                                     <span className="flex items-center gap-1">
                                                         <MapPin size={10} />{' '}
                                                         {session.ipAddress}
                                                     </span>
                                                     <span className="flex items-center gap-1">
                                                         <Clock size={10} />{' '}
-                                                        {session.lastActive}
-                                                    </span>
-                                                    <span>
-                                                        IP: {session.ipAddress}
+                                                        {dateFormatter(
+                                                            session.lastActive,
+                                                            {
+                                                                format: 'longDateTime',
+                                                            }
+                                                        )}
                                                     </span>
                                                 </div>
                                             </div>
                                         </div>
-                                        {!currentSession && (
+                                        {!isCurrentSession && (
                                             <Tooltip content="Revoke Access">
                                                 <Button
                                                     isIconOnly
                                                     size="sm"
                                                     variant="light"
                                                     color="danger"
+                                                    disabled={
+                                                        revokeSessionMutation.isPending
+                                                    }
+                                                    onPress={() =>
+                                                        handleRevokeSession(
+                                                            session.sessionId
+                                                        )
+                                                    }
                                                 >
-                                                    <LogOut size={16} />
+                                                    {revokeSessionMutation.isPending ? (
+                                                        <Spinner />
+                                                    ) : (
+                                                        <LogOut size={16} />
+                                                    )}
                                                 </Button>
                                             </Tooltip>
                                         )}
@@ -286,7 +331,7 @@ function SecuritySettingsPage() {
                             Recent Activity
                         </h4>
                     </CardHeader>
-                    <CardBody className="p-0">
+                    <CardBody className="p-2">
                         <Table
                             aria-label="User security logs table"
                             removeWrapper
@@ -395,48 +440,58 @@ function SecuritySettingsPage() {
                 </Card>
 
                 {/* 2FA Setup Modal */}
-                <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="md">
-                    <ModalContent>
-                        {(onClose) => (
-                            <>
-                                <ModalHeader>
-                                    Setup Two-Factor Authentication
-                                </ModalHeader>
-                                <ModalBody className="flex flex-col items-center text-center">
-                                    <div className="w-48 h-48 bg-slate-100 rounded-xl mb-4 flex items-center justify-center border border-border-default">
-                                        <span className="text-slate-400 font-mono text-xs">
-                                            QR CODE PLACEHOLDER
-                                        </span>
-                                    </div>
-                                    <p className="text-sm text-slate-600 mb-4">
-                                        Scan this QR code with your
-                                        authenticator app (Google Authenticator,
-                                        Authy, etc.) and enter the code below.
-                                    </p>
-                                    <Input
-                                        placeholder="Enter 6-digit code"
-                                        className="max-w-xs text-center font-mono text-lg tracking-widest"
-                                        maxLength={6}
-                                    />
-                                </ModalBody>
-                                <ModalFooter>
-                                    <Button variant="light" onPress={onClose}>
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        color="primary"
-                                        onPress={() => {
-                                            setIs2FAEnabled(true)
-                                            onClose()
-                                        }}
-                                    >
-                                        Verify & Enable
-                                    </Button>
-                                </ModalFooter>
-                            </>
-                        )}
-                    </ModalContent>
-                </Modal>
+                {enable2FA && (
+                    <Modal
+                        isOpen={isOpen}
+                        onOpenChange={onOpenChange}
+                        size="md"
+                    >
+                        <ModalContent>
+                            {(onClose) => (
+                                <>
+                                    <ModalHeader>
+                                        Setup Two-Factor Authentication
+                                    </ModalHeader>
+                                    <ModalBody className="flex flex-col items-center text-center">
+                                        <div className="w-48 h-48 bg-slate-100 rounded-xl mb-4 flex items-center justify-center border border-border-default">
+                                            <span className="text-text-subdued font-mono text-xs">
+                                                QR CODE PLACEHOLDER
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-slate-600 mb-4">
+                                            Scan this QR code with your
+                                            authenticator app (Google
+                                            Authenticator, Authy, etc.) and
+                                            enter the code below.
+                                        </p>
+                                        <Input
+                                            placeholder="Enter 6-digit code"
+                                            className="max-w-xs text-center font-mono text-lg tracking-widest"
+                                            maxLength={6}
+                                        />
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        <Button
+                                            variant="light"
+                                            onPress={onClose}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            color="primary"
+                                            onPress={() => {
+                                                setIs2FAEnabled(true)
+                                                onClose()
+                                            }}
+                                        >
+                                            Verify & Enable
+                                        </Button>
+                                    </ModalFooter>
+                                </>
+                            )}
+                        </ModalContent>
+                    </Modal>
+                )}
             </div>
         </>
     )
