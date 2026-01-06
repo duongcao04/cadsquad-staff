@@ -52,3 +52,10 @@ export type TUserSecurityLog = {
     ipAddress: string
     status: string
 }
+
+export type TUserSession = {
+    userId: string
+    device: string
+    ipAddress: string
+    lastActive: string
+}

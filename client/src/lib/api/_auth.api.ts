@@ -4,13 +4,12 @@ import type {
     IRegisterUserInput,
     IValidateTokenResponse,
 } from '@/shared/interfaces'
-import type { TUser } from '@/shared/types'
-
+import type { TUser, TUserSession } from '@/shared/types'
 import type { TLoginInput, TUpdateProfileInput } from '../validationSchemas'
 
 export const authApi = {
-    sessions: () => {
-        return axiosClient.get<ApiResponse<any[]>>('/v1/auth/sessions')
+    activeSessions: () => {
+        return axiosClient.get<ApiResponse<TUserSession[]>>('/v1/auth/sessions')
     },
     validateToken: async (token: string) => {
         return axiosClient

@@ -31,7 +31,6 @@ import {
     Globe,
     House,
     KeyRound,
-    Laptop,
     LogOut,
     MapPin,
     Shield,
@@ -40,6 +39,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
+import { useSuspenseQueries } from '@tanstack/react-query'
 import {
     dateFormatter,
     getPageTitle,
@@ -49,12 +49,14 @@ import {
     useUpdatePasswordMutation,
 } from '../../lib'
 import {
+    activeSessionsListOptions,
+    securityLogsListOptions,
+} from '../../lib/queries'
+import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
     HeroPasswordInput,
 } from '../../shared/components'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { securityLogsListOptions } from '../../lib/queries'
 import { TUserSecurityLog } from '../../shared/types'
 
 export const Route = createFileRoute('/settings/login-and-security')({
@@ -68,45 +70,24 @@ export const Route = createFileRoute('/settings/login-and-security')({
     component: SecuritySettingsPage,
 })
 
-// --- Mock Data ---
-const ACTIVE_SESSIONS = [
-    {
-        id: '1',
-        device: 'Chrome on Windows',
-        ip: '115.79.x.x',
-        location: 'Ho Chi Minh City, VN',
-        lastActive: 'Current Session',
-        isCurrent: true,
-        icon: Laptop,
-    },
-    {
-        id: '2',
-        device: 'Safari on iPhone 13',
-        ip: '14.161.x.x',
-        location: 'Hanoi, VN',
-        lastActive: '2 hours ago',
-        isCurrent: false,
-        icon: Smartphone,
-    },
-    {
-        id: '3',
-        device: 'Firefox on Mac',
-        ip: '27.72.x.x',
-        location: 'Da Nang, VN',
-        lastActive: '5 days ago',
-        isCurrent: false,
-        icon: Laptop,
-    },
-]
-
 function SecuritySettingsPage() {
     const { isOpen, onOpen, onOpenChange } = useDisclosure() // For 2FA Modal
     const [is2FAEnabled, setIs2FAEnabled] = useState(true)
 
-    const {
-        data: { securityLogs },
-        isLoading,
-    } = useSuspenseQuery({ ...securityLogsListOptions() })
+    const [
+        {
+            data: { securityLogs },
+            isLoading,
+        },
+        {
+            data: { activeSessions },
+        },
+    ] = useSuspenseQueries({
+        queries: [
+            { ...securityLogsListOptions() },
+            { ...activeSessionsListOptions() },
+        ],
+    })
 
     return (
         <>
@@ -220,8 +201,8 @@ function SecuritySettingsPage() {
                 <Card className="mt-6 shadow-sm border border-border-default">
                     <CardHeader className="px-6 pt-6 pb-2 flex justify-between items-center">
                         <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
-                            <Globe size={20} className="text-blue-500" /> Active
-                            Sessions
+                            <Globe size={20} className="text-blue-500" />
+                            Active Sessions
                         </h4>
                         <Button
                             size="sm"
@@ -234,60 +215,65 @@ function SecuritySettingsPage() {
                     </CardHeader>
                     <CardBody className="px-6 pb-6">
                         <div className="space-y-4">
-                            {ACTIVE_SESSIONS.map((session) => (
-                                <div
-                                    key={session.id}
-                                    className="flex items-center justify-between p-3 border border-border-default rounded-xl hover:bg-slate-50 transition-colors"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center ${session.isCurrent ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}
-                                        >
-                                            <session.icon size={20} />
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="font-bold text-slate-700 text-sm">
-                                                    {session.device}
-                                                </p>
-                                                {session.isCurrent && (
-                                                    <Chip
-                                                        size="sm"
-                                                        color="success"
-                                                        variant="flat"
-                                                        className="h-5 text-[10px]"
-                                                    >
-                                                        Current
-                                                    </Chip>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
-                                                <span className="flex items-center gap-1">
-                                                    <MapPin size={10} />{' '}
-                                                    {session.location}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Clock size={10} />{' '}
-                                                    {session.lastActive}
-                                                </span>
-                                                <span>IP: {session.ip}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {!session.isCurrent && (
-                                        <Tooltip content="Revoke Access">
-                                            <Button
-                                                isIconOnly
-                                                size="sm"
-                                                variant="light"
-                                                color="danger"
+                            {activeSessions.map((session) => {
+                                const currentSession = true
+                                return (
+                                    <div
+                                        key={session.ipAddress}
+                                        className="flex items-center justify-between p-3 border border-border-default rounded-xl hover:bg-slate-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div
+                                                className={`w-10 h-10 rounded-full flex items-center justify-center ${currentSession ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}
                                             >
-                                                <LogOut size={16} />
-                                            </Button>
-                                        </Tooltip>
-                                    )}
-                                </div>
-                            ))}
+                                                {/* <session.icon size={20} /> */}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="font-bold text-slate-700 text-sm">
+                                                        {session.device}
+                                                    </p>
+                                                    {currentSession && (
+                                                        <Chip
+                                                            size="sm"
+                                                            color="success"
+                                                            variant="flat"
+                                                            className="h-5 text-[10px]"
+                                                        >
+                                                            Current
+                                                        </Chip>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
+                                                    <span className="flex items-center gap-1">
+                                                        <MapPin size={10} />{' '}
+                                                        {session.ipAddress}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Clock size={10} />{' '}
+                                                        {session.lastActive}
+                                                    </span>
+                                                    <span>
+                                                        IP: {session.ipAddress}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {!currentSession && (
+                                            <Tooltip content="Revoke Access">
+                                                <Button
+                                                    isIconOnly
+                                                    size="sm"
+                                                    variant="light"
+                                                    color="danger"
+                                                >
+                                                    <LogOut size={16} />
+                                                </Button>
+                                            </Tooltip>
+                                        )}
+                                    </div>
+                                )
+                            })}
                         </div>
                     </CardBody>
                 </Card>

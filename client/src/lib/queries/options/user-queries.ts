@@ -93,6 +93,15 @@ export const securityLogsListOptions = () => {
         },
     })
 }
+export const activeSessionsListOptions = () => {
+    return queryOptions({
+        queryKey: ['user', 'activeSessions'],
+        queryFn: () => authApi.activeSessions(),
+        select: (res) => {
+            return { activeSessions: res?.data.result ?? [] }
+        },
+    })
+}
 export const profileOverviewOptions = () => {
     return queryOptions({
         queryKey: ['profile', 'overview'],

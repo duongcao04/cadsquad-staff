@@ -1,14 +1,11 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import lodash from 'lodash'
 import { useMemo } from 'react'
-
 import { authApi } from '@/lib/api'
 import { cookie } from '@/lib/cookie'
 import { COOKIES, IMAGES } from '@/lib/utils'
 import type { TLoginInput, TUpdateProfileInput } from '@/lib/validationSchemas'
-import { RoleEnum } from '@/shared/enums'
 import type { TUser } from '@/shared/types'
-
 import { queryClient } from '../../main'
 import { onErrorToast } from './helper'
 import { ApiResponse } from '../axios'
