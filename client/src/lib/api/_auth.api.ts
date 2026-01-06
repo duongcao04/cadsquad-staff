@@ -9,6 +9,9 @@ import type { TUser } from '@/shared/types'
 import type { TLoginInput, TUpdateProfileInput } from '../validationSchemas'
 
 export const authApi = {
+    sessions: () => {
+        return axiosClient.get<ApiResponse<any[]>>('/v1/auth/sessions')
+    },
     validateToken: async (token: string) => {
         return axiosClient
             .get<ApiResponse<IValidateTokenResponse>>(

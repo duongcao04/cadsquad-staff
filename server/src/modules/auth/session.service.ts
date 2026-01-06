@@ -1,6 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common'
 import Redis from 'ioredis'
 import { REDIS_CLIENT } from '../../providers/redis/redis.provider'
+import { SaveSessionDto } from './dto/session/save-session.dto'
+import { UAParser } from 'ua-parser-js'
 
 @Injectable()
 export class SessionService {
@@ -11,12 +13,22 @@ export class SessionService {
     }
 
     // Lưu session khi login
-    async saveSession(userId: string, data: any) {
+    async saveSession(userId: string, data: SaveSessionDto) {
+        const parser = new UAParser(data.device)
+        const uaResult = parser.getResult()
         const sessionId = crypto.randomUUID()
         const key = this.getSessionKey(userId, sessionId)
 
         // Lưu session data và set TTL 7 ngày
-        await this.redis.set(key, JSON.stringify(data), 'EX', 7 * 24 * 60 * 60)
+        await this.redis.set(
+            key,
+            JSON.stringify({
+                ...data,
+                device: `${uaResult.browser.name || 'Unknown'} on ${uaResult.os.name || 'Unknown'}`,
+            }),
+            'EX',
+            7 * 24 * 60 * 60
+        )
         return sessionId
     }
 
@@ -56,6 +68,19 @@ export class SessionService {
     async revokeSession(userId: string, sessionId: string) {
         const key = this.getSessionKey(userId, sessionId)
         await this.redis.del(key)
+    }
+
+    /**
+     * Thu hồi toàn bộ phiên làm việc của một người dùng
+     */
+    async revokeAllSessions(userId: string): Promise<void> {
+        const pattern = `session:${userId}:*`
+        const keys = await this.redis.keys(pattern)
+
+        if (keys.length > 0) {
+            // Sử dụng toán tử spread để xóa tất cả các keys tìm thấy
+            await this.redis.del(...keys)
+        }
     }
 
     // Xóa session (Logout hoặc đá thiết bị)

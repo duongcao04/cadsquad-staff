@@ -89,9 +89,9 @@ export class AuthController {
             loginResult.user.id,
             {
                 userId: loginResult.user.id,
-                device: userAgent || 'Unknown Device',
+                device: userAgent,
                 ipAddress: ip,
-                lastActive: new Date(),
+                lastActive: new Date().toISOString(),
             }
         )
 
@@ -171,6 +171,30 @@ export class AuthController {
     async getSessions(@Req() request: any) {
         const userPayload: TokenPayload = request.user
         return this.sessionService.getActiveSessions(userPayload.sub)
+    }
+
+    @Delete('sessions/all')
+    @UseGuards(JwtGuard)
+    @ApiBearerAuth()
+    @ApiOperation({
+        summary: 'Revoke all active sessions (Logout all devices)',
+    })
+    @ResponseMessage('Logged out from all devices successfully')
+    async revokeAll(@Req() request: any, @Ip() ip: string) {
+        const userPayload: TokenPayload = request.user
+
+        // 1. Xóa sạch session trong Redis
+        await this.sessionService.revokeAllSessions(userPayload.sub)
+
+        // 2. Ghi Security Log
+        await this.securityService.createLog({
+            userId: userPayload.sub,
+            event: 'All Sessions Revoked',
+            status: 'SUCCESS',
+            ipAddress: ip,
+        })
+
+        return { success: true }
     }
 
     @Delete('sessions/:sessionId')

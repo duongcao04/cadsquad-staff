@@ -1,3 +1,4 @@
+import { UAParser } from './../../../node_modules/ua-parser-js/src/main/ua-parser.d'
 import {
     ConflictException,
     Injectable,
@@ -107,16 +108,18 @@ export class AuthService {
                 await this.tokenService.getAccessToken(existingUser)
 
             // 3. Lưu Session vào Redis
-            const sessionData = {
-                userId: existingUser.id,
-                accessToken, // Lưu token để có thể thu hồi (revoke)
-                ipAddress: ip,
-                device: userAgent,
-                lastActive: new Date(),
-            }
             const sessionId = await this.sessionService.saveSession(
                 existingUser.id,
-                sessionData
+                {
+                    userId: existingUser.id,
+                    accessToken: {
+                        expiresAt: accessToken.expiresAt,
+                        token: accessToken.token ?? '',
+                    }, // Lưu token để có thể thu hồi (revoke)
+                    ipAddress: ip,
+                    device: userAgent,
+                    lastActive: new Date().toISOString(),
+                }
             )
             // Update last logged in timestamp
             await this.updateLastLoggedIn(existingUser.id)
