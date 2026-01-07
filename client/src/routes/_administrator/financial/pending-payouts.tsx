@@ -25,7 +25,7 @@ import {
     optimizeCloudinary,
     useMarkPaidMutation,
 } from '../../../lib'
-import { jobsPendingPayoutsOptions } from '../../../lib/queries'
+import { jobsPendingPayoutsOptions, useProfile } from '../../../lib/queries'
 import {
     AdminPageHeading,
     HeroBreadcrumbItem,
@@ -54,6 +54,7 @@ export const Route = createFileRoute(
     component: PendingPayoutsPage,
 })
 function PendingPayoutsPage() {
+
     const router = useRouter()
     const { data: pendingPayoutJobs } = useSuspenseQuery({
         ...jobsPendingPayoutsOptions(),

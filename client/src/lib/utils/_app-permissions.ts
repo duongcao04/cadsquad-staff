@@ -87,7 +87,11 @@ export const APP_PERMISSIONS = {
 
 /**
  * Helper Type to extract all permission strings as a Union type.
- * Usage: function check(perm: AppPermission) { ... }
  */
-export type AppPermission =
-    (typeof APP_PERMISSIONS)[keyof typeof APP_PERMISSIONS][keyof (typeof APP_PERMISSIONS)[keyof typeof APP_PERMISSIONS]]
+export type AppPermission = typeof APP_PERMISSIONS extends {
+    [key: string]: infer TInner
+}
+    ? TInner extends { [key: string]: infer TValue }
+        ? TValue
+        : never
+    : never

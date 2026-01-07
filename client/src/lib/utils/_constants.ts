@@ -99,6 +99,9 @@ export const apiBaseUrl = envConfig.API_ENDPOINT
 
 export const STORAGE_KEYS = {
     theme: 'theme',
+    themeColor: 'csd_theme-clr',
+    themeText: 'csd_theme-textScaling',
+    themeMotion: 'csd_theme-motion',
     dateFormat: 'app-runtime:date-format',
     timeFormat: 'app-runtime:time-format',
     dismissedMessages: 'app-runtime:dismissed-messages',
@@ -319,3 +322,8 @@ export const ROLES_LIST = Object.entries(RoleEnum).map(([key, value]) => {
         icon: RoleIcons[value as keyof typeof RoleIcons], // Attach the component
     }
 })
+
+// TO VND
+export const EXCHANGE_RATE = {
+    USD: 26000,
+}

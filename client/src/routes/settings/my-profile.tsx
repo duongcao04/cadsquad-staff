@@ -12,15 +12,15 @@ import { profileOptions } from '@/lib/queries/options/user-queries'
 import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
     UploadAvatarModal,
 } from '@/shared/components'
 import {
     addToast,
     Avatar,
     Button,
-    Card,
-    CardBody,
-    CardHeader,
     Chip,
     Divider,
     Input,
@@ -41,6 +41,7 @@ import {
     Save,
     User,
 } from 'lucide-react'
+import SettingTitle from '../../shared/components/settings/SettingTitle'
 
 export const Route = createFileRoute('/settings/my-profile')({
     head: () => ({
@@ -139,20 +140,16 @@ function SettingsProfilePage() {
 
             <div className="mt-5">
                 {/* Header */}
-                <div>
-                    <h1 className="text-xl font-bold text-text-default mb-1">
-                        My Profile
-                    </h1>
-                    <p className="text-sm text-text-subdued">
-                        Manage your personal information and public profile.
-                    </p>
-                </div>
+                <SettingTitle
+                    title="My Profile"
+                    description="Manage your personal information and public profile."
+                />
 
                 <div className="mt-7 grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* --- LEFT: Avatar & Identity Card --- */}
                     <div className="md:col-span-1 space-y-6">
-                        <Card className="shadow-sm border border-border-default">
-                            <CardBody className="flex flex-col items-center text-center p-6">
+                        <HeroCard>
+                            <HeroCardBody className="flex flex-col items-center text-center p-6">
                                 {/* Avatar Trigger */}
                                 <div className="relative group mb-4">
                                     <Avatar
@@ -221,8 +218,8 @@ function SettingsProfilePage() {
                                         </span>
                                     </div>
                                 </div>
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
                     </div>
 
                     {/* --- RIGHT: Edit Form --- */}
@@ -230,13 +227,13 @@ function SettingsProfilePage() {
                         onSubmit={formik.handleSubmit}
                         className="md:col-span-2"
                     >
-                        <Card className="shadow-sm border border-border-default">
-                            <CardHeader className="px-6 py-4 border-b border-border-default">
+                        <HeroCard>
+                            <HeroCardHeader className="px-6 py-4 border-b border-border-default">
                                 <h3 className="font-bold text-text-default text-lg">
                                     Personal Details
                                 </h3>
-                            </CardHeader>
-                            <CardBody className="p-6 gap-6">
+                            </HeroCardHeader>
+                            <HeroCardBody className="p-6 gap-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <Input
                                         isRequired
@@ -365,8 +362,8 @@ function SettingsProfilePage() {
                                         Save Changes
                                     </Button>
                                 </div>
-                            </CardBody>
-                        </Card>
+                            </HeroCardBody>
+                        </HeroCard>
                     </form>
                 </div>
 

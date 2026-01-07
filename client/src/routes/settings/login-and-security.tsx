@@ -56,10 +56,15 @@ import { COOKIES, getDeviceIcon } from '../../lib/utils'
 import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
     HeroPasswordInput,
     HeroTooltip,
 } from '../../shared/components'
+import { ConfirmLogoutAllDevicesModal } from '../../shared/components/admin/session/modals/ConfirmLogoutAllDevicesModal'
 import { TUserSecurityLog } from '../../shared/types'
+import SettingTitle from '../../shared/components/settings/SettingTitle'
 
 export const Route = createFileRoute('/settings/login-and-security')({
     head: () => ({
@@ -78,7 +83,11 @@ function SecuritySettingsPage() {
     const [is2FAEnabled, setIs2FAEnabled] = useState(true)
 
     const revokeSessionMutation = useRevokeSessionMutation()
-    const revokeAllSessionMutation = useRevokeAllSessionMutation()
+    const revokeAllSessionMutation = useRevokeAllSessionMutation(() => {})
+
+    const confirmLogoutAllDeviceDisclosure = useDisclosure({
+        id: 'ConfirmLogoutAllDevicesModal',
+    })
 
     const [
         {
@@ -104,6 +113,13 @@ function SecuritySettingsPage() {
 
     return (
         <>
+            {confirmLogoutAllDeviceDisclosure.isOpen && (
+                <ConfirmLogoutAllDevicesModal
+                    isOpen={confirmLogoutAllDeviceDisclosure.isOpen}
+                    onClose={confirmLogoutAllDeviceDisclosure.onClose}
+                    onConfirm={handleRevokeAllSession}
+                />
+            )}
             <HeroBreadcrumbs className="text-xs">
                 <HeroBreadcrumbItem>
                     <Link
@@ -126,14 +142,10 @@ function SecuritySettingsPage() {
 
             <div className="size-full mt-5">
                 {/* Header */}
-                <div>
-                    <h1 className="text-xl font-bold text-text-default mb-1">
-                        Login & Security
-                    </h1>
-                    <p className="text-sm text-text-subdued">
-                        Manage your password, 2FA, and active sessions.
-                    </p>
-                </div>
+                <SettingTitle
+                    title="Login & Security"
+                    description="Manage your password, 2FA, and active sessions."
+                />
 
                 <div
                     className={`mt-7 grid grid-cols-1 ${enable2FA ? 'lg:grid-cols-2' : ''} gap-8`}
@@ -215,8 +227,8 @@ function SecuritySettingsPage() {
                 </div>
 
                 {/* Active Sessions */}
-                <Card className="mt-6 shadow-sm border border-border-default">
-                    <CardHeader className="px-6 pt-6 pb-2 flex justify-between items-center">
+                <HeroCard className="mt-6 ">
+                    <HeroCardHeader className="px-6 pt-6 pb-2 flex justify-between items-center">
                         <div className="flex flex-col items-start">
                             <h2 className="text-lg font-bold flex items-center gap-2">
                                 <ShieldAlertIcon
@@ -242,12 +254,12 @@ function SecuritySettingsPage() {
                                 )
                             }
                             disabled={revokeSessionMutation.isPending}
-                            onPress={() => handleRevokeAllSession()}
+                            onPress={confirmLogoutAllDeviceDisclosure.onOpen}
                         >
                             Log Out All Devices
                         </Button>
-                    </CardHeader>
-                    <CardBody className="px-6 pb-6">
+                    </HeroCardHeader>
+                    <HeroCardBody className="px-6 pb-6">
                         <div className="space-y-4">
                             {activeSessions.map((session) => {
                                 const currentSessionId = cookie.get(
@@ -328,18 +340,18 @@ function SecuritySettingsPage() {
                                 )
                             })}
                         </div>
-                    </CardBody>
-                </Card>
+                    </HeroCardBody>
+                </HeroCard>
 
                 {/* Login History */}
-                <Card className="mt-6 shadow-sm border border-border-default">
-                    <CardHeader className="px-6 pt-6 pb-2">
+                <HeroCard className="mt-6 ">
+                    <HeroCardHeader className="px-6 pt-6 pb-2">
                         <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
                             <Clock size={20} className="text-text-subdued" />{' '}
                             Recent Activity
                         </h4>
-                    </CardHeader>
-                    <CardBody className="p-0">
+                    </HeroCardHeader>
+                    <HeroCardBody className="p-0">
                         <Table
                             aria-label="User security logs table"
                             removeWrapper
@@ -444,8 +456,8 @@ function SecuritySettingsPage() {
                                 )}
                             </TableBody>
                         </Table>
-                    </CardBody>
-                </Card>
+                    </HeroCardBody>
+                </HeroCard>
 
                 {/* 2FA Setup Modal */}
                 {enable2FA && (
@@ -535,13 +547,13 @@ function UpdatePasswordForm() {
             className="size-full lg:col-span-1 space-y-6"
         >
             {/* Change Password */}
-            <Card className="shadow-sm border border-border-default">
-                <CardHeader className="px-6 pt-6 pb-2">
+            <HeroCard>
+                <HeroCardHeader className="px-6 pt-6 pb-2">
                     <h4 className="font-bold text-lg text-text-default flex items-center gap-2">
                         <KeyRound size={20} className="text-primary" /> Password
                     </h4>
-                </CardHeader>
-                <CardBody className="px-6 pb-6 gap-4">
+                </HeroCardHeader>
+                <HeroCardBody className="px-6 pb-6 gap-4">
                     <HeroPasswordInput
                         id="oldPassword"
                         name="oldPassword"
@@ -614,8 +626,8 @@ function UpdatePasswordForm() {
                             Update Password
                         </Button>
                     </div>
-                </CardBody>
-            </Card>
+                </HeroCardBody>
+            </HeroCard>
         </form>
     )
 }

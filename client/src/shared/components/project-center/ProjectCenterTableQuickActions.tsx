@@ -1,4 +1,8 @@
-import { useDeleteJobMutation, useProfile } from '@/lib/queries'
+import {
+    jobsListOptions,
+    useDeleteJobMutation,
+    useProfile,
+} from '@/lib/queries'
 import { ConfirmDeleteModal } from '@/shared/components'
 import type { TJob } from '@/shared/types'
 import {
@@ -24,6 +28,7 @@ import { INTERNAL_URLS } from '../../../lib'
 import AddAttachmentsModal from './AddAttachmentsModal'
 import AssignMemberModal from './AssignMemberModal'
 import UpdateCostModal from './UpdateCostModal'
+import { queryClient } from '../../../main'
 
 type ProjectCenterTableQuickActionsProps = {
     data: TJob
@@ -47,7 +52,12 @@ export function ProjectCenterTableQuickActions({
     // --- Handlers ---
     const onDeleteJob = async () => {
         await deleteJobMutation(data?.id, {
-            onSuccess: () => deleteModal.onClose(),
+            onSuccess: () => {
+                queryClient.refetchQueries({
+                    queryKey: jobsListOptions().queryKey,
+                })
+                deleteModal.onClose()
+            },
         })
     }
 

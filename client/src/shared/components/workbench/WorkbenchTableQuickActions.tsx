@@ -1,5 +1,14 @@
+import { INTERNAL_URLS } from '@/lib'
 import {
-    addToast,
+    useDeleteJobMutation,
+    useMarkPaidMutation,
+    useProfile,
+    useTogglePinJobMutation,
+    workbenchDataOptions,
+} from '@/lib/queries'
+import { APP_PERMISSIONS } from '@/lib/utils'
+import type { TJob } from '@/shared/types'
+import {
     Button,
     Dropdown,
     DropdownItem,
@@ -19,21 +28,14 @@ import {
     Trash,
     TruckElectricIcon,
     UserPlus,
+    WindArrowDownIcon,
 } from 'lucide-react'
-
-import {
-    useDeleteJobMutation,
-    useMarkPaidMutation,
-    useProfile,
-    useTogglePinJobMutation,
-} from '@/lib/queries'
-import type { TJob } from '@/shared/types'
-import { INTERNAL_URLS } from '../../../lib'
+import { usePermission } from '../../hooks'
+import { DeliverJobModal } from '../modals/DeliverJobModal'
 import ReScheduleModal from '../modals/ReScheduleModal'
 import AssignMemberModal from '../project-center/AssignMemberModal'
 import UpdateCostModal from '../project-center/UpdateCostModal'
 import ConfirmModal from '../ui/confirm-modal'
-import { DeliverJobModal } from '../modals/DeliverJobModal'
 
 type WorkbenchTableQuickActionsProps = {
     data: TJob
@@ -41,14 +43,20 @@ type WorkbenchTableQuickActionsProps = {
 export function WorkbenchTableQuickActions({
     data,
 }: WorkbenchTableQuickActionsProps) {
-    const { isAdmin, isAccounting } = useProfile()
+    const { isAdmin, isAccounting, userPermissions } = useProfile()
+    console.log(userPermissions)
+    const { hasPermission } = usePermission()
 
     const jobPinned = data.isPinned
 
-    const markAsPaidMutation = useMarkPaidMutation()
+    const markPaidMutation = useMarkPaidMutation()
 
     const togglePinJobMutation = useTogglePinJobMutation()
 
+    const canPayout = useMemo(
+        () => data.status.systemType === 'COMPLETED' && !data.isPaid,
+        [data]
+    )
     const { mutateAsync: deleteJobMutation, isPending: isDeleting } =
         useDeleteJobMutation()
 
@@ -74,12 +82,8 @@ export function WorkbenchTableQuickActions({
         id: 'RescheduleModal',
     })
 
-    const {
-        isOpen: isOpenMAPModal,
-        onOpen: onOpenMAPModal,
-        onClose: onCloseMAPModal,
-    } = useDisclosure({
-        id: 'MarkAsPaidModal',
+    const confirmPayoutModalDisclosure = useDisclosure({
+        id: 'PayoutModal',
     })
 
     const {
@@ -97,27 +101,19 @@ export function WorkbenchTableQuickActions({
     const onDeleteJob = async () => {
         await deleteJobMutation(data?.id, {
             onSuccess: () => {
+                queryClient.refetchQueries({
+                    queryKey: workbenchDataOptions().queryKey,
+                })
                 onCloseModal()
             },
         })
     }
 
-    const handleOpenMarkAsPaidModal = () => {
-        if (data.isPaid) {
-            addToast({
-                title: `Job #${data.no} already paid`,
-                color: 'danger',
-            })
-        } else {
-            onOpenMAPModal()
-        }
-    }
-
-    const handleMarkAsPaid = async () => {
+    const handleConfirmPayout = async () => {
         if (data?.id) {
-            await markAsPaidMutation.mutateAsync(data.id, {
+            await markPaidMutation.mutateAsync(data.id, {
                 onSuccess: () => {
-                    onCloseMAPModal()
+                    confirmPayoutModalDisclosure.onClose()
                 },
             })
         }
@@ -133,7 +129,7 @@ export function WorkbenchTableQuickActions({
 
     return (
         <>
-            {isOpenModal && (
+            {hasPermission(APP_PERMISSIONS.JOB.DELETE) && isOpenModal && (
                 <ConfirmModal
                     isOpen={isOpenModal}
                     onClose={onCloseModal}
@@ -144,49 +140,49 @@ export function WorkbenchTableQuickActions({
                     isLoading={isDeleting}
                 />
             )}
-            {deliverJobModal.isOpen && (
-                <DeliverJobModal
-                    isOpen={deliverJobModal.isOpen}
-                    onClose={deliverJobModal.onClose}
-                    onConfirm={() => {}}
-                    defaultJob={data.id}
-                />
-            )}
-            {isOpenUCostModal && (
+            {hasPermission(APP_PERMISSIONS.JOB.DELIVER) &&
+                deliverJobModal.isOpen && (
+                    <DeliverJobModal
+                        isOpen={deliverJobModal.isOpen}
+                        onClose={deliverJobModal.onClose}
+                        onConfirm={() => {}}
+                        defaultJob={data.id}
+                    />
+                )}
+            {hasPermission(APP_PERMISSIONS.JOB.UPDATE) && isOpenUCostModal && (
                 <UpdateCostModal
                     isOpen={isOpenUCostModal}
                     onClose={onCloseUCostModal}
                     jobNo={data.no}
                 />
             )}
-            {isOpenMAPModal && (
-                <ConfirmModal
-                    isOpen={isOpenMAPModal}
-                    onClose={onCloseMAPModal}
-                    onConfirm={handleMarkAsPaid}
-                    title={`Mark job $${data.no} as paid`}
-                    content={`Are you sure you want to mark job ${data.no} as paid? This action will confirm that the payment has been received.`}
-                    variant="warning"
-                    confirmLabel="Yes"
-                    isLoading={markAsPaidMutation.isPending}
-                />
-            )}
+            {hasPermission(APP_PERMISSIONS.JOB.PAID) &&
+                confirmPayoutModalDisclosure.isOpen && (
+                    <ConfirmPaymentModal
+                        isOpen={confirmPayoutModalDisclosure.isOpen}
+                        onOpenChange={confirmPayoutModalDisclosure.onOpenChange}
+                        job={data}
+                        onConfirm={handleConfirmPayout}
+                    />
+                )}
 
-            {isOpenRescheduleModal && (
-                <ReScheduleModal
-                    isOpen={isOpenRescheduleModal}
-                    onClose={onCloseRescheduleModal}
-                    job={data}
-                />
-            )}
+            {hasPermission(APP_PERMISSIONS.JOB.UPDATE) &&
+                isOpenRescheduleModal && (
+                    <ReScheduleModal
+                        isOpen={isOpenRescheduleModal}
+                        onClose={onCloseRescheduleModal}
+                        job={data}
+                    />
+                )}
 
-            {isOpenAssignModal && (
-                <AssignMemberModal
-                    isOpen={isOpenAssignModal}
-                    onClose={onCloseAssignModal}
-                    jobNo={data.no}
-                />
-            )}
+            {hasPermission(APP_PERMISSIONS.JOB.ASSIGN_MEMBER) &&
+                isOpenAssignModal && (
+                    <AssignMemberModal
+                        isOpen={isOpenAssignModal}
+                        onClose={onCloseAssignModal}
+                        jobNo={data.no}
+                    />
+                )}
 
             <Dropdown>
                 <DropdownTrigger>
@@ -195,21 +191,7 @@ export function WorkbenchTableQuickActions({
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Job menu actions">
-                    <DropdownSection key="quick_action" title="Quick actions">
-                        <DropdownItem
-                            key="openInNewTab"
-                            startContent={
-                                <TruckElectricIcon
-                                    className="text-text-default"
-                                    size={14}
-                                />
-                            }
-                            onPress={deliverJobModal.onOpen}
-                        >
-                            Deliver Job
-                        </DropdownItem>
-                    </DropdownSection>
-                    <DropdownSection key="feature_actions" title="View">
+                    <DropdownSection key="quick_actions" title="View">
                         <DropdownItem
                             key="openInNewTab"
                             startContent={
@@ -229,6 +211,20 @@ export function WorkbenchTableQuickActions({
                         </DropdownItem>
                     </DropdownSection>
                     <DropdownSection key="job_actions" title="Job">
+                        {hasPermission(APP_PERMISSIONS.JOB.DELIVER) ? (
+                            <DropdownItem
+                                key="deliverJob"
+                                startContent={
+                                    <TruckElectricIcon
+                                        className="text-text-default"
+                                        size={14}
+                                    />
+                                }
+                                onPress={deliverJobModal.onOpen}
+                            >
+                                Deliver Job
+                            </DropdownItem>
+                        ) : null}
                         <DropdownItem
                             key="pin"
                             startContent={
@@ -248,51 +244,57 @@ export function WorkbenchTableQuickActions({
                         >
                             {jobPinned ? 'Unpin' : 'Pin'}
                         </DropdownItem>
-                        <DropdownItem
-                            key="assignReassign"
-                            style={{
-                                display: isAdmin ? 'flex' : 'none',
-                            }}
-                            startContent={
-                                <UserPlus
-                                    size={14}
-                                    className="text-text-default"
-                                />
-                            }
-                            onPress={() => onOpenAssignModal()}
-                        >
-                            Assign / Reassign
-                        </DropdownItem>
-                        <DropdownItem
-                            key="assignReassign"
-                            style={{
-                                display: isAdmin ? 'flex' : 'none',
-                            }}
-                            startContent={
-                                <CalendarClock
-                                    size={14}
-                                    className="text-text-default"
-                                />
-                            }
-                            onPress={() => onOpenRescheduleModal()}
-                        >
-                            Reschedule
-                        </DropdownItem>
-                        <DropdownItem
-                            key="deleteJob"
-                            style={{
-                                display: isAdmin ? 'flex' : 'none',
-                            }}
-                            startContent={
-                                <Trash
-                                    size={14}
-                                    className="text-text-default"
-                                />
-                            }
-                            onPress={() => onOpenModal()}
-                        >
-                            Delete
-                        </DropdownItem>
+                        {hasPermission(APP_PERMISSIONS.JOB.ASSIGN_MEMBER) ? (
+                            <DropdownItem
+                                key="assignReassign"
+                                style={{
+                                    display: isAdmin ? 'flex' : 'none',
+                                }}
+                                startContent={
+                                    <UserPlus
+                                        size={14}
+                                        className="text-text-default"
+                                    />
+                                }
+                                onPress={() => onOpenAssignModal()}
+                            >
+                                Assign / Reassign
+                            </DropdownItem>
+                        ) : null}
+                        {hasPermission(APP_PERMISSIONS.JOB.UPDATE) ? (
+                            <DropdownItem
+                                key="reschedule"
+                                style={{
+                                    display: isAdmin ? 'flex' : 'none',
+                                }}
+                                startContent={
+                                    <CalendarClock
+                                        size={14}
+                                        className="text-text-default"
+                                    />
+                                }
+                                onPress={() => onOpenRescheduleModal()}
+                            >
+                                Reschedule
+                            </DropdownItem>
+                        ) : null}
+                        {hasPermission(APP_PERMISSIONS.JOB.DELETE) ? (
+                            <DropdownItem
+                                key="deleteJob"
+                                style={{
+                                    display: isAdmin ? 'flex' : 'none',
+                                }}
+                                startContent={
+                                    <Trash
+                                        size={14}
+                                        className="text-text-default"
+                                    />
+                                }
+                                onPress={() => onOpenModal()}
+                            >
+                                Delete
+                            </DropdownItem>
+                        ) : null}
                     </DropdownSection>
                     <DropdownSection
                         key="payment_actions"
@@ -301,33 +303,142 @@ export function WorkbenchTableQuickActions({
                             display: isAdmin || isAccounting ? 'block' : 'none',
                         }}
                     >
-                        <DropdownItem
-                            key="updateCost"
-                            startContent={
-                                <CircleDollarSign
-                                    size={14}
-                                    className="text-text-default"
-                                />
-                            }
-                            onPress={() => onOpenUCostModal()}
-                        >
-                            Update Cost
-                        </DropdownItem>
-                        <DropdownItem
-                            key="markAsPaid"
-                            startContent={
-                                <CircleCheck
-                                    size={14}
-                                    className="text-text-default"
-                                />
-                            }
-                            onPress={() => handleOpenMarkAsPaidModal()}
-                        >
-                            Mark as Paid
-                        </DropdownItem>
+                        {hasPermission(APP_PERMISSIONS.JOB.UPDATE) ? (
+                            <DropdownItem
+                                key="updateCost"
+                                startContent={
+                                    <CircleDollarSign
+                                        size={14}
+                                        className="text-text-default"
+                                    />
+                                }
+                                onPress={() => onOpenUCostModal()}
+                            >
+                                Update Cost
+                            </DropdownItem>
+                        ) : null}
+                        {hasPermission(APP_PERMISSIONS.JOB.PAID) &&
+                        canPayout ? (
+                            <DropdownItem
+                                key="confirmPayout"
+                                startContent={
+                                    <CircleCheck
+                                        size={14}
+                                        className="text-text-default"
+                                    />
+                                }
+                                onPress={confirmPayoutModalDisclosure.onOpen}
+                            >
+                                Confirm Payout
+                            </DropdownItem>
+                        ) : null}
                     </DropdownSection>
                 </DropdownMenu>
             </Dropdown>
         </>
+    )
+}
+
+import { useNavigate } from '@tanstack/react-router'
+import { AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react'
+import { useMemo } from 'react'
+import { ConfirmPaymentModal } from '../financial/ConfirmPaymentModal'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
+} from '../ui/hero-modal'
+import { queryClient } from '../../../main'
+
+interface Props {
+    isOpen: boolean
+    onClose: () => void
+    jobId: string
+    jobCode: string
+}
+
+export const ConfirmJobPaymentModal = ({
+    isOpen,
+    onClose,
+    jobId,
+    jobCode,
+}: Props) => {
+    const navigate = useNavigate()
+
+    const handleOpenInWindow = () => {
+        // Navigate to the job detail/progress page in the current app view
+        navigate({ to: `/admin/mgmt/jobs/${jobId}/progress` })
+        onClose()
+    }
+
+    const handleOpenInNewTab = () => {
+        // Open the job progress in a new browser tab for parallel viewing
+        const url = `/admin/mgmt/jobs/${jobId}/progress`
+        window.open(url, '_blank', 'noopener,noreferrer')
+        onClose()
+    }
+
+    return (
+        <HeroModal
+            isOpen={isOpen}
+            onClose={onClose}
+            size="md"
+            classNames={{
+                base: 'border border-divider bg-background',
+                header: 'border-b border-divider',
+            }}
+        >
+            <HeroModalContent>
+                <HeroModalHeader className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2 text-warning">
+                        <AlertCircle size={22} />
+                        <span className="text-xl font-bold">
+                            Verification Required
+                        </span>
+                    </div>
+                </HeroModalHeader>
+
+                <HeroModalBody className="py-8 text-center">
+                    <div className="flex justify-center mb-4">
+                        <div className="p-4 bg-warning-50 rounded-full text-warning animate-pulse">
+                            <CheckCircle2 size={48} />
+                        </div>
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">
+                        Check Job Progress
+                    </h3>
+                    <p className="text-sm text-text-subdued leading-relaxed">
+                        You are about to mark job{' '}
+                        <b className="text-slate-900">#{jobCode}</b> as paid.
+                        Please verify that all deliverables are completed and
+                        approved before proceeding.
+                    </p>
+                </HeroModalBody>
+
+                <HeroModalFooter className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                        fullWidth
+                        variant="flat"
+                        color="primary"
+                        className="font-bold h-12"
+                        startContent={<WindArrowDownIcon size={18} />}
+                        onPress={handleOpenInWindow}
+                    >
+                        Open this window
+                    </Button>
+                    <Button
+                        fullWidth
+                        variant="bordered"
+                        className="font-bold h-12 border-2"
+                        startContent={<ExternalLink size={18} />}
+                        onPress={handleOpenInNewTab}
+                    >
+                        Open in new tab
+                    </Button>
+                </HeroModalFooter>
+            </HeroModalContent>
+        </HeroModal>
     )
 }

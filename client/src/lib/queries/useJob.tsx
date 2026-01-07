@@ -525,7 +525,6 @@ export const useDeleteJobMutation = () => {
             return jobApi.remove(jobId)
         },
         onSuccess: (res) => {
-            queryClient.invalidateQueries({ queryKey: ['jobs'] })
             addToast({
                 title: 'Delete job successfully',
                 description: `${res.message}`,
@@ -548,8 +547,7 @@ export const useMarkPaidMutation = (
                 onSuccess(res)
             } else {
                 addToast({
-                    title: 'Mark as paid successfully',
-                    description: `#${res.result?.no} has been marked as paid`,
+                    title: `Pay for job #${res.result?.no} successfully`,
                     color: 'success',
                 })
             }

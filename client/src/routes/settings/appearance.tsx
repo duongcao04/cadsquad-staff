@@ -1,4 +1,5 @@
 import {
+    addToast,
     Avatar,
     Button,
     Card,
@@ -6,35 +7,45 @@ import {
     CardHeader,
     Chip,
     Divider,
-    Radio,
-    RadioGroup,
     Slider,
     Switch,
 } from '@heroui/react'
-import { createFileRoute } from '@tanstack/react-router'
-import { Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import {
     Check,
     House,
-    LayoutGrid,
     Monitor,
     Moon,
     Palette,
+    RefreshCwIcon,
     RotateCcw,
     Save,
     Sun,
     Type,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import { useState } from 'react'
-
+import { useMemo, useState } from 'react'
 import { getPageTitle, INTERNAL_URLS } from '../../lib'
 import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
     HeroTooltip,
 } from '../../shared/components'
-import { useThemeColor } from '../../shared/contexts/ThemeColorContext'
+import SettingTitle from '../../shared/components/settings/SettingTitle'
+import {
+    TextScalingKey,
+    useAppTheme,
+} from '../../shared/contexts/AppThemeContext'
+import { useDevice } from '../../shared/hooks'
+
+const THEME_COLORS = [
+    { key: 'blue', hex: '#1f1d80', label: 'Ocean Blue' },
+    { key: 'violet', hex: '#8B5CF6', label: 'Royal Violet' },
+    { key: 'emerald', hex: '#10B981', label: 'Emerald Green' },
+    { key: 'orange', hex: '#F97316', label: 'Sunset Orange' },
+    { key: 'rose', hex: '#F43F5E', label: 'Rose Red' },
+    { key: 'slate', hex: '#64748B', label: 'Slate Grey' },
+]
 
 export const Route = createFileRoute('/settings/appearance')({
     head: () => ({
@@ -47,129 +58,61 @@ export const Route = createFileRoute('/settings/appearance')({
     component: AppearanceSettingsPage,
 })
 
-const THEME_COLORS = [
-    { key: 'blue', hex: '#1f1d80', label: 'Ocean Blue' },
-    { key: 'violet', hex: '#8B5CF6', label: 'Royal Violet' },
-    { key: 'emerald', hex: '#10B981', label: 'Emerald Green' },
-    { key: 'orange', hex: '#F97316', label: 'Sunset Orange' },
-    { key: 'rose', hex: '#F43F5E', label: 'Rose Red' },
-    { key: 'slate', hex: '#64748B', label: 'Slate Grey' },
-]
-
-const TABLE_DENSITIES = [
-    { key: 'compact', label: 'Compact', desc: 'Show more data, less padding' },
-    { key: 'comfortable', label: 'Comfortable', desc: 'Default spacing' },
-    { key: 'spacious', label: 'Spacious', desc: 'More breathing room' },
-]
-
-// --- Preview Component (Mock Table) ---
-const PreviewTable = ({ density, fontSize, themeColor }: any) => {
-    const rowHeight =
-        density === 'compact'
-            ? 'py-1'
-            : density === 'spacious'
-              ? 'py-4'
-              : 'py-2'
-    const textSize =
-        fontSize === 'sm'
-            ? 'text-xs'
-            : fontSize === 'lg'
-              ? 'text-base'
-              : 'text-sm'
-
-    return (
-        <div
-            className={`border border-border-default rounded-xl overflow-hidden bg-white shadow-sm`}
-        >
-            <div className="bg-background-hovered px-4 py-2 border-b border-border-default flex justify-between items-center">
-                <span className="text-xs font-bold text-text-subdued uppercase">
-                    Preview: Data Table
-                </span>
-            </div>
-            <table className="w-full">
-                <thead>
-                    <tr className="border-b border-border-default bg-background-muted">
-                        <th
-                            className={`text-left px-4 py-2 font-semibold text-text-subdued ${textSize}`}
-                        >
-                            Name
-                        </th>
-                        <th
-                            className={`text-left px-4 py-2 font-semibold text-text-subdued ${textSize}`}
-                        >
-                            Role
-                        </th>
-                        <th
-                            className={`text-left px-4 py-2 font-semibold text-text-subdued ${textSize}`}
-                        >
-                            Status
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {[1, 2].map((i) => (
-                        <tr
-                            key={i}
-                            className="border-b bg-background border-border-default last:border-0"
-                        >
-                            <td className={`px-4 ${rowHeight}`}>
-                                <div className="flex items-center gap-3">
-                                    <Avatar
-                                        size="sm"
-                                        src={`https://i.pravatar.cc/150?u=${i}`}
-                                    />
-                                    <div>
-                                        <p
-                                            className={`font-bold text-text-default ${textSize}`}
-                                        >
-                                            User {i}
-                                        </p>
-                                        <p className="text-[10px] text-text-subdued">
-                                            user{i}@example.com
-                                        </p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td
-                                className={`px-4 ${rowHeight} text-slate-600 ${textSize}`}
-                            >
-                                Developer
-                            </td>
-                            <td className={`px-4 ${rowHeight}`}>
-                                <Chip
-                                    size="sm"
-                                    variant="flat"
-                                    className="capitalize"
-                                    style={{
-                                        color: themeColor,
-                                        backgroundColor: `${themeColor}20`,
-                                    }}
-                                >
-                                    Active
-                                </Chip>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    )
-}
-
 function AppearanceSettingsPage() {
-    const { themeColor, setThemeColor } = useThemeColor()
+    const { isSmallView } = useDevice()
+    const {
+        themeColor,
+        setThemeColor,
+        textScaling,
+        setTextScaling,
+        themeMotion,
+        setThemeMotion,
+        resetDefault,
+    } = useAppTheme()
 
+    const [isLoading, setLoading] = useState(false)
+    const [isResetting, setResetting] = useState(false)
     const { theme, setTheme } = useTheme()
     const [color, setColor] = useState(
         THEME_COLORS.find((c) => c.key === themeColor) || THEME_COLORS[0]
     )
-    const [density, setDensity] = useState('comfortable')
-    const [fontSize, setFontSize] = useState('md') // sm, md, lg
-    const [reducedMotion, setReducedMotion] = useState(false)
+    const [fontSize, setFontSize] = useState<TextScalingKey>(textScaling) // sm, md, lg
+    const [reducedMotion, setReducedMotion] = useState(themeMotion)
 
-    const handleSaveChanges = () => {
-        setThemeColor(color.key as never)
+    const handleSaveChanges = async () => {
+        setLoading(true)
+        setTimeout(() => {
+            setThemeColor(color.key as never)
+            setTextScaling(fontSize)
+            setThemeMotion(reducedMotion)
+            addToast({
+                title: 'Update theme successfully',
+                color: 'success',
+            })
+            setLoading(false)
+            window.location.reload()
+        }, 1400)
     }
+    const handleResetDefault = async () => {
+        setResetting(true)
+        setTimeout(() => {
+            resetDefault()
+            addToast({
+                title: 'Reset theme to default successfully',
+                color: 'success',
+            })
+            setResetting(false)
+            window.location.reload()
+        }, 1400)
+    }
+
+    const canSaveChange = useMemo(
+        () =>
+            color.key !== themeColor ||
+            fontSize !== textScaling ||
+            reducedMotion !== themeMotion,
+        [color.key, fontSize, reducedMotion]
+    )
 
     return (
         <>
@@ -194,26 +137,53 @@ function AppearanceSettingsPage() {
             </HeroBreadcrumbs>
             <div className="mt-5">
                 {/* Header */}
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-xl font-bold text-text-default mb-1">
-                            Appearance
-                        </h1>
-                        <p className="text-sm text-text-subdued">
-                            Customize the look and feel of your workspace.
-                        </p>
-                    </div>
-                    <div className="flex gap-3">
+                <div
+                    className="flex justify-between"
+                    style={{
+                        flexDirection: isSmallView ? 'column' : 'row',
+                        alignItems: isSmallView ? 'start' : 'center',
+                        gap: '24px',
+                    }}
+                >
+                    <SettingTitle
+                        title="Appearance"
+                        description="
+                            Customize the look and feel of your workspace."
+                    />
+                    <div
+                        className={`flex ${isSmallView && 'w-full justify-end mt-2'} gap-3`}
+                    >
                         <Button
                             variant="flat"
                             color="warning"
-                            startContent={<RotateCcw size={18} />}
+                            isDisabled={isResetting}
+                            startContent={
+                                isResetting ? (
+                                    <RefreshCwIcon
+                                        size={18}
+                                        className="animate-spin-smooth"
+                                    />
+                                ) : (
+                                    <RotateCcw size={18} />
+                                )
+                            }
+                            onPress={handleResetDefault}
                         >
                             Reset Default
                         </Button>
                         <Button
                             color="primary"
-                            startContent={<Save size={18} />}
+                            startContent={
+                                isLoading ? (
+                                    <RefreshCwIcon
+                                        size={18}
+                                        className="animate-spin-smooth"
+                                    />
+                                ) : (
+                                    <Save size={18} />
+                                )
+                            }
+                            isDisabled={isLoading || !canSaveChange}
                             onPress={handleSaveChanges}
                         >
                             Save Changes
@@ -306,93 +276,72 @@ function AppearanceSettingsPage() {
                         <Divider />
 
                         {/* 3. Data Density & Font */}
-                        <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div>
-                                <h3 className="font-bold text-text-default text-base mb-4 flex items-center gap-2">
-                                    <LayoutGrid size={20} /> Table Density
-                                </h3>
-                                <RadioGroup
-                                    value={density}
-                                    onValueChange={setDensity}
+                        <section>
+                            <h3 className="font-bold text-text-default text-base mb-4 flex items-center gap-2">
+                                <Type size={20} /> Text Scaling
+                            </h3>
+                            <div className="bg-background p-6 rounded-xl border border-border-default shadow-sm">
+                                <div className="flex justify-between mb-2 px-1">
+                                    <span className="text-xs font-bold text-text-subdued">
+                                        Small
+                                    </span>
+                                    <span className="text-xs font-bold text-text-subdued">
+                                        Large
+                                    </span>
+                                </div>
+                                <Slider
+                                    step={1}
+                                    maxValue={3}
+                                    minValue={1}
+                                    defaultValue={
+                                        textScaling === 'small'
+                                            ? 1
+                                            : textScaling === 'medium'
+                                              ? 2
+                                              : 3
+                                    }
+                                    showSteps={true}
+                                    size="sm"
                                     color="primary"
-                                >
-                                    {TABLE_DENSITIES.map((d) => (
-                                        <Radio
-                                            key={d.key}
-                                            value={d.key}
-                                            description={d.desc}
-                                            classNames={{
-                                                label: 'font-semibold text-text-default text-sm',
-                                                labelWrapper: 'pl-2',
-                                                description:
-                                                    'text-xs mt-0.5 text-text-subdued',
-                                            }}
-                                        >
-                                            {d.label}
-                                        </Radio>
-                                    ))}
-                                </RadioGroup>
+                                    className="max-w-md"
+                                    onChange={(v) =>
+                                        setFontSize(
+                                            v === 1
+                                                ? 'small'
+                                                : v === 3
+                                                  ? 'large'
+                                                  : 'medium'
+                                        )
+                                    }
+                                />
+                                <div className="mt-4 text-center">
+                                    <span className="text-sm font-semibold text-primary capitalize">
+                                        {fontSize === 'small'
+                                            ? 'Compact'
+                                            : fontSize === 'large'
+                                              ? 'Large'
+                                              : 'Standard'}{' '}
+                                        Size
+                                    </span>
+                                </div>
                             </div>
 
-                            <div>
-                                <h3 className="font-bold text-text-default text-base mb-4 flex items-center gap-2">
-                                    <Type size={20} /> Text Scaling
-                                </h3>
-                                <div className="bg-background p-6 rounded-xl border border-border-default shadow-sm">
-                                    <div className="flex justify-between mb-2 px-1">
-                                        <span className="text-xs font-bold text-text-subdued">
-                                            Small
-                                        </span>
-                                        <span className="text-xs font-bold text-text-subdued">
-                                            Large
-                                        </span>
-                                    </div>
-                                    <Slider
-                                        step={1}
-                                        maxValue={3}
-                                        minValue={1}
-                                        defaultValue={2}
-                                        showSteps={true}
-                                        size="sm"
-                                        color="primary"
-                                        className="max-w-md"
-                                        onChange={(v) =>
-                                            setFontSize(
-                                                v === 1
-                                                    ? 'sm'
-                                                    : v === 3
-                                                      ? 'lg'
-                                                      : 'md'
-                                            )
-                                        }
-                                    />
-                                    <div className="mt-4 text-center">
-                                        <span className="text-sm font-semibold text-primary capitalize">
-                                            {fontSize === 'sm'
-                                                ? 'Compact'
-                                                : fontSize === 'lg'
-                                                  ? 'Large'
-                                                  : 'Standard'}{' '}
-                                            Size
-                                        </span>
-                                    </div>
+                            <div className="mt-6 flex justify-between items-center bg-background-muted p-4 rounded-xl border border-border-default">
+                                <div>
+                                    <p className="font-semibold text-text-default text-sm">
+                                        Reduced Motion
+                                    </p>
+                                    <p className="text-xs text-text-subdued">
+                                        Disable animations
+                                    </p>
                                 </div>
-
-                                <div className="mt-6 flex justify-between items-center bg-background-muted p-4 rounded-xl border border-border-default">
-                                    <div>
-                                        <p className="font-semibold text-text-default text-sm">
-                                            Reduced Motion
-                                        </p>
-                                        <p className="text-xs text-text-subdued">
-                                            Disable animations
-                                        </p>
-                                    </div>
-                                    <Switch
-                                        size="sm"
-                                        isSelected={reducedMotion}
-                                        onValueChange={setReducedMotion}
-                                    />
-                                </div>
+                                <Switch
+                                    size="sm"
+                                    isSelected={!reducedMotion}
+                                    onValueChange={(isSelected) => {
+                                        setReducedMotion(!isSelected)
+                                    }}
+                                />
                             </div>
                         </section>
                     </div>
@@ -406,19 +355,22 @@ function AppearanceSettingsPage() {
 
                             {/* Preview Card */}
                             <Card
-                                className="w-full shadow-lg border-t-4"
+                                className="w-full shadow-lg border-t-4 relative"
                                 style={{ borderColor: color.hex }}
                             >
+                                <div className="absolute top-0 right-0 size-full bg-transparent z-1 cursor-not-allowed" />
                                 <CardHeader className="flex gap-3">
                                     <div
                                         className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
-                                        style={{ backgroundColor: color.hex }}
+                                        style={{
+                                            backgroundColor: color.hex,
+                                        }}
                                     >
                                         A
                                     </div>
                                     <div className="flex flex-col">
                                         <p
-                                            className={`font-bold text-text-default ${fontSize === 'lg' ? 'text-lg' : fontSize === 'sm' ? 'text-sm' : 'text-base'}`}
+                                            className={`font-bold text-text-default ${fontSize === 'large' ? 'text-lg' : fontSize === 'small' ? 'text-sm' : 'text-base'}`}
                                         >
                                             App Dashboard
                                         </p>
@@ -430,17 +382,13 @@ function AppearanceSettingsPage() {
                                 <Divider />
                                 <CardBody className="gap-4">
                                     <p
-                                        className={`text-slate-600 ${fontSize === 'lg' ? 'text-base' : fontSize === 'sm' ? 'text-xs' : 'text-sm'}`}
+                                        className={`text-slate-600 ${fontSize === 'large' ? 'text-base' : fontSize === 'small' ? 'text-xs' : 'text-sm'}`}
                                     >
-                                        This is how your content will look. The
-                                        table below demonstrates the{' '}
-                                        <strong>{density}</strong> density
-                                        setting.
+                                        This is how your content will look.
                                     </p>
 
                                     {/* Dynamic Table Preview */}
                                     <PreviewTable
-                                        density={density}
                                         fontSize={fontSize}
                                         themeColor={color.hex}
                                     />
@@ -481,5 +429,93 @@ function AppearanceSettingsPage() {
                 </div>
             </div>
         </>
+    )
+}
+
+// --- Preview Component (Mock Table) ---
+const PreviewTable = ({ fontSize, themeColor }: any) => {
+    const textSize =
+        fontSize === 'sm'
+            ? 'text-xs'
+            : fontSize === 'lg'
+              ? 'text-base'
+              : 'text-sm'
+
+    return (
+        <div
+            className={`border border-border-default rounded-xl overflow-hidden bg-white shadow-sm`}
+        >
+            <div className="bg-background-hovered px-4 py-2 border-b border-border-default flex justify-between items-center">
+                <span className="text-xs font-bold text-text-subdued uppercase">
+                    Preview: Data Table
+                </span>
+            </div>
+            <table className="w-full">
+                <thead>
+                    <tr className="border-b border-border-default bg-background-muted">
+                        <th
+                            className={`text-left px-4 py-2 font-semibold text-text-subdued ${textSize}`}
+                        >
+                            Name
+                        </th>
+                        <th
+                            className={`text-left px-4 py-2 font-semibold text-text-subdued ${textSize}`}
+                        >
+                            Role
+                        </th>
+                        <th
+                            className={`text-left px-4 py-2 font-semibold text-text-subdued ${textSize}`}
+                        >
+                            Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {[1, 2].map((i) => (
+                        <tr
+                            key={i}
+                            className="border-b bg-background border-border-default last:border-0"
+                        >
+                            <td className={`px-4 py-4`}>
+                                <div className="flex items-center gap-3">
+                                    <Avatar
+                                        size="sm"
+                                        src={`https://i.pravatar.cc/150?u=${i}`}
+                                    />
+                                    <div>
+                                        <p
+                                            className={`font-bold text-text-default ${textSize}`}
+                                        >
+                                            User {i}
+                                        </p>
+                                        <p className="text-[10px] text-text-subdued">
+                                            user{i}@example.com
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td
+                                className={`px-4 py-4 text-slate-600 ${textSize}`}
+                            >
+                                Developer
+                            </td>
+                            <td className={`px-4 py-4`}>
+                                <Chip
+                                    size="sm"
+                                    variant="flat"
+                                    className="capitalize"
+                                    style={{
+                                        color: themeColor,
+                                        backgroundColor: `${themeColor}20`,
+                                    }}
+                                >
+                                    Active
+                                </Chip>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     )
 }

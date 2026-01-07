@@ -35,7 +35,7 @@ export function FinanceGuard({ children }: { children: React.ReactNode }) {
     return (
         <ProtectedRoute
             permissions={[
-                APP_PERMISSIONS.PAYMENT.READ,
+                APP_PERMISSIONS.PAYMENT_CHANNEL.READ,
                 APP_PERMISSIONS.JOB.PAID,
             ]}
         >

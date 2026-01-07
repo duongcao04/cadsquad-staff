@@ -209,7 +209,7 @@ function SettingsIndexPage() {
                             })
                         }}
                     >
-                        Documentation
+                        Help Center
                     </Button>
                     <a
                         href="mailto:ch.duong@cadsquad.vn"

@@ -1,3 +1,12 @@
+import { useProfile } from '@/lib'
+import { optimizeCloudinary } from '@/lib/cloudinary'
+import {
+    currencyFormatter,
+    getAllowedJobColumns,
+    IMAGES,
+    TABLE_ROW_PER_PAGE_OPTIONS,
+} from '@/lib/utils'
+import { JobColumnKey, TJob } from '@/shared/types'
 import {
     Button,
     Input,
@@ -19,20 +28,12 @@ import {
     UserRoundPlus,
 } from 'lucide-react'
 import { ReactNode, useCallback, useMemo } from 'react'
-import { useProfile } from '@/lib'
-import { optimizeCloudinary } from '@/lib/cloudinary'
-import {
-    currencyFormatter,
-    getAllowedJobColumns,
-    IMAGES,
-    TABLE_ROW_PER_PAGE_OPTIONS,
-} from '@/lib/utils'
-import { JobColumnKey, TJob } from '@/shared/types'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
+import { IPaginate } from '../../interfaces'
 import { pCenterTableStore } from '../../stores'
 import JobFinishChip from '../chips/JobFinishChip'
+import { PaidChip } from '../chips/PaidChip'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
-import PaymentStatusDropdown from '../dropdowns/PaymentStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
 import {
@@ -45,7 +46,6 @@ import {
 } from '../ui/hero-table'
 import { HeroTooltip } from '../ui/hero-tooltip'
 import { WorkbenchTableQuickActions } from '../workbench/WorkbenchTableQuickActions'
-import { IPaginate } from '../../interfaces'
 
 type Props = {
     pagination: IPaginate
@@ -75,8 +75,10 @@ export default function WorkbenchTable({
     pagination,
     onLimitChange,
 }: Props) {
-    const { userRole, isAdmin, isAccounting } = useProfile()
+    const { isAdmin, isAccounting, userPermissions } = useProfile()
     const isAdminOrAccounting = isAdmin || isAccounting
+
+    console.log(userPermissions)
 
     const selectedKeys = useStore(
         pCenterTableStore,
@@ -94,7 +96,7 @@ export default function WorkbenchTable({
     // 1. Centralized Header Logic using Security Helper
     const headerColumns = useMemo(() => {
         // Filter master list by role permissions
-        const allowed = getAllowedJobColumns(userRole, 'all')
+        const allowed = getAllowedJobColumns('all')
 
         // Define specific set for Workbench view
         const workbenchUids = [
@@ -110,7 +112,7 @@ export default function WorkbenchTable({
         ]
 
         return allowed.filter((col) => workbenchUids.includes(col.uid))
-    }, [userRole, isAdminOrAccounting])
+    }, [userPermissions, isAdminOrAccounting])
 
     const topContent = useMemo(() => {
         return (
@@ -272,9 +274,12 @@ export default function WorkbenchTable({
                     )
                 case 'isPaid':
                     return (
-                        <PaymentStatusDropdown
-                            jobData={item}
-                            afterChangeStatus={onRefresh}
+                        <PaidChip
+                            status={item.isPaid ? 'paid' : 'unpaid'}
+                            classNames={{
+                                base: '!w-[100px]',
+                                content: '!w-[100px] text-center',
+                            }}
                         />
                     )
                 case 'dueAt': {

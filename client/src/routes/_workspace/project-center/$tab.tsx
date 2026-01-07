@@ -220,7 +220,7 @@ function ProjectCenterTableContent({
         (state) => state.jobColumns
     )
     const headerColumns = useMemo(() => {
-        return getAllowedJobColumns(userRole, storedColumns)
+        return getAllowedJobColumns(storedColumns)
     }, [userRole, storedColumns])
 
     const viewColDisclosure = useDisclosure()
@@ -235,7 +235,7 @@ function ProjectCenterTableContent({
     )
 
     const handleExport = async () => {
-        const exportColumns = getAllowedJobColumns(userRole, 'all').filter(
+        const exportColumns = getAllowedJobColumns('all').filter(
             (c) => c.uid !== 'action'
         )
         try {

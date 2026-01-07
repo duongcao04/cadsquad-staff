@@ -3,7 +3,7 @@ import lodash from 'lodash'
 import { useMemo } from 'react'
 import { authApi } from '@/lib/api'
 import { cookie } from '@/lib/cookie'
-import { COOKIES, IMAGES } from '@/lib/utils'
+import { AppPermission, COOKIES, IMAGES } from '@/lib/utils'
 import type { TLoginInput, TUpdateProfileInput } from '@/lib/validationSchemas'
 import type { TUser } from '@/shared/types'
 import { queryClient } from '../../main'
@@ -99,12 +99,18 @@ export const useRevokeSessionMutation = () => {
     })
 }
 
-export const useRevokeAllSessionMutation = () => {
+export const useRevokeAllSessionMutation = (
+    onSuccess?: (res: ApiResponse) => void
+) => {
     return useMutation({
         mutationKey: ['revokeAllSession'],
         mutationFn: () => authApi.revokeAllSession(),
         onSuccess: (res) => {
-            addToast({ title: res.message, color: 'success' })
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({ title: res.message, color: 'success' })
+            }
             queryClient.refetchQueries({
                 queryKey: profileOptions().queryKey,
             })
@@ -170,6 +176,10 @@ export function useProfile() {
     const isStaff = userRole?.code === 'staff'
     const isAccounting = userRole?.code === 'accounting'
 
+    const userPermissions = profile?.role?.permissions?.map(
+        (perm) => perm.entityAction as AppPermission
+    )
+
     return {
         data: profile,
         profile: profile,
@@ -179,6 +189,7 @@ export function useProfile() {
         isAccounting,
         accessToken,
         userRole,
+        userPermissions,
     }
 }
 

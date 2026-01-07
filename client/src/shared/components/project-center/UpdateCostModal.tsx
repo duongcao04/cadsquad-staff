@@ -1,37 +1,49 @@
+import { jobByNoOptions, paymentChannelsListOptions } from '@/lib/queries'
 import {
-    Button,
-    Select,
-    SelectItem,
-    Tab,
-    Tabs,
+    addToast,
     Avatar,
+    Button,
     Card,
     CardBody,
+    Select,
+    SelectItem,
     Skeleton,
     Spinner,
-    addToast,
+    Tab,
+    Tabs,
 } from '@heroui/react'
+import { useSuspenseQueries } from '@tanstack/react-query'
+import { Image } from 'antd'
 import {
+    CheckCircle2,
+    DollarSign,
     Landmark,
+    ReceiptText,
+    SaveIcon,
+    SquarePenIcon,
     TrendingUp,
     Users,
     Wallet,
-    ReceiptText,
-    CheckCircle2,
-    DollarSign,
-    SaveIcon,
-    SquarePenIcon,
     XIcon,
 } from 'lucide-react'
 import {
+    Dispatch,
+    FormEvent,
+    SetStateAction,
+    Suspense,
+    useEffect,
     useMemo,
     useState,
-    useEffect,
-    Suspense,
-    FormEvent,
-    Dispatch,
-    SetStateAction,
 } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
+import {
+    optimizeCloudinary,
+    TUpdateJobRevenue,
+    useUpdateAssignmentCostMutation,
+    useUpdateJobRevenueMutation,
+} from '../../../lib'
+import { TJob, TPaymentChannel } from '../../types'
+import { HeroButton } from '../ui/hero-button'
 import { HeroCard, HeroCardBody } from '../ui/hero-card'
 import {
     HeroModal,
@@ -40,21 +52,9 @@ import {
     HeroModalFooter,
     HeroModalHeader,
 } from '../ui/hero-modal'
-import { TJob, TPaymentChannel } from '../../types'
-import { ErrorBoundary } from 'react-error-boundary'
-import { useSuspenseQueries } from '@tanstack/react-query'
-import { jobByNoOptions, paymentChannelsListOptions } from '@/lib/queries'
 import HeroNumberInput from '../ui/hero-number-input'
-import { Image } from 'antd'
-import { ScrollArea, ScrollBar } from '../ui/scroll-area'
-import {
-    optimizeCloudinary,
-    TUpdateJobRevenue,
-    useUpdateAssignmentCostMutation,
-    useUpdateJobRevenueMutation,
-} from '../../../lib'
-import { HeroButton } from '../ui/hero-button'
 import { HeroTooltip } from '../ui/hero-tooltip'
+import { ScrollArea, ScrollBar } from '../ui/scroll-area'
 
 type AssignedMember = {
     userId: string
@@ -510,9 +510,6 @@ function AssignedMemberCard({
                 <div className="flex flex-col">
                     <span className="text-sm font-bold">
                         {member.displayName}
-                    </span>
-                    <span className="text-[10px] uppercase text-text-subdued font-bold">
-                        Partner
                     </span>
                 </div>
             </div>

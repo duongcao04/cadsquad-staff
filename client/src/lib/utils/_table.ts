@@ -1,12 +1,13 @@
 import { JobColumnKey } from '@/shared/types'
-import { RoleEnum } from '../../shared/enums'
+import { APP_PERMISSIONS, AppPermission } from './_app-permissions'
+import { usePermission } from '../../shared/hooks'
 
 export const JOB_COLUMNS: {
     displayName: string
     uid: JobColumnKey
     sortable: boolean
     description?: string
-    allowedRoles?: string[] // For permission handling
+    requiredPermission?: AppPermission // For permission handling
 }[] = [
     {
         displayName: 'Thumbnail',
@@ -37,21 +38,20 @@ export const JOB_COLUMNS: {
         displayName: 'Income',
         uid: 'incomeCost',
         sortable: true,
-        allowedRoles: ['ADMIN', 'ACCOUNTING'], // Restricted
+        requiredPermission: APP_PERMISSIONS.JOB.READ_SENSITIVE,
         description: 'Total revenue (Admin/Accounting only).',
     },
     {
         displayName: 'Total Staff Cost',
         uid: 'totalStaffCost',
         sortable: true,
-        allowedRoles: ['ADMIN', 'ACCOUNTING'], // Restricted
+        requiredPermission: APP_PERMISSIONS.JOB.READ_SENSITIVE,
         description: 'Sum of all staff costs for this job.',
     },
     {
         displayName: 'Staff Cost',
         uid: 'staffCost',
         sortable: true,
-        allowedRoles: ['USER'], // Restricted
         description: 'The specific cost allocated to you for this job.',
     },
     {
@@ -79,28 +79,31 @@ export const JOB_COLUMNS: {
         uid: 'action',
         sortable: false,
     },
-]
-/**
- * Filters the master column list based on user permissions.
- * @param role - The role of the logged-in user
- * @param visibleColumns - State from your store ('all' or array of UIDs)
+] /**
+ * Lọc danh sách cột dựa trên quyền (Permissions) và lựa chọn hiển thị (Toggles).
+ * @param userPermissions - Mảng các quyền của User hiện tại (AppPermission[])
+ * @param visibleColumns - Trạng thái từ store hoặc UI toggle
  */
 export const getAllowedJobColumns = (
-    role: RoleEnum | string | undefined,
     visibleColumns: 'all' | JobColumnKey[] = 'all'
 ) => {
-    // 1. First, filter by Role permissions (allowedRoles property)
-    const allowedByRole = JOB_COLUMNS.filter((column) => {
-        // Public columns (no roles defined)
-        if (!column.allowedRoles || column.allowedRoles.length === 0)
-            return true
+    const { hasPermission } = usePermission()
+    // 1. Lọc dựa trên quyền (Security check)
+    const allowedByPermission = JOB_COLUMNS.filter((column) => {
+        // Nếu cột không yêu cầu quyền đặc biệt, hiển thị cho mọi người
+        if (!column.requiredPermission) return true
 
-        // Restricted columns
-        return role ? column.allowedRoles.includes(role) : false
+        // Nếu User là Super Admin (có quyền system.manage), cho phép xem hết
+        if (hasPermission(APP_PERMISSIONS.SYSTEM.MANAGE)) return true
+
+        // Kiểm tra xem User có quyền cụ thể cho cột này không
+        return hasPermission(column.requiredPermission)
     })
 
-    // 2. Then, filter by User Toggle Preferences (visibleColumns)
-    if (visibleColumns === 'all') return allowedByRole
+    // 2. Lọc dựa trên tùy chọn hiển thị của User (UI Toggle)
+    if (visibleColumns === 'all') return allowedByPermission
 
-    return allowedByRole.filter((column) => visibleColumns.includes(column.uid))
+    return allowedByPermission.filter((column) =>
+        visibleColumns?.includes(column.uid)
+    )
 }
