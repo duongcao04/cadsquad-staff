@@ -6,6 +6,7 @@ import { JobTypeResponseDto } from '../../job-type/dto/job-type-response.dto'
 import { PaymentChannelResponseDto } from '../../payment-channel/dto/payment-channel-response.dto'
 import { UserResponseDto } from '../../user/dto/user-response.dto'
 import { type Client, JobAssignment, RoleEnum } from '@prisma/client'
+import { APP_PERMISSIONS } from '../../../utils/_app-permissions'
 
 export class JobResponseDto {
     @ApiProperty({ description: 'Job ID' })
@@ -37,11 +38,11 @@ export class JobResponseDto {
     client: Client
 
     @ApiProperty({ description: 'Income cost of the job' })
-    @Expose({ groups: ['job.readSensitive'] })
+    @Expose({ groups: [APP_PERMISSIONS.JOB.READ_SENSITIVE] })
     incomeCost: number
 
     @ApiProperty({ description: 'Total staff cost of the job' })
-    @Expose({ groups: ['job.readSensitive'] })
+    @Expose({ groups: [APP_PERMISSIONS.JOB.READ_SENSITIVE] })
     totalStaffCost: number
 
     @ApiProperty({ description: 'Staff cost of the job' })

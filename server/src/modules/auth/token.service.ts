@@ -1,7 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+    forwardRef,
+    Inject,
+    Injectable,
+    UnauthorizedException,
+} from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import { User } from '@prisma/client'
 import { PrismaService } from '../../providers/prisma/prisma.service'
+import { AuthService } from './auth.service'
 
 @Injectable()
 export class TokenService {
@@ -9,7 +15,9 @@ export class TokenService {
     private secretKey: string
     constructor(
         private readonly jwtService: JwtService,
-        private readonly PrismaService: PrismaService
+        private readonly PrismaService: PrismaService,
+        @Inject(forwardRef(() => AuthService))
+        private readonly authService: AuthService
     ) {
         this.expiresIn = Number(process.env.JWT_EXPIRES_AT)
         this.secretKey = String(process.env.JWT_SECRET_KEY)
@@ -18,22 +26,15 @@ export class TokenService {
     async signToken(user: User) {
         const getUser = await this.PrismaService.user.findUnique({
             where: { id: user.id },
-            include: {
-                role: {
-                    include: {
-                        permissions: true,
-                    },
-                },
-            },
+            select: { email: true, role: { select: { code: true } } },
         })
-        const role = getUser?.role?.code
-        const userPermissions = getUser?.role?.permissions.map(
-            (item) => item.entityAction
+        const userPermissions = await this.authService.getEffectivePermissions(
+            user.id
         )
         const payload = {
             sub: user.id,
             email: user.email,
-            role,
+            role: getUser?.role?.code,
             permissions: userPermissions,
             iat: Date.now(),
         }

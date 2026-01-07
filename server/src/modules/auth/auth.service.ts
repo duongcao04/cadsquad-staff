@@ -1,6 +1,7 @@
-import { UAParser } from './../../../node_modules/ua-parser-js/src/main/ua-parser.d'
 import {
     ConflictException,
+    forwardRef,
+    Inject,
     Injectable,
     InternalServerErrorException,
     NotFoundException,
@@ -23,6 +24,7 @@ export class AuthService {
     constructor(
         private readonly prismaService: PrismaService,
         private readonly bcryptService: BcryptService,
+        @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
         private readonly userSecurityService: UserSecurityService,
         private sessionService: SessionService

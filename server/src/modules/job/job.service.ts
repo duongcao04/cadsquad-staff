@@ -7,13 +7,10 @@ import {
 } from '@nestjs/common'
 import {
     ActivityType,
-    EntityEnum,
     Job,
     JobStatusSystemType,
     NotificationType,
-    Permission,
     Prisma,
-    RoleEnum,
 } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import dayjs from 'dayjs'
@@ -22,8 +19,10 @@ import slugify from 'slugify'
 import { PaginationMeta } from '../../common/interfaces/pagination-meta.interface'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { NOTIFICATION_CONTENT_TEMPLATES } from '../../utils'
+import { APP_PERMISSIONS } from '../../utils/_app-permissions'
 import { renderTemplate } from '../../utils/_string'
 import { NotificationService } from '../notification/notification.service'
+import { UserService } from '../user/user.service'
 import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
 import { ChangeStatusDto } from './dto/change-status.dto'
 import { CreateJobDto } from './dto/create-job.dto'
@@ -35,7 +34,7 @@ import { JobSortBuilder } from './dto/job-sort.dto'
 import { UpdateGeneralJobDto } from './dto/update-general.dto'
 import { UpdateJobDto } from './dto/update-job.dto'
 import { UpdateRevenueDto } from './dto/update-revenue.dto'
-import { UserService } from '../user/user.service'
+import { AuthService } from '../auth/auth.service'
 
 @Injectable()
 export class JobService {
@@ -44,7 +43,8 @@ export class JobService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly notificationService: NotificationService,
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly authService: AuthService
     ) {}
 
     /**
@@ -59,9 +59,11 @@ export class JobService {
         }>[],
         userId: string
     ) {
-        const userPermissions = await this.userService.userPermissions(userId)
+        const userPermissions =
+            await this.authService.getEffectivePermissions(userId)
+
         const canReadSensitiveData = userPermissions.includes(
-            EntityEnum.JOB.toLowerCase() + '.readSensitive'
+            APP_PERMISSIONS.JOB.READ_SENSITIVE
         )
 
         const mapData = rawData.map((job) => {
@@ -158,7 +160,7 @@ export class JobService {
         return {
             data: plainToInstance(JobResponseDto, mappedData, {
                 excludeExtraneousValues: true,
-                // groups: userPermissions.find(i=>i.),
+                groups: userPermissions,
             }) as unknown as Job[],
             paginate: {
                 limit: Number(limit),
@@ -445,7 +447,7 @@ export class JobService {
                         role: {
                             permissions: {
                                 some: {
-                                    entityAction: EntityEnum.JOB + '.paid',
+                                    entityAction: APP_PERMISSIONS.JOB.PAID,
                                 },
                             },
                         },
@@ -904,7 +906,7 @@ export class JobService {
                     role: {
                         permissions: {
                             some: {
-                                entityAction: EntityEnum.JOB + '.review',
+                                entityAction: APP_PERMISSIONS.JOB.REVIEW,
                             },
                         },
                     },
@@ -1084,7 +1086,7 @@ export class JobService {
     ): Promise<Prisma.JobWhereInput> {
         const userPermissions = await this.userService.userPermissions(userId)
         const canReadAll = userPermissions.includes(
-            EntityEnum.JOB.toLowerCase() + '.readAll'
+            APP_PERMISSIONS.JOB.READ_ALL
         )
 
         if (canReadAll) return {}

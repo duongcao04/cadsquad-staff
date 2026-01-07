@@ -7,21 +7,21 @@ import {
     Logger,
     NotFoundException,
 } from '@nestjs/common'
-import { Prisma, RoleEnum, User } from '@prisma/client'
+import { Prisma, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { MailService } from '../../providers/mail/mail.service'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { BcryptService } from '../auth/bcrypt.service'
+import {
+    AssignUserPermissionDto,
+    PermissionAction,
+} from './dto/assign-user-permission.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
 import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserQueryDto } from './dto/user-query.dto'
 import { UserResponseDto } from './dto/user-response.dto'
-import {
-    AssignUserPermissionDto,
-    PermissionAction,
-} from './dto/assign-user-permission.dto'
 
 @Injectable()
 export class UserService {
