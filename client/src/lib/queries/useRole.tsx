@@ -48,6 +48,27 @@ export const useAddMemberToRoleMutation = () => {
     })
 }
 
+export const useRemoveMemberRoleMutation = () => {
+    return useMutation({
+        // Payload truyền vào mutation
+        mutationFn: (userId: string) => roleApi.removeMember(userId),
+
+        onSuccess: (res) => {
+            addToast({
+                title: 'Remove member successfully',
+                color: 'success',
+            })
+
+            // Làm mới danh sách roles và danh sách users để cập nhật UI
+            queryClient.refetchQueries({ queryKey: ['roles'] })
+            queryClient.refetchQueries({ queryKey: ['users'] })
+        },
+
+        onError: (err: any) =>
+            onErrorToast(err, 'Remove member to role failed'),
+    })
+}
+
 export const useBulkUpdatePermissions = (roleId: string) => {
     return useMutation({
         mutationFn: (permissionIds: string[]) =>

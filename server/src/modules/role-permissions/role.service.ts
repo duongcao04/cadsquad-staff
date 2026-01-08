@@ -106,9 +106,16 @@ export class RoleService {
      * Xóa User khỏi Role (Gán về null hoặc Role mặc định)
      */
     async removeMember(userId: string) {
+        const staffRoleId = await this.prisma.role.findUnique({
+            where: { code: 'staff' },
+        })
+        let roleId: string | null = null
+        if (staffRoleId) {
+            roleId = staffRoleId.id
+        }
         return this.prisma.user.update({
             where: { id: userId },
-            data: { roleId: null },
+            data: { roleId: roleId },
         })
     }
 
