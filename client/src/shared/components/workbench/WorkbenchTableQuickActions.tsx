@@ -43,8 +43,6 @@ type WorkbenchTableQuickActionsProps = {
 export function WorkbenchTableQuickActions({
     data,
 }: WorkbenchTableQuickActionsProps) {
-    const { isAdmin, isAccounting, userPermissions } = useProfile()
-    console.log(userPermissions)
     const { hasPermission } = usePermission()
 
     const jobPinned = data.isPinned
@@ -247,9 +245,6 @@ export function WorkbenchTableQuickActions({
                         {hasPermission(APP_PERMISSIONS.JOB.ASSIGN_MEMBER) ? (
                             <DropdownItem
                                 key="assignReassign"
-                                style={{
-                                    display: isAdmin ? 'flex' : 'none',
-                                }}
                                 startContent={
                                     <UserPlus
                                         size={14}
@@ -264,9 +259,6 @@ export function WorkbenchTableQuickActions({
                         {hasPermission(APP_PERMISSIONS.JOB.UPDATE) ? (
                             <DropdownItem
                                 key="reschedule"
-                                style={{
-                                    display: isAdmin ? 'flex' : 'none',
-                                }}
                                 startContent={
                                     <CalendarClock
                                         size={14}
@@ -281,9 +273,6 @@ export function WorkbenchTableQuickActions({
                         {hasPermission(APP_PERMISSIONS.JOB.DELETE) ? (
                             <DropdownItem
                                 key="deleteJob"
-                                style={{
-                                    display: isAdmin ? 'flex' : 'none',
-                                }}
                                 startContent={
                                     <Trash
                                         size={14}
@@ -296,13 +285,7 @@ export function WorkbenchTableQuickActions({
                             </DropdownItem>
                         ) : null}
                     </DropdownSection>
-                    <DropdownSection
-                        key="payment_actions"
-                        title="Payment"
-                        style={{
-                            display: isAdmin || isAccounting ? 'block' : 'none',
-                        }}
-                    >
+                    <DropdownSection key="payment_actions" title="Payment">
                         {hasPermission(APP_PERMISSIONS.JOB.UPDATE) ? (
                             <DropdownItem
                                 key="updateCost"

@@ -38,14 +38,14 @@ export const JOB_COLUMNS: {
         displayName: 'Income',
         uid: 'incomeCost',
         sortable: true,
-        requiredPermission: APP_PERMISSIONS.JOB.READ_SENSITIVE,
+        requiredPermission: APP_PERMISSIONS.JOB.READ_SENSITIVE as AppPermission,
         description: 'Total revenue (Admin/Accounting only).',
     },
     {
         displayName: 'Total Staff Cost',
         uid: 'totalStaffCost',
         sortable: true,
-        requiredPermission: APP_PERMISSIONS.JOB.READ_SENSITIVE,
+        requiredPermission: APP_PERMISSIONS.JOB.READ_SENSITIVE as AppPermission,
         description: 'Sum of all staff costs for this job.',
     },
     {
@@ -94,7 +94,8 @@ export const getAllowedJobColumns = (
         if (!column.requiredPermission) return true
 
         // Nếu User là Super Admin (có quyền system.manage), cho phép xem hết
-        if (hasPermission(APP_PERMISSIONS.SYSTEM.MANAGE)) return true
+        if (hasPermission(APP_PERMISSIONS.SYSTEM.MANAGE as AppPermission))
+            return true
 
         // Kiểm tra xem User có quyền cụ thể cho cột này không
         return hasPermission(column.requiredPermission)

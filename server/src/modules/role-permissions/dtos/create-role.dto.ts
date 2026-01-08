@@ -9,7 +9,11 @@ import {
 export class CreateRoleDto {
     @IsString()
     @IsNotEmpty()
-    name: string
+    displayName: string
+
+    @IsString()
+    @IsOptional()
+    hexColor: string
 
     @IsArray()
     @IsString({ each: true }) // Ensures every item in array is a Number

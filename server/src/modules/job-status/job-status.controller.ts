@@ -59,8 +59,6 @@ export class JobStatusController {
         description: 'Return a list of job statuses.',
         type: [JobStatusResponseDto],
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.JOB_STATUS.READ)
     async findAll() {
         return this.jobStatusService.findAll()
     }
@@ -75,8 +73,6 @@ export class JobStatusController {
         description: 'Return a single job status.',
         type: JobStatusResponseDto,
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.JOB_STATUS.READ)
     async findByOrder(@Param('orderNum') orderNum: string) {
         return this.jobStatusService.findByOrder(parseInt(orderNum))
     }
@@ -91,8 +87,6 @@ export class JobStatusController {
         description: 'Return a single job status.',
         type: JobStatusResponseDto,
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.JOB_STATUS.READ)
     async findOne(@Param('id') id: string) {
         return this.jobStatusService.findById(id)
     }

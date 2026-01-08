@@ -6,7 +6,7 @@ import { usersListOptions } from '../../../../../../lib/queries'
 import { INTERNAL_URLS, optimizeCloudinary } from '../../../../../../lib'
 
 export const Route = createFileRoute(
-    '/_administrator/admin/mgmt/role-n-permission/users/'
+    '/_administrator/admin/mgmt/access-control/users/'
 )({
     component: UserAccessPage,
 })

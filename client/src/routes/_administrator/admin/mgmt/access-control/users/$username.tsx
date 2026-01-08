@@ -38,7 +38,7 @@ import { useMemo } from 'react'
 import { toast } from 'sonner' // Assuming you use Sonner or React-Hot-Toast
 
 export const Route = createFileRoute(
-    '/_administrator/admin/mgmt/role-n-permission/users/$username'
+    '/_administrator/admin/mgmt/access-control/users/$username'
 )({
     loader: ({ context, params }) => {
         void context.queryClient.ensureQueryData(permissionGroupsListOptions())

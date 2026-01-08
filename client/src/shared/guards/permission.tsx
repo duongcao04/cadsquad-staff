@@ -1,9 +1,8 @@
 import React from 'react'
-import { AppPermission } from '../../lib/utils'
 import { usePermission } from '../hooks'
 
 interface PermissionGuardProps {
-    permission: AppPermission
+    permission: string
     children: React.ReactNode
     fallback?: React.ReactNode
 }

@@ -15,7 +15,6 @@ export const APP_PERMISSIONS = {
     },
 
     USER: {
-        READ: 'user.read',
         CREATE: 'user.create',
         UPDATE: 'user.update',
         DELETE: 'user.delete',
@@ -29,11 +28,9 @@ export const APP_PERMISSIONS = {
         WRITE: 'client.write',
     },
     PAYMENT_CHANNEL: {
-        READ: 'payment.read',
-        READ_ALL: 'payment.readAll',
         CREATE: 'payment.create',
         UPDATE: 'payment.update',
-        delete: 'payment.delete',
+        DELETE: 'payment.delete',
     },
 
     // === SOCIAL & COMMUNITY ===
@@ -53,25 +50,22 @@ export const APP_PERMISSIONS = {
         WRITE: 'file.write',
     },
     DEPARTMENT: {
-        READ: 'department.read',
+        READ_SENSITIVE: 'department.readSensitive',
         CREATE: 'department.create',
         UPDATE: 'department.update',
         DELETE: 'department.delete',
     },
     JOB_TITLE: {
-        READ: 'jobTitle.read',
         CREATE: 'jobTitle.create',
         UPDATE: 'jobTitle.update',
         DELETE: 'jobTitle.delete',
     },
     JOB_TYPE: {
-        READ: 'jobType.read',
         CREATE: 'jobType.create',
         UPDATE: 'jobType.update',
         DELETE: 'jobType.delete',
     },
     JOB_STATUS: {
-        READ: 'jobStatus.read',
         CREATE: 'jobStatus.create',
         UPDATE: 'jobStatus.update',
         DELETE: 'jobStatus.delete',
@@ -83,15 +77,14 @@ export const APP_PERMISSIONS = {
         READ: 'analytics.read',
         REPORT: 'analytics.report',
     },
+    ROLE: {
+        MANAGE: 'role.manage',
+    },
 } as const
 
 /**
  * Helper Type to extract all permission strings as a Union type.
+ * Usage: function check(perm: AppPermission) { ... }
  */
-export type AppPermission = typeof APP_PERMISSIONS extends {
-    [key: string]: infer TInner
-}
-    ? TInner extends { [key: string]: infer TValue }
-        ? TValue
-        : never
-    : never
+export type AppPermission =
+    (typeof APP_PERMISSIONS)[keyof typeof APP_PERMISSIONS][keyof (typeof APP_PERMISSIONS)[keyof typeof APP_PERMISSIONS]]

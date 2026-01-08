@@ -59,8 +59,6 @@ export class DepartmentController {
         description: 'Return a list of departments.',
         type: [DepartmentResponseDto],
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.READ)
     async findAll() {
         return this.departmentService.findAll()
     }
@@ -76,8 +74,9 @@ export class DepartmentController {
         description: 'Return a single department.',
         type: DepartmentResponseDto,
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.READ)
+    // TODO:
+    // @UseGuards(PermissionsGuard)
+    // @RequirePermissions(APP_PERMISSIONS.DEPARTMENT.READ_SENSITIVE)
     async findOne(@Param('identifier') identifier: string) {
         // Check if the parameter looks like a UUID
         if (isUUID(identifier)) {

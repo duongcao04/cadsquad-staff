@@ -57,8 +57,6 @@ export class JobTypeController {
         description: 'Return a list of job types.',
         type: [JobTypeResponseDto],
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.JOB_TYPE.READ)
     async findAll() {
         return this.jobTypeService.findAll()
     }
@@ -73,8 +71,6 @@ export class JobTypeController {
         description: 'Return a single job type.',
         type: JobTypeResponseDto,
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.JOB_TYPE.READ)
     async findOne(@Param('id') id: string) {
         return this.jobTypeService.findById(id)
     }

@@ -1,18 +1,16 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { useProfile } from '../../lib'
-import { AppPermission } from '../../lib/utils'
 
 export const usePermission = () => {
-    const { profile: user, isLoading: loadingProfile } = useProfile()
-
-    // Memoize danh sách string permissions
-    const userPermissions = useMemo(() => {
-        return user?.role?.permissions?.map((p) => p.entityAction) || []
-    }, [user])
+    const {
+        profile: user,
+        isLoading: loadingProfile,
+        userPermissions,
+    } = useProfile()
 
     // Sử dụng useCallback để tránh tạo function mới mỗi lần render
     const hasAnyPermission = useCallback(
-        (requiredPerms: AppPermission | AppPermission[]) => {
+        (requiredPerms: string | string[]) => {
             if (!user?.role) return false
             if (user.role.code === 'admin') return true
 
@@ -27,7 +25,7 @@ export const usePermission = () => {
     )
 
     const hasAllPermissions = useCallback(
-        (requiredPerms: AppPermission | AppPermission[]) => {
+        (requiredPerms: string | string[]) => {
             if (!user?.role) return false
             if (user.role.code === 'admin') return true
 

@@ -59,8 +59,6 @@ export class PaymentChannelController {
         description: 'Return a list of payment channels.',
         type: [PaymentChannelResponseDto],
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.PAYMENT_CHANNEL.READ_ALL)
     async findAll() {
         return this.paymentChannelService.findAll()
     }
@@ -75,8 +73,6 @@ export class PaymentChannelController {
         description: 'Return a single payment channel.',
         type: PaymentChannelResponseDto,
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.PAYMENT_CHANNEL.READ)
     async findOne(@Param('id') id: string) {
         return this.paymentChannelService.findById(id)
     }

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
-  '/_administrator/admin/mgmt/role-n-permission/matrix',
+  '/_administrator/admin/mgmt/access-control/matrix',
 )({
   component: PermissionViewFullMatrixPage,
 })
@@ -66,7 +66,7 @@ export default function PermissionViewFullMatrixPage() {
                         isIconOnly 
                         variant="flat" 
                         size="sm" 
-                        onPress={() => navigate({ href: '/admin/role-n-permission' })}
+                        onPress={() => navigate({ href: '/admin/access-control' })}
                     >
                         <ArrowLeft size={18} />
                     </Button>

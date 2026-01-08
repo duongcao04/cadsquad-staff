@@ -1,49 +1,57 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib'
+import { Card, CardBody, CardProps } from '@heroui/react'
 
 type Props = {
-    breadcrumbs?: React.ReactNode
     title: React.ReactNode
-    description?: string
+    description?: React.ReactNode
+    actions?: React.ReactNode
     classNames?: {
-        wrapper?: string
+        base?: string
+        titleWrapper?: string
+        title?: string
+        description?: string
+        actionsWrapper?: string
     }
-    rightButton?: React.ReactNode
-}
+} & CardProps
 export function AdminPageHeading({
     title,
-    classNames,
-    breadcrumbs,
     description,
-    rightButton,
+    actions,
+    classNames,
+    ...props
 }: Props) {
     return (
-        <div
-            className={cn(
-                'w-full pt-2 pb-5 py-3 pl-6 pr-3.5 border-b border-border-default',
-                classNames?.wrapper
-            )}
+        <Card
+            {...props}
+            shadow={props.shadow ?? 'sm'}
+            className={cn('border-none m-2', props.className)}
         >
-            <div className="flex items-center justify-between">
-                <div className="flex items-center justify-start">
-                    <div>
-                        <h1 className="align-middle font-semibold text-text-default">
-                            {title}
-                        </h1>
-                        {description && (
-                            <p className="text-text-subdued text-xs">
-                                {description}
-                            </p>
+            <CardBody
+                className={cn(
+                    'flex flex-row justify-between items-center p-6',
+                    classNames?.base
+                )}
+            >
+                <div className={cn(classNames?.titleWrapper)}>
+                    <h1
+                        className={cn(
+                            'text-2xl font-bold text-text-default',
+                            classNames?.title
                         )}
-                    </div>
-                    {breadcrumbs && (
-                        <div className="h-full flex items-end justify-start text-text-muted">
-                            <div className="w-px h-5 ml-8 mr-6 bg-text-disabled"></div>
-                            {breadcrumbs}
-                        </div>
-                    )}
+                    >
+                        {title}
+                    </h1>
+                    <p
+                        className={cn(
+                            'text-sm text-text-subdued',
+                            classNames?.description
+                        )}
+                    >
+                        {description}
+                    </p>
                 </div>
-                {rightButton}
-            </div>
-        </div>
+                <div className={classNames?.actionsWrapper}>{actions}</div>
+            </CardBody>
+        </Card>
     )
 }

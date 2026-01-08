@@ -44,6 +44,21 @@ export const rolesListOptions = () => {
     })
 }
 
+export const roleOptions = (identify: string) => {
+    return queryOptions({
+        queryKey: ['roles', identify],
+        queryFn: () => roleApi.findOneRole(identify),
+        select: (res) => {
+            const role = mapRole(res?.result)
+            const permissions = role.permissions.map((it) => it.entityAction)
+            return {
+                role,
+                permissions,
+            }
+        },
+    })
+}
+
 export const permissionGroupsListOptions = () => {
     return queryOptions({
         queryKey: ['group-permissions'],

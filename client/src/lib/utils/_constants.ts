@@ -57,9 +57,13 @@ export const INTERNAL_URLS = {
     inviteMember: '/' + 'admin/mgmt/invite-member',
     revenueReports: '/' + 'admin/mgmt/revenue',
     teamManage: '/' + 'admin/mgmt/staff-directory',
-    roleAndPermissionManage: '/' + 'admin/mgmt/role-n-permission',
+    roleAndPermissionManage: '/' + 'admin/mgmt/access-control',
+    rolesManage: '/' + 'admin/mgmt/access-control/roles',
+    allPermissions: '/' + 'admin/mgmt/access-control/permissions',
+    editRolePermMatrix: (roleCode: string) =>
+        '/' + 'admin/mgmt/access-control/roles/' + roleCode + '/perm-matrix',
     userRolePermissionManage: (username: string) =>
-        '/' + 'admin/mgmt/role-n-permission/users/' + username,
+        '/' + 'admin/mgmt/access-control/users/' + username,
     jobManage: '/' + 'admin/mgmt/jobs',
     departmentsManage: '/' + 'admin/departments',
     departmentItemManage: (departmentCode: string) =>

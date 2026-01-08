@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Expose, Type } from 'class-transformer'
 import { PermissionResponseDto } from './permission-response.dto'
+import { UserResponseDto } from '../../user/dto/user-response.dto'
 
 export class RoleResponseDto {
     @ApiProperty({ description: 'ID của vai trò' })
@@ -30,6 +31,10 @@ export class RoleResponseDto {
     @Expose()
     @Type(() => PermissionResponseDto)
     permissions: PermissionResponseDto[]
+
+    @Expose()
+    @Type(() => UserResponseDto)
+    users: UserResponseDto[]
 
     @ApiProperty({ description: 'Ngày tạo' })
     @Expose()

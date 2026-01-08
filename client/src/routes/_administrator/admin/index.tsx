@@ -47,12 +47,12 @@ function AdminDashboardPage() {
                     onClose={createJobModalDisclosure.onClose}
                 />
             )}
-            <div className="flex-1 p-8">
+            <div className="flex-1">
                 {/* Heading */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
                         <h1 className="text-xl font-semibold text-text-default">
-                            Welcome Back, {profile.displayName} 👋
+                            Welcome Back, {profile?.displayName} 👋
                         </h1>
                         <p className="text-text-subdued text-sm mt-1">
                             Your Team's Success Starts Here. Let's Make Progress

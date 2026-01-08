@@ -5,6 +5,7 @@ import {
     Get,
     Param,
     ParseIntPipe,
+    Patch,
     Post,
     UseGuards,
 } from '@nestjs/common'
@@ -13,44 +14,83 @@ import { JwtGuard } from '../auth/jwt.guard'
 import { CreateRoleDto } from './dtos/create-role.dto'
 import { PermissionService } from './permission.service'
 import { RoleService } from './role.service'
+import { isUUID } from 'class-validator'
+import { ApiOperation } from '@nestjs/swagger'
+import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
+import { PermissionsGuard } from '../../common/guards/permissions.guard'
 
 @Controller('roles')
 @UseGuards(JwtGuard) // Protect all routes
 export class RoleController {
     constructor(
-        private readonly rolesService: RoleService,
+        private readonly roleService: RoleService,
         private readonly permissionService: PermissionService
     ) {}
 
     @Get('permissions')
-    @RequirePermissions('role.read')
     allPermissions() {
         return this.permissionService.findAll()
     }
 
+    @Get(':identify')
+    findRoleDetail(@Param('identify') identify: string) {
+        if (isUUID(identify)) {
+            return this.roleService.findById(identify)
+        }
+        return this.roleService.findByCode(identify)
+    }
+
+    @Patch(':id/permissions/bulk')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions('role.manage')
+    async toggleRolePermission(
+        @Param('id') roleId: string,
+        @Body('permissionIds') permissionIds: string[]
+    ) {
+        return this.roleService.updatePermissions(roleId, permissionIds)
+    }
+
     // Get structure for UI (e.g., Checkbox groups)
     @Get('permissions/grouped')
-    @RequirePermissions('role.read')
     getPermissions() {
         return this.permissionService.findAllGrouped()
     }
 
     @Post()
+    @UseGuards(PermissionsGuard)
     @RequirePermissions('role.manage') // Only admins
     create(@Body() createRoleDto: CreateRoleDto) {
-        return this.rolesService.create(createRoleDto)
+        return this.roleService.create(createRoleDto)
     }
 
     @Get()
-    @RequirePermissions('role.read')
     findAll() {
-        return this.rolesService.findAll()
+        return this.roleService.findAll()
     }
 
     @Get(':id')
-    @RequirePermissions('role.read')
     findOne(@Param('id', ParseIntPipe) id: string) {
-        return this.rolesService.findOne(id)
+        return this.roleService.findById(id)
+    }
+
+    @Post(':roleId/members/:userId')
+    @ApiOperation({ summary: 'Add a user to a specific role' })
+    @ResponseMessage('User added to role successfully')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions('role.manage')
+    async addMember(
+        @Param('roleId') roleId: string,
+        @Param('userId') userId: string
+    ) {
+        return this.roleService.addMember(userId, roleId)
+    }
+
+    @Delete('members/:userId')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions('role.manage')
+    @ApiOperation({ summary: 'Remove a user from their current role' })
+    async removeMember(@Param('userId') userId: string) {
+        return this.roleService.removeMember(userId)
     }
 
     // @Patch(':id')
@@ -59,12 +99,13 @@ export class RoleController {
     //     @Param('id', ParseIntPipe) id: string,
     //     @Body() updateRoleDto: UpdateRoleDto
     // ) {
-    //     return this.rolesService.update(id, updateRoleDto)
+    //     return this.roleService.update(id, updateRoleDto)
     // }
 
     @Delete(':id')
+    @UseGuards(PermissionsGuard)
     @RequirePermissions('role.manage')
     remove(@Param('id', ParseIntPipe) id: string) {
-        return this.rolesService.remove(id)
+        return this.roleService.remove(id)
     }
 }

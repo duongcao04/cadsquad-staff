@@ -171,7 +171,7 @@ export function ActionButton({
                 </DropdownTrigger>
                 <DropdownMenu aria-label="Admin actions" variant="flat">
                     <DropdownSection showDivider title="Job Operations">
-                        {hasPermission(APP_PERMISSIONS.JOB.DELIVER) ? (
+                        {hasPermission(APP_PERMISSIONS.JOB.CREATE) ? (
                             <DropdownItem
                                 key="createJob"
                                 shortcut="Alt + N"
@@ -181,14 +181,16 @@ export function ActionButton({
                                 Create
                             </DropdownItem>
                         ) : null}
-                        <DropdownItem
-                            key="deliverJob"
-                            shortcut="Alt + D"
-                            startContent={<FluentColorApprovalsApp20 />}
-                            onPress={() => onOpenDeliverJobModal()}
-                        >
-                            Deliver
-                        </DropdownItem>
+                        {hasPermission(APP_PERMISSIONS.JOB.DELIVER) ? (
+                            <DropdownItem
+                                key="deliverJob"
+                                shortcut="Alt + D"
+                                startContent={<FluentColorApprovalsApp20 />}
+                                onPress={() => onOpenDeliverJobModal()}
+                            >
+                                Deliver
+                            </DropdownItem>
+                        ) : null}
                     </DropdownSection>
                     <DropdownSection title="Support">
                         <DropdownItem

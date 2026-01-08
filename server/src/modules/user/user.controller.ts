@@ -157,8 +157,6 @@ export class UserController {
         description: 'Return a single user.',
         type: UserResponseDto,
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.USER.READ)
     async findOne(@Param('identifier') identifier: string) {
         // Check if the parameter looks like a UUID
         if (isUUID(identifier)) {

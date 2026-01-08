@@ -1,5 +1,5 @@
 import { permissionsListOptions, rolesListOptions } from '@/lib/queries'
-import { HeroCard } from '@/shared/components'
+import { HeroCard, HeroCardBody } from '@/shared/components'
 import {
     Button,
     CardBody,
@@ -26,7 +26,7 @@ import {
 import React from 'react'
 
 export const Route = createFileRoute(
-    '/_administrator/admin/mgmt/role-n-permission/'
+    '/_administrator/admin/mgmt/access-control/'
 )({
     component: RolePermissionOverviewPage,
 })
@@ -107,8 +107,8 @@ export default function RolePermissionOverviewPage() {
 
 function StatCard({ title, value, icon }: any) {
     return (
-        <HeroCard className="border-none bg-content2/50">
-            <CardBody className="flex flex-row items-center gap-4 p-5">
+        <HeroCard>
+            <HeroCardBody className="flex flex-row items-center gap-4 p-5">
                 <div className="p-3 bg-background rounded-2xl shadow-sm">
                     {icon}
                 </div>
@@ -118,7 +118,7 @@ function StatCard({ title, value, icon }: any) {
                     </p>
                     <p className="text-2xl font-black">{value}</p>
                 </div>
-            </CardBody>
+            </HeroCardBody>
         </HeroCard>
     )
 }

@@ -1,6 +1,7 @@
 import { useProfile } from '@/lib'
 import { optimizeCloudinary } from '@/lib/cloudinary'
 import {
+    APP_PERMISSIONS,
     currencyFormatter,
     getAllowedJobColumns,
     IMAGES,
@@ -75,10 +76,11 @@ export default function WorkbenchTable({
     pagination,
     onLimitChange,
 }: Props) {
-    const { isAdmin, isAccounting, userPermissions } = useProfile()
-    const isAdminOrAccounting = isAdmin || isAccounting
+    const { userPermissions } = useProfile()
 
-    console.log(userPermissions)
+    const showJobSentitive = userPermissions.includes(
+        APP_PERMISSIONS.JOB.READ_SENSITIVE
+    )
 
     const selectedKeys = useStore(
         pCenterTableStore,
@@ -97,13 +99,12 @@ export default function WorkbenchTable({
     const headerColumns = useMemo(() => {
         // Filter master list by role permissions
         const allowed = getAllowedJobColumns('all')
-
         // Define specific set for Workbench view
         const workbenchUids = [
             'thumbnailUrl',
             'no',
             'displayName',
-            isAdminOrAccounting ? 'totalStaffCost' : 'staffCost', // Role-based dynamic UID
+            showJobSentitive ? 'totalStaffCost' : 'staffCost', // Role-based dynamic UID
             'assignments',
             'isPaid',
             'dueAt',
@@ -112,7 +113,7 @@ export default function WorkbenchTable({
         ]
 
         return allowed.filter((col) => workbenchUids.includes(col.uid))
-    }, [userPermissions, isAdminOrAccounting])
+    }, [userPermissions])
 
     const topContent = useMemo(() => {
         return (
@@ -236,7 +237,7 @@ export default function WorkbenchTable({
                 case 'totalStaffCost':
                 case 'staffCost': {
                     // Determine value based on role vs dynamic column key
-                    const cost = isAdminOrAccounting
+                    const cost = showJobSentitive
                         ? item.totalStaffCost
                         : item.staffCost
                     return (
@@ -338,7 +339,7 @@ export default function WorkbenchTable({
                     return cellValue as ReactNode
             }
         },
-        [isAdminOrAccounting, onRefresh, onViewDetail, onAssignMember]
+        [showJobSentitive, onRefresh, onViewDetail, onAssignMember]
     )
 
     return (

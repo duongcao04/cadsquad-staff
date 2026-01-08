@@ -42,7 +42,7 @@ export const AdminHeader = () => {
             className="shadow-borderSM"
         >
             {/* Logo */}
-            <div className="h-full container grid grid-cols-[200px_1fr_220px] gap-5 items-center">
+            <div className="h-14 container grid grid-cols-[200px_1fr_220px] gap-5 items-center">
                 <Link
                     to="/admin"
                     className="flex items-end justify-start group"

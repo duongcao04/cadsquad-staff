@@ -1,6 +1,7 @@
 import { permissionsListOptions } from '@/lib/queries'
-import CreatePermissionModal from '@/shared/components/role-and-permission/CreatePermissionModal'
 import {
+    BreadcrumbItem,
+    Breadcrumbs,
     Button,
     Chip,
     Input,
@@ -11,20 +12,20 @@ import {
     TableHeader,
     TableRow,
     Tooltip,
-    useDisclosure,
 } from '@heroui/react'
 import { useSuspenseQueries } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { PlusIcon, SearchIcon, TrashIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 export const Route = createFileRoute(
-    '/_administrator/admin/mgmt/role-n-permission/permissions'
+    '/_administrator/admin/mgmt/access-control/permissions'
 )({
     component: AllPermissionsPage,
 })
 
 export default function AllPermissionsPage() {
+    const router = useRouter()
     const [
         {
             data: { permissions },
@@ -32,7 +33,6 @@ export default function AllPermissionsPage() {
     ] = useSuspenseQueries({
         queries: [{ ...permissionsListOptions() }],
     })
-    const { isOpen, onOpen, onClose } = useDisclosure()
     const [filterValue, setFilterValue] = useState('')
 
     const filteredItems = useMemo(() => {
@@ -43,14 +43,20 @@ export default function AllPermissionsPage() {
         )
     }, [filterValue])
 
-    const handleCreatePermission = () => {
-        // console.log('New Permission Data:', data)
-        // Logic gọi API thêm quyền ở đây
-        onClose()
-    }
-
     return (
         <div className="p-6 space-y-6">
+            <Breadcrumbs variant="light">
+                <BreadcrumbItem
+                    onPress={() =>
+                        router.navigate({
+                            href: '..',
+                        })
+                    }
+                >
+                    Access Control
+                </BreadcrumbItem>
+                <BreadcrumbItem>System Permissions</BreadcrumbItem>
+            </Breadcrumbs>
             {/* Header Section */}
             <div className="flex justify-between items-center gap-4">
                 <div>
@@ -61,14 +67,6 @@ export default function AllPermissionsPage() {
                         Manage granular access controls
                     </p>
                 </div>
-                <Button
-                    onPress={onOpen} // Kích hoạt Modal
-                    color="primary"
-                    startContent={<PlusIcon size={18} />}
-                    className="font-bold shadow-lg shadow-primary/20"
-                >
-                    New Permission
-                </Button>
             </div>
 
             {/* Search Toolbar */}
@@ -146,13 +144,6 @@ export default function AllPermissionsPage() {
                     ))}
                 </TableBody>
             </Table>
-
-            {/* Modal đã tồn tại */}
-            <CreatePermissionModal
-                isOpen={isOpen}
-                onClose={onClose}
-                onConfirm={handleCreatePermission}
-            />
         </div>
     )
 }

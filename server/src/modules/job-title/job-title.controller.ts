@@ -57,8 +57,6 @@ export class JobTitleController {
         description: 'Return a list of job titles.',
         type: [JobTitleResponseDto],
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.JOB_TITLE.READ)
     async findAll() {
         return this.jobTitleService.findAll()
     }
@@ -73,8 +71,6 @@ export class JobTitleController {
         description: 'Return a single job title.',
         type: JobTitleResponseDto,
     })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.JOB_TITLE.READ)
     async findOne(@Param('id') id: string) {
         return this.jobTitleService.findById(id)
     }
