@@ -6,18 +6,12 @@ import {
     CheckSquare,
     ChevronLeft,
     ChevronRight,
-    DiamondPercent,
-    Dock,
-    FileText,
     Group,
     LayoutDashboard,
-    Mail,
     MonitorCog,
     PieChart,
     Settings,
-    Settings2,
     ShieldUser,
-    UserPlus,
     Users,
 } from 'lucide-react'
 import React from 'react'
@@ -174,19 +168,19 @@ export const AdminSidebar = ({
                                     isCollapsed={isCollapsed}
                                     url={INTERNAL_URLS.jobManage}
                                 />
-                                <SidebarItem
+                                {/* <SidebarItem
                                     icon={FileText}
                                     label="Files & Docs"
                                     isCollapsed={isCollapsed}
                                     url={INTERNAL_URLS.fileDocs}
-                                />
-                                <SidebarItem
+                                /> */}
+                                {/* <SidebarItem
                                     icon={Mail}
                                     label="Inbox"
                                     badge={5}
                                     isCollapsed={isCollapsed}
                                     url={INTERNAL_URLS.admin + '/inbox'}
-                                />
+                                /> */}
                                 <SidebarItem
                                     icon={Calendar}
                                     label="Schedule"
@@ -233,14 +227,14 @@ export const AdminSidebar = ({
                                     url={INTERNAL_URLS.roleAndPermissionManage}
                                 />
                             )}
-                            {isAdmin && (
+                            {/* {isAdmin && (
                                 <SidebarItem
                                     icon={UserPlus}
                                     label="Invite Member"
                                     isCollapsed={isCollapsed}
                                     url={INTERNAL_URLS.inviteMember}
                                 />
-                            )}
+                            )} */}
                         </div>
                     </div>
 
@@ -252,12 +246,12 @@ export const AdminSidebar = ({
                             </p>
                         )}
                         <div className="space-y-1">
-                            <SidebarItem
+                            {/* <SidebarItem
                                 icon={DiamondPercent}
                                 label="Overview"
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.profitLoss}
-                            />
+                            /> */}
                             <SidebarItem
                                 icon={BadgeDollarSign}
                                 label="Transaction Reports"
@@ -271,24 +265,24 @@ export const AdminSidebar = ({
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.pendingPayouts}
                             />
-                            <SidebarItem
+                            {/* <SidebarItem
                                 icon={Dock}
                                 label="Tax Declaration"
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.payroll}
-                            />
+                            /> */}
                             <SidebarItem
                                 icon={Group}
                                 label="Reimbursements"
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.reimbursements}
                             />
-                            <SidebarItem
+                            {/* <SidebarItem
                                 icon={Settings2}
                                 label="Financial Settings"
                                 isCollapsed={isCollapsed}
                                 url={INTERNAL_URLS.financialSettings}
-                            />
+                            /> */}
                         </div>
                     </div>
 
@@ -303,7 +297,7 @@ export const AdminSidebar = ({
                                     <Link to={INTERNAL_URLS.departmentsManage}>
                                         <HeroButton
                                             isIconOnly
-                                            size="xs"
+                                            size="sm"
                                             className="p-1!"
                                             variant="light"
                                             color="default"

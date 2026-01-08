@@ -29,12 +29,12 @@ const SETTINGS_MENU = [
                 icon: Lock,
                 href: INTERNAL_URLS.loginAndSecurity,
             },
-            {
-                key: 'notifications',
-                label: 'Notifications',
-                icon: Bell,
-                href: INTERNAL_URLS.notificationsSettings,
-            },
+            // {
+            //     key: 'notifications',
+            //     label: 'Notifications',
+            //     icon: Bell,
+            //     href: INTERNAL_URLS.notificationsSettings,
+            // },
         ],
     },
     {
@@ -46,12 +46,12 @@ const SETTINGS_MENU = [
                 icon: Palette,
                 href: INTERNAL_URLS.appearance,
             },
-            {
-                key: 'language',
-                label: 'Language & Region',
-                icon: Globe,
-                href: INTERNAL_URLS.languageAndRegionSettings,
-            },
+            // {
+            //     key: 'language',
+            //     label: 'Language & Region',
+            //     icon: Globe,
+            //     href: INTERNAL_URLS.languageAndRegionSettings,
+            // },
         ],
     },
 ]
