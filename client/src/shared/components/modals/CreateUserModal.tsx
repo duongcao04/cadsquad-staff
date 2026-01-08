@@ -1,5 +1,9 @@
 import { generatePassword } from '@/lib'
-import { departmentsListOptions, jobTitlesListOptions } from '@/lib/queries'
+import {
+    departmentsListOptions,
+    jobTitlesListOptions,
+    rolesListOptions,
+} from '@/lib/queries'
 import {
     addToast,
     Button,
@@ -24,7 +28,6 @@ import {
     KeyRoundIcon,
     MailIcon,
     RefreshCwIcon,
-    Shield,
     ShieldCheckIcon,
     UserIcon,
 } from 'lucide-react'
@@ -33,14 +36,14 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useCreateUserMutation } from '../../../lib/queries/useUser'
-import { RoleIcons, ROLES_LIST, transformEmail } from '../../../lib/utils'
-import { RoleEnum } from '../../enums'
-import { TDepartment, TJobTitle } from '../../types'
+import { transformEmail } from '../../../lib/utils'
+import { TDepartment, TJobTitle, TRole } from '../../types'
 import { HeroInput } from '../ui/hero-input'
 import { HeroModal, HeroModalContent } from '../ui/hero-modal'
 import { HeroPasswordInput } from '../ui/hero-password-input'
 import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 import { useDevice } from '../../hooks'
+import HeroCopyButton from '../ui/hero-copy-button'
 
 const ONLY_INTERNAL_EMAIL = false
 
@@ -65,7 +68,7 @@ const stepOneSchema = z.object({
                     'Only @cadsquad.vn emails are allowed for internal staff',
             }
         ),
-    role: z.string().min(1, 'Role is required'),
+    roleId: z.string().optional(),
 })
 const stepTwoSchema = z.object({
     departmentId: z.string().optional(),
@@ -87,7 +90,7 @@ export type TCreateUserInput = z.infer<typeof createUserSchema>
 type UserCreatedValues = {
     displayName: string
     password: string
-    role: RoleEnum
+    role?: TRole
     email: string
 }
 export default function CreateUserModal({
@@ -104,14 +107,18 @@ export default function CreateUserModal({
         null
     )
     const onConfirm = async (values: TCreateUserInput) => {
+        console.log(values)
+
         await createUserMutation.mutateAsync(values, {
-            onSuccess() {
+            onSuccess(res) {
+                console.log(res)
+
                 setIsSuccess(true)
                 setUserCreated({
                     displayName: values.displayName,
                     password: values.password ?? 'Secret value',
                     email: values.email,
-                    role: values.role as RoleEnum,
+                    role: res.role,
                 })
             },
         })
@@ -147,7 +154,7 @@ export default function CreateUserModal({
                                     email:
                                         userCreated?.email ??
                                         'unknown@cadsquad.vn',
-                                    role: userCreated?.role ?? RoleEnum.USER,
+                                    role: userCreated?.role ?? undefined,
                                     password:
                                         userCreated?.password ?? 'Secret value',
                                 }}
@@ -175,10 +182,17 @@ const CreateUserFormContent = ({
     const [isManualPassword, setIsManualPassword] = useState(false)
     const [generatedPwd, setGeneratedPwd] = useState(() => generatePassword())
 
-    const [deptQuery, jobQuery] = useSuspenseQueries({
+    const [
+        deptQuery,
+        jobQuery,
+        {
+            data: { roles },
+        },
+    ] = useSuspenseQueries({
         queries: [
             { ...departmentsListOptions() },
             { ...jobTitlesListOptions() },
+            { ...rolesListOptions() },
         ],
     })
 
@@ -189,7 +203,7 @@ const CreateUserFormContent = ({
         initialValues: {
             displayName: '',
             email: '',
-            role: 'USER',
+            roleId: '',
             departmentId: '',
             jobTitleId: '',
             password: '',
@@ -302,51 +316,27 @@ const CreateUserFormContent = ({
                                 )}
                             </FastField>
 
-                            <FastField name="role">
+                            <FastField name="roleId">
                                 {({ field }: any) => (
                                     <HeroSelect
-                                        isRequired
                                         label="System Role"
                                         labelPlacement="outside-top"
+                                        placeholder="Select user system role"
                                         selectedKeys={[field.value]}
                                         disallowEmptySelection
-                                        startContent={(() => {
-                                            const SelectedIcon =
-                                                RoleIcons[
-                                                    formik.values
-                                                        .role as keyof typeof RoleIcons
-                                                ]
-                                            return SelectedIcon ? (
-                                                <SelectedIcon
-                                                    size={16}
-                                                    className="text-text-subdued"
-                                                />
-                                            ) : (
-                                                <Shield
-                                                    size={16}
-                                                    className="text-text-subdued"
-                                                />
-                                            )
-                                        })()}
                                         onSelectionChange={(keys) =>
                                             formik.setFieldValue(
-                                                'role',
+                                                'roleId',
                                                 Array.from(keys)[0]
                                             )
                                         }
                                     >
-                                        {ROLES_LIST.map((r) => (
+                                        {roles.map((r) => (
                                             <HeroSelectItem
-                                                key={r.value}
-                                                textValue={r.label}
-                                                startContent={
-                                                    <r.icon
-                                                        size={14}
-                                                        className="text-text-subdued"
-                                                    />
-                                                }
+                                                key={r.id}
+                                                textValue={r.displayName}
                                             >
-                                                {r.label}
+                                                {r.displayName}
                                             </HeroSelectItem>
                                         ))}
                                     </HeroSelect>
@@ -651,7 +641,9 @@ export const CreateUserSuccess = ({
                         <p className="text-[10px] uppercase font-black text-text-subdued tracking-tight">
                             System Role
                         </p>
-                        <p className="text-sm font-bold">{data.role}</p>
+                        <p className="text-sm font-bold">
+                            {data?.role?.displayName}
+                        </p>
                     </div>
                 </div>
 
@@ -667,15 +659,8 @@ export const CreateUserSuccess = ({
                                     {data.password}
                                 </p>
                             </div>
-                            <Tooltip content="Copy info">
-                                <Button
-                                    isIconOnly
-                                    size="sm"
-                                    variant="flat"
-                                    onPress={handleCopyAll}
-                                >
-                                    <ClipboardCheckIcon size={16} />
-                                </Button>
+                            <Tooltip content="Copy password">
+                                <HeroCopyButton textValue={data.password} />
                             </Tooltip>
                         </div>
                     </>

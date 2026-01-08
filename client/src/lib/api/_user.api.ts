@@ -9,6 +9,7 @@ import type { IUserResponse } from '@/shared/interfaces'
 import queryString from 'query-string'
 import { TCreateUserInput } from '../../shared/components'
 import { TUserSecurityLog } from '../../shared/types'
+import lodash from 'lodash';
 
 export interface IProfileOverview {
     summary: {
@@ -34,10 +35,10 @@ export const userApi = {
                 {
                     displayName: data.displayName,
                     email: data.email,
-                    role: data.role,
+                    roleId: !lodash.isEmpty(data.roleId) ? data.roleId :undefined,
                     password: data.password,
-                    jobTitleId: data.jobTitleId,
-                    departmentId: data.departmentId,
+                    jobTitleId: !lodash.isEmpty(data.jobTitleId) ? data.jobTitleId :undefined,
+                    departmentId: !lodash.isEmpty(data.departmentId) ? data.departmentId :undefined,
                 }
             )
             .then((res) => res.data)

@@ -39,6 +39,18 @@ export class UserService {
         })
         if (existingUser) throw new ConflictException('Email already exists')
 
+        let roleId: string | null = null
+        if (dto.roleId) {
+            roleId = dto.roleId
+        } else {
+            const staffRoleId = await this.prismaService.role.findUnique({
+                where: { code: 'staff' },
+            })
+            if (staffRoleId) {
+                roleId = staffRoleId.id
+            }
+        }
+
         // 2. Hash mật khẩu
         const hashedPassword = await this.bcryptService.hash(dto.password)
 
@@ -50,15 +62,21 @@ export class UserService {
 
         // 3. Tạo User trong DB
         // Lưu ý: Better Auth cần 'name' và 'username'
-        const user = await this.prismaService.user.create({
-            data: {
-                ...dto,
-                password: hashedPassword,
-                username: username,
-                displayName: dto.displayName,
-                avatar,
-            },
-        })
+        const user = await this.prismaService.user
+            .createManyAndReturn({
+                include: {
+                    role: true,
+                },
+                data: {
+                    ...dto,
+                    password: hashedPassword,
+                    username: username,
+                    displayName: dto.displayName,
+                    avatar,
+                    roleId,
+                },
+            })
+            .then((res) => res[0])
 
         // 4. Gửi Email nếu được yêu cầu
         try {
@@ -74,7 +92,9 @@ export class UserService {
             this.logger.error(error)
         }
 
-        return user
+        return plainToInstance(UserResponseDto, user, {
+            excludeExtraneousValues: true,
+        }) as unknown as User
     }
 
     async updatePassword(

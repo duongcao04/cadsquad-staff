@@ -166,7 +166,7 @@ export const useCreateUserMutation = (onSuccess?: (res: TUser) => void) => {
                 {
                     displayName: data.displayName,
                     email: data.email,
-                    role: data.role,
+                    roleId: data.roleId,
                     departmentId: data.departmentId,
                     jobTitleId: data.jobTitleId,
                     password: data.password,
@@ -176,7 +176,7 @@ export const useCreateUserMutation = (onSuccess?: (res: TUser) => void) => {
             return mapUser(userCreated.result)
         },
 
-        onSuccess: (res: TUser) => {
+        onSuccess: (res) => {
             if (onSuccess) {
                 onSuccess(res)
             } else {

@@ -20,12 +20,9 @@ export class CreateUserDto {
     @IsEmail()
     email: string
 
-    @ApiProperty({
-        description: 'Role of the user',
-        enum: RoleEnum,
-        required: false,
-    })
+    @ApiProperty({ description: 'ID of the user role', required: false })
     @IsOptional()
+    @IsString()
     roleId?: string
 
     @ApiProperty({
@@ -39,7 +36,7 @@ export class CreateUserDto {
 
     @ApiProperty({ description: "ID of the user's job title", required: false })
     @IsOptional()
-    @IsUUID()
+    @IsString()
     jobTitleId?: string
 
     @ApiProperty({
@@ -47,6 +44,6 @@ export class CreateUserDto {
         required: false,
     })
     @IsOptional()
-    @IsUUID()
+    @IsString()
     departmentId?: string
 }
