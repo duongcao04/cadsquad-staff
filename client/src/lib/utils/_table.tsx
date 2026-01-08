@@ -1,4 +1,4 @@
-import { JobColumnKey } from '@/shared/types'
+import { JobColumnKey, TPermission } from '@/shared/types'
 import { APP_PERMISSIONS, AppPermission } from './_app-permissions'
 import { usePermission } from '../../shared/hooks'
 
@@ -85,20 +85,24 @@ export const JOB_COLUMNS: {
  * @param visibleColumns - Trạng thái từ store hoặc UI toggle
  */
 export const getAllowedJobColumns = (
-    visibleColumns: 'all' | JobColumnKey[] = 'all'
+    visibleColumns: 'all' | JobColumnKey[] = 'all',
+    userPermissions: string[]
 ) => {
-    const { hasPermission } = usePermission()
     // 1. Lọc dựa trên quyền (Security check)
     const allowedByPermission = JOB_COLUMNS.filter((column) => {
         // Nếu cột không yêu cầu quyền đặc biệt, hiển thị cho mọi người
         if (!column.requiredPermission) return true
 
         // Nếu User là Super Admin (có quyền system.manage), cho phép xem hết
-        if (hasPermission(APP_PERMISSIONS.SYSTEM.MANAGE as AppPermission))
+        if (
+            userPermissions.includes(
+                APP_PERMISSIONS.SYSTEM.MANAGE as AppPermission
+            )
+        )
             return true
 
         // Kiểm tra xem User có quyền cụ thể cho cột này không
-        return hasPermission(column.requiredPermission)
+        return userPermissions.includes(column.requiredPermission)
     })
 
     // 2. Lọc dựa trên tùy chọn hiển thị của User (UI Toggle)

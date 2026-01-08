@@ -98,7 +98,7 @@ export default function WorkbenchTable({
     // 1. Centralized Header Logic using Security Helper
     const headerColumns = useMemo(() => {
         // Filter master list by role permissions
-        const allowed = getAllowedJobColumns('all')
+        const allowed = getAllowedJobColumns('all', userPermissions)
         // Define specific set for Workbench view
         const workbenchUids = [
             'thumbnailUrl',

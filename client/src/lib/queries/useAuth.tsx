@@ -12,6 +12,7 @@ import { ApiResponse } from '../axios'
 import { onErrorToast } from './helper'
 import {
     activeSessionsListOptions,
+    mapUser,
     profileOptions,
 } from './options/user-queries'
 
@@ -135,40 +136,7 @@ export function useProfile() {
 
     const accessToken = cookie.get(COOKIES.authentication)
 
-    const profile = useMemo(() => {
-        const profileData = data
-
-        if (lodash.isEmpty(profileData)) {
-            return {} as TUser
-        }
-
-        return {
-            id: data?.id,
-            configs: data?.configs,
-            displayName: data?.displayName ?? '',
-            email: data?.email ?? '',
-            files: data?.files ?? [],
-            accounts: data?.accounts ?? [],
-            createdAt: data?.createdAt ? new Date(data?.createdAt) : null,
-            updatedAt: data?.updatedAt ? new Date(data?.updatedAt) : null,
-            role: data?.role,
-            securityLogs: data?.securityLogs ?? [],
-            filesCreated: data?.filesCreated ?? [],
-            isActive: data?.isActive ?? false,
-            jobActivityLog: data?.jobActivityLog ?? [],
-            jobsCreated: data?.jobsCreated ?? [],
-            notifications: data?.notifications ?? [],
-            sendedNotifications: data?.sendedNotifications ?? [],
-            username: data?.username ?? '',
-            avatar: data?.avatar ?? IMAGES.emptyAvatar,
-            department: data?.department ?? null,
-            jobTitle: data?.jobTitle ?? null,
-            lastLoginAt: data?.lastLoginAt
-                ? new Date(data?.lastLoginAt)
-                : new Date(),
-            phoneNumber: data?.phoneNumber ?? '',
-        } as TUser
-    }, [data])
+    const profile = useMemo(() => mapUser(data), [data])
 
     const userRole = profile?.role
 
@@ -187,7 +155,6 @@ export function useProfile() {
         isStaff,
         isAdmin,
         isAccounting,
-        accessToken,
         userRole,
         userPermissions,
     }

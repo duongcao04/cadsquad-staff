@@ -154,7 +154,7 @@ export default function ProjectCenterTable({
     onPageChange,
     onAddAttachments,
 }: ProjectCenterTableProps) {
-    const { userRole } = useProfile()
+    const { userRole, userPermissions } = useProfile()
     const { data: jobStatuses } = useJobStatuses()
 
     const hasSearchFilter = Boolean(searchKeywords)
@@ -179,7 +179,7 @@ export default function ProjectCenterTable({
 
     // Role-based header logic
     const headerColumns = useMemo(
-        () => getAllowedJobColumns(userRole, visibleColumns),
+        () => getAllowedJobColumns(visibleColumns, userPermissions),
         [visibleColumns, userRole]
     )
 
@@ -583,7 +583,11 @@ export default function ProjectCenterTable({
                         </div>
                     )
                 case 'clientName':
-                    return <p className="line-clamp-1">{data.client?.name || "Unknown client"}</p>
+                    return (
+                        <p className="line-clamp-1">
+                            {data.client?.name || 'Unknown client'}
+                        </p>
+                    )
                 case 'type':
                     return (
                         <p className="line-clamp-1">{data.type.displayName}</p>
