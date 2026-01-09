@@ -193,7 +193,7 @@ function ProjectCenterTableContent({
     onFiltersChange: (newFilters: TJobFilters) => void
 }) {
     const { isSmallView } = useDevice()
-    const { userRole } = useProfile()
+    const { userRole, userPermissions } = useProfile()
     const [selectedJob, setSelectedJob] = useState<string | null>(null)
 
     const { data, isFetching, refetch } = useQuery({
@@ -220,7 +220,7 @@ function ProjectCenterTableContent({
         (state) => state.jobColumns
     )
     const headerColumns = useMemo(() => {
-        return getAllowedJobColumns(storedColumns)
+        return getAllowedJobColumns(storedColumns, userPermissions)
     }, [userRole, storedColumns])
 
     const viewColDisclosure = useDisclosure()
@@ -235,9 +235,10 @@ function ProjectCenterTableContent({
     )
 
     const handleExport = async () => {
-        const exportColumns = getAllowedJobColumns('all').filter(
-            (c) => c.uid !== 'action'
-        )
+        const exportColumns = getAllowedJobColumns(
+            'all',
+            userPermissions
+        ).filter((c) => c.uid !== 'action')
         try {
             const res = await jobApi.findAll({ ...search, tab, isAll: '1' })
             const jobs = (res.result?.data as TJob[]) || []

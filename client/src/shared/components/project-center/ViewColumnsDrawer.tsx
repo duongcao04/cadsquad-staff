@@ -28,12 +28,12 @@ import { getAllowedJobColumns } from '../../../lib/utils'
 type Props = { isOpen: boolean; onClose: () => void }
 
 export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
-    const { userRole } = useProfile() // Destructure role directly
+    const { userPermissions } = useProfile() // Destructure role directly
 
     // 1. Use the helper to get only the columns this specific role is allowed to see/toggle
     const AVAILABLE_COLUMNS = useMemo(() => {
-        return getAllowedJobColumns(userRole, 'all')
-    }, [userRole])
+        return getAllowedJobColumns('all', userPermissions)
+    }, [userPermissions])
 
     const visibleColumns = useStore(
         pCenterTableStore,
@@ -131,7 +131,7 @@ export function ViewColumnsDrawer({ isOpen, onClose }: Props) {
 
     // 2. Pass the role to the toggle function to ensure restricted keys aren't saved
     const handleSwitch = (key: JobColumnKey, isVisible: boolean) =>
-        toggleJobColumns(key, isVisible, userRole)
+        toggleJobColumns(key, isVisible, userPermissions)
 
     return (
         <Drawer

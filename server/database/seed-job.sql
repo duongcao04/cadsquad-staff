@@ -27,10 +27,10 @@ BEGIN
             v_income := floor(random() * (1000 - 500 + 1) + 500);
             v_assign_count := floor(random() * (4 - 2 + 1) + 2);
 
-            -- 1. Insert Job (Initially set sumStaffCost to 0, we update it after assignments)
+            -- 1. Insert Job (Initially set totalStaffCost to 0, we update it after assignments)
             INSERT INTO "Job" (
                 id, no, "typeId", "displayName", "description", 
-                "incomeCost", "sumStaffCost", "createdById", "statusId", 
+                "incomeCost", "totalStaffCost", "createdById", "statusId", 
                 priority, "dueAt", "createdAt", "updatedAt"
             ) VALUES (
                 v_job_id, 
@@ -63,9 +63,9 @@ BEGIN
             ORDER BY random()
             LIMIT v_assign_count;
 
-            -- 3. Update the Job sumStaffCost with the actual sum of assignments
+            -- 3. Update the Job totalStaffCost with the actual sum of assignments
             UPDATE "Job" 
-            SET "sumStaffCost" = (
+            SET "totalStaffCost" = (
                 SELECT SUM("staffCost") 
                 FROM "JobAssignment" 
                 WHERE "jobId" = v_job_id

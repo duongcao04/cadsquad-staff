@@ -2,7 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import lodash from 'lodash'
 import queryString from 'query-string'
 
-import { jobApi, jobStatusApi } from '@/lib/api'
+import { jobApi } from '@/lib/api'
 import { TJobQueryInput } from '@/lib/validationSchemas'
 import { ActivityTypeEnum, ProjectCenterTabEnum } from '@/shared/enums'
 import { IJobActivityLogResponse, IJobResponse } from '@/shared/interfaces'
@@ -234,16 +234,6 @@ export const jobAssigneesOptions = (jobId: string) =>
                 : [],
             totalAssignees: res?.result?.totalAssignees ?? 0,
         }),
-    })
-
-// 9. Jobs By Status Code
-export const jobsByStatusCodeOptions = (statusCode?: string) =>
-    queryOptions({
-        queryKey: ['jobs', 'status', 'code', statusCode],
-        queryFn: () =>
-            statusCode ? jobStatusApi.findJobsByStatusCode(statusCode) : null,
-        enabled: !!statusCode,
-        select: (res) => res?.result,
     })
 
 // 10. Job Detail (Chi tiết theo ID)

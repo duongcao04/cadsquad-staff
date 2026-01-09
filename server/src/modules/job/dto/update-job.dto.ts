@@ -6,6 +6,9 @@ export class UpdateJobDto extends PartialType(
     OmitType(CreateJobDto, [
         'no',
         'attachmentUrls',
+        'typeId',
+        'paymentChannelId',
+        'totalStaffCost',
     ] as const)
 ) {
     @ApiProperty({

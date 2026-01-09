@@ -5,6 +5,7 @@ import {
     currencyFormatter,
     DUE_DATE_PRESETS,
     getAllowedJobColumns,
+    getDueDateRange,
     INTERNAL_URLS,
     TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
@@ -68,42 +69,6 @@ import { HeroTooltip } from '../ui/hero-tooltip'
 import { FilterBuilder } from './FilterDropdown'
 import ProjectCenterTableBulkActions from './ProjectCenterTableBulkActions'
 import { ProjectCenterTableQuickActions } from './ProjectCenterTableQuickActions'
-
-export const getDueDateRange = (key: string | undefined | null) => {
-    if (!key) return { dueAtFrom: undefined, dueAtTo: undefined }
-
-    const now = dayjs()
-
-    switch (key) {
-        case 'lt_1_week':
-            return {
-                dueAtFrom: now.toISOString(),
-                dueAtTo: now.add(1, 'week').toISOString(),
-            }
-        case 'lt_2_weeks':
-            return {
-                dueAtFrom: now.toISOString(),
-                dueAtTo: now.add(2, 'weeks').toISOString(),
-            }
-        case 'lt_3_weeks':
-            return {
-                dueAtFrom: now.toISOString(),
-                dueAtTo: now.add(3, 'weeks').toISOString(),
-            }
-        case 'lt_1_month':
-            return {
-                dueAtFrom: now.toISOString(),
-                dueAtTo: now.add(1, 'month').toISOString(),
-            }
-        case 'gt_1_month':
-            return {
-                dueAtFrom: now.add(1, 'month').toISOString(),
-                dueAtTo: undefined, // "Greater than" implies no upper limit
-            }
-        default:
-            return { dueAtFrom: undefined, dueAtTo: undefined }
-    }
-}
 
 type ProjectCenterTableProps = {
     data: TJob[]
@@ -452,7 +417,6 @@ export default function ProjectCenterTable({
                                 placeholder="Due in"
                                 isClearable
                                 onSelectionChange={(value) => {
-                                    console.log(value.currentKey)
                                     const { dueAtFrom, dueAtTo } =
                                         getDueDateRange(value.currentKey)
                                     onFiltersChange?.({
@@ -628,12 +592,20 @@ export default function ProjectCenterTable({
 
                 case 'staffCost': // Individual cost for User
                     return (
-                        <p className="font-bold text-right text-currency">
-                            {currencyFormatter(
-                                data.staffCost ?? 0,
-                                'Vietnamese'
+                        <>
+                            {data.staffCost ? (
+                                <p className="font-bold text-right text-currency">
+                                    {currencyFormatter(
+                                        data.staffCost,
+                                        'Vietnamese'
+                                    )}
+                                </p>
+                            ) : (
+                                <p className="text-xs italic text-text-subdued text-right">
+                                    Not assigned
+                                </p>
                             )}
-                        </p>
+                        </>
                     )
                 case 'status':
                     return (

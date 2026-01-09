@@ -74,7 +74,7 @@ export class JobService {
             return {
                 ...job,
                 totalStaffCost: canReadSensitiveData
-                    ? job.sumStaffCost
+                    ? job.totalStaffCost
                     : undefined,
                 staffCost: personalCost ?? undefined,
                 assignments: job.assignments?.map((asm: any) => ({
@@ -356,7 +356,7 @@ export class JobService {
         })
         const mappedData = result.map((it) => ({
             ...it,
-            totalStaffCost: it.sumStaffCost,
+            totalStaffCost: it.totalStaffCost,
         }))
         return mappedData
     }
@@ -593,7 +593,7 @@ export class JobService {
                         ? { connect: { id: paymentChannelId } }
                         : undefined,
                     incomeCost: parseFloat(incomeCost) || 0,
-                    sumStaffCost: parseFloat(totalStaffCost) || 0,
+                    totalStaffCost: parseFloat(totalStaffCost) || 0,
                     client: {
                         connectOrCreate: {
                             where: { name: clientName },
@@ -759,7 +759,7 @@ export class JobService {
 
             await tx.job.update({
                 where: { id: jobId },
-                data: { sumStaffCost: aggregate._sum.staffCost || 0 },
+                data: { totalStaffCost: aggregate._sum.staffCost || 0 },
             })
 
             // --- FIX NOTIFICATION ---
@@ -815,7 +815,7 @@ export class JobService {
 
             await tx.job.update({
                 where: { id: updatedAssignment.jobId },
-                data: { sumStaffCost: aggregate._sum.staffCost || 0 },
+                data: { totalStaffCost: aggregate._sum.staffCost || 0 },
             })
 
             // 3. Log the financial change
@@ -862,7 +862,7 @@ export class JobService {
             await tx.job.update({
                 where: { id: jobId },
                 data: {
-                    sumStaffCost: aggregate._sum.staffCost || 0,
+                    totalStaffCost: aggregate._sum.staffCost || 0,
                 },
             })
 

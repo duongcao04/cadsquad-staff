@@ -1,5 +1,8 @@
 -- CreateEnum
-CREATE TYPE "EntityEnum" AS ENUM ('JOB', 'USER', 'ROLE', 'PERMISSION', 'CLIENT', 'PAYMENT_CHANNEL', 'DEPARTMENT', 'JOB_TITLE', 'COMMUNITY', 'TOPIC', 'POST', 'COMMENT', 'FILE', 'NOTIFICATION', 'SYSTEM', 'ANALYTICS');
+CREATE TYPE "SecurityLogStatus" AS ENUM ('SUCCESS', 'FAILED', 'WARNING');
+
+-- CreateEnum
+CREATE TYPE "EntityEnum" AS ENUM ('JOB', 'USER', 'ROLE', 'PERMISSION', 'CLIENT', 'PAYMENT_CHANNEL', 'DEPARTMENT', 'JOB_TITLE', 'JOB_TYPE', 'JOB_STATUS', 'COMMUNITY', 'TOPIC', 'POST', 'COMMENT', 'FILE', 'NOTIFICATION', 'SYSTEM', 'ANALYTICS');
 
 -- CreateEnum
 CREATE TYPE "UserConfigGroupEnum" AS ENUM ('SYSTEM', 'USER');
@@ -71,7 +74,6 @@ CREATE TABLE "User" (
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "departmentId" TEXT,
     "phoneNumber" TEXT,
-    "role" "RoleEnum" NOT NULL DEFAULT 'USER',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "lastLoginAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -80,6 +82,19 @@ CREATE TABLE "User" (
     "roleId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserSecurityLog" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "event" TEXT NOT NULL,
+    "status" "SecurityLogStatus" NOT NULL DEFAULT 'SUCCESS',
+    "ipAddress" TEXT,
+    "userAgent" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserSecurityLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -104,6 +119,18 @@ CREATE TABLE "Permission" (
     "permissionGroupId" TEXT,
 
     CONSTRAINT "Permission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserPermission" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "permissionId" TEXT NOT NULL,
+    "isDenied" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserPermission_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -253,7 +280,7 @@ CREATE TABLE "Job" (
     "attachmentUrls" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "clientId" TEXT,
     "incomeCost" DOUBLE PRECISION NOT NULL,
-    "sumStaffCost" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "totalStaffCost" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "createdById" TEXT NOT NULL,
     "paymentChannelId" TEXT,
     "statusId" TEXT NOT NULL,
@@ -518,6 +545,12 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
+CREATE INDEX "UserSecurityLog_userId_idx" ON "UserSecurityLog"("userId");
+
+-- CreateIndex
+CREATE INDEX "UserSecurityLog_createdAt_idx" ON "UserSecurityLog"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Role_displayName_key" ON "Role"("displayName");
 
 -- CreateIndex
@@ -531,6 +564,9 @@ CREATE UNIQUE INDEX "Permission_entityAction_key" ON "Permission"("entityAction"
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Permission_entity_action_key" ON "Permission"("entity", "action");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserPermission_userId_permissionId_key" ON "UserPermission"("userId", "permissionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "PermissionGroup_code_key" ON "PermissionGroup"("code");
@@ -674,7 +710,16 @@ ALTER TABLE "User" ADD CONSTRAINT "User_managerId_fkey" FOREIGN KEY ("managerId"
 ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "UserSecurityLog" ADD CONSTRAINT "UserSecurityLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Permission" ADD CONSTRAINT "Permission_permissionGroupId_fkey" FOREIGN KEY ("permissionGroupId") REFERENCES "PermissionGroup"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserPermission" ADD CONSTRAINT "UserPermission_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserPermission" ADD CONSTRAINT "UserPermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

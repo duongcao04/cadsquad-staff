@@ -368,7 +368,7 @@ model Job {
   clientId       String?
   incomeCost     Float
 
-  sumStaffCost Float @default(0)
+  totalStaffCost Float @default(0)
 
   assignments JobAssignment[]
 

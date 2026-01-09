@@ -3,7 +3,9 @@ import { optimizeCloudinary } from '@/lib/cloudinary'
 import {
     APP_PERMISSIONS,
     currencyFormatter,
+    DUE_DATE_PRESETS,
     getAllowedJobColumns,
+    getDueDateRange,
     IMAGES,
     TABLE_ROW_PER_PAGE_OPTIONS,
 } from '@/lib/utils'
@@ -17,6 +19,7 @@ import {
     SelectItem,
     Spinner,
 } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useStore } from '@tanstack/react-store'
 import { Avatar, Image } from 'antd'
 import dayjs from 'dayjs'
@@ -24,11 +27,13 @@ import lodash from 'lodash'
 import {
     EyeIcon,
     PinIcon,
-    RotateCcw,
+    RefreshCwIcon,
     SearchIcon,
     UserRoundPlus,
 } from 'lucide-react'
 import { ReactNode, useCallback, useMemo } from 'react'
+import { jobStatusesListOptions } from '../../../lib/queries'
+import { TJobFilters } from '../../../lib/validationSchemas'
 import { JobStatusSystemTypeEnum } from '../../enums/_job-status-system-type.enum'
 import { IPaginate } from '../../interfaces'
 import { pCenterTableStore } from '../../stores'
@@ -37,6 +42,7 @@ import { PaidChip } from '../chips/PaidChip'
 import JobStatusDropdown from '../dropdowns/JobStatusDropdown'
 import CountdownTimer from '../ui/countdown-timer'
 import HeroCopyButton from '../ui/hero-copy-button'
+import { HeroSelect, HeroSelectItem } from '../ui/hero-select'
 import {
     HeroTable,
     HeroTableBody,
@@ -52,6 +58,7 @@ type Props = {
     pagination: IPaginate
     sort: string
     search?: string
+    filters: TJobFilters
     onRefresh: () => void
     onSearchChange: (newSearch?: string) => void
     onPageChange: (newPage: number) => void
@@ -59,23 +66,32 @@ type Props = {
     onLimitChange: (newLimit: number) => void
     onViewDetail: (jobNo: string) => void
     onAssignMember: (jobNo: string) => void
+    onFiltersChange: (newFilters: TJobFilters) => void
     isLoadingData: boolean
     data: TJob[]
 }
 export default function WorkbenchTable({
     isLoadingData = false,
     data,
-    onViewDetail,
     sort,
     search,
+    filters,
+    onViewDetail,
     onSearchChange,
     onSortChange,
     onAssignMember,
     onRefresh,
     onPageChange,
+    onFiltersChange,
     pagination,
     onLimitChange,
 }: Props) {
+    const {
+        data: { jobStatuses },
+    } = useSuspenseQuery({
+        ...jobStatusesListOptions(),
+    })
+
     const { userPermissions } = useProfile()
 
     const showJobSentitive = userPermissions.includes(
@@ -138,17 +154,119 @@ export default function WorkbenchTable({
                 />
                 <div className="w-px mx-3 h-5 bg-text-muted"></div>
                 <Button
-                    startContent={<RotateCcw size={14} />}
+                    startContent={
+                        <RefreshCwIcon
+                            size={14}
+                            className={`text-small ${
+                                isLoadingData ? 'animate-spin-smooth' : ''
+                            }`}
+                        />
+                    }
+                    className="border-1"
                     variant="bordered"
                     size="sm"
-                    className="hover:shadow-SM border-border-default border"
                     onPress={onRefresh}
                 >
-                    Refresh
+                    <span className="font-medium">Refresh</span>
                 </Button>
+
+                <div className="w-px mx-3 h-5 bg-text-muted"></div>
+
+                <div className="flex gap-3">
+                    <HeroSelect
+                        selectionMode="multiple"
+                        className="min-w-34"
+                        size="sm"
+                        classNames={{
+                            trigger:
+                                'hover:shadow-SM border-border-default border cursor-pointer',
+                            popoverContent: 'w-[200px]!',
+                        }}
+                        placeholder="Status"
+                        isClearable
+                        onClear={() => {
+                            onFiltersChange({
+                                ...filters,
+                                status: undefined,
+                            })
+                        }}
+                        onSelectionChange={(value) => {
+                            const arrayToString = Array.from(value).join(',')
+                            onFiltersChange?.({
+                                ...filters,
+                                status: arrayToString,
+                            })
+                        }}
+                        renderValue={(selectedItems) => {
+                            return (
+                                <p className="text-text-7">
+                                    {selectedItems.length} status
+                                    {selectedItems.length > 1 ? 'es' : ''}
+                                </p>
+                            )
+                        }}
+                    >
+                        {jobStatuses.map((jobStatus) => {
+                            return (
+                                <HeroSelectItem key={jobStatus.code}>
+                                    <div className="flex items-center justify-start gap-2">
+                                        <div
+                                            className="size-2 rounded-full"
+                                            style={{
+                                                backgroundColor:
+                                                    jobStatus.hexColor
+                                                        ? jobStatus.hexColor
+                                                        : '#000000',
+                                            }}
+                                        />
+                                        <p>{jobStatus.displayName}</p>
+                                    </div>
+                                </HeroSelectItem>
+                            )
+                        })}
+                    </HeroSelect>
+
+                    <HeroSelect
+                        className="min-w-34"
+                        size="sm"
+                        classNames={{
+                            trigger:
+                                'hover:shadow-SM border-border-default border cursor-pointer',
+                            popoverContent: 'w-[200px]!',
+                        }}
+                        placeholder="Due in"
+                        isClearable
+                        onSelectionChange={(value) => {
+                            console.log(value.currentKey)
+                            const { dueAtFrom, dueAtTo } = getDueDateRange(
+                                value.currentKey
+                            )
+                            onFiltersChange?.({
+                                ...filters,
+                                dueAtFrom: dueAtFrom?.split('T')[0],
+                                dueAtTo: dueAtTo?.split('T')[0],
+                            })
+                        }}
+                        renderValue={(selectedItems) => {
+                            return (
+                                <p className="text-text-7">
+                                    {selectedItems[0]?.textValue}
+                                </p>
+                            )
+                        }}
+                    >
+                        {DUE_DATE_PRESETS.map((dueIn) => {
+                            return (
+                                <HeroSelectItem key={dueIn.key}>
+                                    {dueIn.label}
+                                </HeroSelectItem>
+                            )
+                        })}
+                    </HeroSelect>
+                </div>
             </div>
         )
-    }, [search, onRefresh, onSearchChange])
+    }, [search, onRefresh, onSearchChange, isLoadingData])
 
     const bottomContent = useMemo(() => {
         return (

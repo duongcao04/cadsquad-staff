@@ -159,7 +159,6 @@ export class UserService {
 
         // Xây dựng bộ lọc động
         const where: Prisma.UserWhereInput = {
-            isActive: true, // Chỉ lấy user đang hoạt động (tùy chọn)
             AND: [
                 search
                     ? {

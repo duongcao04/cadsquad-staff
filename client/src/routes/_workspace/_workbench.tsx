@@ -15,15 +15,18 @@ import WorkbenchMobileContent, {
 } from '../../shared/components/workbench/WorkbenchMobileContent'
 import WorkbenchTable from '../../shared/components/workbench/WorkbenchTable'
 import { useDevice } from '../../shared/hooks'
+import { jobFiltersSchema, TJobFilters } from '../../lib/validationSchemas'
 
 const DEFAULT_SORT = 'displayName:asc'
 
-export const workbenchParamsSchema = z.object({
-    sort: z.string().optional().catch(DEFAULT_SORT),
-    search: z.string().trim().optional(),
-    limit: z.coerce.number().int().min(1).max(100).optional().catch(10),
-    page: z.coerce.number().int().min(1).optional().catch(1),
-})
+export const workbenchParamsSchema = z
+    .object({
+        sort: z.string().optional().catch(DEFAULT_SORT),
+        search: z.string().trim().optional(),
+        limit: z.coerce.number().int().min(1).max(100).optional().catch(10),
+        page: z.coerce.number().int().min(1).optional().catch(1),
+    })
+    .merge(jobFiltersSchema)
 
 export type TWorkbenchSearch = z.infer<typeof workbenchParamsSchema>
 
@@ -109,6 +112,9 @@ export function WorkbenchPage() {
     const handleSearchChange = (newSearch?: string) =>
         updateSearch((old) => ({ ...old, search: newSearch, page: 1 }))
 
+    const handleFiltersChange = (filters: TJobFilters) =>
+        updateSearch((old) => ({ ...old, ...filters, page: 1 }))
+
     return (
         <ErrorBoundary
             fallback={
@@ -147,7 +153,7 @@ export function WorkbenchPage() {
                         />
                     ) : (
                         <WorkbenchTableContent
-                            {...searchParams}
+                            search={searchParams}
                             sort={searchParams.sort || DEFAULT_SORT}
                             limit={searchParams.limit || 10}
                             page={searchParams.page || 1}
@@ -155,6 +161,7 @@ export function WorkbenchPage() {
                             onPageChange={handlePageChange}
                             onLimitChange={handleLimitChange}
                             onSearchChange={handleSearchChange}
+                            onFiltersChange={handleFiltersChange}
                         />
                     )}
                 </Suspense>
@@ -175,11 +182,12 @@ export type WorkbenchTableContentProps = {
     limit: number
     page: number
     sort: string
-    search?: string
+    search?: TWorkbenchSearch
     onSearchChange: (newSearch?: string) => void
     onPageChange: (newPage: number) => void
     onSortChange: (newSort: string) => void
     onLimitChange: (newLimit: number) => void
+    onFiltersChange: (newFilters: TJobFilters) => void
 }
 
 function WorkbenchTableContent({
@@ -191,22 +199,25 @@ function WorkbenchTableContent({
     onSortChange,
     onPageChange,
     onLimitChange,
+    onFiltersChange,
 }: WorkbenchTableContentProps) {
     const [viewDetailNo, setViewDetailNo] = useState<string | null>(null)
     const [assignMemberTo, setAssignMemberTo] = useState<string | null>(null)
 
     const options = workbenchDataOptions({
+        ...search,
         limit,
         page,
-        search,
         sort: [sort],
     })
 
     const {
         data: { jobs, paginate },
         refetch,
+        isLoading,
         isFetching,
     } = useSuspenseQuery(options)
+    const isLoadingData = isFetching || isLoading
 
     const {
         isOpen: isOpenJobDetailDrawer,
@@ -248,6 +259,8 @@ function WorkbenchTableContent({
                     total: paginate?.total ?? 0,
                     totalPages: paginate?.totalPages ?? 1,
                 }}
+                onFiltersChange={onFiltersChange}
+                filters={search as TJobFilters}
                 onLimitChange={onLimitChange}
                 onPageChange={onPageChange}
                 // Use debounced function for typing, but keep standard for instant clears if needed
@@ -259,7 +272,7 @@ function WorkbenchTableContent({
                 onSortChange={onSortChange}
                 sort={sort}
                 data={jobs}
-                isLoadingData={isFetching}
+                isLoadingData={isLoadingData}
             />
 
             {isOpenJobDetailDrawer && viewDetailNo && (

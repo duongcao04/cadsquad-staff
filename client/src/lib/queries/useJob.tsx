@@ -24,7 +24,6 @@ import {
     jobAssigneesOptions,
     jobByNoOptions,
     jobDetailOptions,
-    jobsByStatusCodeOptions,
     jobsDueOnDateOptions,
     jobsListOptions,
     jobsSearchOptions,
@@ -108,18 +107,6 @@ export const useJobAssignees = (jobId: string) => {
         refetch,
         data: data?.assignees ?? [],
         totalAssignees: data?.totalAssignees ?? 0,
-        error,
-        isLoading,
-    }
-}
-
-export const useJobsByStatusCode = (statusCode?: string) => {
-    const { data, refetch, error, isLoading } = useQuery(
-        jobsByStatusCodeOptions(statusCode)
-    )
-    return {
-        refetch,
-        jobs: data,
         error,
         isLoading,
     }

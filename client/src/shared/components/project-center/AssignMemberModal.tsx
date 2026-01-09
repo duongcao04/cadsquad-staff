@@ -179,11 +179,7 @@ function AssignMemberContent({
                     onSuccess: () => {
                         // 1. Update Local State immediately for UI feedback
                         setAssignedMembers((prev) => [assigningMember, ...prev])
-
-                        // 2. Clear the "assigning" slot
                         setAssigningMember(null)
-
-                        // 3. Trigger refetch to sync with server (sumStaffCost, etc.)
                         onRefetchJob()
                     },
                 }

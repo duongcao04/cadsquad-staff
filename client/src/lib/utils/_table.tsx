@@ -1,6 +1,5 @@
-import { JobColumnKey, TPermission } from '@/shared/types'
+import { JobColumnKey } from '@/shared/types'
 import { APP_PERMISSIONS, AppPermission } from './_app-permissions'
-import { usePermission } from '../../shared/hooks'
 
 export const JOB_COLUMNS: {
     displayName: string
@@ -51,7 +50,7 @@ export const JOB_COLUMNS: {
     {
         displayName: 'Staff Cost',
         uid: 'staffCost',
-        sortable: true,
+        sortable: false,
         description: 'The specific cost allocated to you for this job.',
     },
     {
@@ -72,7 +71,7 @@ export const JOB_COLUMNS: {
     {
         displayName: 'Payment',
         uid: 'isPaid',
-        sortable: true,
+        sortable: false,
     },
     {
         displayName: 'Actions',
@@ -95,14 +94,14 @@ export const getAllowedJobColumns = (
 
         // Nếu User là Super Admin (có quyền system.manage), cho phép xem hết
         if (
-            userPermissions.includes(
+            userPermissions?.includes(
                 APP_PERMISSIONS.SYSTEM.MANAGE as AppPermission
             )
         )
             return true
 
         // Kiểm tra xem User có quyền cụ thể cho cột này không
-        return userPermissions.includes(column.requiredPermission)
+        return userPermissions?.includes(column.requiredPermission)
     })
 
     // 2. Lọc dựa trên tùy chọn hiển thị của User (UI Toggle)

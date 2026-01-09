@@ -16,6 +16,8 @@ export function DepartmentChip({ data, classNames, props }: Props) {
         resolvedTheme === 'light'
             ? lightenHexColor(data?.hexColor ? data.hexColor : '#ffffff', 90)
             : darkenHexColor(data?.hexColor ? data.hexColor : '#000000', 70)
+
+    const isUnknown = data.code === 'UNKNOWN'
     return (
         <Chip
             style={{
@@ -34,7 +36,12 @@ export function DepartmentChip({ data, classNames, props }: Props) {
             }}
             {...props}
         >
-            <div className="flex items-center justify-start gap-2 size-full">
+            <div
+                className="flex items-center justify-start gap-2 size-full"
+                style={{
+                    color: isUnknown ? 'var(--text-default)' : '',
+                }}
+            >
                 <div
                     className="w-2 h-2 rounded-full"
                     style={{

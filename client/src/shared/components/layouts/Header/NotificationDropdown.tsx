@@ -50,6 +50,7 @@ export default function NotificationDropdown() {
         },
         (message) => {
             console.log('Nhận tin:', message)
+            refetch()
             const noti: TUserNotification = message.data
             addToast({
                 title: noti.title,

@@ -109,17 +109,15 @@ export const profileOverviewOptions = () => {
         select: (res) => {
             console.log(res.result)
 
+            const { totalEarnings, activeJobs, hoursLogged, jobsCompleted } =
+                res.result?.stats
+
             const data: IProfileOverview = {
-                summary: {
-                    activeJobs: res.result?.summary.activeJobs ?? 0,
-                    earningsTrend: res.result?.summary.earningsTrend ?? 0,
-                    hoursLogged: res.result?.summary.hoursLogged ?? 0,
-                    jobsCompleted: res.result?.summary.jobsCompleted ?? 0,
-                    totalEarnings: res.result?.summary.totalEarnings ?? 0,
-                },
-                charts: {
-                    financial: res.result?.charts.financial ?? '',
-                    jobStatus: res.result?.charts.jobStatus ?? '',
+                stats: {
+                    totalEarnings,
+                    activeJobs,
+                    hoursLogged,
+                    jobsCompleted,
                 },
             }
             return data

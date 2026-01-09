@@ -1,8 +1,7 @@
 import { Store } from '@tanstack/react-store'
-import type { JobColumnKey, TJob } from '../types'
 import { STORAGE_KEYS } from '../../lib'
-import { RoleEnum } from '../enums'
 import { getAllowedJobColumns } from '../../lib/utils'
+import type { JobColumnKey, TJob } from '../types'
 
 const DEFAULT_COLUMNS: JobColumnKey[] = [
     'no',
@@ -53,13 +52,15 @@ export const pCenterTableStore = new Store<{
 export const toggleJobColumns = (
     key: JobColumnKey,
     isVisible: boolean,
-    role?: RoleEnum
+    userPermissions: string[]
 ) => {
     pCenterTableStore.setState((prev) => {
         const currentCols = prev.jobColumns
 
         // Use helper to get ALL keys the user is actually allowed to see/toggle
-        const allowedKeys = getAllowedJobColumns(role, 'all').map((c) => c.uid)
+        const allowedKeys = getAllowedJobColumns('all', userPermissions).map(
+            (c) => c.uid
+        )
 
         let newColumns: JobColumnKey[]
 
@@ -92,11 +93,12 @@ export const toggleJobColumns = (
     })
 }
 
-export const resetJobColumns = (role?: RoleEnum) => {
+export const resetJobColumns = (userPermissions: string[]) => {
     // Reset to the default filtered by role
-    const defaultForRole = getAllowedJobColumns(role, DEFAULT_COLUMNS).map(
-        (c) => c.uid
-    )
+    const defaultForRole = getAllowedJobColumns(
+        DEFAULT_COLUMNS,
+        userPermissions
+    ).map((c) => c.uid)
 
     if (typeof window !== 'undefined') {
         localStorage.removeItem(STORAGE_KEYS.jobColumns)

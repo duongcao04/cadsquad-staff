@@ -9,18 +9,17 @@ import type { IUserResponse } from '@/shared/interfaces'
 import queryString from 'query-string'
 import { TCreateUserInput } from '../../shared/components'
 import { TUserSecurityLog } from '../../shared/types'
-import lodash from 'lodash';
+import lodash from 'lodash'
 
 export interface IProfileOverview {
-    summary: {
+    stats: {
         totalEarnings: number
-        earningsTrend: number
         jobsCompleted: number
         hoursLogged: number
         activeJobs: number
     }
     charts: {
-        financial: string
+        financialChart: string
         jobStatus: string
     }
 }
@@ -35,10 +34,16 @@ export const userApi = {
                 {
                     displayName: data.displayName,
                     email: data.email,
-                    roleId: !lodash.isEmpty(data.roleId) ? data.roleId :undefined,
+                    roleId: !lodash.isEmpty(data.roleId)
+                        ? data.roleId
+                        : undefined,
                     password: data.password,
-                    jobTitleId: !lodash.isEmpty(data.jobTitleId) ? data.jobTitleId :undefined,
-                    departmentId: !lodash.isEmpty(data.departmentId) ? data.departmentId :undefined,
+                    jobTitleId: !lodash.isEmpty(data.jobTitleId)
+                        ? data.jobTitleId
+                        : undefined,
+                    departmentId: !lodash.isEmpty(data.departmentId)
+                        ? data.departmentId
+                        : undefined,
                 }
             )
             .then((res) => res.data)

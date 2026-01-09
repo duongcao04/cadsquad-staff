@@ -98,7 +98,7 @@ function OverviewPage() {
 
     const {
         data: {
-            summary: { activeJobs, hoursLogged, jobsCompleted, totalEarnings },
+            stats: { activeJobs, hoursLogged, jobsCompleted, totalEarnings },
         },
     } = useSuspenseQuery({
         ...profileOverviewOptions(),
