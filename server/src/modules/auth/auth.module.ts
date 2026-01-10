@@ -11,11 +11,13 @@ import { JwtGuard } from './jwt.guard'
 import { SessionService } from './session.service'
 import { TokenService } from './token.service'
 import { WsJwtGuard } from './ws-jwt.guard'
+import { MailModule } from '../../providers/mail/mail.module'
 
 @Global()
 @Module({
     imports: [
         RedisModule,
+        MailModule,
         forwardRef(() => UserModule),
         JwtModule.register({
             global: true,

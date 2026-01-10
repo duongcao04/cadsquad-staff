@@ -190,21 +190,7 @@ function InboxPage() {
 
     return (
         <>
-            <AdminPageHeading
-                title={
-                    <Badge
-                        content={0}
-                        size="sm"
-                        color="danger"
-                        variant="solid"
-                        classNames={{
-                            badge: '-right-1 top-1 text-[10px]! font-bold!',
-                        }}
-                    >
-                        Inbox
-                    </Badge>
-                }
-            />
+            <AdminPageHeading title="Inbox" />
 
             <HeroBreadcrumbs className="pt-3 px-7 text-xs">
                 <HeroBreadcrumbItem>
@@ -222,7 +208,7 @@ function InboxPage() {
                 <Card className="h-full flex-1 min-h-0 overflow-hidden shadow-sm border border-border-default">
                     <div className="flex h-full">
                         {/* --- LEFT PANEL: List --- */}
-                        <div className="w-[400px] border-r border-border-default flex flex-col">
+                        <div className="w-100 border-r border-border-default flex flex-col">
                             {/* Search & Tabs */}
                             <div className="p-4 border-b border-border-default space-y-4">
                                 <Input

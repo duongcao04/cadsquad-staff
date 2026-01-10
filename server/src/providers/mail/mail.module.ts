@@ -3,7 +3,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { Module } from '@nestjs/common'
 import { join } from 'path'
 import { MailService } from './mail.service'
-
+import { EmailController } from './email.controller'
 @Module({
     imports: [
         MailerModule.forRootAsync({
@@ -16,7 +16,7 @@ import { MailService } from './mail.service'
                     },
                 },
                 template: {
-                    dir: join(process.cwd(), 'src/common/templates'),
+                    dir: join(process.cwd(), './src/templates'),
                     adapter: new HandlebarsAdapter({
                         // Định nghĩa các logic so sánh cho template .hbs
                         eq: (a: any, b: any) => a === b,
@@ -28,6 +28,7 @@ import { MailService } from './mail.service'
             }),
         }),
     ],
+    controllers: [EmailController],
     providers: [MailService],
     exports: [MailService],
 })

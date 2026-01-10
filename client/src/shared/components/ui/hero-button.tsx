@@ -1,4 +1,11 @@
-import { Button, ButtonProps, extendVariants } from '@heroui/react'
+import {
+    Button,
+    ButtonProps,
+    extendVariants,
+    TooltipProps,
+} from '@heroui/react'
+import { HeroTooltip } from './hero-tooltip'
+import React from 'react'
 
 const StyledButton = extendVariants(Button, {
     variants: {
@@ -23,7 +30,7 @@ const StyledButton = extendVariants(Button, {
         },
     },
     defaultVariants: {
-        color: 'primary', // Set default to our new custom variant
+        color: 'default', // Set default to our new custom variant
     },
 })
 
@@ -36,7 +43,17 @@ type HeroButtonProps = Omit<ButtonProps, 'color'> & {
         | 'secondary'
         | 'danger'
         | 'blue'
+    tooltip?: React.ReactNode
+    tooltipProps?: TooltipProps
 }
 export const HeroButton = (props: HeroButtonProps) => {
-    return <StyledButton {...props} />
+    const button = <StyledButton {...props} />
+    if (props.tooltip) {
+        return (
+            <HeroTooltip content={props.tooltip} {...props.tooltipProps}>
+                <StyledButton {...props} />
+            </HeroTooltip>
+        )
+    }
+    return button
 }

@@ -4,6 +4,7 @@ import {
     Delete,
     Get,
     HttpCode,
+    HttpStatus,
     Param,
     ParseUUIDPipe,
     Patch,
@@ -11,6 +12,8 @@ import {
     Query,
     Req,
     UseGuards,
+    UsePipes,
+    ValidationPipe,
 } from '@nestjs/common'
 import {
     ApiBearerAuth,
@@ -35,6 +38,10 @@ import { UserQueryDto } from './dto/user-query.dto'
 import { UserResponseDto } from './dto/user-response.dto'
 import { UserSecurityService } from './user-security.service'
 import { UserService } from './user.service'
+import {
+    ForgotPasswordDto,
+    ResetPasswordWithTokenDto,
+} from './dto/forgot-password.dto'
 
 @ApiTags('Users')
 @Controller('users')
@@ -183,6 +190,20 @@ export class UserController {
         @Body() updateUserDto: UpdateUserDto
     ) {
         return this.userService.update(username, updateUserDto)
+    }
+
+    @Patch(':id/assign-role')
+    @UseGuards(PermissionsGuard)
+    @RequirePermissions(
+        APP_PERMISSIONS.ROLE.MANAGE,
+        APP_PERMISSIONS.USER.UPDATE
+    )
+    @ResponseMessage('Assign role for user successfully')
+    async assignUserRole(
+        @Param('id') id: string,
+        @Body('roleId') roleId: string
+    ) {
+        return this.userService.assignRole(id, roleId)
     }
 
     @Patch(':id/status')

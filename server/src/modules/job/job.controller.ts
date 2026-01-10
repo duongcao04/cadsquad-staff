@@ -55,6 +55,13 @@ export class JobController {
         return this.jobService.getJobDeliveries(id)
     }
 
+    @Get(':jobId/activity-logs')
+    @ResponseMessage('Fetch activity logs successfully')
+    async getActivityLogs(@Param('jobId') jobId: string) {
+        const logs = await this.activityLogService.findByJobId(jobId)
+        return logs
+    }
+
     @Get(':jobId/comments')
     @ResponseMessage('Fetch job comments successfully')
     async findAllComments(@Param('jobId') jobId: string) {

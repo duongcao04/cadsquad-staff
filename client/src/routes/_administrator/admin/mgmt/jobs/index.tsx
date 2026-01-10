@@ -1,11 +1,14 @@
 import { getPageTitle } from '@/lib'
 import { jobsListOptions } from '@/lib/queries'
-import { AdminPageHeading } from '@/shared/components'
+import {
+    AdminPageHeading,
+    CreateJobModal,
+    HeroButton,
+} from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
 import AdminManagementJobsTable from '@/shared/components/management-jobs/AdminManagementJobsTable'
 import { TJob } from '@/shared/types'
 import {
-    Badge,
     Button,
     Modal,
     ModalBody,
@@ -17,6 +20,7 @@ import {
 } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { PlusIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
@@ -66,6 +70,10 @@ export const Route = createFileRoute('/_administrator/admin/mgmt/jobs/')({
 function ManageJobsPage() {
     const navigate = useNavigate({ from: Route.fullPath })
     const searchParams = Route.useSearch()
+
+    const createJobModalDisclosure = useDisclosure({
+        id: 'CreateJobModal',
+    })
 
     // Server state
     const options = jobsListOptions({
@@ -163,19 +171,26 @@ function ManageJobsPage() {
 
     return (
         <>
+            {createJobModalDisclosure.isOpen && (
+                <CreateJobModal
+                    isOpen={createJobModalDisclosure.isOpen}
+                    onClose={createJobModalDisclosure.onClose}
+                />
+            )}
+
             <AdminPageHeading
-                title={
-                    <Badge
-                        content={data.paginate?.total}
-                        size="sm"
-                        color="danger"
-                        variant="solid"
-                        classNames={{
-                            badge: '-right-1 top-1 text-[10px]! font-bold!',
-                        }}
+                title="All Jobs"
+                showBadge
+                badgeCount={data.paginate?.total}
+                actions={
+                    <HeroButton
+                        color="primary"
+                        className="px-6"
+                        startContent={<PlusIcon size={16} />}
+                        onPress={createJobModalDisclosure.onOpen}
                     >
-                        All Jobs
-                    </Badge>
+                        New Job
+                    </HeroButton>
                 }
             />
 

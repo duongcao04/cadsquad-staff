@@ -5,6 +5,7 @@ import {
     Get,
     Headers,
     HttpCode,
+    HttpStatus,
     Ip,
     Param,
     ParseUUIDPipe,
@@ -13,6 +14,8 @@ import {
     Req,
     Res,
     UseGuards,
+    UsePipes,
+    ValidationPipe,
 } from '@nestjs/common'
 import {
     ApiBearerAuth,
@@ -32,6 +35,10 @@ import { TokenPayload } from './dto/token-payload.dto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { JwtGuard } from './jwt.guard'
 import { SessionService } from './session.service'
+import {
+    ForgotPasswordDto,
+    ResetPasswordWithTokenDto,
+} from '../user/dto/forgot-password.dto'
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -153,6 +160,27 @@ export class AuthController {
     async getSessions(@Req() request: any) {
         const userPayload: TokenPayload = request.user
         return this.sessionService.getActiveSessions(userPayload.sub)
+    }
+
+    /**
+     * 1. Request Password Reset Link
+     * POST /auth/forgot-password
+     */
+    @Post('forgot-password')
+    @HttpCode(HttpStatus.OK)
+    @ResponseMessage('Send email reset password successfully')
+    async forgotPassword(@Body() dto: ForgotPasswordDto) {
+        return this.authService.forgotPassword(dto.email)
+    }
+
+    @Post('forgot-password/reset')
+    @HttpCode(HttpStatus.OK)
+    @UsePipes(new ValidationPipe({ transform: true }))
+    async resetPasswordWithToken(@Body() dto: ResetPasswordWithTokenDto) {
+        return this.authService.resetPasswordWithToken(
+            dto.token,
+            dto.newPassword
+        )
     }
 
     @Delete('sessions/all')

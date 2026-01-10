@@ -24,6 +24,7 @@ import {
     XCircle,
 } from 'lucide-react'
 import { useEffect,useState } from 'react'
+import { TUser } from '../../types'
 
 // --- Types based on Prisma Enum ---
 const NOTIFICATION_TYPES = [
@@ -60,12 +61,7 @@ const NOTIFICATION_TYPES = [
 interface SendNotificationModalProps {
     isOpen: boolean
     onClose: () => void
-    user: {
-        id: string
-        displayName: string
-        avatar: string
-        role?: string
-    } | null
+    user:TUser
 }
 
 export const SendNotificationModal = ({

@@ -11,8 +11,8 @@ import {
     ModalHeader,
     Textarea,
 } from '@heroui/react'
-import { Briefcase, Calendar, CheckCircle2,Search } from 'lucide-react'
-import  { useState } from 'react'
+import { Briefcase, Calendar, CheckCircle2, Search } from 'lucide-react'
+import { useState } from 'react'
 
 import { TUser } from '../../types'
 
@@ -20,7 +20,7 @@ import { TUser } from '../../types'
 const AVAILABLE_JOBS = [
     {
         id: '1',
-        title: 'Website Redesign',  
+        title: 'Website Redesign',
         client: 'TechCorp',
         status: 'IN_PROGRESS',
         deadline: '2024-03-10',

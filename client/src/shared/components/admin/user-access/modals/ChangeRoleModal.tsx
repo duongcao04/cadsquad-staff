@@ -1,48 +1,59 @@
-import {
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    Button,
-    Select,
-    SelectItem,
-} from '@heroui/react'
+import { Button, Select, SelectItem } from '@heroui/react'
 import { AlertTriangle, UserCog } from 'lucide-react'
 import { useState } from 'react'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
+} from '../../../ui/hero-modal'
+import { useUserAssignRoleMutation } from '../../../../../lib'
+import { TRole, TUser } from '../../../../types'
 
 interface ChangeRoleModalProps {
     isOpen: boolean
     onClose: () => void
-    onConfirm: (newRoleId: string) => void
     currentRoleId: number | string
-    roles: { id: number | string; displayName: string; code: string }[]
-    isPending: boolean
+    roles: TRole[]
+    user: TUser
 }
 
 export const ChangeRoleModal = ({
     isOpen,
     onClose,
-    onConfirm,
     currentRoleId,
     roles,
-    isPending,
+    user,
 }: ChangeRoleModalProps) => {
-    const [selectedRole, setSelectedRole] = useState<string>('')
+    const userAssignRoleMutation = useUserAssignRoleMutation()
+    const [selectedRole, setSelectedRole] = useState<string | null>(null)
 
-    const handleConfirm = () => {
-        if (selectedRole) onConfirm(selectedRole)
+    const handleConfirm = async () => {
+        if (selectedRole) {
+            await userAssignRoleMutation.mutateAsync(
+                {
+                    roleId: selectedRole,
+                    userId: user.id,
+                },
+                {
+                    onSuccess() {
+                        onClose()
+                    },
+                }
+            )
+        }
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} backdrop="blur">
-            <ModalContent>
+        <HeroModal isOpen={isOpen} onClose={onClose} size="lg">
+            <HeroModalContent>
                 {(onClose) => (
                     <>
-                        <ModalHeader className="flex gap-2 items-center text-warning-600">
+                        <HeroModalHeader className="flex gap-2 items-center text-warning-600">
                             <AlertTriangle /> Change Primary Role
-                        </ModalHeader>
-                        <ModalBody className="gap-4">
+                        </HeroModalHeader>
+                        <HeroModalBody className="gap-4">
                             <div className="p-3 bg-warning-50 rounded-lg text-sm text-warning-800 border border-warning-200">
                                 <strong>Warning:</strong> Changing the role will{' '}
                                 <b>reset all custom permission overrides</b>{' '}
@@ -57,9 +68,9 @@ export const ChangeRoleModal = ({
                                 selectedKeys={
                                     selectedRole ? [selectedRole] : []
                                 }
-                                onChange={(e) =>
-                                    setSelectedRole(e.target.value)
-                                }
+                                onSelectionChange={(keys) => {
+                                    setSelectedRole(keys.currentKey as string)
+                                }}
                                 startContent={
                                     <UserCog
                                         size={16}
@@ -82,23 +93,23 @@ export const ChangeRoleModal = ({
                                         </SelectItem>
                                     ))}
                             </Select>
-                        </ModalBody>
-                        <ModalFooter>
+                        </HeroModalBody>
+                        <HeroModalFooter>
                             <Button variant="light" onPress={onClose}>
                                 Cancel
                             </Button>
                             <Button
                                 color="warning"
                                 onPress={handleConfirm}
-                                isDisabled={!selectedRole}
-                                isLoading={isPending}
+                                isDisabled={!selectedRole || !selectedRole}
+                                isLoading={userAssignRoleMutation.isPending}
                             >
                                 Confirm Change
                             </Button>
-                        </ModalFooter>
+                        </HeroModalFooter>
                     </>
                 )}
-            </ModalContent>
-        </Modal>
+            </HeroModalContent>
+        </HeroModal>
     )
 }

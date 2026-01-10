@@ -25,6 +25,7 @@ import type {
 import queryString from 'query-string'
 import { TJobGeneralDetails } from '../../routes/_administrator/admin/mgmt/jobs/$no'
 import { ProjectCenterTabEnum } from '../../shared/enums'
+import lodash from 'lodash'
 
 export const jobApi = {
     togglePin: async (jobId: string) => {
@@ -168,7 +169,7 @@ export const jobApi = {
     },
     getJobActivityLog: async (id: string) => {
         return axiosClient
-            .get(`/v1/jobs/${id}/activity-log`)
+            .get(`/v1/jobs/${id}/activity-logs`)
             .then((res) => res.data)
     },
     changeStatus: async (id: string, data: TChangeStatusInput) => {
@@ -197,15 +198,22 @@ export const jobApi = {
             >(`/v1/jobs/${jobId}/assign`, data)
             .then((res) => res.data)
     },
-    updateGeneralInfo: async (jobId: string, data: TJobGeneralDetails) => {
+    updateGeneralInfo: async (
+        jobId: string,
+        data: Partial<TJobGeneralDetails>
+    ) => {
         return axiosClient
             .patch<ApiResponse<JobUpdateResponse>>(
                 `/v1/jobs/${jobId}/general`,
                 {
                     clientName: data.clientName,
                     displayName: data.displayName,
-                    dueAt: data.dueAt.toISOString(),
-                    startedAt: data.startedAt.toISOString(),
+                    dueAt: !lodash.isEmpty(data.dueAt)
+                        ? data.dueAt.toISOString()
+                        : undefined,
+                    startedAt: !lodash.isEmpty(data.startedAt)
+                        ? data.startedAt.toISOString()
+                        : undefined,
                     description: data.description,
                 }
             )

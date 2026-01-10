@@ -8,22 +8,28 @@ import {
 } from '@heroui/react'
 import { Maximize2, Save } from 'lucide-react'
 import ModernEditor from '../editor-quill/QuillEditor'
+import { useState } from 'react'
 
 interface JobDescriptionModalProps {
     isOpen: boolean
     onClose: () => void
-    value: string
-    onChange: (value: string) => void
+    defaultValue: string
+    onSave: (value: string) => void
     title?: string
 }
 
 export default function JobDescriptionModal({
     isOpen,
     onClose,
-    value,
-    onChange,
+    defaultValue,
+    onSave,
     title = 'Full Description Editor',
 }: JobDescriptionModalProps) {
+    const [value, setValue] = useState(defaultValue)
+    const handleSave = () => {
+        onSave(value)
+        onClose()
+    }
     return (
         <Modal
             isOpen={isOpen}
@@ -46,7 +52,7 @@ export default function JobDescriptionModal({
                         </ModalHeader>
                         <ModalBody className="p-0">
                             {/* We use your existing ModernEditor here */}
-                            <ModernEditor value={value} onChange={onChange} />
+                            <ModernEditor value={value} onChange={setValue} />
                         </ModalBody>
                         <ModalFooter>
                             <Button
@@ -59,7 +65,7 @@ export default function JobDescriptionModal({
                             <Button
                                 color="primary"
                                 startContent={<Save size={18} />}
-                                onPress={onClose}
+                                onPress={handleSave}
                             >
                                 Save Changes
                             </Button>

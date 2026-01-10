@@ -8,7 +8,7 @@ import type {
 import type { IUserResponse } from '@/shared/interfaces'
 import queryString from 'query-string'
 import { TCreateUserInput } from '../../shared/components'
-import { TUserSecurityLog } from '../../shared/types'
+import { TRole, TUserSecurityLog } from '../../shared/types'
 import lodash from 'lodash'
 
 export interface IProfileOverview {
@@ -113,6 +113,13 @@ export const userApi = {
             .patch<
                 ApiResponse<{ id: string; username: string }>
             >(`/v1/users/${username}`, data)
+            .then((res) => res.data)
+    },
+    assignRole: async (userId: string, roleId: string) => {
+        return axiosClient
+            .patch<
+                ApiResponse<{ role: TRole; username: string }>
+            >(`/v1/users/${userId}/assign-role`, { roleId })
             .then((res) => res.data)
     },
     remove: (id: string) => {

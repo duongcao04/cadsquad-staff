@@ -3,6 +3,7 @@ import {
     dateFormatter,
     editUserSchema,
     getPageTitle,
+    INTERNAL_URLS,
     optimizeCloudinary,
     TEditUser,
     toFormikValidate,
@@ -19,6 +20,7 @@ import {
 } from '@/lib/queries'
 import {
     ChangeRoleModal,
+    ConfirmSendPasswordResetEmail,
     HeroButton,
     HeroCard,
     HeroCardBody,
@@ -36,9 +38,16 @@ import { TUser } from '@/shared/types'
 import {
     addToast,
     Avatar,
+    BreadcrumbItem,
+    Breadcrumbs,
     Button,
     Chip,
     Divider,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownSection,
+    DropdownTrigger,
     Input,
     Select,
     SelectItem,
@@ -48,11 +57,7 @@ import {
     Tabs,
     useDisclosure,
 } from '@heroui/react'
-import {
-    useMutation,
-    useSuspenseQueries,
-    useSuspenseQuery,
-} from '@tanstack/react-query'
+import { useSuspenseQueries, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useFormik } from 'formik'
 import {
@@ -139,6 +144,9 @@ function EditStaffPage() {
     const changeUserStatusModal = useDisclosure({
         id: 'ChangeUserStatusModal',
     })
+    const changeRoleModalDisclosure = useDisclosure({
+        id: 'ChangeRoleModal',
+    })
 
     const handleOpenChangeUserModal = (value: boolean) => {
         setToggleUserActive(value ? 'active' : 'deActive')
@@ -208,10 +216,31 @@ function EditStaffPage() {
                     })}
                 />
             )}
+            {changeRoleModalDisclosure.isOpen && (
+                <ChangeRoleModal
+                    isOpen={changeRoleModalDisclosure.isOpen}
+                    onClose={changeRoleModalDisclosure.onClose}
+                    currentRoleId={user.role.id}
+                    roles={roles}
+                    user={user}
+                />
+            )}
 
             <AdminContentContainer>
+                <Breadcrumbs variant="light">
+                    <BreadcrumbItem
+                        onPress={() =>
+                            router.navigate({
+                                href: '../..',
+                            })
+                        }
+                    >
+                        Staff Directory
+                    </BreadcrumbItem>
+                    <BreadcrumbItem>{user.displayName}</BreadcrumbItem>
+                </Breadcrumbs>
                 {/* --- Heading --- */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
                         <HeroButton
                             isIconOnly
@@ -224,7 +253,7 @@ function EditStaffPage() {
                         </HeroButton>
                         <div className="flex items-center justify-start gap-2">
                             <p className="font-medium text-sm">
-                                Edit member details
+                                Edit member: {user.displayName}
                             </p>
                         </div>
                     </div>
@@ -238,14 +267,34 @@ function EditStaffPage() {
                         >
                             Reset Password
                         </Button>
-                        <HeroButton
-                            color="primary"
-                            size="sm"
-                            variant="flat"
-                            endContent={<EllipsisVerticalIcon size={14} />}
-                        >
-                            Actions
-                        </HeroButton>
+                        <Dropdown placement="bottom-end">
+                            <DropdownTrigger>
+                                <HeroButton
+                                    color="primary"
+                                    size="sm"
+                                    variant="flat"
+                                    endContent={
+                                        <EllipsisVerticalIcon size={14} />
+                                    }
+                                >
+                                    Actions
+                                </HeroButton>
+                            </DropdownTrigger>
+                            <DropdownMenu>
+                                <DropdownSection title="Actions">
+                                    <DropdownItem
+                                        key="Send_reset_password_email"
+                                        onPress={() =>
+                                            router.navigate({
+                                                href: INTERNAL_URLS.allPermissions,
+                                            })
+                                        }
+                                    >
+                                        Send reset password email
+                                    </DropdownItem>
+                                </DropdownSection>
+                            </DropdownMenu>
+                        </Dropdown>
                     </div>
                 </div>
 
@@ -329,19 +378,19 @@ function EditStaffPage() {
                         </HeroCard>
 
                         {/* Account Actions / Danger Zone */}
-                        <HeroCard className="shadow-none border border-red-200 bg-red-50/50 dark:bg-red-50/70">
+                        <HeroCard className="shadow-none border border-red-200 bg-red-50/50 dark:bg-red-950/20 dark:border-red-900">
                             <HeroCardHeader className="px-6 pt-6 pb-0">
-                                <h4 className="font-bold text-red-900 text-sm flex items-center gap-2">
+                                <h4 className="font-bold text-red-900 dark:text-red-200 text-sm flex items-center gap-2">
                                     <AlertCircle size={16} /> Danger Zone
                                 </h4>
                             </HeroCardHeader>
                             <HeroCardBody className="p-6">
-                                <p className="text-xs text-red-700 mb-4">
+                                <p className="text-xs text-red-700 dark:text-red-500 mb-4">
                                     Deactivating this user will revoke all
                                     access to the dashboard immediately.
                                 </p>
                                 <div className="flex items-center justify-between">
-                                    <span className="font-semibold text-sm text-slate-700">
+                                    <span className="font-semibold text-sm text-text-subdued">
                                         Account Status
                                     </span>
                                     {toggleUserStatusMutation.isPending ? (
@@ -381,7 +430,7 @@ function EditStaffPage() {
                                         cursor: 'w-full bg-primary',
                                         tab: 'max-w-fit px-0 h-10',
                                         tabContent:
-                                            'group-data-[selected=true]:text-primary font-semibold text-slate-500',
+                                            'group-data-[selected=true]:text-primary font-semibold text-text-subdued',
                                     }}
                                     selectedKey={activeTab}
                                     onSelectionChange={(k) =>
@@ -747,16 +796,8 @@ function SecurityTab({ user }: { user: TUser }) {
     const changeRoleModalDisclosure = useDisclosure({
         id: 'ChangeRoleModal',
     })
-    const changeRoleMutation = useMutation({
-        mutationFn: async (newRoleId: string) => {
-            // Replace with API call
-            console.log('Changing role to', newRoleId)
-        },
-        // onSuccess: () => {
-        //     toast.success('Role updated and permissions reset')
-        //     queryClient.invalidateQueries({ queryKey: ['users', username] })
-        //     onClose()
-        // },
+    const confirmForgotPasswordModalDisclosure = useDisclosure({
+        id: 'ConfirmForgotPasswordModal',
     })
 
     return (
@@ -765,10 +806,16 @@ function SecurityTab({ user }: { user: TUser }) {
                 <ChangeRoleModal
                     isOpen={changeRoleModalDisclosure.isOpen}
                     onClose={changeRoleModalDisclosure.onClose}
-                    onConfirm={(newId) => changeRoleMutation.mutate(newId)}
                     currentRoleId={user.role.id}
                     roles={roles}
-                    isPending={changeRoleMutation.isPending}
+                    user={user}
+                />
+            )}
+            {confirmForgotPasswordModalDisclosure.isOpen && (
+                <ConfirmSendPasswordResetEmail
+                    isOpen={confirmForgotPasswordModalDisclosure.isOpen}
+                    onClose={confirmForgotPasswordModalDisclosure.onClose}
+                    user={user}
                 />
             )}
             <div className="space-y-6 animate-in fade-in">
@@ -810,14 +857,21 @@ function SecurityTab({ user }: { user: TUser }) {
                     </h3>
                     <div className="flex justify-between items-center p-4 border border-border-default rounded-xl">
                         <div>
-                            <p className="font-semibold text-slate-700">
+                            <p className="font-semibold text-text-default">
                                 Send Password Reset Email
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-text-subdued">
                                 User will receive a link to set a new password.
                             </p>
                         </div>
-                        <Button size="sm" variant="flat" color="primary">
+                        <Button
+                            size="sm"
+                            variant="flat"
+                            color="primary"
+                            onPress={
+                                confirmForgotPasswordModalDisclosure.onOpen
+                            }
+                        >
                             Send Link
                         </Button>
                     </div>
@@ -831,10 +885,10 @@ function SecurityTab({ user }: { user: TUser }) {
                     </h3>
                     <div className="flex justify-between items-center p-4 border border-border-default rounded-xl bg-slate-50">
                         <div>
-                            <p className="font-semibold text-slate-700">
+                            <p className="font-semibold text-text-default">
                                 Force Logout
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-text-subdued">
                                 Sign out this user from all active devices
                                 immediately.
                             </p>

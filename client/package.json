@@ -35,11 +35,13 @@
     "@react-aria/i18n": "^3.12.13",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-form": "^1.27.7",
     "@tanstack/react-query": "^5.85.3",
     "@tanstack/react-query-devtools": "^5.85.3",
     "@tanstack/react-router": "^1.141.2",
     "@tanstack/react-store": "^0.8.0",
     "@tanstack/router-devtools": "^1.141.2",
+    "@tanstack/zod-form-adapter": "^0.42.1",
     "@types/lodash": "^4.17.20",
     "@types/universal-cookie": "^3.0.0",
     "ably": "^2.15.0",
@@ -78,7 +80,7 @@
     "universal-cookie": "^8.0.1",
     "usehooks-ts": "^3.1.1",
     "yup": "^1.6.1",
-    "zod": "^4.1.13",
+    "zod": "^4.3.5",
     "zod-formik-adapter": "^2.0.0"
   },
   "devDependencies": {

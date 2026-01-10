@@ -8,6 +8,19 @@ import type { TUser, TUserSession } from '@/shared/types'
 import type { TLoginInput, TUpdateProfileInput } from '../validationSchemas'
 
 export const authApi = {
+    forgotPassword: async (email: string) => {
+        return axiosClient
+            .post<ApiResponse>(`/v1/auth/forgot-password`, { email })
+            .then((res) => res.data)
+    },
+    resetPasswordWithToken: async (data: {
+        token: string
+        newPassword: string
+    }) => {
+        return axiosClient
+            .post<ApiResponse>('/v1/auth/forgot-password/reset', data)
+            .then((res) => res.data)
+    },
     activeSessions: () => {
         return axiosClient.get<ApiResponse<TUserSession[]>>('/v1/auth/sessions')
     },

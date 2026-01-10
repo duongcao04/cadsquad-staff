@@ -1,4 +1,8 @@
-import { useProfile, useUpdateJobMutation } from '@/lib/queries'
+import {
+    useProfile,
+    useUpdateJobGeneralInfoMutation,
+    useUpdateJobMutation,
+} from '@/lib/queries'
 import type { TJob } from '@/shared/types'
 import { addToast, useDisclosure } from '@heroui/react'
 import { Check, Maximize2, Pencil, X } from 'lucide-react'
@@ -17,6 +21,8 @@ export default function JobDescriptionView({ data }: JobDescriptionViewProps) {
     const { isAdmin } = useProfile()
     const [isEditable, setIsEditable] = useState(false)
     const [content, setContent] = useState(data?.description || '')
+
+    const updateJobGeneralInfoMutation = useUpdateJobGeneralInfoMutation()
 
     // Controls the "Full View" Modal
     const fullViewDisclosure = useDisclosure()
@@ -50,15 +56,25 @@ export default function JobDescriptionView({ data }: JobDescriptionViewProps) {
         })
     }
 
+    const handleSaveDescription = async (value: string) => {
+        if (data) {
+            await updateJobGeneralInfoMutation.mutateAsync({
+                jobId: data.id,
+                data: {
+                    description: value,
+                },
+            })
+        }
+    }
+
     return (
         <>
             {/* 1. FULL VIEW MODAL */}
             <JobDescriptionModal
                 isOpen={fullViewDisclosure.isOpen}
                 onClose={fullViewDisclosure.onClose}
-                value={content}
-                onChange={setContent}
-                // onSave={onSave}
+                defaultValue={content}
+                onSave={handleSaveDescription}
                 title={`Editing Description: #${data.no}`}
             />
 

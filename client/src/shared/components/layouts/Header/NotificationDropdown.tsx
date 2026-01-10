@@ -156,7 +156,7 @@ export default function NotificationDropdown() {
                             isIconOnly
                             variant="light"
                             onPress={() => refetch()}
-                            className="text-default-500"
+                            className="text-text-subdued"
                             tooltip="Refresh"
                         >
                             <RefreshCcw
@@ -168,7 +168,7 @@ export default function NotificationDropdown() {
                             size="sm"
                             isIconOnly
                             variant="light"
-                            className="text-default-500"
+                            className="text-text-subdued"
                             tooltip="Mark all as read"
                             onPress={handleMarkAllSeen}
                         >
@@ -244,7 +244,7 @@ export default function NotificationDropdown() {
                         size="sm"
                         variant="light"
                         fullWidth
-                        className="text-default-500 h-8 font-medium"
+                        className="text-text-subdued h-8 font-medium"
                     >
                         View all history
                     </Button>

@@ -73,6 +73,7 @@ export type DayFormat = keyof typeof localizedFormats
 export type DateFormatterOptions = {
     format?: DayFormat | 'relative'
     timezone?: string
+    isDistance?: boolean
 }
 
 type Options = {
@@ -94,15 +95,21 @@ export const dateFormatter = (
     options: DateFormatterOptions = {
         format: 'semiLongDate',
         timezone: TIMEZONE,
+        isDistance: false, // Default to false
     }
 ) => {
-    if (options.format === 'relative') {
-        dayjs.utc(value).tz(options.timezone).toNow()
+    const dateInstance = dayjs.utc(value).tz(options.timezone)
+
+    // If isDistance is true, return the relative string immediately
+    if (options.isDistance) {
+        return dateInstance.fromNow()
     }
+
+    // Otherwise, proceed with standard formatting
     const pickFormat =
         localizedFormats[(options?.format as DayFormat) ?? 'shortDate']
 
-    return dayjs.utc(value).tz(options.timezone).format(pickFormat)
+    return dateInstance.format(pickFormat)
 }
 
 /**

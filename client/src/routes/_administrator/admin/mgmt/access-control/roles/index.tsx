@@ -2,24 +2,23 @@ import {
     permissionGroupsListOptions,
     rolesListOptions,
 } from '@/lib/queries/options/role-queries'
+import { useAddMemberToRoleMutation } from '@/lib/queries/useRole'
+import { HeroButton, HeroCard } from '@/shared/components'
+import { AddRoleMemberModal } from '@/shared/components/role-and-permission/AddRoleMemberModal'
 import CreateRoleModal from '@/shared/components/role-and-permission/CreateRoleModal'
+import { TRole } from '@/shared/types'
 import {
     BreadcrumbItem,
     Breadcrumbs,
-    Button,
     Card,
     CardBody,
     Chip,
     useDisclosure,
 } from '@heroui/react'
 import { useSuspenseQueries } from '@tanstack/react-query'
-import { useRouter } from '@tanstack/react-router'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
-import { AddRoleMemberModal } from '../../../../../../shared/components/role-and-permission/AddRoleMemberModal'
 import { useState } from 'react'
-import { TRole } from '../../../../../../shared/types'
-import { useAddMemberToRoleMutation } from '../../../../../../lib/queries/useRole'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/access-control/roles/'
@@ -28,7 +27,6 @@ export const Route = createFileRoute(
 })
 
 export default function RolesPage() {
-    const navigate = useNavigate()
     const router = useRouter()
 
     const addMemberToRoleMutation = useAddMemberToRoleMutation()
@@ -84,7 +82,7 @@ export default function RolesPage() {
                     allPermissions={permissions}
                 />
             )}
-            <div className="p-8 space-y-8 bg-gray-50/50 min-h-screen">
+            <div className="p-8 space-y-8 min-h-screen">
                 <Breadcrumbs variant="light">
                     <BreadcrumbItem
                         onPress={() =>
@@ -100,28 +98,24 @@ export default function RolesPage() {
                 {/* Roles Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {roles.map((role) => (
-                        <Card
-                            key={role.id}
-                            shadow="sm"
-                            className="border-none p-2"
-                        >
+                        <HeroCard key={role.id} className="border-none p-2">
                             <CardBody className="space-y-6">
                                 {/* Role Title & Member Count */}
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <h3 className="text-xl font-bold text-slate-800">
+                                        <h3 className="text-xl font-bold text-text-default">
                                             {role.displayName}
                                         </h3>
-                                        <p className="text-xs text-slate-400 font-medium mt-1">
+                                        <p className="text-xs text-text-subdued font-medium mt-1">
                                             Scope:{' '}
-                                            <span className="text-slate-500">
+                                            <span className="text-text-subdued">
                                                 Organization
                                             </span>
                                         </p>
                                     </div>
                                     <Chip
                                         variant="flat"
-                                        className="h-8 px-4 font-bold bg-slate-100 text-text-default rounded-lg"
+                                        className="h-8 px-4 font-bold bg-background-hovered text-text-default rounded-lg"
                                     >
                                         {role.users?.length || 0} Member
                                         {role.users?.length >= 2 ? 's' : ''}
@@ -129,39 +123,41 @@ export default function RolesPage() {
                                 </div>
 
                                 {/* Role Description - Fallback if not in schema */}
-                                <p className="text-sm text-slate-600 leading-relaxed min-h-12">
+                                <p className="text-sm text-text-subdued leading-relaxed min-h-12">
                                     {
                                         'Full access to manage members, billing, and organization-wide settings.'
                                     }
                                 </p>
 
-                                {/* Action Buttons */}
+                                {/* Action HeroButtons */}
                                 <div className="flex justify-between items-center pt-2">
-                                    <Button
+                                    <HeroButton
                                         variant="bordered"
                                         size="sm"
-                                        className="font-bold border-slate-200"
+                                        className="font-medium border-border-default"
                                         onPress={() =>
-                                            navigate({ to: `${role.code}` })
+                                            router.navigate({
+                                                href: `${role.code}`,
+                                            })
                                         }
                                     >
                                         View Managers
-                                    </Button>
-                                    <Button
+                                    </HeroButton>
+                                    <HeroButton
                                         variant="bordered"
                                         color="primary"
                                         size="sm"
-                                        className="font-bold border-indigo-200 text-indigo-600"
+                                        className="font-medium border-primary text-primary"
                                         onPress={() =>
                                             handleAddRoleMember(role)
                                         }
                                     >
                                         Add New{' '}
                                         {role.displayName.replace(' Admin', '')}
-                                    </Button>
+                                    </HeroButton>
                                 </div>
                             </CardBody>
-                        </Card>
+                        </HeroCard>
                     ))}
 
                     {/* Create New Role Dotted Card */}
@@ -175,13 +171,13 @@ export default function RolesPage() {
                             <div className="p-3 rounded-full border-2 border-border-default text-text-subdued">
                                 <Plus size={24} />
                             </div>
-                            <Button
+                            <HeroButton
                                 variant="bordered"
                                 className="bg-background font-bold border border-border-default text-text-default"
                                 onPress={createRoleModalDisclosure.onOpen}
                             >
                                 Create New Role
-                            </Button>
+                            </HeroButton>
                         </CardBody>
                     </Card>
                 </div>

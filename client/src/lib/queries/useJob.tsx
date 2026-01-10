@@ -336,7 +336,7 @@ export const useUpdateJobGeneralInfoMutation = (
             data,
         }: {
             jobId: string
-            data: TJobGeneralDetails
+            data: Partial<TJobGeneralDetails>
         }) => jobApi.updateGeneralInfo(jobId, data),
         onSuccess: (res) => {
             queryClient.refetchQueries({

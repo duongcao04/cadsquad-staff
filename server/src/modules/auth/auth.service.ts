@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     ConflictException,
     forwardRef,
     Inject,
@@ -18,16 +19,22 @@ import { TokenService } from './token.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { UserSecurityService } from '../user/user-security.service'
 import { SessionService } from './session.service'
+import { REDIS_CLIENT } from '../../providers/redis/redis.provider'
+import Redis from 'ioredis'
+import { randomBytes } from 'node:crypto'
+import { MailService } from '../../providers/mail/mail.service'
 
 @Injectable()
 export class AuthService {
     constructor(
+        @Inject(REDIS_CLIENT) private readonly redis: Redis,
         private readonly prismaService: PrismaService,
         private readonly bcryptService: BcryptService,
         @Inject(forwardRef(() => TokenService))
         private readonly tokenService: TokenService,
         private readonly userSecurityService: UserSecurityService,
-        private sessionService: SessionService
+        private readonly sessionService: SessionService,
+        private readonly mailService: MailService
     ) {}
 
     async register(registerDto: RegisterUserDto) {
@@ -237,5 +244,65 @@ export class AuthService {
 
         // Trả về mảng quyền cuối cùng
         return Array.from(allAllowed)
+    }
+
+    // --- 1. Request Reset Link ---
+    async forgotPassword(email: string) {
+        // 1. Check if user exists
+        const user = await this.prismaService.user.findUnique({
+            where: { email },
+            select: { id: true, email: true, displayName: true },
+        })
+        if (!user) {
+            // Security: Don't reveal if user exists. Just return "ok".
+            return { message: 'If email exists, reset link has been sent.' }
+        }
+
+        // 2. Generate a secure random token
+        const token = randomBytes(32).toString('hex')
+
+        // 3. Save to Redis with TTL (Time To Live)
+        // Key: reset_token:abc123xyz
+        // Value: user_id_123
+        // Expiration: 900 seconds (15 minutes)
+        const key = `reset_token:${token}`
+        await this.redis.set(key, user.id, 'EX', 900)
+
+        // 4. Send Email
+        // Link format: https://frontend.com/reset-password?token=...
+        await this.mailService.sendResetPasswordEmail(user.email, token, {
+            displayName: user.displayName,
+        })
+
+        return { message: 'Reset link sent' }
+    }
+
+    // --- 2. Confirm & Change Password ---
+    async resetPasswordWithToken(token: string, newPassword: string) {
+        const key = `reset_token:${token}`
+
+        // 1. Check Redis for the token
+        const userId = await this.redis.get(key)
+
+        if (!userId) {
+            throw new BadRequestException('Token is invalid or has expired.')
+        }
+
+        // 2. Hash new password
+        const hashedPassword = await this.bcryptService.hash(newPassword)
+
+        // 3. Update User in DB
+        await this.prismaService.user.update({
+            where: { id: userId },
+            data: { password: hashedPassword },
+        })
+
+        // 4. IMPORTANT: Delete the token so it can't be used again
+        await this.redis.del(key)
+
+        // Optional: Delete all other active sessions for this user (security best practice)
+        // await this.redis.del(`session:${userId}`);
+
+        return { message: 'Password updated successfully' }
     }
 }

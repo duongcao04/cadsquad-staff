@@ -1,11 +1,10 @@
 import { authApi } from '@/lib/api'
 import { cookie } from '@/lib/cookie'
-import { COOKIES, IMAGES } from '@/lib/utils'
+import { COOKIES } from '@/lib/utils'
 import type { TLoginInput, TUpdateProfileInput } from '@/lib/validationSchemas'
 import type { TUser } from '@/shared/types'
 import { addToast } from '@heroui/react'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import lodash from 'lodash'
 import { useMemo } from 'react'
 import { queryClient } from '../../main'
 import { ApiResponse } from '../axios'
@@ -198,5 +197,45 @@ export const useUpdateProfileMutation = (
             }
         },
         onError: (err) => onErrorToast(err, 'Failed to update profile'),
+    })
+}
+
+export const useForgotPasswordMutation = (
+    onSuccess?: (res: ApiResponse) => void
+) => {
+    return useMutation({
+        mutationFn: async (email: string) =>
+            await authApi.forgotPassword(email),
+        onSuccess: (res) => {
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: res.message,
+                    color: 'success',
+                })
+            }
+        },
+        onError: (err) => onErrorToast(err, 'Failed to forgot password'),
+    })
+}
+export const useResetPasswordWithTokenMutation = (
+    onSuccess?: (res: ApiResponse) => void
+) => {
+    return useMutation({
+        mutationFn: async (data: { token: string; newPassword: string }) => {
+            return authApi.resetPasswordWithToken(data)
+        },
+        onSuccess: (res) => {
+            if (onSuccess) {
+                onSuccess(res)
+            } else {
+                addToast({
+                    title: res.message,
+                    color: 'success',
+                })
+            }
+        },
+        onError: (err) => onErrorToast(err, 'Failed to reset password'),
     })
 }

@@ -357,10 +357,9 @@ export default function UserAccessPage() {
             <ChangeRoleModal
                 isOpen={isOpen}
                 onClose={onClose}
-                onConfirm={(newId) => changeRoleMutation.mutate(newId)}
+                user={user}
                 currentRoleId={user.role.id}
                 roles={roles}
-                isPending={changeRoleMutation.isPending}
             />
         </div>
     )

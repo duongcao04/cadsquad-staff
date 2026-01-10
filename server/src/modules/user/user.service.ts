@@ -2,11 +2,13 @@ import {
     BadRequestException,
     ConflictException,
     ForbiddenException,
+    Inject,
     Injectable,
     InternalServerErrorException,
     Logger,
     NotFoundException,
 } from '@nestjs/common'
+import { randomBytes } from 'node:crypto'
 import { Prisma, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { MailService } from '../../providers/mail/mail.service'
@@ -146,6 +148,32 @@ export class UserService {
         })
 
         return { message: 'Password updated successfully' }
+    }
+
+    async assignRole(userId: string, roleId: string) {
+        const existingUser = await this.prismaService.user.findUnique({
+            where: {
+                id: userId,
+            },
+        })
+        if (!existingUser) {
+            throw new NotFoundException(`User with id:::${userId} not found`)
+        }
+        try {
+            const updated = await this.prismaService.user.update({
+                where: { id: userId },
+                data: { roleId },
+                select: {
+                    username: true,
+                    role: {
+                        include: { permissions: true },
+                    },
+                },
+            })
+            return { role: updated.role, username: updated.username }
+        } catch (error) {
+            this.logger.error('Updated user role failed', error.stack)
+        }
     }
 
     async findAll(query: UserQueryDto): Promise<{
@@ -399,11 +427,11 @@ export class UserService {
         }
 
         try {
-            if (!newStatus) {
+            if (newStatus) {
                 await this.mailService.sendAccountStatusUpdate({
                     displayName: user.displayName,
                     email: user.email,
-                    isActive: user.isActive,
+                    isActive: newStatus,
                 })
             }
         } catch (error) {

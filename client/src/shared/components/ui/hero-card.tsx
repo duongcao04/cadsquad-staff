@@ -1,14 +1,13 @@
-'use client'
-
 import {
     Card,
     CardBody,
     CardFooter,
     CardHeader,
+    CardProps,
     extendVariants,
 } from '@heroui/react'
 
-export const HeroCard = extendVariants(Card, {
+const StyledCard = extendVariants(Card, {
     variants: {
         // We define a new custom variant prop called "heroStyle"
         heroStyle: {
@@ -23,6 +22,9 @@ export const HeroCard = extendVariants(Card, {
                 body: 'py-6 text-slate-300 text-lg',
                 footer: 'pt-4 flex gap-4',
             },
+            default: {
+                base: 'dark:bg-background-muted',
+            },
         },
     },
     defaultVariants: {
@@ -30,6 +32,15 @@ export const HeroCard = extendVariants(Card, {
         radius: 'sm',
     },
 })
+type HeroCardProps = CardProps & {
+    heroStyle?: 'cinematic' | 'default'
+}
+export const HeroCard = (props: HeroCardProps) => {
+    const card = (
+        <StyledCard {...props} heroStyle={props.heroStyle ?? 'default'} />
+    )
+    return card
+}
 
 export {
     CardBody as HeroCardBody,

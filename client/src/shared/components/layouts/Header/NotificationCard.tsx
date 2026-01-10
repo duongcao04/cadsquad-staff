@@ -1,8 +1,9 @@
-import { Image } from 'antd'
 import { useMarkSeenNotification } from '@/lib/queries/useNotification'
 import CadsquadLogo from '@/shared/components/CadsquadLogo'
 import { NotificationStatusEnum } from '@/shared/enums/_notification-status.enum'
 import type { TUserNotification } from '@/shared/types'
+import { Image } from 'antd'
+import { dateFormatter } from '../../../../lib'
 
 export function NotificationCard({ data }: { data: TUserNotification }) {
     const markSeenNotification = useMarkSeenNotification()
@@ -36,15 +37,20 @@ export function NotificationCard({ data }: { data: TUserNotification }) {
                     </div>
                 )}
             </div>
-            <div className="space-y-1">
+            <div>
                 <p
                     className="text-sm font-semibold line-clamp-1"
                     title={data.title ?? ''}
                 >
                     {data.title}
                 </p>
-                <p className="text-sm line-clamp-2" title={data.content}>
+                <p className="mt-1 text-sm line-clamp-2" title={data.content}>
                     {data.content}
+                </p>
+                <p className="text-[10px] italic text-text-subdued font-medium">
+                    {dateFormatter(data.createdAt, {
+                        isDistance: true,
+                    })}
                 </p>
             </div>
             {data.status === NotificationStatusEnum.UNSEEN && (

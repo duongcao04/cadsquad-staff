@@ -4,9 +4,10 @@ import { AuthModule } from '../auth/auth.module'
 import { UserController } from './user.controller'
 import { UserService } from './user.service'
 import { UserSecurityService } from './user-security.service'
+import { RedisModule } from '../../providers/redis/redis.module'
 
 @Module({
-    imports: [forwardRef(() => AuthModule), MailModule],
+    imports: [RedisModule, forwardRef(() => AuthModule), MailModule],
     controllers: [UserController],
     providers: [UserService, UserSecurityService],
     exports: [UserService, UserSecurityService],

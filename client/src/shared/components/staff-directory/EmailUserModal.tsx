@@ -1,52 +1,39 @@
+import { optimizeCloudinary } from '@/lib'
+import { useSendManualEmailMutation } from '@/lib/queries/useEmail'
+import { EMAIL_TEMPLATES } from '@/lib/utils'
+import { SendEmailFormValues, sendEmailSchema } from '@/lib/validationSchemas'
 import {
     Avatar,
     Button,
     Chip,
+    Divider,
     Input,
-    Modal,
-    ModalBody,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
     Select,
     SelectItem,
-    Textarea,
 } from '@heroui/react'
-import { Copy,FileText, Mail, Paperclip, Send } from 'lucide-react'
-import { useEffect,useState } from 'react'
-
-// --- Mock Templates ---
-const EMAIL_TEMPLATES = [
-    {
-        key: 'welcome',
-        label: 'Welcome to the Team',
-        subject: 'Welcome aboard! Here is your login info.',
-        body: 'Hi {{name}},\n\nWe are thrilled to have you join us! Please find attached the employee handbook...',
-    },
-    {
-        key: 'task_update',
-        label: 'Task Assignment',
-        subject: 'New Task Assigned: [Task Name]',
-        body: 'Hi {{name}},\n\nYou have been assigned to a new task. Please check the dashboard for details.',
-    },
-    {
-        key: 'warning',
-        label: 'Policy Reminder',
-        subject: 'Important: Policy Reminder',
-        body: 'Dear {{name}},\n\nThis is a reminder regarding our company policy on...',
-    },
-]
+import { useForm } from '@tanstack/react-form'
+import { Copy, FileText, Mail, Paperclip, Send } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import {
+    getFieldErrors,
+    getFieldValue,
+    isFieldInvalid,
+} from '../../../lib/utils/tanstack'
+import { TUser } from '../../types'
+import { HeroInput } from '../ui/hero-input'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
+} from '../ui/hero-modal'
+import { RichInput } from '../ui/rich-input'
 
 interface EmailUserModalProps {
     isOpen: boolean
     onClose: () => void
-    user: {
-        id: string
-        displayName: string
-        email: string
-        avatar: string
-        role?: string
-    } | null
+    user: TUser
 }
 
 export const EmailUserModal = ({
@@ -54,38 +41,52 @@ export const EmailUserModal = ({
     onClose,
     user,
 }: EmailUserModalProps) => {
-    const [subject, setSubject] = useState('')
-    const [message, setMessage] = useState('')
     const [showCc, setShowCc] = useState(false)
-    const [isSending, setIsSending] = useState(false)
     const [attachments, setAttachments] = useState<string[]>([])
 
-    // Reset form when user changes
+    // React Query Mutation
+    const mutation = useSendManualEmailMutation()
+
+    // --- TanStack Form ---
+    const form = useForm({
+        defaultValues: {
+            to: user?.email || '',
+            subject: '',
+            content: '',
+            cc: [],
+            bcc: [],
+        } as SendEmailFormValues,
+        validators: {
+            onChange: sendEmailSchema,
+        },
+        onSubmit: async ({ value }) => {
+            console.log(value)
+
+            // Execute Mutation
+            await mutation.mutateAsync(value)
+            onClose()
+        },
+    })
+
+    // Reset/Initialize form when modal opens or user changes
     useEffect(() => {
-        if (isOpen) {
-            setSubject('')
-            setMessage('')
+        if (isOpen && user) {
+            form.reset()
+            form.setFieldValue('to', user.email)
             setAttachments([])
             setShowCc(false)
         }
-    }, [isOpen, user])
+    }, [isOpen, user, form])
 
     const handleTemplateSelect = (key: string) => {
         const template = EMAIL_TEMPLATES.find((t) => t.key === key)
         if (template && user) {
-            setSubject(template.subject)
-            setMessage(template.body.replace('{{name}}', user.displayName))
+            form.setFieldValue('subject', template.subject)
+            form.setFieldValue(
+                'content',
+                template.body.replace('{{name}}', user.displayName)
+            )
         }
-    }
-
-    const handleSend = () => {
-        setIsSending(true)
-        console.log(`Sending email to ${user?.email}`, { subject, message })
-
-        setTimeout(() => {
-            setIsSending(false)
-            onClose()
-        }, 1000)
     }
 
     const addMockAttachment = () => {
@@ -93,33 +94,30 @@ export const EmailUserModal = ({
     }
 
     return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            size="2xl"
-            scrollBehavior="inside"
-            backdrop="blur"
-            classNames={{
-                header: 'border-b border-border-default',
-                footer: 'border-t border-border-default',
-            }}
-        >
-            <ModalContent>
+        <HeroModal isOpen={isOpen} onClose={onClose} size="2xl">
+            <HeroModalContent>
                 {(close) => (
                     <>
-                        <ModalHeader className="flex flex-col gap-1 bg-slate-50/50">
+                        <HeroModalHeader className="flex flex-col gap-1 bg-slate-50/50">
                             <span className="text-xl flex items-center gap-2">
                                 <Mail className="text-slate-400" size={20} />
                                 Compose Email
                             </span>
-                        </ModalHeader>
+                        </HeroModalHeader>
 
-                        <ModalBody className="p-0">
-                            {/* 1. Recipient Info */}
+                        <Divider />
+
+                        <HeroModalBody className="p-0">
+                            {/* 1. Recipient Info (Read-only Display, but bound to Form Logic via 'to' field if needed) */}
                             <div className="px-6 py-4 bg-white">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3 p-2 bg-slate-50 border border-slate-200 rounded-xl pr-6 w-fit">
-                                        <Avatar src={user?.avatar} size="sm" />
+                                        <Avatar
+                                            src={optimizeCloudinary(
+                                                user?.avatar
+                                            )}
+                                            size="sm"
+                                        />
                                         <div>
                                             <p className="text-xs text-slate-500 font-bold uppercase">
                                                 To:
@@ -140,25 +138,50 @@ export const EmailUserModal = ({
                                     </Button>
                                 </div>
 
+                                {/* CC / BCC Fields */}
                                 {showCc && (
                                     <div className="grid grid-cols-2 gap-4 mb-4 animate-in fade-in slide-in-from-top-2">
-                                        <Input
-                                            label="Cc"
-                                            size="sm"
-                                            variant="flat"
-                                            placeholder="cc@example.com"
-                                        />
-                                        <Input
-                                            label="Bcc"
-                                            size="sm"
-                                            variant="flat"
-                                            placeholder="bcc@example.com"
-                                        />
+                                        <form.Field name="cc">
+                                            {(field) => (
+                                                <Input
+                                                    label="Cc"
+                                                    size="sm"
+                                                    variant="flat"
+                                                    placeholder="cc@example.com"
+                                                    // Note: Simple implementation for single string input converted to array
+                                                    // For real multi-email, you'd need a tag input
+                                                    onBlur={(e) => {
+                                                        const val =
+                                                            e.target.value
+                                                        field.handleChange(
+                                                            val ? [val] : []
+                                                        )
+                                                    }}
+                                                />
+                                            )}
+                                        </form.Field>
+                                        <form.Field name="bcc">
+                                            {(field) => (
+                                                <Input
+                                                    label="Bcc"
+                                                    size="sm"
+                                                    variant="flat"
+                                                    placeholder="bcc@example.com"
+                                                    onBlur={(e) => {
+                                                        const val =
+                                                            e.target.value
+                                                        field.handleChange(
+                                                            val ? [val] : []
+                                                        )
+                                                    }}
+                                                />
+                                            )}
+                                        </form.Field>
                                     </div>
                                 )}
 
                                 {/* 2. Template Selector */}
-                                <div className="flex items-center gap-3 mb-4">
+                                <div className="mt-1 flex items-center gap-3 mb-4">
                                     <Select
                                         placeholder="Insert Template"
                                         size="sm"
@@ -176,7 +199,7 @@ export const EmailUserModal = ({
                                         {EMAIL_TEMPLATES.map((t) => (
                                             <SelectItem
                                                 key={t.key}
-                                                textValue={t.key}
+                                                textValue={t.label}
                                             >
                                                 {t.label}
                                             </SelectItem>
@@ -185,52 +208,71 @@ export const EmailUserModal = ({
                                     <div className="h-px bg-slate-200 flex-1"></div>
                                 </div>
 
-                                {/* 3. Inputs */}
+                                {/* 3. Inputs Bound to TanStack Form */}
                                 <div className="space-y-4">
-                                    <Input
-                                        label="Subject"
-                                        placeholder="Enter email subject"
-                                        variant="bordered"
-                                        labelPlacement="outside"
-                                        value={subject}
-                                        onValueChange={setSubject}
-                                        classNames={{
-                                            inputWrapper: 'bg-white',
-                                        }}
+                                    <form.Field
+                                        name="subject"
+                                        children={(field) => (
+                                            <HeroInput
+                                                label="Subject"
+                                                placeholder="Enter email subject"
+                                                variant="bordered"
+                                                labelPlacement="outside-top"
+                                                onValueChange={
+                                                    field.handleChange
+                                                }
+                                                value={getFieldValue(field)}
+                                                isInvalid={isFieldInvalid(
+                                                    field
+                                                )}
+                                                errorMessage={getFieldErrors(
+                                                    field
+                                                )}
+                                                classNames={{
+                                                    inputWrapper: 'bg-white',
+                                                }}
+                                            />
+                                        )}
                                     />
 
-                                    <div className="relative">
-                                        <Textarea
-                                            label="Message"
-                                            placeholder="Type your message here..."
-                                            variant="bordered"
-                                            labelPlacement="outside"
-                                            minRows={8}
-                                            value={message}
-                                            onValueChange={setMessage}
-                                            classNames={{
-                                                inputWrapper: 'bg-white',
-                                            }}
-                                        />
-                                        {/* Formatting Toolbar Mock */}
-                                        <div className="absolute bottom-3 left-3 flex gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 opacity-50 hover:opacity-100 transition-opacity">
-                                            <button className="p-1 hover:bg-white rounded">
-                                                <span className="font-bold font-serif text-xs">
-                                                    B
-                                                </span>
-                                            </button>
-                                            <button className="p-1 hover:bg-white rounded">
-                                                <span className="italic font-serif text-xs">
-                                                    I
-                                                </span>
-                                            </button>
-                                            <button className="p-1 hover:bg-white rounded">
-                                                <span className="underline font-serif text-xs">
-                                                    U
-                                                </span>
-                                            </button>
-                                        </div>
-                                    </div>
+                                    <form.Field
+                                        name="content"
+                                        children={(field) => {
+                                            const isInvalid =
+                                                isFieldInvalid(field)
+                                            const errorMessage =
+                                                getFieldErrors(field)
+
+                                            return (
+                                                <div className="space-y-2">
+                                                    <p
+                                                        className={`${isInvalid ? 'text-danger' : 'text-text-default'} text-sm`}
+                                                    >
+                                                        Message
+                                                    </p>
+                                                    <div
+                                                        className={`${isInvalid ? 'border-danger' : 'border-border-default'} border rounded-2xl`}
+                                                    >
+                                                        <RichInput
+                                                            placeholder="Type your message here..."
+                                                            value={
+                                                                field.state
+                                                                    .value
+                                                            }
+                                                            onChange={
+                                                                field.handleChange
+                                                            }
+                                                        />
+                                                    </div>
+                                                    {isInvalid && (
+                                                        <p className="text-danger text-xs">
+                                                            {errorMessage}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )
+                                        }}
+                                    />
                                 </div>
 
                                 {/* 4. Attachments Area */}
@@ -271,25 +313,43 @@ export const EmailUserModal = ({
                                     </div>
                                 </div>
                             </div>
-                        </ModalBody>
+                        </HeroModalBody>
 
-                        <ModalFooter>
+                        <Divider />
+
+                        <HeroModalFooter>
                             <Button variant="light" onPress={close}>
                                 Discard
                             </Button>
-                            <Button
-                                color="primary"
-                                endContent={!isSending && <Send size={16} />}
-                                isLoading={isSending}
-                                onPress={handleSend}
-                                className="font-semibold"
-                            >
-                                {isSending ? 'Sending...' : 'Send Email'}
-                            </Button>
-                        </ModalFooter>
+                            {/* TanStack Form Subscribe to Submission State */}
+                            <form.Subscribe
+                                selector={(state) => [
+                                    state.canSubmit,
+                                    state.isSubmitting,
+                                ]}
+                                children={([canSubmit, isSubmitting]) => (
+                                    <Button
+                                        color="primary"
+                                        endContent={
+                                            !isSubmitting && <Send size={16} />
+                                        }
+                                        isLoading={
+                                            isSubmitting || mutation.isPending
+                                        }
+                                        isDisabled={!canSubmit}
+                                        onPress={form.handleSubmit}
+                                        className="font-semibold"
+                                    >
+                                        {isSubmitting || mutation.isPending
+                                            ? 'Sending...'
+                                            : 'Send Email'}
+                                    </Button>
+                                )}
+                            />
+                        </HeroModalFooter>
                     </>
                 )}
-            </ModalContent>
-        </Modal>
+            </HeroModalContent>
+        </HeroModal>
     )
 }

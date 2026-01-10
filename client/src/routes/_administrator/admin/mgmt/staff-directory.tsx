@@ -1,9 +1,11 @@
-import { Badge } from '@heroui/react'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Outlet } from '@tanstack/react-router'
-
 import { usersListOptions } from '@/lib/queries/options/user-queries'
 import { AdminPageHeading } from '@/shared/components/admin/AdminPageHeading'
+import { useDisclosure } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { UserRoundPlusIcon } from 'lucide-react'
+import { HeroButton } from '../../../../shared/components'
+import CreateUserModal from '../../../../shared/components/modals/CreateUserModal'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory'
@@ -17,21 +19,31 @@ function StaffDirectoryLayout() {
         data: { total },
     } = useSuspenseQuery(options)
 
+    const createUserModalDisclosure = useDisclosure({
+        id: 'CreateUserModal',
+    })
+
     return (
         <>
+            {createUserModalDisclosure.isOpen && (
+                <CreateUserModal
+                    isOpen={createUserModalDisclosure.isOpen}
+                    onClose={createUserModalDisclosure.onClose}
+                />
+            )}
             <AdminPageHeading
-                title={
-                    <Badge
-                        content={total}
-                        size="sm"
-                        color="danger"
-                        variant="solid"
-                        classNames={{
-                            badge: '-right-1 top-1 text-[10px]! font-bold!',
-                        }}
+                title="Staff Directory"
+                showBadge
+                badgeCount={total}
+                actions={
+                    <HeroButton
+                        color="primary"
+                        className="px-6"
+                        startContent={<UserRoundPlusIcon size={16} />}
+                        onPress={createUserModalDisclosure.onOpen}
                     >
-                        Staff Directory
-                    </Badge>
+                        New Member
+                    </HeroButton>
                 }
             />
             <Outlet />

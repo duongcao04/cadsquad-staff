@@ -6,7 +6,7 @@ import { type ApiError, ApiResponse } from '@/lib/axios'
 
 import { queryClient } from '../../main'
 import { TCreateUserInput } from '../../shared/components'
-import { TUser } from '../../shared/types'
+import { TRole, TUser } from '../../shared/types'
 import type {
     TResetPasswordInput,
     TUpdatePasswordInput,
@@ -54,6 +54,38 @@ export const useUpdateUserMutation = (
             } else {
                 addToast({
                     title: 'Update user successfully',
+                    color: 'success',
+                })
+            }
+        },
+    })
+}
+
+export const useUserAssignRoleMutation = (
+    onSuccess?: (res: ApiResponse<{ role: TRole; username: string }>) => void
+) => {
+    return useMutation({
+        mutationKey: ['updateUser', 'assignRole'],
+        mutationFn: ({
+            userId,
+            roleId,
+        }: {
+            userId: string
+            roleId: string
+        }) => {
+            return userApi.assignRole(userId, roleId)
+        },
+        onSuccess: (res) => {
+            queryClient.invalidateQueries({
+                queryKey: ['users', 'username', res.result?.username],
+            })
+            if (onSuccess) {
+                onSuccess?.(res)
+            } else {
+                addToast({
+                    title:
+                        res.message ??
+                        `Assign user to ${res.result?.role.displayName} successfully`,
                     color: 'success',
                 })
             }

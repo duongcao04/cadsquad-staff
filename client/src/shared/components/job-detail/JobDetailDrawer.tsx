@@ -3,6 +3,7 @@ import {
     jobActivityLogsOptions,
     jobByNoOptions,
     useProfile,
+    useUpdateJobGeneralInfoMutation,
     useUpdateJobMutation,
 } from '@/lib/queries'
 import {
@@ -94,10 +95,11 @@ export default function JobDetailDrawer({
     isOpen,
     onClose,
 }: JobDetailDrawerProps) {
-    // 1. TOP-LEVEL HOOKS
+    const router = useRouter()
+
     const { profile } = useProfile()
     const { hasPermission } = usePermission()
-    const router = useRouter()
+    const updateJobGeneralInfoMutation = useUpdateJobGeneralInfoMutation()
 
     const deliverJobDisclosure = useDisclosure()
     const financialModal = useDisclosure()
@@ -155,6 +157,17 @@ export default function JobDetailDrawer({
         )
     }, [job])
 
+    const handleSaveDescription = async (value: string) => {
+        if (job) {
+            await updateJobGeneralInfoMutation.mutateAsync({
+                jobId: job.id,
+                data: {
+                    description: value,
+                },
+            })
+        }
+    }
+
     return (
         <>
             {/* MODALS */}
@@ -176,9 +189,8 @@ export default function JobDetailDrawer({
                 <JobDescriptionModal
                     isOpen={fullEditorDisclosure.isOpen}
                     onClose={fullEditorDisclosure.onClose}
-                    value={descContent}
-                    onChange={setDescContent}
-                    // onSave={() => handleSaveDescription(descContent)}
+                    defaultValue={descContent}
+                    onSave={handleSaveDescription}
                     title={`Editor: #${job.no}`}
                 />
             )}

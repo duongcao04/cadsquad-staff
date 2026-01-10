@@ -37,6 +37,7 @@ import { Route as WorkspaceJobsIndexRouteImport } from './routes/_workspace/jobs
 import { Route as AdministratorAdminIndexRouteImport } from './routes/_administrator/admin/index'
 import { Route as WorkspaceProjectCenterTabRouteImport } from './routes/_workspace/project-center/$tab'
 import { Route as WorkspaceJobsNoRouteImport } from './routes/_workspace/jobs/$no'
+import { Route as AuthAuthResetPasswordRouteImport } from './routes/_auth/auth/reset-password'
 import { Route as AdministratorFinancialSettingRouteImport } from './routes/_administrator/financial/setting'
 import { Route as AdministratorFinancialReimbursementsRouteImport } from './routes/_administrator/financial/reimbursements'
 import { Route as AdministratorFinancialProfitLossRouteImport } from './routes/_administrator/financial/profit-loss'
@@ -208,6 +209,11 @@ const WorkspaceJobsNoRoute = WorkspaceJobsNoRouteImport.update({
   id: '/jobs/$no',
   path: '/jobs/$no',
   getParentRoute: () => WorkspaceRoute,
+} as any)
+const AuthAuthResetPasswordRoute = AuthAuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
+  getParentRoute: () => AuthRoute,
 } as any)
 const AdministratorFinancialSettingRoute =
   AdministratorFinancialSettingRouteImport.update({
@@ -429,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/financial/profit-loss': typeof AdministratorFinancialProfitLossRoute
   '/financial/reimbursements': typeof AdministratorFinancialReimbursementsRoute
   '/financial/setting': typeof AdministratorFinancialSettingRoute
+  '/auth/reset-password': typeof AuthAuthResetPasswordRoute
   '/jobs/$no': typeof WorkspaceJobsNoRoute
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin': typeof AdministratorAdminIndexRoute
@@ -483,6 +490,7 @@ export interface FileRoutesByTo {
   '/financial/profit-loss': typeof AdministratorFinancialProfitLossRoute
   '/financial/reimbursements': typeof AdministratorFinancialReimbursementsRoute
   '/financial/setting': typeof AdministratorFinancialSettingRoute
+  '/auth/reset-password': typeof AuthAuthResetPasswordRoute
   '/jobs/$no': typeof WorkspaceJobsNoRoute
   '/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/admin': typeof AdministratorAdminIndexRoute
@@ -544,6 +552,7 @@ export interface FileRoutesById {
   '/_administrator/financial/profit-loss': typeof AdministratorFinancialProfitLossRoute
   '/_administrator/financial/reimbursements': typeof AdministratorFinancialReimbursementsRoute
   '/_administrator/financial/setting': typeof AdministratorFinancialSettingRoute
+  '/_auth/auth/reset-password': typeof AuthAuthResetPasswordRoute
   '/_workspace/jobs/$no': typeof WorkspaceJobsNoRoute
   '/_workspace/project-center/$tab': typeof WorkspaceProjectCenterTabRoute
   '/_administrator/admin/': typeof AdministratorAdminIndexRoute
@@ -603,6 +612,7 @@ export interface FileRouteTypes {
     | '/financial/profit-loss'
     | '/financial/reimbursements'
     | '/financial/setting'
+    | '/auth/reset-password'
     | '/jobs/$no'
     | '/project-center/$tab'
     | '/admin'
@@ -657,6 +667,7 @@ export interface FileRouteTypes {
     | '/financial/profit-loss'
     | '/financial/reimbursements'
     | '/financial/setting'
+    | '/auth/reset-password'
     | '/jobs/$no'
     | '/project-center/$tab'
     | '/admin'
@@ -717,6 +728,7 @@ export interface FileRouteTypes {
     | '/_administrator/financial/profit-loss'
     | '/_administrator/financial/reimbursements'
     | '/_administrator/financial/setting'
+    | '/_auth/auth/reset-password'
     | '/_workspace/jobs/$no'
     | '/_workspace/project-center/$tab'
     | '/_administrator/admin/'
@@ -953,6 +965,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/jobs/$no'
       preLoaderRoute: typeof WorkspaceJobsNoRouteImport
       parentRoute: typeof WorkspaceRoute
+    }
+    '/_auth/auth/reset-password': {
+      id: '/_auth/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthAuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/_administrator/financial/setting': {
       id: '/_administrator/financial/setting'
@@ -1313,10 +1332,12 @@ const AdministratorRouteWithChildren = AdministratorRoute._addFileChildren(
 
 interface AuthRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
+  AuthAuthResetPasswordRoute: typeof AuthAuthResetPasswordRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
+  AuthAuthResetPasswordRoute: AuthAuthResetPasswordRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)

@@ -10,18 +10,13 @@ import {
 } from '@heroui/react'
 import { AlertTriangle, Ban, ShieldAlert } from 'lucide-react'
 import { useState } from 'react'
+import { TUser } from '../../types'
+import { optimizeCloudinary } from '../../../lib'
 
 interface DeactivateUserModalProps {
     isOpen: boolean
     onClose: () => void
-    user: {
-        id: string
-        displayName: string
-        username: string
-        email: string
-        avatar: string
-        role?: string
-    } | null
+    user: TUser
 }
 
 export const DeactivateUserModal = ({
@@ -57,7 +52,7 @@ export const DeactivateUserModal = ({
             <ModalContent>
                 {(close) => (
                     <>
-                        <ModalHeader className="flex flex-col gap-1 bg-red-50/50">
+                        <ModalHeader className="flex flex-col gap-1 bg-red-50/50 dark:bg-red-950/20">
                             <div className="flex items-center gap-2 text-danger">
                                 <ShieldAlert size={24} />
                                 <span className="text-xl font-bold">
@@ -67,25 +62,25 @@ export const DeactivateUserModal = ({
                         </ModalHeader>
 
                         <ModalBody className="py-6">
-                            <p className="text-slate-600 text-sm mb-4">
+                            <p className="text-text-subdued text-sm mb-4">
                                 Are you sure you want to deactivate this user?
                                 This action will immediately revoke their access
                                 to the <strong>HiveQ Workspace</strong>.
                             </p>
 
                             {/* User Summary Card */}
-                            <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6">
+                            <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 dark:bg-background dark:hover:bg-background-hovered dark:border-border-default rounded-xl mb-6">
                                 <Avatar
-                                    src={user?.avatar}
+                                    src={optimizeCloudinary(user?.avatar)}
                                     size="lg"
                                     isBordered
                                     className="shrink-0"
                                 />
                                 <div className="min-w-0">
-                                    <h4 className="font-bold text-slate-800 text-sm truncate">
+                                    <h4 className="font-bold text-text-default text-sm truncate">
                                         {user?.displayName}
                                     </h4>
-                                    <p className="text-xs text-slate-500 mb-1">
+                                    <p className="text-xs text-text-subdued mb-1">
                                         @{user?.username}
                                     </p>
                                     <Chip
@@ -94,7 +89,7 @@ export const DeactivateUserModal = ({
                                         className="h-5 text-[10px] px-1"
                                         color="primary"
                                     >
-                                        {user?.role || 'USER'}
+                                        {user.role.displayName}
                                     </Chip>
                                 </div>
                             </div>
@@ -105,7 +100,7 @@ export const DeactivateUserModal = ({
                                     What happens next:
                                 </h5>
                                 <ul className="space-y-2">
-                                    <li className="flex items-start gap-3 text-sm text-slate-600">
+                                    <li className="flex items-start gap-3 text-sm text-text-subdued">
                                         <Ban
                                             size={16}
                                             className="text-red-400 mt-0.5 shrink-0"
@@ -115,7 +110,7 @@ export const DeactivateUserModal = ({
                                             active sessions immediately.
                                         </span>
                                     </li>
-                                    <li className="flex items-start gap-3 text-sm text-slate-600">
+                                    <li className="flex items-start gap-3 text-sm text-text-subdued">
                                         <AlertTriangle
                                             size={16}
                                             className="text-orange-400 mt-0.5 shrink-0"

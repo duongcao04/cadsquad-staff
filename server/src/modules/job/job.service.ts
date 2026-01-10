@@ -232,7 +232,6 @@ export class JobService {
             ],
         }) as unknown as Job
     }
-
     async findJobsDueAt(
         userId: string,
         userPermissions: string[],
