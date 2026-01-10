@@ -3,7 +3,6 @@ import {
     dateFormatter,
     editUserSchema,
     getPageTitle,
-    INTERNAL_URLS,
     optimizeCloudinary,
     TEditUser,
     toFormikValidate,
@@ -144,8 +143,8 @@ function EditStaffPage() {
     const changeUserStatusModal = useDisclosure({
         id: 'ChangeUserStatusModal',
     })
-    const changeRoleModalDisclosure = useDisclosure({
-        id: 'ChangeRoleModal',
+    const confirmForgotPasswordModalDisclosure = useDisclosure({
+        id: 'ConfirmForgotPasswordModal',
     })
 
     const handleOpenChangeUserModal = (value: boolean) => {
@@ -216,12 +215,10 @@ function EditStaffPage() {
                     })}
                 />
             )}
-            {changeRoleModalDisclosure.isOpen && (
-                <ChangeRoleModal
-                    isOpen={changeRoleModalDisclosure.isOpen}
-                    onClose={changeRoleModalDisclosure.onClose}
-                    currentRoleId={user.role.id}
-                    roles={roles}
+            {confirmForgotPasswordModalDisclosure.isOpen && (
+                <ConfirmSendPasswordResetEmail
+                    isOpen={confirmForgotPasswordModalDisclosure.isOpen}
+                    onClose={confirmForgotPasswordModalDisclosure.onClose}
                     user={user}
                 />
             )}
@@ -285,9 +282,7 @@ function EditStaffPage() {
                                     <DropdownItem
                                         key="Send_reset_password_email"
                                         onPress={() =>
-                                            router.navigate({
-                                                href: INTERNAL_URLS.allPermissions,
-                                            })
+                                            confirmForgotPasswordModalDisclosure.onOpen
                                         }
                                     >
                                         Send reset password email
