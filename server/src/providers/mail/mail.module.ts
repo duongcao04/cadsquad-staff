@@ -16,7 +16,7 @@ import { EmailController } from './email.controller'
                     },
                 },
                 template: {
-                    dir: join(process.cwd(), './templates'),
+                    dir: join(__dirname, 'templates'),
                     adapter: new HandlebarsAdapter({
                         // Định nghĩa các logic so sánh cho template .hbs
                         eq: (a: any, b: any) => a === b,
