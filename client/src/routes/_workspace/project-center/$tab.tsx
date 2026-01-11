@@ -1,7 +1,35 @@
+import JobDetailDrawer from '@/features/job-details/components/drawers/JobDetailDrawer'
+import {
+    ProjectCenterMobileContent,
+    ViewColumnsDrawer,
+} from '@/features/project-center'
+import AddAttachmentsModal from '@/features/project-center/components/modals/AddAttachmentsModal'
+import AssignMemberModal from '@/features/project-center/components/modals/AssignMemberModal'
+import ProjectCenterTable from '@/features/project-center/components/views/ProjectCenterTable'
+import { excelApi, getPageTitle, jobApi, STORAGE_KEYS } from '@/lib'
+import {
+    jobsListOptions,
+    jobStatusesListOptions,
+    jobTypesListOptions,
+    paymentChannelsListOptions,
+    useProfile,
+    usersListOptions,
+} from '@/lib/queries'
+import { getAllowedJobColumns } from '@/lib/utils'
+import {
+    jobFiltersSchema,
+    TDownloadExcelInput,
+    TJobFilters,
+} from '@/lib/validationSchemas'
+import { ProjectCenterTabEnum } from '@/shared/enums'
+import { useDevice } from '@/shared/hooks'
+import { pCenterTableStore } from '@/features/project-center'
+import { TJob } from '@/shared/types'
 import { Spinner, Tab, Tabs, useDisclosure } from '@heroui/react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useStore } from '@tanstack/react-store'
+import dayjs from 'dayjs'
 import lodash from 'lodash'
 import {
     CircleCheckBig,
@@ -15,32 +43,6 @@ import {
 import { Suspense, useMemo, useState, useTransition } from 'react'
 import { useLocalStorage } from 'usehooks-ts'
 import { z } from 'zod'
-import { excelApi, getPageTitle, jobApi, STORAGE_KEYS } from '@/lib'
-import {
-    jobsListOptions,
-    jobStatusesListOptions,
-    jobTypesListOptions,
-    paymentChannelsListOptions,
-    useProfile,
-    usersListOptions,
-} from '@/lib/queries'
-import {
-    jobFiltersSchema,
-    TDownloadExcelInput,
-    TJobFilters,
-} from '@/lib/validationSchemas'
-import { ViewColumnsDrawer } from '@/shared/components'
-import JobDetailDrawer from '@/shared/components/job-detail/JobDetailDrawer'
-import AddAttachmentsModal from '@/shared/components/project-center/AddAttachmentsModal'
-import AssignMemberModal from '@/shared/components/project-center/AssignMemberModal'
-import ProjectCenterTable from '@/shared/components/project-center/ProjectCenterTable'
-import { ProjectCenterTabEnum } from '@/shared/enums'
-import { pCenterTableStore } from '@/shared/stores'
-import { TJob } from '@/shared/types'
-import { getAllowedJobColumns } from '../../../lib/utils'
-import dayjs from 'dayjs'
-import { useDevice } from '../../../shared/hooks'
-import { ProjectCenterMobileContent } from '../../../shared/components/project-center/ProjectCenterMobileContent'
 
 const DEFAULT_SORT = 'displayName:asc'
 

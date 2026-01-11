@@ -1,12 +1,9 @@
+import { CreateJobModal } from '@/features/job-manage'
+import AdminManagementJobsTable from '@/features/job-manage/components/views/AdminManagementJobsTable'
 import { getPageTitle } from '@/lib'
 import { jobsListOptions } from '@/lib/queries'
-import {
-    AdminPageHeading,
-    CreateJobModal,
-    HeroButton,
-} from '@/shared/components'
+import { AdminPageHeading, HeroButton } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import AdminManagementJobsTable from '@/shared/components/management-jobs/AdminManagementJobsTable'
 import { TJob } from '@/shared/types'
 import {
     Button,

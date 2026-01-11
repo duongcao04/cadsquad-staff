@@ -33,7 +33,7 @@ import {
     HeroTooltip,
 } from '../../../shared/components'
 import AdminContentContainer from '../../../shared/components/admin/AdminContentContainer'
-import { ConfirmPaymentModal } from '../../../shared/components/financial/ConfirmPaymentModal'
+import { ConfirmPaymentModal } from '../../../features/financial/components/modals/ConfirmPaymentModal'
 import { TJob } from '../../../shared/types'
 
 export const Route = createFileRoute(

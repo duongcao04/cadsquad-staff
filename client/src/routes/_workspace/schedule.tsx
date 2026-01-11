@@ -29,10 +29,10 @@ export function SchedulePage() {
 
 import { HeroCard, HeroCardBody, PageHeading } from '@/shared/components'
 import { TJob } from '@/shared/types'
-import { CalendarDays, Clock, Filter } from 'lucide-react'
+import { Clock, Filter } from 'lucide-react'
 import { Button, Chip } from '@heroui/react'
 import dayjs from 'dayjs'
-import UserScheduleMobileContent from '../../shared/components/user-schedule/UserScheduleMobileContent'
+import UserScheduleMobileContent from '../../features/schedules/components/views/UserScheduleMobileContent'
 
 export const ScheduleDesktopContent = ({ jobs }: { jobs: TJob[] }) => {
     return (

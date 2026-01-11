@@ -4,8 +4,8 @@ import {
     extendVariants,
     TooltipProps,
 } from '@heroui/react'
-import { HeroTooltip } from './hero-tooltip'
 import React from 'react'
+import { HeroTooltip } from './hero-tooltip'
 
 const StyledButton = extendVariants(Button, {
     variants: {
@@ -34,7 +34,8 @@ const StyledButton = extendVariants(Button, {
     },
 })
 
-type HeroButtonProps = Omit<ButtonProps, 'color'> & {
+type HeroButtonProps = Omit<ButtonProps, 'color' | 'size'> & {
+    size?: 'xs' | 'sm' | 'md' | 'lg'
     color?:
         | 'success'
         | 'default'

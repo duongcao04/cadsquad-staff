@@ -1,11 +1,11 @@
-import { usersListOptions } from '@/lib/queries/options/user-queries'
+import CreateUserModal from '@/features/staff-directory/components/modals/CreateUserModal'
+import { usersListOptions } from '@/lib/queries'
+import { HeroButton } from '@/shared/components'
 import { AdminPageHeading } from '@/shared/components/admin/AdminPageHeading'
 import { useDisclosure } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
-import { UserRoundPlusIcon } from 'lucide-react'
-import { HeroButton } from '../../../../shared/components'
-import CreateUserModal from '../../../../shared/components/modals/CreateUserModal'
+import { FileDownIcon, UserRoundPlusIcon } from 'lucide-react'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory'
@@ -36,14 +36,24 @@ function StaffDirectoryLayout() {
                 showBadge
                 badgeCount={total}
                 actions={
-                    <HeroButton
-                        color="primary"
-                        className="px-6"
-                        startContent={<UserRoundPlusIcon size={16} />}
-                        onPress={createUserModalDisclosure.onOpen}
-                    >
-                        New Member
-                    </HeroButton>
+                    <div className="flex gap-3">
+                        <HeroButton
+                            variant="flat"
+                            color="default"
+                            startContent={<FileDownIcon size={16} />}
+                            className="hidden sm:flex"
+                        >
+                            Export
+                        </HeroButton>
+                        <HeroButton
+                            color="primary"
+                            className="px-6"
+                            startContent={<UserRoundPlusIcon size={16} />}
+                            onPress={createUserModalDisclosure.onOpen}
+                        >
+                            New Member
+                        </HeroButton>
+                    </div>
                 }
             />
             <Outlet />

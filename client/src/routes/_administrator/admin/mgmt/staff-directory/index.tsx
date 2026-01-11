@@ -1,66 +1,52 @@
-import { COLORS, INTERNAL_URLS, optimizeCloudinary } from '@/lib'
+import ViewContentDropdown from '@/features/staff-directory/components/dropdowns/ViewContentDropdown'
+import StaffDirectoryGrid from '@/features/staff-directory/components/views/StaffDirectoryGrid'
+import StaffDirectoryTable from '@/features/staff-directory/components/views/StaffDirectoryTable'
+import { COLORS } from '@/lib'
 import { departmentsListOptions, usersListOptions } from '@/lib/queries'
-import {
-    DepartmentChip,
-    HeroCard,
-    HeroCardBody,
-    HeroCardFooter,
-    HeroCardHeader,
-    RoleChip,
-} from '@/shared/components'
+import { useUpdateSearchParams } from '@/lib/utils'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import { AssignJobModal } from '@/shared/components/staff-directory/AssignJobModal'
-import { DeactivateUserModal } from '@/shared/components/staff-directory/DeactiveUserModal'
-import { EmailUserModal } from '@/shared/components/staff-directory/EmailUserModal'
-import { SendNotificationModal } from '@/shared/components/staff-directory/SendNotificationModal'
-import { TUser } from '@/shared/types'
 import {
-    Avatar,
     Button,
-    Card,
-    Dropdown,
-    DropdownItem,
-    DropdownMenu,
-    DropdownSection,
-    DropdownTrigger,
+    Divider,
     Input,
-    Pagination,
     Select,
     SelectItem,
-    Skeleton,
     Spinner,
-    useDisclosure,
 } from '@heroui/react'
 import { useSuspenseQueries } from '@tanstack/react-query'
-import {
-    createFileRoute,
-    Link,
-    useNavigate,
-    useRouter,
-} from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import lodash from 'lodash'
 import {
-    Briefcase,
     Filter,
-    Mail,
-    MoreVertical,
-    Phone,
+    LayoutGridIcon,
     RefreshCw,
     Search,
-    SendIcon,
-    UserPen,
+    TableIcon,
 } from 'lucide-react'
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo } from 'react'
 import { z } from 'zod'
-import StaffDirectoryGrid from '../../../../../shared/components/admin/staff-directory/view/StaffDirectoryGrid'
-import StaffDirectoryTable from '../../../../../shared/components/admin/staff-directory/view/StaffDirectoryTable'
 
+const VIEW_OPTIONS = [
+    {
+        key: 'table',
+        label: 'List View',
+        icon: TableIcon,
+        description: 'Standard row layout',
+    },
+    {
+        key: 'grid',
+        label: 'Grid View',
+        icon: LayoutGridIcon,
+        description: 'Card gallery layout',
+    },
+]
 // --- 1. ROUTE DEFINITION WITH SEARCH SCHEMA ---
 const staffSearchSchema = z.object({
     page: z.number().catch(1),
     limit: z.number().catch(8),
     search: z.string().optional(),
     departmentId: z.string().optional(),
+    view: z.enum(VIEW_OPTIONS.map((it) => it.key)).default(VIEW_OPTIONS[0].key),
 })
 export type TStaffSearch = z.infer<typeof staffSearchSchema>
 
@@ -98,6 +84,8 @@ function StaffDirectoryPage() {
     const searchParams = Route.useSearch()
     const navigate = useNavigate({ from: Route.fullPath })
 
+    const updateSearch = useUpdateSearchParams(Route.fullPath)
+
     const [
         {
             data: { users, total: totalUsers, totalPages },
@@ -123,35 +111,32 @@ function StaffDirectoryPage() {
         ],
     })
 
-    // --- Disclosure Hooks cho Modals ---
-    const [selectedUser, setSelectedUser] = useState<null | TUser>(null)
-    const assignJobModal = useDisclosure()
-    const emailUserModal = useDisclosure()
-    const notificationModal = useDisclosure()
-    const deactivateModal = useDisclosure()
-
-    // useTransition is key to preventing the "jump" to Suspense fallback
-    const [, startTransition] = useTransition()
-
-    // Generic function to handle all navigation updates with transition
-    const updateSearch = (updater: (old: TStaffSearch) => TStaffSearch) => {
-        startTransition(() => {
-            navigate({
-                search: ((old: TStaffSearch) =>
-                    updater(old as TStaffSearch)) as unknown as true,
-                replace: true,
-            })
-        })
-    }
-
     const handlePageChange = (newPage: number) =>
-        updateSearch((old) => ({ ...old, page: newPage }))
+        updateSearch((old: TStaffSearch) => ({
+            ...old,
+            page: newPage,
+        }))
 
     const handleLimitChange = (newLimit: number) =>
-        updateSearch((old) => ({ ...old, limit: newLimit, page: 1 }))
+        updateSearch((old: TStaffSearch) => ({
+            ...old,
+            limit: newLimit,
+            page: 1,
+        }))
 
     const handleSearchChange = (newSearch?: string) =>
-        updateSearch((old) => ({ ...old, search: newSearch, page: 1 }))
+        updateSearch((old: TStaffSearch) => ({
+            ...old,
+            search: newSearch,
+            page: 1,
+        }))
+
+    const handleViewChange = (newView: any) =>
+        updateSearch((old: TStaffSearch) => ({
+            ...old,
+            view: newView,
+            page: 1,
+        }))
 
     const debouncedSearchChange = useMemo(
         () =>
@@ -168,43 +153,8 @@ function StaffDirectoryPage() {
         })
     }
 
-    const handleAddStaff = (user: TUser) => {
-        setSelectedUser(user)
-        assignJobModal.onOpen()
-    }
-
     return (
         <>
-            {/* Modals Management */}
-            {assignJobModal.isOpen && selectedUser && (
-                <AssignJobModal
-                    isOpen
-                    onClose={assignJobModal.onClose}
-                    user={selectedUser}
-                />
-            )}
-            {emailUserModal.isOpen && selectedUser && (
-                <EmailUserModal
-                    isOpen
-                    onClose={emailUserModal.onClose}
-                    user={selectedUser}
-                />
-            )}
-            {notificationModal.isOpen && selectedUser && (
-                <SendNotificationModal
-                    isOpen
-                    onClose={notificationModal.onClose}
-                    user={selectedUser}
-                />
-            )}
-            {deactivateModal.isOpen && selectedUser && (
-                <DeactivateUserModal
-                    isOpen
-                    onClose={deactivateModal.onClose}
-                    user={selectedUser}
-                />
-            )}
-
             <AdminContentContainer className="mt-1 pb-10">
                 {/* --- Toolbar --- */}
                 <div className="flex flex-col md:flex-row gap-4 items-center mb-6">
@@ -257,7 +207,18 @@ function StaffDirectoryPage() {
                         ))}
                     </Select>
 
+                    <Divider orientation="vertical" />
+
+                    <ViewContentDropdown
+                        onSelectionChange={(value) => {
+                            console.log(value)
+                            handleViewChange(value)
+                        }}
+                        options={VIEW_OPTIONS}
+                        selectedKey={searchParams.view}
+                    />
                     <div className="w-px mx-3 h-5 bg-text-muted"></div>
+
                     <div className="flex gap-3">
                         <Button
                             startContent={
@@ -311,126 +272,52 @@ function StaffDirectoryPage() {
                     </div>
                 </div>
 
-                <StaffDirectoryGrid
-                    data={users}
-                    isLoading={isUsersLoading}
-                    searchParams={searchParams}
-                    onAddStaff={handleAddStaff}
-                />
-                <StaffDirectoryTable
-                    data={users}
-                    isLoading={isUsersLoading}
-                    onAddStaff={handleAddStaff}
-                    onPageChange={() => {}}
-                    onSearch={() => {}}
-                    onSortChange={() => {}}
-                    pagination={{
-                        limit: 1,
-                        page: 2,
-                        total: 1,
-                        totalPages: 1,
-                    }}
-                    sortString=""
-                />
+                <p className="text-xs text-default-500 font-medium order-2 md:order-1">
+                    Showing{' '}
+                    {users.length > 0
+                        ? (searchParams.page - 1) * searchParams.limit + 1
+                        : 0}
+                    {' - '}
+                    {Math.min(
+                        searchParams.page * searchParams.limit,
+                        totalUsers || 0
+                    )}
+                    {' of '} {totalUsers || 0} users
+                </p>
 
-                {/* --- Pagination UI --- */}
-                <div className="flex flex-col md:flex-row justify-between items-center mt-12 px-2 gap-4">
-                    <p className="text-xs text-default-500 font-medium order-2 md:order-1">
-                        Showing{' '}
-                        {users.length > 0
-                            ? (searchParams.page - 1) * searchParams.limit + 1
-                            : 0}
-                        {' - '}
-                        {Math.min(
-                            searchParams.page * searchParams.limit,
-                            totalUsers || 0
-                        )}
-                        {' of '} {totalUsers || 0} users
-                    </p>
-
-                    {totalPages > 1 && (
-                        <Pagination
-                            isCompact
-                            showControls
-                            showShadow
-                            color="primary"
-                            page={searchParams.page}
-                            total={totalPages}
-                            onChange={handlePageChange}
-                            className="order-1 md:order-2"
-                            variant="flat"
+                <div className="mt-4">
+                    {searchParams.view === 'grid' ? (
+                        <StaffDirectoryGrid
+                            data={users}
+                            isLoading={isUsersLoading}
+                            searchParams={searchParams}
+                            pagination={{
+                                limit: searchParams.limit,
+                                page: searchParams.page,
+                                total: totalUsers,
+                                totalPages: totalPages,
+                            }}
+                            onAddStaff={() => {}}
+                            onPageChange={handlePageChange}
+                        />
+                    ) : (
+                        <StaffDirectoryTable
+                            data={users}
+                            isLoading={isUsersLoading}
+                            onPageChange={handlePageChange}
+                            onSearch={handleSearchChange}
+                            pagination={{
+                                limit: searchParams.limit,
+                                page: searchParams.page,
+                                total: totalUsers,
+                                totalPages: totalPages,
+                            }}
+                            onSortChange={() => {}}
+                            sortString=""
                         />
                     )}
                 </div>
             </AdminContentContainer>
         </>
-    )
-}
-
-type UserActionDropdownProps = {
-    username: string
-    onEmail: () => void
-    onNotify: () => void
-    onDeactivate: () => void
-}
-export function UserActionDropdown({
-    username,
-    onEmail,
-    onNotify,
-    onDeactivate,
-}: UserActionDropdownProps) {
-    const router = useRouter()
-    return (
-        <Dropdown>
-            <DropdownTrigger>
-                <Button
-                    isIconOnly
-                    size="sm"
-                    variant="light"
-                    className="text-default-400"
-                >
-                    <MoreVertical size={20} />
-                </Button>
-            </DropdownTrigger>
-            <DropdownMenu aria-label="User Actions">
-                <DropdownSection showDivider>
-                    <DropdownItem
-                        key="view"
-                        startContent={<UserPen size={16} />}
-                        onPress={() => {
-                            router.navigate({
-                                href: INTERNAL_URLS.editStaffDetails(username),
-                            })
-                        }}
-                    >
-                        View Profile
-                    </DropdownItem>
-                    <DropdownItem
-                        key="notify"
-                        startContent={<SendIcon size={16} />}
-                        onPress={onNotify}
-                    >
-                        Send Notification
-                    </DropdownItem>
-                    <DropdownItem
-                        key="email"
-                        startContent={<Mail size={16} />}
-                        onPress={onEmail}
-                    >
-                        Direct Email
-                    </DropdownItem>
-                </DropdownSection>
-                <DropdownSection title="Danger zone">
-                    <DropdownItem
-                        key="delete"
-                        className="text-danger"
-                        color="danger"
-                        onPress={onDeactivate}
-                    >
-                        Deactivate User
-                    </DropdownItem>
-                </DropdownSection>
-            </DropdownMenu>
-        </Dropdown>
     )
 }

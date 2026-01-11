@@ -40,8 +40,8 @@ import {
 } from '@/lib/queries/options/community-queries'
 import { HeroButton, HeroCard, HeroCardBody } from '@/shared/components'
 import { communitiesStore } from '@/shared/stores/_communities.store'
-import CreatePost from '../../../shared/components/communities/community-page/CreatePost'
-import PostsView from '../../../shared/components/communities/PostsView'
+import CreatePost from '../../../features/communities/components/modals/CreatePost'
+import PostsView from '../../../features/communities/components/views/PostsView'
 
 export const MOCK_FILES = [
     {

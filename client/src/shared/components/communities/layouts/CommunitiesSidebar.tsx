@@ -25,8 +25,8 @@ import { useState } from 'react'
 import { INTERNAL_URLS, optimizeCloudinary } from '../../../../lib'
 import { TCommunity } from '../../../types'
 import { HeroButton } from '../../ui/hero-button'
-import { CreateCommunityModal } from '../CreateCommunityModal'
-import { CreateTopicModal } from '../CreateTopicModal'
+import { CreateCommunityModal } from '../../../../features/communities/components/modals/CreateCommunityModal'
+import { CreateTopicModal } from '../../../../features/communities/components/CreateTopicModal'
 
 export const COMMUNITIES = [
     {

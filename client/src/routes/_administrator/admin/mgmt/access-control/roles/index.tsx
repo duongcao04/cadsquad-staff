@@ -4,8 +4,8 @@ import {
 } from '@/lib/queries/options/role-queries'
 import { useAddMemberToRoleMutation } from '@/lib/queries/useRole'
 import { HeroButton, HeroCard } from '@/shared/components'
-import { AddRoleMemberModal } from '@/shared/components/role-and-permission/AddRoleMemberModal'
-import CreateRoleModal from '@/shared/components/role-and-permission/CreateRoleModal'
+import { AddRoleMemberModal } from '@/features/user-access/components/modals/AddRoleMemberModal'
+import CreateRoleModal from '@/features/user-access/components/modals/CreateRoleModal'
 import { TRole } from '@/shared/types'
 import {
     BreadcrumbItem,

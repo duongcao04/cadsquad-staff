@@ -31,7 +31,7 @@ import {
     HeroBreadcrumbs,
     HeroTooltip,
 } from '../../shared/components'
-import SettingTitle from '../../shared/components/settings/SettingTitle'
+import SettingTitle from '../../features/settings/components/SettingTitle'
 import {
     TextScalingKey,
     useAppTheme,

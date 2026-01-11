@@ -32,9 +32,9 @@ import {
     communitiesPostsListOptions,
     topicQueries,
 } from '@/lib/queries/options/community-queries'
-import CreatePost from '@/shared/components/communities/community-page/CreatePost'
+import CreatePost from '@/features/communities/components/modals/CreatePost'
 import { communitiesStore } from '@/shared/stores/_communities.store'
-import PostsView from '../../../../shared/components/communities/PostsView'
+import PostsView from '../../../../features/communities/components/views/PostsView'
 
 export const MOCK_FILES = [
     {

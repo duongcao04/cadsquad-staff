@@ -1,7 +1,8 @@
 import { Tab, Tabs } from '@heroui/react'
 import { useSuspenseQueries } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-
+import { ProfileCard, ProfileMobileContent } from '@/features/profile'
+import JobCard from '@/features/profile/components/JobCard'
 import { jobsListOptions } from '@/lib/queries'
 import { getPageTitle, INTERNAL_URLS, JOB_STATUS_CODES } from '@/lib/utils'
 import {
@@ -12,10 +13,7 @@ import {
     ScrollArea,
     ScrollBar,
 } from '@/shared/components'
-import JobCard from '@/shared/components/profile/JobCard'
-import { ProfileCard } from '@/shared/components/profile/ProfileCard'
-import { useDevice } from '../../shared/hooks'
-import { ProfileMobileContent } from '../../shared/components/profile/ProfileMobileContent'
+import { useDevice } from '@/shared/hooks'
 
 export const Route = createFileRoute('/_workspace/profile')({
     head: () => ({

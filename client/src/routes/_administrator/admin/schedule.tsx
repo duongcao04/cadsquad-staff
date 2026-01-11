@@ -1,46 +1,52 @@
-import { Button, Skeleton, useDisclosure } from '@heroui/react'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import {
-    addMonths,
-    eachDayOfInterval,
-    endOfMonth,
-    endOfWeek,
-    format,
-    isSameDay,
-    isSameMonth,
-    startOfMonth,
-    startOfWeek,
-    subMonths,
-} from 'date-fns'
-import { ChevronLeft, ChevronRight, House, Plus } from 'lucide-react'
-import { useState } from 'react'
-import { getPageTitle, INTERNAL_URLS } from '@/lib'
+import JobScheduleModal from '@/features/schedules/components/modals/JobScheduleModal'
+import ScheduleCalendarView, {
+    CalendarSkeleton,
+} from '@/features/schedules/components/views/ScheduleCalendarView'
+import ScheduleListView from '@/features/schedules/components/views/ScheduleListView'
+import { getPageTitle } from '@/lib'
 import { jobScheduleOptions } from '@/lib/queries/options/job-queries'
-import {
-    AdminPageHeading,
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroCard,
-} from '@/shared/components'
+import { AdminPageHeading } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import JobScheduleModal from '@/shared/components/admin-schedule/JobScheduleModal'
-import { TJob } from '../../../shared/types'
+import { Button, Divider, Tab, Tabs, useDisclosure } from '@heroui/react'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { addMonths, format, subMonths } from 'date-fns'
+import {
+    Calendar as CalendarIcon,
+    ChevronLeft,
+    ChevronRight,
+    List as ListIcon,
+    Plus,
+} from 'lucide-react'
+import { useState } from 'react'
+import { z } from 'zod'
+
+// --- 1. DEFINE SEARCH PARAMS SCHEMA ---
+const scheduleSearchSchema = z.object({
+    month: z.number().catch(() => new Date().getMonth() + 1),
+    year: z.number().catch(() => new Date().getFullYear()),
+    view: z.enum(['calendar', 'list']).catch('calendar'), // New 'view' param
+})
 
 export const Route = createFileRoute('/_administrator/admin/schedule')({
+    validateSearch: (search) => scheduleSearchSchema.parse(search),
+    loaderDeps: ({ search }) => ({
+        month: search.month,
+        year: search.year,
+    }),
     head: () => ({
-        meta: [
-            {
-                title: getPageTitle('Schedule'),
-            },
-        ],
-    }), // ✅ Router sẽ hiển thị cái này khi useSuspenseQuery đang fetch
+        meta: [{ title: getPageTitle('Schedule') }],
+    }),
+    loader: async ({ context, deps }) => {
+        return context.queryClient.ensureQueryData(
+            jobScheduleOptions(deps.month, deps.year)
+        )
+    },
     pendingComponent: () => (
         <ScheduleLayout>
             <CalendarSkeleton />
         </ScheduleLayout>
     ),
-    // ✅ Hiển thị cái này nếu API bị lỗi
     errorComponent: ({ error }) => (
         <div className="p-10 text-center text-danger">
             Error loading schedule: {error.message}
@@ -55,101 +61,65 @@ export const Route = createFileRoute('/_administrator/admin/schedule')({
 
 function ScheduleLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div>
+        <>
             <AdminPageHeading title="Schedule" />
-
-            <HeroBreadcrumbs className="pt-3 px-7 text-xs">
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.home}
-                        className="text-text-subdued!"
-                    >
-                        <House size={16} />
-                    </Link>
-                </HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>
-                    <Link
-                        to={INTERNAL_URLS.admin}
-                        className="text-text-subdued!"
-                    >
-                        Admin
-                    </Link>
-                </HeroBreadcrumbItem>
-                <HeroBreadcrumbItem>Schedule</HeroBreadcrumbItem>
-            </HeroBreadcrumbs>
-
-            <AdminContentContainer className="mt-1">
+            <AdminContentContainer className="mt-1 flex flex-col h-[calc(100vh-140px)]">
                 {children}
             </AdminContentContainer>
-        </div>
+        </>
     )
 }
-function SchedulePage() {
-    // 1. Manage Month State
-    const [currentDate, setCurrentDate] = useState(new Date())
 
-    // 2. Fetch API Data for the current month
-    const month = currentDate.getMonth() + 1
-    const year = currentDate.getFullYear()
+function SchedulePage() {
+    const searchParams = Route.useSearch()
+    const navigate = useNavigate({ from: Route.fullPath })
+
+    // Derived Date State
+    const currentDate = new Date(searchParams.year, searchParams.month - 1, 1)
+
+    // Helper: Update URL Params
+    const updateParams = (updates: Partial<typeof searchParams>) => {
+        navigate({
+            search: (old) => ({ ...old, ...updates }),
+            replace: true,
+        })
+    }
+
+    const handleDateChange = (newDate: Date) => {
+        updateParams({
+            month: newDate.getMonth() + 1,
+            year: newDate.getFullYear(),
+        })
+    }
 
     const { data: jobsSchedule, isFetching } = useSuspenseQuery(
-        jobScheduleOptions(month, year)
+        jobScheduleOptions(searchParams.month, searchParams.year)
     )
 
-    return (
-        <div
-            className={
-                isFetching
-                    ? 'opacity-70 pointer-events-none transition-opacity'
-                    : ''
-            }
-        >
-            <CalendarContent
-                currentDate={currentDate}
-                setCurrentDate={setCurrentDate}
-                jobsSchedule={jobsSchedule}
-            />
-        </div>
-    )
-}
-
-function CalendarContent({
-    currentDate,
-    setCurrentDate,
-    jobsSchedule,
-}: {
-    currentDate: Date
-    setCurrentDate: (d: Date) => void
-    jobsSchedule: TJob[]
-}) {
-    const [selectedJob, setSelectedJob] = useState<string | null>(null)
+    // Modal State
+    const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
     const { isOpen, onOpen, onClose } = useDisclosure()
 
-    // --- Calendar Calculation ---
-    const monthStart = startOfMonth(currentDate)
-    const monthEnd = endOfMonth(monthStart)
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 })
-    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 })
-    const calendarDays = eachDayOfInterval({ start: startDate, end: endDate })
-    const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
-    const getJobsForDay = (date: Date) => {
-        return jobsSchedule.filter((job) =>
-            isSameDay(new Date(job.dueAt), date)
-        )
+    const handleJobClick = (jobNo: string) => {
+        setSelectedJobId(jobNo)
+        onOpen()
     }
 
     return (
-        <>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 shrink-0">
+        <div
+            className={`flex flex-col h-full ${isFetching ? 'opacity-70 pointer-events-none' : ''}`}
+        >
+            {/* --- Toolbar --- */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 shrink-0">
                 <div className="flex flex-wrap items-center gap-3">
+                    {/* Month Navigator */}
                     <div className="flex items-center bg-background-hovered rounded-xl border border-border-default p-1 shadow-sm">
                         <Button
                             isIconOnly
                             size="sm"
                             variant="light"
-                            onClick={() =>
-                                setCurrentDate(subMonths(currentDate, 1))
+                            onPress={() =>
+                                handleDateChange(subMonths(currentDate, 1))
                             }
                         >
                             <ChevronLeft size={18} />
@@ -161,123 +131,86 @@ function CalendarContent({
                             isIconOnly
                             size="sm"
                             variant="light"
-                            onClick={() =>
-                                setCurrentDate(addMonths(currentDate, 1))
+                            onPress={() =>
+                                handleDateChange(addMonths(currentDate, 1))
                             }
                         >
                             <ChevronRight size={18} />
                         </Button>
                     </div>
+
                     <Button
                         variant="flat"
-                        onClick={() => setCurrentDate(new Date())}
+                        onPress={() => handleDateChange(new Date())}
                     >
                         Today
                     </Button>
                 </div>
-                <Button color="primary" startContent={<Plus size={16} />}>
-                    New Job
-                </Button>
+
+                <div className="flex items-center gap-3 ml-auto">
+                    {/* View Switcher */}
+                    <Tabs
+                        aria-label="View options"
+                        selectedKey={searchParams.view}
+                        onSelectionChange={(key) =>
+                            updateParams({ view: key as 'calendar' | 'list' })
+                        }
+                        size="sm"
+                        radius="sm"
+                        color="primary"
+                    >
+                        <Tab
+                            key="calendar"
+                            title={
+                                <div className="flex items-center gap-2">
+                                    <CalendarIcon size={14} />{' '}
+                                    <span>Calendar</span>
+                                </div>
+                            }
+                        />
+                        <Tab
+                            key="list"
+                            title={
+                                <div className="flex items-center gap-2">
+                                    <ListIcon size={14} /> <span>List</span>
+                                </div>
+                            }
+                        />
+                    </Tabs>
+
+                    <Divider orientation="vertical" className="h-6" />
+
+                    <Button color="primary" startContent={<Plus size={16} />}>
+                        New Job
+                    </Button>
+                </div>
             </div>
 
-            <HeroCard className="flex-1 flex flex-col shadow-sm border border-border-default overflow-hidden">
-                <div className="grid grid-cols-7 border-b border-border-default bg-background-muted shrink-0">
-                    {weekDays.map((day) => (
-                        <div
-                            key={day}
-                            className="py-3 text-center text-xs font-bold text-text-default uppercase"
-                        >
-                            {day}
-                        </div>
-                    ))}
-                </div>
+            {/* --- Content Views --- */}
+            <div className="flex-1 overflow-hidden flex flex-col relative">
+                {searchParams.view === 'calendar' ? (
+                    <ScheduleCalendarView
+                        currentDate={currentDate}
+                        jobsSchedule={jobsSchedule}
+                        onJobClick={handleJobClick}
+                    />
+                ) : (
+                    <ScheduleListView
+                        currentDate={currentDate}
+                        jobsSchedule={jobsSchedule}
+                        onJobClick={handleJobClick}
+                    />
+                )}
+            </div>
 
-                <div className="flex-1 grid grid-cols-7 bg-background-muted gap-px">
-                    {calendarDays.map((day) => {
-                        const isCurrentMonth = isSameMonth(day, monthStart)
-                        const isToday = isSameDay(day, new Date())
-                        const daysJobs = getJobsForDay(day)
-
-                        return (
-                            <div
-                                key={day.toISOString()}
-                                className={`relative bg-background flex flex-col p-2 min-h-32 hover:bg-background-hovered transition-colors ${!isCurrentMonth ? 'opacity-40' : ''}`}
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                    <span
-                                        className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-primary text-white' : 'text-text-subdued'}`}
-                                    >
-                                        {format(day, 'd')}
-                                    </span>
-                                </div>
-                                <div className="flex-1 flex flex-col gap-1 overflow-y-auto max-h-32 scrollbar-hide">
-                                    {daysJobs.map((job) => (
-                                        <div
-                                            key={job.id}
-                                            onClick={() => {
-                                                setSelectedJob(job.no)
-                                                onOpen()
-                                            }}
-                                            className="group flex items-center gap-2 p-1.5 rounded-md text-[11px] font-semibold cursor-pointer border border-transparent hover:border-border-default hover:shadow-sm transition-all"
-                                            style={{
-                                                backgroundColor: `${job.status?.hexColor}15`,
-                                                color:
-                                                    job.status?.hexColor ||
-                                                    '#334155',
-                                                borderLeft: `3px solid ${job.status?.hexColor}`,
-                                            }}
-                                        >
-                                            <span className="truncate flex-1">
-                                                {job.displayName}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-            </HeroCard>
-
-            {isOpen && selectedJob && (
+            {/* --- Job Details Modal --- */}
+            {isOpen && selectedJobId && (
                 <JobScheduleModal
                     isOpen={isOpen}
                     onClose={onClose}
-                    jobNo={selectedJob}
+                    jobNo={selectedJobId}
                 />
             )}
-        </>
-    )
-}
-
-function CalendarSkeleton() {
-    return (
-        <div className="flex flex-col h-full animate-pulse">
-            <div className="flex justify-between mb-6">
-                <Skeleton className="w-48 h-10 rounded-xl" />
-                <Skeleton className="w-32 h-10 rounded-xl" />
-            </div>
-            <HeroCard className="flex-1 border border-border-default">
-                <div className="grid grid-cols-7 border-b border-border-default h-12">
-                    {[...Array(7)].map((_, i) => (
-                        <div key={i} className="p-3">
-                            <Skeleton className="h-4 w-full rounded-md" />
-                        </div>
-                    ))}
-                </div>
-                <div className="grid grid-cols-7 h-full gap-px bg-border-default">
-                    {[...Array(35)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="bg-background p-2 min-h-32 space-y-2"
-                        >
-                            <Skeleton className="w-6 h-6 rounded-full" />
-                            <Skeleton className="w-full h-4 rounded-md" />
-                            <Skeleton className="w-4/5 h-4 rounded-md" />
-                        </div>
-                    ))}
-                </div>
-            </HeroCard>
         </div>
     )
 }

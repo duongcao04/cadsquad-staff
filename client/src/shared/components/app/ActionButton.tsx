@@ -1,10 +1,10 @@
+import { CreateJobModal } from '@/features/job-manage'
+import { DeliverJobModal } from '@/features/job-manage/components/modals/DeliverJobModal'
+import { CreateNotificationModal } from '@/features/notifications/components/modals/CreateNotificationModal'
+import CreateUserModal from '@/features/staff-directory/components/modals/CreateUserModal'
 import { MotionDiv } from '@/lib/motion'
-import {
-    CreateJobModal,
-    CreateNotificationModal,
-    IconAlertColorful,
-    IconPeopleColorful,
-} from '@/shared/components'
+import { APP_PERMISSIONS } from '@/lib/utils'
+import { IconAlertColorful, IconPeopleColorful } from '@/shared/components'
 import { appStore, ESidebarStatus } from '@/shared/stores'
 import {
     Button,
@@ -20,13 +20,10 @@ import hotkeys from 'hotkeys-js'
 import { PlusIcon } from 'lucide-react'
 import { type Variants } from 'motion/react'
 import { useEffect } from 'react'
-import { APP_PERMISSIONS } from '../../../lib/utils'
 import { usePermission } from '../../hooks'
 import { FluentColorApprovalsApp20 } from '../icons/FluentColorApprovalsApp20'
 import { FluentColorBriefcase20 } from '../icons/FluentColorBriefcase20'
 import { FluentColorErrorCircle20 } from '../icons/FluentColorErrorCircle20'
-import CreateUserModal from '../modals/CreateUserModal'
-import { DeliverJobModal } from '../modals/DeliverJobModal'
 import { IssueReportModal } from '../modals/IssueReportModal'
 
 export function ActionButton({

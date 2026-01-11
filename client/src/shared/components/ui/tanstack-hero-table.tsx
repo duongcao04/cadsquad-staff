@@ -1,5 +1,6 @@
 import {
     Spinner,
+    SortDescriptor,
     Table as HeroUITable,
     TableBody,
     TableCell,
@@ -7,7 +8,6 @@ import {
     TableHeader,
     TableProps as HeroUITableProps,
     TableRow,
-    SortDescriptor,
 } from '@heroui/react'
 import {
     flexRender,
@@ -30,21 +30,25 @@ export function TanStackHeroTable<TData>({
     emptyContent = 'No rows to display.',
     ...props
 }: TanStackHeroTableProps<TData>) {
-    // 1. Sync TanStack State -> HeroUI SortDescriptor
-    const sortingState = table.getState().sorting
-    const sortDescriptor: SortDescriptor | undefined = sortingState?.[0]
+    // 1. Get Table State
+    const state = table.getState()
+
+    // 2. Create a "Refresh Key" based on state that affects the view
+    // This ensures the TableBody remounts when Page, Sort, or Row Count changes
+    const collectionKey = `${state.pagination?.pageIndex}-${state.sorting?.[0]?.id}-${state.sorting?.[0]?.desc}-${table.getRowModel().rows.length}`
+
+    // 3. Sync TanStack Sorting -> HeroUI SortDescriptor
+    const sortDescriptor: SortDescriptor | undefined = state.sorting?.[0]
         ? {
-              column: sortingState[0].id,
-              direction: sortingState[0].desc ? 'descending' : 'ascending',
+              column: state.sorting[0].id,
+              direction: state.sorting[0].desc ? 'descending' : 'ascending',
           }
         : undefined
 
-    // 2. Handle HeroUI Event -> Update TanStack State
+    // 4. Handle HeroUI Sort Event
     const handleSortChange = (descriptor: SortDescriptor) => {
-        // HeroUI returns the column key (which we set to header.id below)
         const column = table.getColumn(descriptor.column as string)
         if (column) {
-            // Determine new direction. HeroUI toggles automatically, so we just follow its lead.
             const isDesc = descriptor.direction === 'descending'
             column.toggleSorting(isDesc)
         }
@@ -55,7 +59,7 @@ export function TanStackHeroTable<TData>({
             aria-label="TanStack Data Table"
             isHeaderSticky
             sortDescriptor={sortDescriptor}
-            onSortChange={handleSortChange} // <--- Event handler goes here on the Table
+            onSortChange={handleSortChange}
             BaseComponent={(found) => (
                 <ScrollArea className="size-full h-full! border-1 border-border-default p-2 rounded-md min-h-[calc(100%-150px)]">
                     <ScrollBar orientation="horizontal" />
@@ -73,13 +77,12 @@ export function TanStackHeroTable<TData>({
                 {table.getHeaderGroups()[0].headers.map((header) => {
                     return (
                         <TableColumn
-                            key={header.id} // This ID matches descriptor.column in handleSortChange
+                            key={header.id}
                             allowsSorting={header.column.getCanSort()}
                             align={
                                 (header.column.columnDef.meta as any)?.align ||
                                 'start'
                             }
-                            // REMOVED: onSortChange prop (it does not exist on TableColumn)
                         >
                             {header.isPlaceholder
                                 ? null
@@ -92,6 +95,8 @@ export function TanStackHeroTable<TData>({
                 })}
             </TableHeader>
             <TableBody
+                // 👇 THIS IS THE FIX: Forces update when data/page/sort changes
+                key={collectionKey}
                 emptyContent={emptyContent}
                 items={table.getRowModel().rows}
                 isLoading={isLoading}

@@ -15,7 +15,6 @@ import {
     HeroCard,
     HeroCardBody,
     HeroCardHeader,
-    UploadAvatarModal,
 } from '@/shared/components'
 import {
     addToast,
@@ -41,7 +40,8 @@ import {
     Save,
     User,
 } from 'lucide-react'
-import SettingTitle from '../../shared/components/settings/SettingTitle'
+import SettingTitle from '../../features/settings/components/SettingTitle'
+import { UploadAvatarModal } from '../../features/staff-directory'
 
 export const Route = createFileRoute('/settings/my-profile')({
     head: () => ({

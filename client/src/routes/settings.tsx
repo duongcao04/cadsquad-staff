@@ -2,7 +2,7 @@ import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 import { Header, ScrollArea, ScrollBar } from '../shared/components'
 import MobileHeader from '../shared/components/layouts/Header/MobileHeader'
-import SettingsSidebar from '../shared/components/settings/layouts/SettingsSidebar'
+import SettingsSidebar from '../features/settings/components/SettingsSidebar'
 import { AuthGuard } from '../shared/guards'
 import { useDevice } from '../shared/hooks'
 

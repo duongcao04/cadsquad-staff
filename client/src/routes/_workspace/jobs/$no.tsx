@@ -1,3 +1,10 @@
+import { JobActivityHistory } from '@/features/job-details'
+import MobileJobDetailPage from '@/features/job-details/components/mobile/MobileJobDetailPage'
+import JobDescriptionModal from '@/features/job-details/components/modals/JobDescriptionModal'
+import JobAssigneesView from '@/features/job-details/components/views/JobAssigneesView'
+import JobCommentsView from '@/features/job-details/components/views/JobCommentsView'
+import { DeliverJobModal } from '@/features/job-manage'
+import UpdateCostModal from '@/features/project-center/components/modals/UpdateCostModal'
 import {
     ApiResponse,
     currencyFormatter,
@@ -10,19 +17,18 @@ import {
 } from '@/lib'
 import { jobActivityLogsOptions, jobByNoOptions } from '@/lib/queries'
 import {
-    DeliverJobModal,
     HeroButton,
     HeroCard,
     HeroCardBody,
     HeroCardHeader,
-    JobActivityHistory,
     JobStatusChip,
 } from '@/shared/components'
 import JobAttachmentsField from '@/shared/components/form-fields/JobAttachmentsField'
-import JobAssigneesView from '@/shared/components/job-detail/JobAssigneesView'
-import JobCommentsView from '@/shared/components/job-detail/JobCommentsView'
 import Timmer from '@/shared/components/layouts/PageHeading/Timmer'
-import UpdateCostModal from '@/shared/components/project-center/UpdateCostModal'
+import CountdownTimer from '@/shared/components/ui/countdown-timer'
+import HtmlReactParser from '@/shared/components/ui/html-react-parser'
+import { JobStatusSystemTypeEnum } from '@/shared/enums'
+import { useDevice } from '@/shared/hooks'
 import { TJob } from '@/shared/types'
 import {
     addToast,
@@ -63,12 +69,6 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
-import JobDescriptionModal from '../../../shared/components/job-detail/JobDescriptionModal'
-import CountdownTimer from '../../../shared/components/ui/countdown-timer'
-import HtmlReactParser from '../../../shared/components/ui/html-react-parser'
-import { JobStatusSystemTypeEnum } from '../../../shared/enums'
-import { useDevice } from '../../../shared/hooks'
-import MobileJobDetailPage from '../../../shared/components/job-detail/mobile/MobileJobDetailPage'
 
 export enum JobDetailTabEnum {
     OVERVIEW = 'overview',
@@ -194,9 +194,9 @@ function JobDetailPage() {
                 <JobDescriptionModal
                     isOpen={fullEditorDisclosure.isOpen}
                     onClose={fullEditorDisclosure.onClose}
-                    value={descContent}
-                    onChange={setDescContent}
-                    // onSave={() => handleSaveDescription(descContent)}
+                    defaultValue={descContent}
+                    // onChange={setDescContent}
+                    onSave={(value) => console.log(value)}
                     title={`Editor: #${job.no}`}
                 />
             )}

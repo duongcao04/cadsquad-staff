@@ -1,3 +1,9 @@
+import { EditClientModal } from '@/features/client-manage/components/modals/EditClientModal'
+import { JobActivityHistory } from '@/features/job-details'
+import AdminDeliveryCard from '@/features/job-manage/components/AdminDeliveryCard'
+import { ConfirmCancelJobModal } from '@/features/job-manage/components/modals/ConfirmCancelJobModal'
+import { ConfirmRemoveAssigneeModal } from '@/features/job-manage/components/modals/ConfirmRemoveAssigneeModal'
+import AssignMemberModal from '@/features/project-center/components/modals/AssignMemberModal'
 import {
     ApiResponse,
     darkenHexColor,
@@ -12,11 +18,14 @@ import {
     useRemoveMemberMutation,
 } from '@/lib'
 import {
+    clientsListOptions,
     jobActivityLogsOptions,
     jobByNoOptions,
     jobDeliveriesListOptions,
     jobStatusesListOptions,
+    useUpdateJobGeneralInfoMutation,
 } from '@/lib/queries'
+import { toDate } from '@/lib/utils'
 import {
     HeroBreadcrumbItem,
     HeroBreadcrumbs,
@@ -25,14 +34,8 @@ import {
     HeroCardHeader,
     HeroDatePicker,
     HeroTooltip,
-    JobActivityHistory,
 } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import AdminDeliveryCard from '@/shared/components/management-jobs/AdminDeliveryCard'
-import { ConfirmCancelJobModal } from '@/shared/components/modals/ConfirmCancelJobModal'
-import { ConfirmRemoveAssigneeModal } from '@/shared/components/modals/ConfirmRemoveAssigneeModal'
-import { EditClientModal } from '@/shared/components/modals/EditClientModal'
-import AssignMemberModal from '@/shared/components/project-center/AssignMemberModal'
 import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
 import { TJob, TUser } from '@/shared/types'
 import {
@@ -83,9 +86,6 @@ import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import * as Yup from 'yup'
 import { z } from 'zod'
-import { clientsListOptions } from '../../../../../lib/queries/options/client-queries'
-import { useUpdateJobGeneralInfoMutation } from '../../../../../lib/queries/useJob'
-import { toDate } from '../../../../../lib/utils'
 
 export const manageJobDetailParamsSchema = z.object({
     tab: z

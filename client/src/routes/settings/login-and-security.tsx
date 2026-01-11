@@ -1,3 +1,31 @@
+import SettingTitle from '@/features/settings/components/SettingTitle'
+import { ConfirmLogoutAllDevicesModal } from '@/features/user-sessions'
+import {
+    cookie,
+    dateFormatter,
+    getPageTitle,
+    INTERNAL_URLS,
+    TUpdatePasswordInput,
+    UpdatePasswordInputSchema,
+    useUpdatePasswordMutation,
+} from '@/lib'
+import {
+    activeSessionsListOptions,
+    securityLogsListOptions,
+    useRevokeAllSessionMutation,
+    useRevokeSessionMutation,
+} from '@/lib/queries'
+import { COOKIES, getDeviceIcon } from '@/lib/utils'
+import {
+    HeroBreadcrumbItem,
+    HeroBreadcrumbs,
+    HeroCard,
+    HeroCardBody,
+    HeroCardHeader,
+    HeroPasswordInput,
+    HeroTooltip,
+} from '@/shared/components'
+import { TUserSecurityLog } from '@/shared/types'
 import {
     Button,
     Card,
@@ -37,34 +65,6 @@ import {
     Smartphone,
 } from 'lucide-react'
 import { useState } from 'react'
-import {
-    cookie,
-    dateFormatter,
-    getPageTitle,
-    INTERNAL_URLS,
-    TUpdatePasswordInput,
-    UpdatePasswordInputSchema,
-    useUpdatePasswordMutation,
-} from '../../lib'
-import {
-    activeSessionsListOptions,
-    securityLogsListOptions,
-    useRevokeAllSessionMutation,
-    useRevokeSessionMutation,
-} from '../../lib/queries'
-import { COOKIES, getDeviceIcon } from '../../lib/utils'
-import {
-    HeroBreadcrumbItem,
-    HeroBreadcrumbs,
-    HeroCard,
-    HeroCardBody,
-    HeroCardHeader,
-    HeroPasswordInput,
-    HeroTooltip,
-} from '../../shared/components'
-import { ConfirmLogoutAllDevicesModal } from '../../shared/components/admin/session/modals/ConfirmLogoutAllDevicesModal'
-import { TUserSecurityLog } from '../../shared/types'
-import SettingTitle from '../../shared/components/settings/SettingTitle'
 
 export const Route = createFileRoute('/settings/login-and-security')({
     head: () => ({

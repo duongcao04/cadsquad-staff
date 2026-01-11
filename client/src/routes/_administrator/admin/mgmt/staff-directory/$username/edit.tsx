@@ -18,8 +18,6 @@ import {
     useToggleUserStatusMutation,
 } from '@/lib/queries'
 import {
-    ChangeRoleModal,
-    ConfirmSendPasswordResetEmail,
     HeroButton,
     HeroCard,
     HeroCardBody,
@@ -28,10 +26,10 @@ import {
     RoleChip,
 } from '@/shared/components'
 import AdminContentContainer from '@/shared/components/admin/AdminContentContainer'
-import { ChangeUserStatusModal } from '@/shared/components/modals/ChangeUserStatusModal'
-import { DeleteUserPermanentlyModal } from '@/shared/components/modals/DeleteUserPermanentlyModal'
-import ResetPasswordModal from '@/shared/components/modals/ResetPasswordModal'
-import { UploadAvatarModal } from '@/shared/components/modals/UploadAvatarModal'
+import { ChangeUserStatusModal } from '@/features/staff-directory/components/modals/ChangeUserStatusModal'
+import { DeleteUserPermanentlyModal } from '@/features/staff-directory/components/modals/DeleteUserPermanentlyModal'
+import ResetPasswordModal from '@/features/staff-directory/components/modals/ResetPasswordModal'
+import { UploadAvatarModal } from '@/features/staff-directory/components/modals/UploadAvatarModal'
 import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
 import { TUser } from '@/shared/types'
 import {
@@ -79,6 +77,8 @@ import {
     User,
 } from 'lucide-react'
 import { useState } from 'react'
+import { ConfirmSendPasswordResetEmail } from '../../../../../../features/staff-directory'
+import { ChangeRoleModal } from '../../../../../../features/user-access'
 
 export const Route = createFileRoute(
     '/_administrator/admin/mgmt/staff-directory/$username/edit'

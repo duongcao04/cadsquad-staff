@@ -46,7 +46,7 @@ import {
     useRemoveMemberRoleMutation,
 } from '../../../../../../../lib/queries/useRole'
 import { HeroTable } from '../../../../../../../shared/components'
-import { AddRoleMemberModal } from '../../../../../../../shared/components/role-and-permission/AddRoleMemberModal'
+import { AddRoleMemberModal } from '../../../../../../../features/user-access/components/modals/AddRoleMemberModal'
 import { TRole, TUser } from '../../../../../../../shared/types'
 
 export const Route = createFileRoute(

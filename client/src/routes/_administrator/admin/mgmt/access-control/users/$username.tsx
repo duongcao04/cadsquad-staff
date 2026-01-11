@@ -1,3 +1,4 @@
+import { ChangeRoleModal, PermissionRow } from '@/features/user-access'
 import { optimizeCloudinary } from '@/lib'
 import {
     permissionGroupsListOptions,
@@ -6,8 +7,6 @@ import {
 } from '@/lib/queries'
 import { getPermissionStatus, PermissionAction } from '@/lib/utils/_user-access'
 import { HeroCard } from '@/shared/components'
-import { PermissionRow } from '@/shared/components/admin/user-access/PermissionRow'
-import { ChangeRoleModal } from '@/shared/components/admin/user-access/modals/ChangeRoleModal'
 import {
     Accordion,
     AccordionItem,
@@ -27,13 +26,7 @@ import {
     useSuspenseQueries,
 } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import {
-    AlertCircle,
-    ArrowLeft,
-    LayoutGrid,
-    Shield,
-    UserCog,
-} from 'lucide-react'
+import { AlertCircle, ArrowLeft, LayoutGrid, Shield } from 'lucide-react'
 import { useMemo } from 'react'
 import { toast } from 'sonner' // Assuming you use Sonner or React-Hot-Toast
 
@@ -163,7 +156,7 @@ export default function UserAccessPage() {
                 <div className="lg:col-span-4 space-y-6">
                     <HeroCard
                         title="Role Assignment"
-                        icon={<UserCog size={18} />}
+                        // icon={<UserCog size={18} />}
                     >
                         <CardBody className="p-4 space-y-4">
                             <p className="text-sm text-default-500">

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 
-import { CreateCommunityModal } from '../../shared/components/communities/CreateCommunityModal'
+import { CreateCommunityModal } from '../../features/communities/components/modals/CreateCommunityModal'
 
 // --- Mock Data (Based on your Prisma Schema) ---
 // In a real app, fetch this via TanStack Query or useEffect

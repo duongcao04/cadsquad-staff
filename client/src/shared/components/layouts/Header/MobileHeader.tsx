@@ -32,9 +32,9 @@ import { FluentColorApprovalsApp20 } from '../../icons/FluentColorApprovalsApp20
 import { FluentColorBriefcase20 } from '../../icons/FluentColorBriefcase20'
 import { FluentColorErrorCircle20 } from '../../icons/FluentColorErrorCircle20'
 import { IconPeopleColorful } from '../../icons/IconPeopleColorful'
-import { CreateJobModal } from '../../modals/CreateJobModal'
-import CreateUserModal from '../../modals/CreateUserModal'
-import { DeliverJobModal } from '../../modals/DeliverJobModal'
+import { CreateJobModal } from '../../../../features/job-manage/components/modals/CreateJobModal'
+import CreateUserModal from '../../../../features/staff-directory/components/modals/CreateUserModal'
+import { DeliverJobModal } from '../../../../features/job-manage/components/modals/DeliverJobModal'
 import { IssueReportModal } from '../../modals/IssueReportModal'
 import { HeroButton } from '../../ui/hero-button'
 import {

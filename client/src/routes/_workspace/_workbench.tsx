@@ -8,12 +8,12 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { z } from 'zod'
 import { getPageTitle } from '../../lib'
 import { workbenchDataOptions } from '../../lib/queries'
-import JobDetailDrawer from '../../shared/components/job-detail/JobDetailDrawer'
-import AssignMemberModal from '../../shared/components/project-center/AssignMemberModal'
+import JobDetailDrawer from '../../features/job-details/components/drawers/JobDetailDrawer'
+import AssignMemberModal from '../../features/project-center/components/modals/AssignMemberModal'
 import WorkbenchMobileContent, {
     WorkbenchMobileSkeleton,
-} from '../../shared/components/workbench/WorkbenchMobileContent'
-import WorkbenchTable from '../../shared/components/workbench/WorkbenchTable'
+} from '../../features/workbench/components/views/WorkbenchMobileContent'
+import WorkbenchTable from '../../features/workbench/components/views/WorkbenchTable'
 import { useDevice } from '../../shared/hooks'
 import { jobFiltersSchema, TJobFilters } from '../../lib/validationSchemas'
 
