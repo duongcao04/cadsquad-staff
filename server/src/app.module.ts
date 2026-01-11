@@ -26,36 +26,43 @@ import { MailModule } from './providers/mail/mail.module'
 import { PrismaModule } from './providers/prisma/prisma.module'
 import { RedisModule } from './providers/redis/redis.module'
 import { ScheduleModule } from '@nestjs/schedule'
+import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 
 @Module({
-    imports: [
-        ScheduleModule.forRoot(),
-        PrismaModule,
-        RedisModule,
-        MailModule,
-        CloudinaryModule,
-        AblyModule,
-        RoleModule,
-        AuthModule,
-        UserModule,
-        UserDevicesModule,
-        JobModule,
-        JobTypeModule,
-        JobStatusModule,
-        PaymentChannelModule,
-        NotificationModule,
-        DepartmentModule,
-        JobTitleModule,
-        GalleryModule,
-        BrowserSubscribesModule,
-        UploadModule,
-        HealthModule,
-        ExcelModule,
-        AnalyticsModule,
-        CommunityModule,
-        ClientModule,
-    ],
-    controllers: [AppController],
-    providers: [AppService],
+	imports: [
+		PrometheusModule.register({
+			path: '/metrics', // Đường dẫn để Prometheus lấy dữ liệu
+			defaultMetrics: {
+				enabled: true, // Tự động thu thập metrics mặc định (CPU, RAM, Event Loop...)
+			},
+		}),
+		ScheduleModule.forRoot(),
+		PrismaModule,
+		RedisModule,
+		MailModule,
+		CloudinaryModule,
+		AblyModule,
+		RoleModule,
+		AuthModule,
+		UserModule,
+		UserDevicesModule,
+		JobModule,
+		JobTypeModule,
+		JobStatusModule,
+		PaymentChannelModule,
+		NotificationModule,
+		DepartmentModule,
+		JobTitleModule,
+		GalleryModule,
+		BrowserSubscribesModule,
+		UploadModule,
+		HealthModule,
+		ExcelModule,
+		AnalyticsModule,
+		CommunityModule,
+		ClientModule,
+	],
+	controllers: [AppController],
+	providers: [AppService],
 })
 export class AppModule {}

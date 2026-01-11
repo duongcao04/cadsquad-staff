@@ -117,6 +117,105 @@ services:
     networks:
       - app-network
 
+  # -----------------------------------------------------
+  # MONITORING SERVICES
+  # -----------------------------------------------------
+  # 1. Prometheus: The Metrics Collector
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+    ports:
+      - '9090:9090'
+    networks:
+      - app-network
+
+  # 2. Grafana: The Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    user: "472" # Run as Grafana user to match ownership steps below
+    depends_on:
+      - prometheus
+    ports:
+      - '3001:3000' # Changed to 3001 to avoid conflict if you run other node apps locally
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    networks:
+      - app-network
+
+  # 3. Node Exporter: Host System Metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: always
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+    networks:
+      - app-network
+
+  # 4. Postgres Exporter: Database Metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    restart: always
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?sslmode=disable"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # 5. Redis Exporter: Cache Metrics
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: redis-exporter
+    restart: always
+    environment:
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    depends_on:
+      - redis
+    networks:
+      - app-network
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    restart: always
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - app-network
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    restart: always
+    volumes:
+      # Map logs của các container khác vào để promtail đọc
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./monitoring/promtail/config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
