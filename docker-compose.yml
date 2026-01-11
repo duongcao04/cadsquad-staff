@@ -89,8 +89,6 @@ services:
     container_name: proxy-manager
     environment:
       TZ: Asia/Ho_Chi_Minh
-    profiles:
-      - proxy
     restart: always
     ports:
       - '80:80'   # Cổng nhận HTTP
@@ -196,6 +194,7 @@ services:
       - redis
     networks:
       - app-network
+
   loki:
     image: grafana/loki:2.9.0
     container_name: loki
