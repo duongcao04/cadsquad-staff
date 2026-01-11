@@ -127,7 +127,7 @@ services:
     restart: always
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
+      - ${DATA_PATH:-./data}/prometheus:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -150,7 +150,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
     volumes:
-      - ./data/grafana:/var/lib/grafana
+      - ${DATA_PATH:-./data}/grafana:/var/lib/grafana
     networks:
       - app-network
 
