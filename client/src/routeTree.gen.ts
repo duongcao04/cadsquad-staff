@@ -51,7 +51,6 @@ import { Route as AdministratorAdminInboxRouteImport } from './routes/_administr
 import { Route as CommunitiesCodeTopicCodeIndexRouteImport } from './routes/communities/$code/$topicCode/index'
 import { Route as AdministratorAdminDepartmentsIndexRouteImport } from './routes/_administrator/admin/departments/index'
 import { Route as CommunitiesCodeTopicCodePostSlugRouteImport } from './routes/communities/$code/$topicCode/$postSlug'
-import { Route as AdministratorAdminMgmtTeamRouteImport } from './routes/_administrator/admin/mgmt/team'
 import { Route as AdministratorAdminMgmtStaffDirectoryRouteImport } from './routes/_administrator/admin/mgmt/staff-directory'
 import { Route as AdministratorAdminMgmtRevenueRouteImport } from './routes/_administrator/admin/mgmt/revenue'
 import { Route as AdministratorAdminMgmtInviteMemberRouteImport } from './routes/_administrator/admin/mgmt/invite-member'
@@ -292,12 +291,6 @@ const CommunitiesCodeTopicCodePostSlugRoute =
     path: '/$code/$topicCode/$postSlug',
     getParentRoute: () => CommunitiesRoute,
   } as any)
-const AdministratorAdminMgmtTeamRoute =
-  AdministratorAdminMgmtTeamRouteImport.update({
-    id: '/admin/mgmt/team',
-    path: '/admin/mgmt/team',
-    getParentRoute: () => AdministratorRoute,
-  } as any)
 const AdministratorAdminMgmtStaffDirectoryRoute =
   AdministratorAdminMgmtStaffDirectoryRouteImport.update({
     id: '/admin/mgmt/staff-directory',
@@ -447,7 +440,6 @@ export interface FileRoutesByFullPath {
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
   '/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
-  '/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/communities/$code/$topicCode/$postSlug': typeof CommunitiesCodeTopicCodePostSlugRoute
   '/admin/departments': typeof AdministratorAdminDepartmentsIndexRoute
   '/communities/$code/$topicCode': typeof CommunitiesCodeTopicCodeIndexRoute
@@ -500,7 +492,6 @@ export interface FileRoutesByTo {
   '/admin/departments/$code': typeof AdministratorAdminDepartmentsCodeRoute
   '/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
-  '/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/communities/$code/$topicCode/$postSlug': typeof CommunitiesCodeTopicCodePostSlugRoute
   '/admin/departments': typeof AdministratorAdminDepartmentsIndexRoute
   '/communities/$code/$topicCode': typeof CommunitiesCodeTopicCodeIndexRoute
@@ -564,7 +555,6 @@ export interface FileRoutesById {
   '/_administrator/admin/mgmt/invite-member': typeof AdministratorAdminMgmtInviteMemberRoute
   '/_administrator/admin/mgmt/revenue': typeof AdministratorAdminMgmtRevenueRoute
   '/_administrator/admin/mgmt/staff-directory': typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
-  '/_administrator/admin/mgmt/team': typeof AdministratorAdminMgmtTeamRoute
   '/communities/$code/$topicCode/$postSlug': typeof CommunitiesCodeTopicCodePostSlugRoute
   '/_administrator/admin/departments/': typeof AdministratorAdminDepartmentsIndexRoute
   '/communities/$code/$topicCode/': typeof CommunitiesCodeTopicCodeIndexRoute
@@ -624,7 +614,6 @@ export interface FileRouteTypes {
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
     | '/admin/mgmt/staff-directory'
-    | '/admin/mgmt/team'
     | '/communities/$code/$topicCode/$postSlug'
     | '/admin/departments'
     | '/communities/$code/$topicCode'
@@ -677,7 +666,6 @@ export interface FileRouteTypes {
     | '/admin/departments/$code'
     | '/admin/mgmt/invite-member'
     | '/admin/mgmt/revenue'
-    | '/admin/mgmt/team'
     | '/communities/$code/$topicCode/$postSlug'
     | '/admin/departments'
     | '/communities/$code/$topicCode'
@@ -740,7 +728,6 @@ export interface FileRouteTypes {
     | '/_administrator/admin/mgmt/invite-member'
     | '/_administrator/admin/mgmt/revenue'
     | '/_administrator/admin/mgmt/staff-directory'
-    | '/_administrator/admin/mgmt/team'
     | '/communities/$code/$topicCode/$postSlug'
     | '/_administrator/admin/departments/'
     | '/communities/$code/$topicCode/'
@@ -1064,13 +1051,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunitiesCodeTopicCodePostSlugRouteImport
       parentRoute: typeof CommunitiesRoute
     }
-    '/_administrator/admin/mgmt/team': {
-      id: '/_administrator/admin/mgmt/team'
-      path: '/admin/mgmt/team'
-      fullPath: '/admin/mgmt/team'
-      preLoaderRoute: typeof AdministratorAdminMgmtTeamRouteImport
-      parentRoute: typeof AdministratorRoute
-    }
     '/_administrator/admin/mgmt/staff-directory': {
       id: '/_administrator/admin/mgmt/staff-directory'
       path: '/admin/mgmt/staff-directory'
@@ -1295,7 +1275,6 @@ interface AdministratorRouteChildren {
   AdministratorAdminMgmtInviteMemberRoute: typeof AdministratorAdminMgmtInviteMemberRoute
   AdministratorAdminMgmtRevenueRoute: typeof AdministratorAdminMgmtRevenueRoute
   AdministratorAdminMgmtStaffDirectoryRoute: typeof AdministratorAdminMgmtStaffDirectoryRouteWithChildren
-  AdministratorAdminMgmtTeamRoute: typeof AdministratorAdminMgmtTeamRoute
   AdministratorAdminDepartmentsIndexRoute: typeof AdministratorAdminDepartmentsIndexRoute
   AdministratorAdminMgmtJobsNoRoute: typeof AdministratorAdminMgmtJobsNoRoute
   AdministratorAdminMgmtFileDocsIndexRoute: typeof AdministratorAdminMgmtFileDocsIndexRoute
@@ -1317,7 +1296,6 @@ const AdministratorRouteChildren: AdministratorRouteChildren = {
   AdministratorAdminMgmtRevenueRoute: AdministratorAdminMgmtRevenueRoute,
   AdministratorAdminMgmtStaffDirectoryRoute:
     AdministratorAdminMgmtStaffDirectoryRouteWithChildren,
-  AdministratorAdminMgmtTeamRoute: AdministratorAdminMgmtTeamRoute,
   AdministratorAdminDepartmentsIndexRoute:
     AdministratorAdminDepartmentsIndexRoute,
   AdministratorAdminMgmtJobsNoRoute: AdministratorAdminMgmtJobsNoRoute,
