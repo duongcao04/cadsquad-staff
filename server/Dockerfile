@@ -15,6 +15,7 @@ FROM base AS deps
 COPY package.json bun.lockb* ./
 # Copy Prisma schema để chuẩn bị generate client
 COPY ./src/providers/prisma/schema.prisma ./prisma/schema.prisma
+COPY ./src/providers/prisma/migrations ./prisma/migrations
 RUN bun install --frozen-lockfile
 
 # Stage 2: builder - Build mã nguồn TypeScript
