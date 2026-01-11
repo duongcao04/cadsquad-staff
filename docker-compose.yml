@@ -109,6 +109,8 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-root}
+    volumes:
+      - ${DATA_PATH:-./data}:/var/lib/pgadmin
     depends_on:
       database:
         condition: service_healthy
