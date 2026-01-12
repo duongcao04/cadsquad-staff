@@ -12,7 +12,7 @@ RUN apt-get update && \
 
 # Stage 1: deps - Cài đặt thư viện Node.js
 FROM base AS deps
-COPY package.json bun.lockb* ./
+COPY package.json bun.lock bun.lockb* ./
 # Copy Prisma schema để chuẩn bị generate client
 COPY ./src/providers/prisma/schema.prisma ./prisma/schema.prisma
 COPY ./database ./database
@@ -32,7 +32,7 @@ RUN bunx prisma generate
 FROM base AS runner
 WORKDIR /app
 
-# Tạo User và Group theo chuẩn Debian (Fix lỗi addgroup/adduser not found)
+# Tạo User và Group theo chuẩn Debian
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --gid nodejs nodejs
 
@@ -50,7 +50,7 @@ COPY --chown=nodejs:nodejs ./entrypoint.sh ./
 RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
 # TỐI ƯU: Xóa node_modules cũ và chỉ cài lại bản Production để giảm dung lượng
-RUN rm -rf node_modules
+# RUN rm -rf node_modules
 
 # Phân quyền thư mục cho user không có quyền root (Bảo mật)
 RUN chown -R nodejs:nodejs /app

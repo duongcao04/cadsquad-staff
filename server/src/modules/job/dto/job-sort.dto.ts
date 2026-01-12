@@ -1,14 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { Prisma } from '@prisma/client'
 import { Transform } from 'class-transformer'
 import { IsOptional, IsString } from 'class-validator'
+import { Prisma } from '../../../generated/prisma'
 
 export class JobSortDto {
 	@ApiProperty({
-		description: 'Sort criteria. Format: "field:order". Example: "createdAt:desc,status.name:asc"',
+		description:
+			'Sort criteria. Format: "field:order". Example: "createdAt:desc,status.name:asc"',
 		required: false,
 		example: 'createdAt:desc',
-		oneOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }],
+		oneOf: [
+			{ type: 'string' },
+			{ type: 'array', items: { type: 'string' } },
+		],
 	})
 	@IsOptional()
 	@Transform(({ value }) => {
@@ -38,7 +42,9 @@ export class JobSortBuilder {
 			if (!item) return []
 
 			const [field, orderValue] = item.trim().split(':')
-			const sortOrder = (orderValue?.toLowerCase() === 'asc' ? 'asc' : 'desc') as Prisma.SortOrder
+			const sortOrder = (
+				orderValue?.toLowerCase() === 'asc' ? 'asc' : 'desc'
+			) as Prisma.SortOrder
 
 			// Case A: Relation Sort (e.g., "status.name:asc")
 			if (field.includes('.')) {

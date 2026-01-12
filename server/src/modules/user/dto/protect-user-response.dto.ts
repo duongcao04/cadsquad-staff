@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Exclude, Expose, Type } from 'class-transformer'
-import { RoleEnum } from '@prisma/client'
+import { ApiProperty } from '@nestjs/swagger'
+import { Exclude, Expose } from 'class-transformer'
+import { RoleResponseDto } from '../../role-permissions/dtos/role-response.dto'
 
 /**
  * This DTO is used for public-facing user representation, excluding sensitive information like password and ID.
@@ -20,11 +20,18 @@ export class ProtectUserResponseDto {
 	@Expose()
 	username: string
 
-	@ApiProperty({ description: 'Display name of the user', example: 'John Doe' })
+	@ApiProperty({
+		description: 'Display name of the user',
+		example: 'John Doe',
+	})
 	@Expose()
 	displayName: string
 
-	@ApiProperty({ description: 'URL of the user avatar', required: false, example: 'https://example.com/avatar.png' })
+	@ApiProperty({
+		description: 'URL of the user avatar',
+		required: false,
+		example: 'https://example.com/avatar.png',
+	})
 	@Expose()
 	avatar?: string
 
@@ -36,13 +43,17 @@ export class ProtectUserResponseDto {
 	@Expose()
 	department?: string
 
-	@ApiProperty({ description: 'User phone number', required: false, example: '+1234567890' })
+	@ApiProperty({
+		description: 'User phone number',
+		required: false,
+		example: '+1234567890',
+	})
 	@Expose()
 	phoneNumber?: string
 
-	@ApiProperty({ description: 'Role of the user', enum: RoleEnum })
+	@ApiProperty({ description: 'Role of the user', enum: RoleResponseDto })
 	@Expose()
-	role: RoleEnum
+	role: RoleResponseDto
 
 	@ApiProperty({ description: 'Whether the user is active' })
 	@Expose()

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { CreateJobCommentDto } from './dto/job-comment/create-comment.dto'
-import { JobComment } from '@prisma/client'
+import { JobComment } from '../../generated/prisma'
 
 @Injectable()
 export class JobCommentService {

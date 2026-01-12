@@ -8,7 +8,7 @@ import {
   MemoryHealthIndicator,
 } from '@nestjs/terminus';
 import { CpuHealthIndicator } from './indicators/cpu.health';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma';
 import { PrismaHealthIndicator } from './indicators/prisma.health';
 import { DbTableHealthIndicator } from './indicators/db-table.health';
 

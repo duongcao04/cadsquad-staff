@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { SecurityLogStatus } from '@prisma/client'
+import { SecurityLogStatus } from '../../generated/prisma'
 import { plainToInstance } from 'class-transformer'
 import { SecurityLogResponseDto } from './dto/security-log/security-log-response.dto'
 import { CreateSecurityLogDto } from './dto/security-log/create-security-log.dto'

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { JobStatusSystemType } from '@prisma/client'
+import { JobStatusSystemType } from '../../generated/prisma'
 import dayjs from 'dayjs'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import { PrismaService } from '../../providers/prisma/prisma.service'

@@ -8,7 +8,7 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common'
-import { Prisma, SecurityLogStatus, User } from '@prisma/client'
+import { Prisma, SecurityLogStatus, User } from '../../generated/prisma'
 import { plainToInstance } from 'class-transformer'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { UserResponseDto } from '../user/dto/user-response.dto'

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { Job, JobStatus, RoleEnum } from '@prisma/client'
+import { Job, JobStatus, RoleEnum } from '../../generated/prisma'
 import { plainToInstance } from 'class-transformer'
 import { JobStatusResponseDto } from './dto/job-status-response.dto'
 import { CreateJobStatusDto } from './dto/create-job-status.dto'

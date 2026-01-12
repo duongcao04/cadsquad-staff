@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { JobType } from '@prisma/client'
+import { JobType } from '../../generated/prisma'
 import { plainToInstance } from 'class-transformer'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { CreateJobTypeDto } from './dto/create-job-type.dto'

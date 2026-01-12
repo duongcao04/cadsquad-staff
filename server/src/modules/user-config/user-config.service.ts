@@ -3,7 +3,7 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common'
-import { UserConfig, UserConfigGroupEnum } from '@prisma/client'
+import { UserConfig, UserConfigGroupEnum } from '../../generated/prisma'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { CreateConfigDto } from './dto/create-config.dto'
 import { UpdateConfigDto } from './dto/update-user-config.dto'

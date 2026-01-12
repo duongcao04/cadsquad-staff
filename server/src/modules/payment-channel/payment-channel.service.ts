@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { PaymentChannel } from '@prisma/client'
+import { PaymentChannel } from '../../generated/prisma'
 import { plainToInstance } from 'class-transformer'
 import { CreatePaymentChannelDto } from './dto/create-payment-channel.dto'
 import { UpdatePaymentChannelDto } from './dto/update-payment-channel.dto'

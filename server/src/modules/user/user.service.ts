@@ -1,22 +1,21 @@
 import {
-    BadRequestException,
-    ConflictException,
-    ForbiddenException,
-    Inject,
-    Injectable,
-    InternalServerErrorException,
-    Logger,
-    NotFoundException,
+	BadRequestException,
+	ConflictException,
+	ForbiddenException,
+	Inject,
+	Injectable,
+	InternalServerErrorException,
+	Logger,
+	NotFoundException,
 } from '@nestjs/common'
 import { randomBytes } from 'node:crypto'
-import { Prisma, User } from '@prisma/client'
 import { plainToInstance } from 'class-transformer'
 import { MailService } from '../../providers/mail/mail.service'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { BcryptService } from '../auth/bcrypt.service'
 import {
-    AssignUserPermissionDto,
-    PermissionAction,
+	AssignUserPermissionDto,
+	PermissionAction,
 } from './dto/assign-user-permission.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { ResetPasswordDto } from './dto/reset-password.dto'
@@ -24,507 +23,508 @@ import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserQueryDto } from './dto/user-query.dto'
 import { UserResponseDto } from './dto/user-response.dto'
+import { User, Prisma } from '../../generated/prisma'
 
 @Injectable()
 export class UserService {
-    private readonly logger = new Logger(UserService.name)
-    constructor(
-        private readonly prismaService: PrismaService,
-        private readonly bcryptService: BcryptService,
-        private readonly mailService: MailService
-    ) {}
+	private readonly logger = new Logger(UserService.name)
+	constructor(
+		private readonly prismaService: PrismaService,
+		private readonly bcryptService: BcryptService,
+		private readonly mailService: MailService
+	) {}
 
-    async create(dto: CreateUserDto, sendInviteEmail: boolean) {
-        // 1. Kiểm tra email tồn tại
-        const existingUser = await this.prismaService.user.findUnique({
-            where: { email: dto.email },
-        })
-        if (existingUser) throw new ConflictException('Email already exists')
+	async create(dto: CreateUserDto, sendInviteEmail: boolean) {
+		// 1. Kiểm tra email tồn tại
+		const existingUser = await this.prismaService.user.findUnique({
+			where: { email: dto.email },
+		})
+		if (existingUser) throw new ConflictException('Email already exists')
 
-        let roleId: string | null = null
-        if (dto.roleId) {
-            roleId = dto.roleId
-        } else {
-            const staffRoleId = await this.prismaService.role.findUnique({
-                where: { code: 'staff' },
-            })
-            if (staffRoleId) {
-                roleId = staffRoleId.id
-            }
-        }
+		let roleId: string | null = null
+		if (dto.roleId) {
+			roleId = dto.roleId
+		} else {
+			const staffRoleId = await this.prismaService.role.findUnique({
+				where: { code: 'staff' },
+			})
+			if (staffRoleId) {
+				roleId = staffRoleId.id
+			}
+		}
 
-        // 2. Hash mật khẩu
-        const hashedPassword = await this.bcryptService.hash(dto.password)
+		// 2. Hash mật khẩu
+		const hashedPassword = await this.bcryptService.hash(dto.password)
 
-        // 3. Get unique username
-        const username = await this.generateUsernameFromEmail(dto.email)
+		// 3. Get unique username
+		const username = await this.generateUsernameFromEmail(dto.email)
 
-        // 4. Generate avatarURL
-        const avatar = this.generateAvatar(dto.displayName)
+		// 4. Generate avatarURL
+		const avatar = this.generateAvatar(dto.displayName)
 
-        // 3. Tạo User trong DB
-        // Lưu ý: Better Auth cần 'name' và 'username'
-        const user = await this.prismaService.user
-            .createManyAndReturn({
-                include: {
-                    role: true,
-                },
-                data: {
-                    ...dto,
-                    password: hashedPassword,
-                    username: username,
-                    displayName: dto.displayName,
-                    avatar,
-                    roleId,
-                },
-            })
-            .then((res) => res[0])
+		// 3. Tạo User trong DB
+		// Lưu ý: Better Auth cần 'name' và 'username'
+		const user = await this.prismaService.user
+			.createManyAndReturn({
+				include: {
+					role: true,
+				},
+				data: {
+					...dto,
+					password: hashedPassword,
+					username: username,
+					displayName: dto.displayName,
+					avatar,
+					roleId,
+				},
+			})
+			.then((res) => res[0])
 
-        // 4. Gửi Email nếu được yêu cầu
-        try {
-            if (sendInviteEmail) {
-                // Chúng ta gửi mật khẩu chưa hash cho user qua email
-                await this.mailService.sendUserInvitation(
-                    dto.email,
-                    dto.displayName,
-                    dto.password
-                )
-            }
-        } catch (error) {
-            this.logger.error(error)
-        }
+		// 4. Gửi Email nếu được yêu cầu
+		try {
+			if (sendInviteEmail) {
+				// Chúng ta gửi mật khẩu chưa hash cho user qua email
+				await this.mailService.sendUserInvitation(
+					dto.email,
+					dto.displayName,
+					dto.password
+				)
+			}
+		} catch (error) {
+			this.logger.error(error)
+		}
 
-        return plainToInstance(UserResponseDto, user, {
-            excludeExtraneousValues: true,
-        }) as unknown as User
-    }
+		return plainToInstance(UserResponseDto, user, {
+			excludeExtraneousValues: true,
+		}) as unknown as User
+	}
 
-    async updatePassword(
-        userId: string,
-        dto: UpdatePasswordDto
-    ): Promise<{ message: string }> {
-        const { oldPassword, newPassword, newConfirmPassword } = dto
+	async updatePassword(
+		userId: string,
+		dto: UpdatePasswordDto
+	): Promise<{ message: string }> {
+		const { oldPassword, newPassword, newConfirmPassword } = dto
 
-        // check user tồn tại
-        const user = await this.prismaService.user.findUnique({
-            where: { id: userId },
-        })
-        if (!user) {
-            throw new NotFoundException('User not found')
-        }
+		// check user tồn tại
+		const user = await this.prismaService.user.findUnique({
+			where: { id: userId },
+		})
+		if (!user) {
+			throw new NotFoundException('User not found')
+		}
 
-        // check old password
-        const isMatch = await this.bcryptService.compare(
-            oldPassword,
-            user.password
-        )
-        if (!isMatch) {
-            throw new BadRequestException('Old password is incorrect')
-        }
+		// check old password
+		const isMatch = await this.bcryptService.compare(
+			oldPassword,
+			user.password
+		)
+		if (!isMatch) {
+			throw new BadRequestException('Old password is incorrect')
+		}
 
-        // check new === confirm
-        if (newPassword !== newConfirmPassword) {
-            throw new BadRequestException(
-                'New password and confirm password do not match'
-            )
-        }
+		// check new === confirm
+		if (newPassword !== newConfirmPassword) {
+			throw new BadRequestException(
+				'New password and confirm password do not match'
+			)
+		}
 
-        // check new khác old
-        const isSameAsOld = await this.bcryptService.compare(
-            newPassword,
-            user.password
-        )
-        if (isSameAsOld) {
-            throw new BadRequestException(
-                'New password must be different from old password'
-            )
-        }
+		// check new khác old
+		const isSameAsOld = await this.bcryptService.compare(
+			newPassword,
+			user.password
+		)
+		if (isSameAsOld) {
+			throw new BadRequestException(
+				'New password must be different from old password'
+			)
+		}
 
-        // hash và update
-        const hashedPassword = await this.bcryptService.hash(newPassword)
-        await this.prismaService.user.update({
-            where: { id: userId },
-            data: { password: hashedPassword },
-        })
+		// hash và update
+		const hashedPassword = await this.bcryptService.hash(newPassword)
+		await this.prismaService.user.update({
+			where: { id: userId },
+			data: { password: hashedPassword },
+		})
 
-        return { message: 'Password updated successfully' }
-    }
+		return { message: 'Password updated successfully' }
+	}
 
-    async assignRole(userId: string, roleId: string) {
-        const existingUser = await this.prismaService.user.findUnique({
-            where: {
-                id: userId,
-            },
-        })
-        if (!existingUser) {
-            throw new NotFoundException(`User with id:::${userId} not found`)
-        }
-        try {
-            const updated = await this.prismaService.user.update({
-                where: { id: userId },
-                data: { roleId },
-                select: {
-                    username: true,
-                    role: {
-                        include: { permissions: true },
-                    },
-                },
-            })
-            return { role: updated.role, username: updated.username }
-        } catch (error) {
-            this.logger.error('Updated user role failed', error.stack)
-        }
-    }
+	async assignRole(userId: string, roleId: string) {
+		const existingUser = await this.prismaService.user.findUnique({
+			where: {
+				id: userId,
+			},
+		})
+		if (!existingUser) {
+			throw new NotFoundException(`User with id:::${userId} not found`)
+		}
+		try {
+			const updated = await this.prismaService.user.update({
+				where: { id: userId },
+				data: { roleId },
+				select: {
+					username: true,
+					role: {
+						include: { permissions: true },
+					},
+				},
+			})
+			return { role: updated.role, username: updated.username }
+		} catch (error) {
+			this.logger.error('Updated user role failed', error.stack)
+		}
+	}
 
-    async findAll(query: UserQueryDto): Promise<{
-        users: UserResponseDto[]
-        total: number
-        totalPages: number
-        currentPage: number
-    }> {
-        const { page = 1, limit = 8, search, departmentId, role } = query
-        const skip = (page - 1) * limit
+	async findAll(query: UserQueryDto): Promise<{
+		users: UserResponseDto[]
+		total: number
+		totalPages: number
+		currentPage: number
+	}> {
+		const { page = 1, limit = 8, search, departmentId, role } = query
+		const skip = (page - 1) * limit
 
-        // Xây dựng bộ lọc động
-        const where: Prisma.UserWhereInput = {
-            AND: [
-                search
-                    ? {
-                          OR: [
-                              {
-                                  displayName: {
-                                      contains: search,
-                                      mode: 'insensitive',
-                                  },
-                              },
-                              {
-                                  email: {
-                                      contains: search,
-                                      mode: 'insensitive',
-                                  },
-                              },
-                              {
-                                  username: {
-                                      contains: search,
-                                      mode: 'insensitive',
-                                  },
-                              },
-                          ],
-                      }
-                    : {},
-                departmentId ? { departmentId } : {},
-                role ? { role: role as any } : {},
-            ],
-        }
+		// Xây dựng bộ lọc động
+		const where: Prisma.UserWhereInput = {
+			AND: [
+				search
+					? {
+							OR: [
+								{
+									displayName: {
+										contains: search,
+										mode: 'insensitive',
+									},
+								},
+								{
+									email: {
+										contains: search,
+										mode: 'insensitive',
+									},
+								},
+								{
+									username: {
+										contains: search,
+										mode: 'insensitive',
+									},
+								},
+							],
+						}
+					: {},
+				departmentId ? { departmentId } : {},
+				role ? { role: role as any } : {},
+			],
+		}
 
-        const [users, total] = await this.prismaService.$transaction([
-            this.prismaService.user.findMany({
-                where,
-                include: {
-                    department: true,
-                    jobTitle: true,
-                    role: true,
-                },
-                orderBy: {
-                    createdAt: 'desc', // Thường ưu tiên người mới tạo lên đầu
-                },
-                skip: Number(skip),
-                take: Number(limit),
-            }),
-            this.prismaService.user.count({ where }),
-        ])
+		const [users, total] = await this.prismaService.$transaction([
+			this.prismaService.user.findMany({
+				where,
+				include: {
+					department: true,
+					jobTitle: true,
+					role: true,
+				},
+				orderBy: {
+					createdAt: 'desc', // Thường ưu tiên người mới tạo lên đầu
+				},
+				skip: Number(skip),
+				take: Number(limit),
+			}),
+			this.prismaService.user.count({ where }),
+		])
 
-        return {
-            users: plainToInstance(UserResponseDto, users, {
-                excludeExtraneousValues: true,
-            }),
-            total,
-            currentPage: page,
-            totalPages: Math.ceil(total / limit),
-        }
-    }
+		return {
+			users: plainToInstance(UserResponseDto, users, {
+				excludeExtraneousValues: true,
+			}),
+			total,
+			currentPage: page,
+			totalPages: Math.ceil(total / limit),
+		}
+	}
 
-    async resetPassword(userId: string, data: ResetPasswordDto) {
-        const hashedPassword = await this.bcryptService.hash(data.newPassword)
-        const user = await this.prismaService.user.update({
-            where: { id: userId },
-            data: { password: hashedPassword },
-        })
-        return { username: user.username }
-    }
+	async resetPassword(userId: string, data: ResetPasswordDto) {
+		const hashedPassword = await this.bcryptService.hash(data.newPassword)
+		const user = await this.prismaService.user.update({
+			where: { id: userId },
+			data: { password: hashedPassword },
+		})
+		return { username: user.username }
+	}
 
-    async findById(userId: string): Promise<User | null> {
-        try {
-            const userData = await this.prismaService.user.findUnique({
-                where: { id: userId },
-            })
-            const userRes = plainToInstance(UserResponseDto, userData, {
-                excludeExtraneousValues: true,
-            })
-            return userRes as unknown as User
-        } catch (error) {
-            throw new NotFoundException('User not found')
-        }
-    }
-    /**
-     * Find a user by their unique ID.
-     *
-     * @param {number} username - The ID of the user to retrieve.
-     * @returns {Promise<User | null>} The user object retrieved from the database, or null if not found.
-     *
-     * @throws {NotFoundException} If no user is found with the provided ID.
-     */
-    async findByUsername(username: string): Promise<User | null> {
-        try {
-            const userData = await this.prismaService.user.findUnique({
-                where: { username: username },
-                include: {
-                    department: true,
-                    jobTitle: true,
-                    role: {
-                        include: {
-                            permissions: true,
-                        },
-                    },
-                },
-            })
-            const userRes = plainToInstance(UserResponseDto, userData, {
-                excludeExtraneousValues: true,
-            })
-            return userRes as unknown as User
-        } catch (error) {
-            throw new NotFoundException('User not found')
-        }
-    }
+	async findById(userId: string): Promise<User | null> {
+		try {
+			const userData = await this.prismaService.user.findUnique({
+				where: { id: userId },
+			})
+			const userRes = plainToInstance(UserResponseDto, userData, {
+				excludeExtraneousValues: true,
+			})
+			return userRes as unknown as User
+		} catch (error) {
+			throw new NotFoundException('User not found')
+		}
+	}
+	/**
+	 * Find a user by their unique ID.
+	 *
+	 * @param {number} username - The ID of the user to retrieve.
+	 * @returns {Promise<User | null>} The user object retrieved from the database, or null if not found.
+	 *
+	 * @throws {NotFoundException} If no user is found with the provided ID.
+	 */
+	async findByUsername(username: string): Promise<User | null> {
+		try {
+			const userData = await this.prismaService.user.findUnique({
+				where: { username: username },
+				include: {
+					department: true,
+					jobTitle: true,
+					role: {
+						include: {
+							permissions: true,
+						},
+					},
+				},
+			})
+			const userRes = plainToInstance(UserResponseDto, userData, {
+				excludeExtraneousValues: true,
+			})
+			return userRes as unknown as User
+		} catch (error) {
+			throw new NotFoundException('User not found')
+		}
+	}
 
-    async manageUserPermission(userId: string, dto: AssignUserPermissionDto) {
-        // 1. Check if User exists
-        const user = await this.prismaService.user.findUnique({
-            where: { id: userId },
-        })
-        if (!user) throw new NotFoundException('User not found')
+	async manageUserPermission(userId: string, dto: AssignUserPermissionDto) {
+		// 1. Check if User exists
+		const user = await this.prismaService.user.findUnique({
+			where: { id: userId },
+		})
+		if (!user) throw new NotFoundException('User not found')
 
-        // 2. Check if Permission exists
-        const permission = await this.prismaService.permission.findUnique({
-            where: { id: dto.permissionId },
-        })
-        if (!permission) throw new NotFoundException('Permission not found')
+		// 2. Check if Permission exists
+		const permission = await this.prismaService.permission.findUnique({
+			where: { id: dto.permissionId },
+		})
+		if (!permission) throw new NotFoundException('Permission not found')
 
-        // 3. Handle Logic based on Action
-        if (dto.action === PermissionAction.INHERIT) {
-            // INHERIT: Remove the override record so it falls back to Role
-            try {
-                await this.prismaService.userPermission.delete({
-                    where: {
-                        userId_permissionId: {
-                            userId,
-                            permissionId: dto.permissionId,
-                        },
-                    },
-                })
-                return {
-                    message:
-                        'Permission override removed. Now inheriting from Role.',
-                }
-            } catch (error) {
-                // Record might not exist, which is fine
-                return {
-                    message: 'Permission was already inheriting from Role.',
-                }
-            }
-        } else {
-            // GRANT or DENY: Upsert the record
-            const isDenied = dto.action === PermissionAction.DENY
+		// 3. Handle Logic based on Action
+		if (dto.action === PermissionAction.INHERIT) {
+			// INHERIT: Remove the override record so it falls back to Role
+			try {
+				await this.prismaService.userPermission.delete({
+					where: {
+						userId_permissionId: {
+							userId,
+							permissionId: dto.permissionId,
+						},
+					},
+				})
+				return {
+					message:
+						'Permission override removed. Now inheriting from Role.',
+				}
+			} catch (error) {
+				// Record might not exist, which is fine
+				return {
+					message: 'Permission was already inheriting from Role.',
+				}
+			}
+		} else {
+			// GRANT or DENY: Upsert the record
+			const isDenied = dto.action === PermissionAction.DENY
 
-            const result = await this.prismaService.userPermission.upsert({
-                where: {
-                    userId_permissionId: {
-                        userId,
-                        permissionId: dto.permissionId,
-                    },
-                },
-                update: {
-                    isDenied, // Update existing status
-                },
-                create: {
-                    userId,
-                    permissionId: dto.permissionId,
-                    isDenied,
-                },
-            })
+			const result = await this.prismaService.userPermission.upsert({
+				where: {
+					userId_permissionId: {
+						userId,
+						permissionId: dto.permissionId,
+					},
+				},
+				update: {
+					isDenied, // Update existing status
+				},
+				create: {
+					userId,
+					permissionId: dto.permissionId,
+					isDenied,
+				},
+			})
 
-            return {
-                message: isDenied
-                    ? 'Permission explicitly DENIED.'
-                    : 'Permission explicitly GRANTED.',
-                data: result,
-            }
-        }
-    }
+			return {
+				message: isDenied
+					? 'Permission explicitly DENIED.'
+					: 'Permission explicitly GRANTED.',
+				data: result,
+			}
+		}
+	}
 
-    async update(
-        username: string,
-        data: UpdateUserDto
-    ): Promise<{ id: string; username: string }> {
-        const user = await this.prismaService.user.update({
-            where: { username },
-            data,
-        })
-        return { id: user.id, username: user.username }
-    }
+	async update(
+		username: string,
+		data: UpdateUserDto
+	): Promise<{ id: string; username: string }> {
+		const user = await this.prismaService.user.update({
+			where: { username },
+			data,
+		})
+		return { id: user.id, username: user.username }
+	}
 
-    async delete(id: string) {
-        const existingUser = await this.prismaService.user.findUnique({
-            where: { id },
-        })
+	async delete(id: string) {
+		const existingUser = await this.prismaService.user.findUnique({
+			where: { id },
+		})
 
-        if (!existingUser) {
-            throw new NotFoundException('User not found')
-        }
+		if (!existingUser) {
+			throw new NotFoundException('User not found')
+		}
 
-        await this.prismaService.user.delete({
-            where: { id },
-        })
+		await this.prismaService.user.delete({
+			where: { id },
+		})
 
-        return {
-            username: existingUser.username,
-        }
-    }
+		return {
+			username: existingUser.username,
+		}
+	}
 
-    async toggleUserStatus(
-        modifierId: string,
-        userId: string,
-        forceStatus?: string
-    ) {
-        // 1. Kiểm tra user tồn tại
-        const user = await this.prismaService.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                isActive: true,
-                role: true,
-                displayName: true,
-                email: true,
-            },
-        })
+	async toggleUserStatus(
+		modifierId: string,
+		userId: string,
+		forceStatus?: string
+	) {
+		// 1. Kiểm tra user tồn tại
+		const user = await this.prismaService.user.findUnique({
+			where: { id: userId },
+			select: {
+				id: true,
+				isActive: true,
+				role: true,
+				displayName: true,
+				email: true,
+			},
+		})
 
-        if (!user) throw new NotFoundException('User not found')
+		if (!user) throw new NotFoundException('User not found')
 
-        // 2. Bảo mật: Không cho phép Admin tự vô hiệu hóa chính mình
-        if (userId === modifierId) {
-            throw new ForbiddenException(
-                'You cannot deactivate your own account'
-            )
-        }
+		// 2. Bảo mật: Không cho phép Admin tự vô hiệu hóa chính mình
+		if (userId === modifierId) {
+			throw new ForbiddenException(
+				'You cannot deactivate your own account'
+			)
+		}
 
-        // 3. Xác định trạng thái mới
-        // Nếu forceStatus là '0' -> false, '1' -> true. Nếu undefined -> đảo ngược (!user.isActive)
-        let newStatus: boolean
-        if (forceStatus !== undefined) {
-            newStatus = forceStatus === '1'
-        } else {
-            newStatus = !user.isActive
-        }
+		// 3. Xác định trạng thái mới
+		// Nếu forceStatus là '0' -> false, '1' -> true. Nếu undefined -> đảo ngược (!user.isActive)
+		let newStatus: boolean
+		if (forceStatus !== undefined) {
+			newStatus = forceStatus === '1'
+		} else {
+			newStatus = !user.isActive
+		}
 
-        try {
-            if (newStatus) {
-                await this.mailService.sendAccountStatusUpdate({
-                    displayName: user.displayName,
-                    email: user.email,
-                    isActive: newStatus,
-                })
-            }
-        } catch (error) {
-            this.logger.error(error)
-            throw new InternalServerErrorException('Send email error')
-        }
+		try {
+			if (newStatus) {
+				await this.mailService.sendAccountStatusUpdate({
+					displayName: user.displayName,
+					email: user.email,
+					isActive: newStatus,
+				})
+			}
+		} catch (error) {
+			this.logger.error(error)
+			throw new InternalServerErrorException('Send email error')
+		}
 
-        const resultUpdated = await this.prismaService.user.update({
-            where: { id: userId },
-            data: { isActive: !user.isActive },
-        })
-        // 3. Cập nhật trạng thái
-        return {
-            isActive: resultUpdated.isActive,
-            username: resultUpdated.username,
-        }
-    }
+		const resultUpdated = await this.prismaService.user.update({
+			where: { id: userId },
+			data: { isActive: !user.isActive },
+		})
+		// 3. Cập nhật trạng thái
+		return {
+			isActive: resultUpdated.isActive,
+			username: resultUpdated.username,
+		}
+	}
 
-    private async existingEmail(email: string) {
-        return await this.prismaService.user.findUnique({
-            where: {
-                email,
-            },
-        })
-    }
+	private async existingEmail(email: string) {
+		return await this.prismaService.user.findUnique({
+			where: {
+				email,
+			},
+		})
+	}
 
-    async isUsernameTaken(username: string): Promise<boolean> {
-        const count = await this.prismaService.user.count({
-            where: {
-                username: {
-                    equals: username,
-                    mode: 'insensitive', // Không phân biệt hoa thường (VD: 'John' và 'john' là một)
-                },
-            },
-        })
+	async isUsernameTaken(username: string): Promise<boolean> {
+		const count = await this.prismaService.user.count({
+			where: {
+				username: {
+					equals: username,
+					mode: 'insensitive', // Không phân biệt hoa thường (VD: 'John' và 'john' là một)
+				},
+			},
+		})
 
-        return count > 0
-    }
+		return count > 0
+	}
 
-    async userPermissions(userId: string): Promise<string[]> {
-        const permissions = await this.prismaService.user.findUnique({
-            where: { id: userId },
-            select: { role: { include: { permissions: true } } },
-        })
-        const mapPermissions =
-            permissions?.role?.permissions.map((it) => it.entityAction) ?? []
-        if (mapPermissions.length === 0) {
-            throw new NotFoundException('User not have any permissions')
-        }
-        return mapPermissions
-    }
+	async userPermissions(userId: string): Promise<string[]> {
+		const permissions = await this.prismaService.user.findUnique({
+			where: { id: userId },
+			select: { role: { include: { permissions: true } } },
+		})
+		const mapPermissions =
+			permissions?.role?.permissions.map((it) => it.entityAction) ?? []
+		if (mapPermissions.length === 0) {
+			throw new NotFoundException('User not have any permissions')
+		}
+		return mapPermissions
+	}
 
-    /**
-     * Input: ch.duong@cadsquad.vn -> Output: ch.duong
-     * Nếu ch.duong đã tồn tại -> Output: ch.duong.a1b2
-     */
-    private async generateUsernameFromEmail(email: string): Promise<string> {
-        // 1. Tách phần prefix từ email (Lấy phần trước dấu @)
-        // Ví dụ: ch.duong@cadsquad.vn -> ch.duong
-        const baseUsername = email.split('@')[0].toLowerCase()
+	/**
+	 * Input: ch.duong@cadsquad.vn -> Output: ch.duong
+	 * Nếu ch.duong đã tồn tại -> Output: ch.duong.a1b2
+	 */
+	private async generateUsernameFromEmail(email: string): Promise<string> {
+		// 1. Tách phần prefix từ email (Lấy phần trước dấu @)
+		// Ví dụ: ch.duong@cadsquad.vn -> ch.duong
+		const baseUsername = email.split('@')[0].toLowerCase()
 
-        // 2. Kiểm tra sự tồn tại trong Database
-        const existingUser = await this.prismaService.user.findUnique({
-            where: { username: baseUsername },
-            select: { id: true },
-        })
+		// 2. Kiểm tra sự tồn tại trong Database
+		const existingUser = await this.prismaService.user.findUnique({
+			where: { username: baseUsername },
+			select: { id: true },
+		})
 
-        // 3. Nếu chưa tồn tại, dùng luôn baseUsername
-        if (!existingUser) {
-            return baseUsername
-        }
+		// 3. Nếu chưa tồn tại, dùng luôn baseUsername
+		if (!existingUser) {
+			return baseUsername
+		}
 
-        // 4. Nếu đã tồn tại, tạo hậu tố ngẫu nhiên (4 ký tự)
-        // Kết quả: ch.duong.x8k2
-        const shortId = Math.random().toString(36).substring(2, 6)
-        const finalUsername = `${baseUsername}.${shortId}`
+		// 4. Nếu đã tồn tại, tạo hậu tố ngẫu nhiên (4 ký tự)
+		// Kết quả: ch.duong.x8k2
+		const shortId = Math.random().toString(36).substring(2, 6)
+		const finalUsername = `${baseUsername}.${shortId}`
 
-        return finalUsername
-    }
+		return finalUsername
+	}
 
-    /**
-     * Tạo URL avatar từ tên hiển thị
-     * @param name Ví dụ: "Ho Thien My"
-     * @returns https://ui-avatars.com/api/?name=Ho+Thien+My&background=random
-     */
-    private generateAvatar(name: string): string {
-        // 1. Loại bỏ các khoảng trắng thừa
-        const cleanName = name.trim()
+	/**
+	 * Tạo URL avatar từ tên hiển thị
+	 * @param name Ví dụ: "Ho Thien My"
+	 * @returns https://ui-avatars.com/api/?name=Ho+Thien+My&background=random
+	 */
+	private generateAvatar(name: string): string {
+		// 1. Loại bỏ các khoảng trắng thừa
+		const cleanName = name.trim()
 
-        // 2. Thay thế khoảng trắng bằng dấu "+" để đúng định dạng URL query
-        const formattedName = cleanName.replace(/\s+/g, '+')
+		// 2. Thay thế khoảng trắng bằng dấu "+" để đúng định dạng URL query
+		const formattedName = cleanName.replace(/\s+/g, '+')
 
-        // 3. Trả về URL hoàn chỉnh
-        return `https://ui-avatars.com/api/?name=${formattedName}&background=random&size=128`
-    }
+		// 3. Trả về URL hoàn chỉnh
+		return `https://ui-avatars.com/api/?name=${formattedName}&background=random&size=128`
+	}
 }

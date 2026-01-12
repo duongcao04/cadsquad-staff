@@ -1,26 +1,26 @@
-import React, { useState, useMemo } from 'react'
 import {
+    Chip,
     Input,
     Kbd,
     Listbox,
     ListboxItem,
-    Tabs,
     Tab,
-    Chip,
+    Tabs,
 } from '@heroui/react'
+import { useNavigate } from '@tanstack/react-router'
 import {
-    SearchIcon,
     BriefcaseIcon,
-    UsersIcon,
-    UserCircleIcon,
-    SettingsIcon,
-    LayoutGridIcon,
     ChevronRightIcon,
     HistoryIcon,
+    LayoutGridIcon,
+    SearchIcon,
+    SettingsIcon,
+    UserCircleIcon,
+    UsersIcon,
 } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
-import { HeroModal, HeroModalContent, HeroModalBody } from '../../ui/hero-modal'
+import React, { useMemo, useState } from 'react'
 import { SYSTEM_ROUTES } from '../../../../lib/utils'
+import { HeroModal, HeroModalBody, HeroModalContent } from '../../ui/hero-modal'
 
 // --- Types ---
 type Category = 'All' | 'Jobs' | 'Communities' | 'Clients' | 'System'
@@ -266,9 +266,6 @@ export const SearchModal = ({
                                 Open
                             </span>
                         </div>
-                        <span className="text-[10px] font-medium text-default-300 italic">
-                            Gemini Search v1.0
-                        </span>
                     </div>
                 </HeroModalBody>
             </HeroModalContent>

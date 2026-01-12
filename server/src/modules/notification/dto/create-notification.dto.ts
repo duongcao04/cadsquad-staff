@@ -1,18 +1,28 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, IsEnum } from 'class-validator'
-import { NotificationType } from '@prisma/client'
+import { NotificationType } from '../../../generated/prisma'
 
 export class CreateNotificationDto {
-	@ApiProperty({ description: 'Title of the notification', required: false, example: 'New Message' })
+	@ApiProperty({
+		description: 'Title of the notification',
+		required: false,
+		example: 'New Message',
+	})
 	@IsOptional()
 	@IsString()
 	title?: string
 
-	@ApiProperty({ description: 'Content of the notification', example: 'You have a new message from John Doe.' })
+	@ApiProperty({
+		description: 'Content of the notification',
+		example: 'You have a new message from John Doe.',
+	})
 	@IsString()
 	content: string
 
-	@ApiProperty({ description: 'URL of an image for the notification', required: false })
+	@ApiProperty({
+		description: 'URL of an image for the notification',
+		required: false,
+	})
 	@IsOptional()
 	@IsString()
 	imageUrl?: string
@@ -22,7 +32,10 @@ export class CreateNotificationDto {
 	@IsString()
 	senderId?: string
 
-	@ApiProperty({ description: 'URL to redirect to when the notification is clicked', required: false })
+	@ApiProperty({
+		description: 'URL to redirect to when the notification is clicked',
+		required: false,
+	})
 	@IsOptional()
 	@IsString()
 	redirectUrl?: string
@@ -31,7 +44,7 @@ export class CreateNotificationDto {
 		description: 'Type of the notification',
 		enum: NotificationType,
 		default: NotificationType.INFO,
-		required: false
+		required: false,
 	})
 	@IsOptional()
 	@IsEnum(NotificationType)

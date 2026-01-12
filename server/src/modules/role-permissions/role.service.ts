@@ -3,7 +3,7 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common'
-import { EntityEnum, Permission } from '@prisma/client' // Import Permission type
+import { EntityEnum, Permission } from '../../generated/prisma' // Import Permission type
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { CreateRoleDto } from './dtos/create-role.dto'
 import { UpdateRoleDto } from './dtos/update-role.dto'

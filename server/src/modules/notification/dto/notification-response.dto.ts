@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger'
 import { Expose } from 'class-transformer'
-import { NotificationType } from '@prisma/client'
+import { NotificationType } from '../../../generated/prisma'
 
 export class NotificationResponseDto {
 	@ApiProperty({ description: 'Notification ID' })
@@ -15,7 +15,10 @@ export class NotificationResponseDto {
 	@Expose()
 	content: string
 
-	@ApiProperty({ description: 'URL of an image for the notification', required: false })
+	@ApiProperty({
+		description: 'URL of an image for the notification',
+		required: false,
+	})
 	@Expose()
 	imageUrl?: string
 
@@ -27,15 +30,23 @@ export class NotificationResponseDto {
 	@Expose()
 	status: string
 
-	@ApiProperty({ description: 'URL to redirect to when the notification is clicked', required: false })
+	@ApiProperty({
+		description: 'URL to redirect to when the notification is clicked',
+		required: false,
+	})
 	@Expose()
 	redirectUrl?: string
 
-	@ApiProperty({ description: 'Type of the notification', enum: NotificationType })
+	@ApiProperty({
+		description: 'Type of the notification',
+		enum: NotificationType,
+	})
 	@Expose()
 	type: NotificationType
 
-	@ApiProperty({ description: 'ID of the user who received the notification' })
+	@ApiProperty({
+		description: 'ID of the user who received the notification',
+	})
 	@Expose()
 	userId: string
 

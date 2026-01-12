@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../providers/prisma/prisma.service'
-import { Department } from '@prisma/client'
+import { Department } from '../../generated/prisma'
 import { plainToInstance } from 'class-transformer'
 import { CreateDepartmentDto } from './dto/create-department.dto'
 import { UpdateDepartmentDto } from './dto/update-department.dto'

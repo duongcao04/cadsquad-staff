@@ -11,7 +11,7 @@ import {
     JobStatusSystemType,
     NotificationType,
     Prisma,
-} from '@prisma/client'
+} from '../../generated/prisma'
 import { plainToInstance } from 'class-transformer'
 import dayjs from 'dayjs'
 import lodash from 'lodash'
