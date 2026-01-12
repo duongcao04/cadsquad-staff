@@ -58,4 +58,12 @@ export class SharePointController {
 	async deleteItem(@Param('id') id: string) {
 		return this.service.deleteItem(id)
 	}
+
+	// 6. Lấy Folder ID từ path
+	@Get('resolve-path')
+	async getIdFromPath(@Query('path') path: string) {
+		// Gọi: GET /sharepoint/resolve-path?path=CSD- TEAM/ST006. CH.DUONG
+		const id = await this.service.getFolderIdByPath(path)
+		return { path, id }
+	}
 }

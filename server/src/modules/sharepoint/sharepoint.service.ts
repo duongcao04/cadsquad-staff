@@ -9,6 +9,7 @@ import 'isomorphic-fetch'
 export class SharePointService {
 	private readonly logger = new Logger(SharePointService.name)
 	private msalClient: ConfidentialClientApplication
+	private siteId: string
 
 	// Cấu hình ID của Drive (Mặc định lấy Drive chính của Root Site)
 	// Nếu bạn muốn trỏ vào Site khác, bạn cần thay đổi logic lấy Drive ID này.
@@ -25,6 +26,31 @@ export class SharePointService {
 				authority: `https://login.microsoftonline.com/${this.config.azure.tenantId}`,
 			},
 		})
+	}
+
+	/**
+	 * INIT: Hàm này cần chạy 1 lần để tìm ID của Site "Data"
+	 * Thay vì hardcode /sites/root
+	 */
+	async onModuleInit() {
+		// Tự động tìm Site ID của trang "Data"
+		// URL host: vncsd.sharepoint.com
+		// Server relative path: /sites/Data
+		const client = await this.getGraphClient()
+
+		try {
+			// Tìm site theo đường dẫn server (Thay 'Data' bằng tên site trong URL của bạn)
+			const site = await client
+				.api('/sites/vncsd.sharepoint.com:/sites/Data')
+				.get()
+			this.siteId = site.id
+			this.logger.log(
+				`Connected to SharePoint Site: Data (ID: ${this.siteId})`
+			)
+		} catch (error) {
+			this.logger.error(`Cannot find site 'Data'. Fallback to Root.`)
+			this.siteId = 'root' // Fallback nếu không tìm thấy
+		}
 	}
 
 	private async getAccessToken(): Promise<string> {
@@ -153,5 +179,27 @@ export class SharePointService {
 		const client = await this.getGraphClient()
 		await client.api(`${this.driveEndpoint}/items/${itemId}`).delete()
 		return { success: true }
+	}
+
+	/**
+	 * CỰC KỲ QUAN TRỌNG: Hàm lấy ID từ đường dẫn
+	 * Input: "CSD- TEAM/ST006. CH.DUONG"
+	 * Output: "01ABCDEF..." (Đây là parentId bạn cần)
+	 */
+	async getFolderIdByPath(path: string): Promise<string> {
+		const client = await this.getGraphClient()
+
+		// Đường dẫn Graph API để lấy item theo path:
+		// /sites/{site-id}/drive/root:/{path-to-folder}
+		const safePath = path.startsWith('/') ? path.substring(1) : path
+		const endpoint = `/sites/${this.siteId}/drive/root:/${safePath}`
+
+		try {
+			const item = await client.api(endpoint).get()
+			return item.id // <--- ĐÂY CHÍNH LÀ parentId
+		} catch (error) {
+			this.logger.error(`Folder not found: ${path}`)
+			throw new BadRequestException('Folder path not found in SharePoint')
+		}
 	}
 }
