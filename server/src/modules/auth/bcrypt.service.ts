@@ -1,20 +1,25 @@
-import { Injectable } from '@nestjs/common'
-import { compare, compareSync, genSalt, hash } from 'bcrypt'
+import { authConfig } from '@/config'
+import { Inject, Injectable } from '@nestjs/common'
+import type { ConfigType } from '@nestjs/config'
+import { compare, hash } from 'bcrypt'
 
 @Injectable()
 export class BcryptService {
-	async hash(data: string): Promise<string> {
-		const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS)
-		const salt = await genSalt(SALT_ROUNDS)
+	constructor(
+		@Inject(authConfig.KEY)
+		private readonly config: ConfigType<typeof authConfig>
+	) {}
 
-		return await hash(data, salt)
+	async hash(data: string): Promise<string> {
+		const saltRounds = this.config.saltRounds
+		// Bcrypt tự động genSalt nếu tham số thứ 2 là number
+		return await hash(data, saltRounds)
 	}
 
 	async compare(plainText: string, hashed: string): Promise<boolean> {
 		if (plainText === hashed) {
 			return true
 		}
-
 		return await compare(plainText, hashed)
 	}
 }

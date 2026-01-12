@@ -1,27 +1,35 @@
+import { mailConfig } from '@/config'
 import { MailerModule } from '@nestjs-modules/mailer'
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter'
 import { Module } from '@nestjs/common'
+import { ConfigType } from '@nestjs/config'
 import { join } from 'path'
-import { MailService } from './mail.service'
 import { EmailController } from './email.controller'
+import { MailService } from './mail.service'
+
 @Module({
 	imports: [
 		MailerModule.forRootAsync({
-			useFactory: () => ({
+			// 👇 1. Inject Config
+			inject: [mailConfig.KEY],
+			useFactory: async (config: ConfigType<typeof mailConfig>) => ({
 				transport: {
-					host: process.env.MAIL_HOST,
+					host: config.MAIL_HOST,
+					port: config.MAIL_PORT,
+					secure: config.MAILER_SECURE, // true cho port 465, false cho các port khác
 					auth: {
-						user: process.env.MAIL_USER,
-						pass: process.env.MAIL_PASS,
+						user: config.MAIL_USER,
+						pass: config.MAIL_PASS,
 					},
 				},
 				defaults: {
-					from: `"No Reply" <${process.env.MAIL_FROM}>`, // Good practice to set a default sender
+					// Sử dụng config.from hoặc fallback về user
+					from: `"${config.MAIL_FROM}" <${config.MAIL_USER}>`,
 				},
 				template: {
 					dir: join(process.cwd(), '/src/templates'),
+
 					adapter: new HandlebarsAdapter({
-						// Định nghĩa các logic so sánh cho template .hbs
 						eq: (a: any, b: any) => a === b,
 					}),
 					options: {

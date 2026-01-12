@@ -1,42 +1,53 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import * as Ably from 'ably';
+import { ablyConfig } from '@/config'
+import { Inject, Injectable, Logger } from '@nestjs/common'
+import type { ConfigType } from '@nestjs/config'
+import * as Ably from 'ably'
 
 @Injectable()
-export class AblyService implements OnModuleInit {
-	private client: Ably.Rest;
+export class AblyService {
+	private readonly logger = new Logger(AblyService.name)
+	private client: Ably.Rest
 
-	onModuleInit() {
-		// Khởi tạo Ably REST client khi module được load
-		// REST phù hợp cho server-side publishing
-		this.client = new Ably.Rest(String(process.env.ABLY_API_KEY));
+	constructor(
+		@Inject(ablyConfig.KEY)
+		private readonly config: ConfigType<typeof ablyConfig>
+	) {
+		// Khởi tạo Client ngay khi Service được tạo
+		// Dùng key từ config đã validate
+		this.client = new Ably.Rest({ key: this.config.key })
 	}
 
 	async createTokenRequest(userId: string) {
-		const tokenRequestData = await this.client.auth.createTokenRequest({
-			// clientId là định danh người dùng.
-			// Nếu app có login, hãy truyền User ID vào đây.
-			// Nếu là public, có thể để string ngẫu nhiên hoặc cố định.
-			clientId: userId,
-		});
+		try {
+			const tokenRequestData = await this.client.auth.createTokenRequest({
+				clientId: userId,
+				// Có thể thêm ttl (thời gian sống của token) nếu cần
+				// ttl: 3600 * 1000,
+			})
 
-		return tokenRequestData;
+			this.logger.log(`Created token request for user: ${userId}`)
+			return tokenRequestData
+		} catch (error) {
+			this.logger.error(`Failed to create token request: ${error}`)
+			throw error
+		}
 	}
 
 	/**
 	 * Gửi tin nhắn (Publish) lên một kênh (Channel)
-	 * @param channelName Tên kênh (ví dụ: 'orders', 'notifications')
-	 * @param eventName Tên sự kiện (ví dụ: 'created', 'reload')
-	 * @param data Dữ liệu đính kèm (Object, String, etc.)
 	 */
 	async publish(channelName: string, eventName: string, data: any) {
-		const channel = this.client.channels.get(channelName);
+		const channel = this.client.channels.get(channelName)
 
 		try {
-			await channel.publish(eventName, data);
-			console.log(`[Ably] Published to ${channelName}: ${eventName}`);
+			// Publish là bất đồng bộ
+			await channel.publish(eventName, data)
+			this.logger.log(`[Ably] Published to ${channelName}: ${eventName}`)
 		} catch (error) {
-			console.error('[Ably] Publish failed:', error);
-			throw error;
+			this.logger.error(
+				`[Ably] Publish failed to ${channelName}: ${error}`
+			)
+			throw error
 		}
 	}
 }

@@ -1,26 +1,45 @@
+import { azureConfig } from '@/config'
+import { PrismaService } from '@/providers/prisma/prisma.service'
+import { Provider } from '@nestjs/common'
+import { ConfigType } from '@nestjs/config'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
-import { PrismaClient } from '../generated/prisma'
 
-const prisma = new PrismaClient()
+export const BETTER_AUTH = 'BETTER_AUTH'
 
-export const auth = betterAuth({
-	database: prismaAdapter(prisma, {
-		provider: 'postgresql',
-	}),
-	socialProviders: {
-		microsoft: {
-			clientId: process.env.MICROSOFT_CLIENT_ID as string,
-			clientSecret: process.env.MICROSOFT_CLIENT_SECRET as string,
-			// Nếu bạn dùng cho doanh nghiệp (Single Tenant), thêm tenantId:
-			tenantId: process.env.MICROSOFT_TENANT_ID,
-		},
+export const BetterAuthProvider: Provider = {
+	provide: BETTER_AUTH,
+	// Inject các dependency cần thiết
+	inject: [PrismaService, azureConfig.KEY],
+
+	useFactory: (
+		prisma: PrismaService,
+		config: ConfigType<typeof azureConfig>
+	) => {
+		return betterAuth({
+			// Sử dụng PrismaService singleton của NestJS
+			database: prismaAdapter(prisma, {
+				provider: 'postgresql',
+			}),
+
+			socialProviders: {
+				microsoft: {
+					// Lấy từ Config đã validate (Zod)
+					clientId: config.microsoft.clientId,
+					clientSecret: config.microsoft.clientSecret,
+					tenantId: config.microsoft.tenantId,
+				},
+			},
+
+			user: {
+				modelName: 'User',
+				fields: {
+					image: 'avatar', // Map avatar
+				},
+			},
+
+			// Tắt log của better-auth nếu cần để terminal gọn hơn
+			// logger: { disabled: true },
+		})
 	},
-	// Map các field của bạn nếu tên khác với mặc định của Better Auth
-	user: {
-		modelName: 'User',
-		fields: {
-			image: 'avatar', // Map 'image' từ social provider vào 'avatar' trong DB
-		},
-	},
-})
+}
