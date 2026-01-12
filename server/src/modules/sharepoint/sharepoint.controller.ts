@@ -66,4 +66,11 @@ export class SharePointController {
 		const id = await this.service.getFolderIdByPath(path)
 		return { path, id }
 	}
+	/**
+	 *  7. Liệt kê tất cả Document Libraries (Drives) trong Site hiện tại
+	 */
+	@Get('drives')
+	async getDrives() {
+		return this.service.listDrives()
+	}
 }

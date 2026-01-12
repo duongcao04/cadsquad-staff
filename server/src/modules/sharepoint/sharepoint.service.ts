@@ -10,6 +10,7 @@ export class SharePointService {
 	private readonly logger = new Logger(SharePointService.name)
 	private msalClient: ConfidentialClientApplication
 	private siteId: string
+	private driveId: string
 
 	// Cấu hình ID của Drive (Mặc định lấy Drive chính của Root Site)
 	// Nếu bạn muốn trỏ vào Site khác, bạn cần thay đổi logic lấy Drive ID này.
@@ -51,6 +52,22 @@ export class SharePointService {
 			this.logger.error(`Cannot find site 'Data'. Fallback to Root.`)
 			this.siteId = 'root' // Fallback nếu không tìm thấy
 		}
+		if (!this.driveId) {
+			const client = await this.getGraphClient()
+			const drives = await client
+				.api(`/sites/${this.siteId}/drives`)
+				.get()
+			// Tìm drive mặc định
+			const targetDrive = drives.value.find(
+				(d: any) => d.name === 'Documents'
+			)
+			if (targetDrive) {
+				this.driveId = targetDrive.id
+				this.logger.log(
+					`Using Drive: ${targetDrive.name} (${this.driveId})`
+				)
+			}
+		}
 	}
 
 	private async getAccessToken(): Promise<string> {
@@ -80,8 +97,8 @@ export class SharePointService {
 
 		// Nếu có folderId -> lấy con của folder đó. Nếu không -> lấy root.
 		const endpoint = folderId
-			? `${this.driveEndpoint}/items/${folderId}/children`
-			: `${this.driveEndpoint}/root/children`
+			? `/drives/${this.driveId}/items/${folderId}/children`
+			: `/drives/${this.driveId}/root/children`
 
 		try {
 			const response = await client.api(endpoint).get()
@@ -114,7 +131,10 @@ export class SharePointService {
 
 		// Endpoint: /drive/items/{parent-id}:/{filename}:/content
 		// Nếu parentId là 'root' thì dùng /root
-		const parentPath = parentId === 'root' ? '/root' : `/items/${parentId}`
+		const parentPath =
+			parentId === 'root'
+				? `/drives/${this.driveId}/root`
+				: `/drives/${this.driveId}/items/${parentId}`
 
 		const endpoint = `${this.driveEndpoint}${parentPath}:/${file.originalname}:/content`
 
@@ -136,18 +156,29 @@ export class SharePointService {
 
 	async createFolder(parentId: string, folderName: string) {
 		const client = await this.getGraphClient()
+
+		// Thay vì dùng this.driveEndpoint (thường trỏ vào default drive),
+		// ta dùng endpoint trỏ thẳng vào Drive ID cụ thể mà ta đã tìm được.
+		// Điều này đảm bảo parentId (Item ID) luôn hợp lệ trong ngữ cảnh Drive này.
+		const driveBaseUrl = `/drives/${this.driveId}`
+
 		const endpoint =
 			parentId === 'root'
-				? `${this.driveEndpoint}/root/children`
-				: `${this.driveEndpoint}/items/${parentId}/children`
+				? `${driveBaseUrl}/root/children`
+				: `${driveBaseUrl}/items/${parentId}/children`
 
 		const driveItem = {
 			name: folderName,
-			folder: {}, // Đánh dấu là folder
-			'@microsoft.graph.conflictBehavior': 'rename', // Nếu trùng tên thì tự đổi tên
+			folder: {}, // Đánh dấu đây là folder
+			'@microsoft.graph.conflictBehavior': 'rename', // Nếu trùng tên thì tự thêm số (1), (2)...
 		}
 
-		return await client.api(endpoint).post(driveItem)
+		try {
+			return await client.api(endpoint).post(driveItem)
+		} catch (error) {
+			this.logger.error(`Create folder failed: ${error.message}`)
+			throw error
+		}
 	}
 
 	// ==========================================
@@ -192,7 +223,7 @@ export class SharePointService {
 		// Đường dẫn Graph API để lấy item theo path:
 		// /sites/{site-id}/drive/root:/{path-to-folder}
 		const safePath = path.startsWith('/') ? path.substring(1) : path
-		const endpoint = `/sites/${this.siteId}/drive/root:/${safePath}`
+		const endpoint = `/drives/${this.driveId}/root:/${safePath}`
 
 		try {
 			const item = await client.api(endpoint).get()
@@ -201,5 +232,18 @@ export class SharePointService {
 			this.logger.error(`Folder not found: ${path}`)
 			throw new BadRequestException('Folder path not found in SharePoint')
 		}
+	}
+
+	async listDrives() {
+		const client = await this.getGraphClient()
+		// Lấy danh sách các ổ đĩa trong Site này
+		const response = await client.api(`/sites/${this.siteId}/drives`).get()
+
+		return response.value.map((drive: any) => ({
+			id: drive.id, // <--- ĐÂY LÀ CÁI CẦN TÌM
+			name: drive.name, // Tên (vd: Documents)
+			webUrl: drive.webUrl,
+			description: drive.description,
+		}))
 	}
 }
