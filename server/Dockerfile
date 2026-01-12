@@ -15,6 +15,7 @@ FROM base AS deps
 COPY package.json bun.lockb* ./
 # Copy Prisma schema để chuẩn bị generate client
 COPY ./src/providers/prisma/schema.prisma ./prisma/schema.prisma
+COPY ./database ./database
 RUN bun install --frozen-lockfile
 
 # Stage 2: builder - Build mã nguồn TypeScript
@@ -23,7 +24,7 @@ COPY . .
 RUN bun run build
 
 # TỐI ƯU: Xóa node_modules cũ và chỉ cài lại bản Production để giảm dung lượng
-RUN rm -rf node_modules && bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile --production
 # Tạo Prisma Client cho môi trường chạy thực tế
 RUN bunx prisma generate
 
@@ -41,11 +42,15 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/src/config /app/src/config
+COPY --from=builder /app/database ./database
 
 # Copy và xử lý Entrypoint script
 COPY --chown=nodejs:nodejs ./entrypoint.sh ./
 # Sửa định dạng file (CRLF to LF) và cấp quyền thực thi
 RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
+
+# TỐI ƯU: Xóa node_modules cũ và chỉ cài lại bản Production để giảm dung lượng
+RUN rm -rf node_modules
 
 # Phân quyền thư mục cho user không có quyền root (Bảo mật)
 RUN chown -R nodejs:nodejs /app
