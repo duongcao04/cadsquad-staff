@@ -44,10 +44,10 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/src/config /app/src/config
 COPY --from=builder /app/database ./database
 
-# Copy và xử lý Entrypoint script
-COPY --chown=nodejs:nodejs ./entrypoint.sh ./
-# Sửa định dạng file (CRLF to LF) và cấp quyền thực thi
-RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
+# # Copy và xử lý Entrypoint script
+# COPY --chown=nodejs:nodejs ./entrypoint.sh ./
+# # Sửa định dạng file (CRLF to LF) và cấp quyền thực thi
+# RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
 # TỐI ƯU: Xóa node_modules cũ và chỉ cài lại bản Production để giảm dung lượng
 # RUN rm -rf node_modules
@@ -60,5 +60,5 @@ EXPOSE 8080
 ENV NODE_ENV production
 
 # Entrypoint chạy migration trước, CMD khởi động Server sau
-ENTRYPOINT ["sh", "./entrypoint.sh"]
+# ENTRYPOINT ["sh", "./entrypoint.sh"]
 CMD ["bun", "dist/src/main.js"]

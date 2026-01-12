@@ -51,7 +51,7 @@ export class ProtectUserResponseDto {
 	@Expose()
 	phoneNumber?: string
 
-	@ApiProperty({ description: 'Role of the user', enum: RoleResponseDto })
+	@ApiProperty({ description: 'Role of the user', type: RoleResponseDto })
 	@Expose()
 	role: RoleResponseDto
 
