@@ -97,7 +97,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro # FIX: Ánh xạ chứng chỉ từ hệ thống vào
     networks:
       - app-network
-  
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin

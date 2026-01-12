@@ -39,16 +39,16 @@ export class JobTypeService {
 
         if (lastJob && lastJob.no) {
             // 3. Extract the number part from the last job (Assuming format PREFIX-001)
-            const parts = lastJob.no.split('.')
-            const lastNum = parseInt(parts[parts.length - 1], 10)
+            const lastFourDigits = lastJob.no.slice(-3);
+            const lastNum = parseInt(lastFourDigits, 10);
 
             if (!isNaN(lastNum)) {
                 nextSequence = lastNum + 1
             }
         }
 
-        // 4. Pad the number with zeros (e.g., 1 -> 0001)
-        const paddedSequence = nextSequence.toString().padStart(4, '0')
+        // 4. Pad the number with zeros (e.g., 1 -> 001)
+        const paddedSequence = nextSequence.toString().padStart(3, '0')
 
         // 5. Return the formatted ID
         return `${jobType.code}.${paddedSequence}`

@@ -18,6 +18,7 @@ import { useState } from 'react'
 
 import { dateFormatter } from '../../../lib'
 import { IJobDelivery } from '../../../shared/interfaces'
+import ApproveDeliveryModal from './ApproveDeliveryModal'
 
 type AdminDeliveryCardProps = {
     delivery: IJobDelivery

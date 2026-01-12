@@ -23,7 +23,7 @@ BEGIN
             EXIT WHEN v_current_count >= v_total_to_create;
             
             v_job_id := gen_random_uuid()::TEXT;
-            v_job_no := v_type_record.code || '.26' || LPAD(v_type_sequence::text, 4, '0');
+            v_job_no := v_type_record.code || '26' || LPAD(v_type_sequence::text, 3, '0');
             v_income := floor(random() * (1000 - 500 + 1) + 500);
             v_assign_count := floor(random() * (4 - 2 + 1) + 2);
 
