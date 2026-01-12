@@ -213,9 +213,7 @@ const CreateUserFormContent = ({
             (step === 1 ? stepOneSchema : stepTwoSchema) as any
         ),
         onSubmit: async (values) => {
-            const finalEmail = ONLY_INTERNAL_EMAIL
-                ? transformEmail(values.email)
-                : values.email
+            const finalEmail = transformEmail(values.email)
 
             if (step === 1) {
                 setStep(2)
