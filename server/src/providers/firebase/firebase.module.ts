@@ -12,7 +12,7 @@ import { FirebaseService } from './firebase.service'
                 // Đường dẫn đến file JSON của bạn
                 const serviceAccountPath = path.join(
                     process.cwd(),
-                    'src/config/serviceAccountKey.json'
+                    'dist/src/config/serviceAccountKey.json'
                 )
 
                 // Kiểm tra tránh khởi tạo trùng lặp khi NestJS hot-reload
