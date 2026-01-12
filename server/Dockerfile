@@ -47,10 +47,10 @@ COPY --from=builder /app/prisma ./prisma
 # 5. Database (nếu dùng sqlite hoặc file seed)
 COPY --from=builder /app/database ./database
 
-# Copy và xử lý Entrypoint script
-COPY --chown=nodejs:nodejs ./entrypoint.sh ./
-# Sửa định dạng file (CRLF to LF) và cấp quyền thực thi
-RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
+# # Copy và xử lý Entrypoint script
+# COPY --chown=nodejs:nodejs ./entrypoint.sh ./
+# # Sửa định dạng file (CRLF to LF) và cấp quyền thực thi
+# RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
 # Phân quyền thư mục cho user không có quyền root (Bảo mật)
 RUN chown -R nodejs:nodejs /app
@@ -60,5 +60,5 @@ EXPOSE 8080
 ENV NODE_ENV production
 
 # Entrypoint chạy migration trước, CMD khởi động Server sau
-ENTRYPOINT ["sh", "./entrypoint.sh"]
+# ENTRYPOINT ["sh", "./entrypoint.sh"]
 CMD ["bun", "dist/src/main.js"]
