@@ -6,17 +6,7 @@
 		"deleteOutDir": true,
 		"assets": [
 			{
-				"include": "templates/**/*",
-				"outDir": "dist/templates",
-				"watchAssets": true
-			},
-			{
 				"include": "generated/**/*",
-				"outDir": "dist/src",
-				"watchAssets": true
-			},
-			{
-				"include": "config/**/*",
 				"outDir": "dist/src",
 				"watchAssets": true
 			}

@@ -19,7 +19,7 @@ import { EmailController } from './email.controller'
 					from: `"No Reply" <${process.env.MAIL_FROM}>`, // Good practice to set a default sender
 				},
 				template: {
-					dir: join(process.cwd(), 'templates'),
+					dir: join(process.cwd(), '/src/templates'),
 					adapter: new HandlebarsAdapter({
 						// Định nghĩa các logic so sánh cho template .hbs
 						eq: (a: any, b: any) => a === b,

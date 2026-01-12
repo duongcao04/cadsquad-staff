@@ -46,6 +46,10 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/prisma ./prisma
 # 5. Database (nếu dùng sqlite hoặc file seed)
 COPY --from=builder /app/database ./database
+# 6. Configuration files
+COPY --from=builder /app/src/config /app/src/config
+# 7. Mail templates
+COPY --from=builder /app/src/templates /app/src/templates
 
 # # Copy và xử lý Entrypoint script
 # COPY --chown=nodejs:nodejs ./entrypoint.sh ./
