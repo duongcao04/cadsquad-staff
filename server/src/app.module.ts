@@ -27,6 +27,7 @@ import { JobModule } from '@/modules/job/job.module'
 import { NotificationModule } from '@/modules/notification/notification.module'
 import { PaymentChannelModule } from '@/modules/payment-channel/payment-channel.module'
 import { RoleModule } from '@/modules/role-permissions/role.module'
+import { SharePointModule } from '@/modules/sharepoint/sharepoint.module'
 import { UploadModule } from '@/modules/upload/upload.module'
 import { UserDevicesModule } from '@/modules/user-devices/user-devices.module'
 import { UserModule } from '@/modules/user/user.module'
@@ -64,6 +65,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus'
 		PrismaModule,
 		RedisModule,
 		MailModule,
+		SharePointModule,
 		CloudinaryModule,
 		AblyModule,
 		RoleModule,

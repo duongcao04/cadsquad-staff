@@ -9,22 +9,24 @@ import { NotificationModule } from '../notification/notification.module'
 import { JobTypeModule } from '../job-type/job-type.module'
 import { JobCommentService } from './job-comment.service'
 import { JobReminderService } from './job-reminder.service'
+import { SharePointModule } from '../sharepoint/sharepoint.module'
 
 @Module({
-    imports: [
-        AuthModule,
-        UserModule,
-        UserConfigModule,
-        NotificationModule,
-        JobTypeModule,
-    ],
-    controllers: [JobController],
-    providers: [
-        JobService,
-        ActivityLogService,
-        JobCommentService,
-        JobReminderService,
-    ],
-    exports: [JobService, ActivityLogService, JobCommentService],
+	imports: [
+		AuthModule,
+		UserModule,
+		UserConfigModule,
+		NotificationModule,
+		JobTypeModule,
+		SharePointModule,
+	],
+	controllers: [JobController],
+	providers: [
+		JobService,
+		ActivityLogService,
+		JobCommentService,
+		JobReminderService,
+	],
+	exports: [JobService, ActivityLogService, JobCommentService],
 })
 export class JobModule {}
