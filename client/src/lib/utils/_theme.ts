@@ -92,7 +92,7 @@ export const APP_THEME_COLORS = {
 }
 
 export const APP_TEXT_SCALING = {
-    small: '90%',
-    medium: '100%',
-    large: '105%',
+    small: '80%',
+    medium: '90%',
+    large: '100%',
 }

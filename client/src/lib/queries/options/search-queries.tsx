@@ -1,5 +1,7 @@
-import { SYSTEM_ROUTES } from '@/lib/utils' // Assuming you have this
+import { INTERNAL_URLS, SYSTEM_ROUTES } from '@/lib/utils' // Assuming you have this
 import { queryOptions } from '@tanstack/react-query'
+import { jobApi, userApi } from '../../api'
+import { IJobResponse, IUserResponse } from '../../../shared/interfaces'
 
 export type SearchCategory =
     | 'All'
@@ -42,14 +44,20 @@ export const searchOptions = (query: string, category: SearchCategory) => {
             // 2. Jobs
             if (category === 'All' || category === 'Jobs') {
                 promises.push(
-                    fetcher(`/api/jobs/search?q=${encodeURIComponent(query)}`)
-                        .then((data) =>
-                            data.map((item: any) => ({
+                    jobApi
+                        .findAll({
+                            search: query,
+                            limit: 20,
+                        })
+                        .then((res) =>
+                            res.result?.data.map((item: IJobResponse) => ({
                                 id: `job-${item.id}`,
                                 title: item.displayName || item.no,
                                 subtitle: item.client?.name || 'Unknown Client',
                                 type: 'Jobs',
-                                route: `/jobs/${item.no}`,
+                                route: item.no
+                                    ? INTERNAL_URLS.getJobDetailUrl(item.no)
+                                    : INTERNAL_URLS.projectCenter,
                                 rawData: item,
                             }))
                         )
@@ -100,18 +108,20 @@ export const searchOptions = (query: string, category: SearchCategory) => {
             // 5. Staff Members
             if (category === 'All' || category === 'Staff Members') {
                 promises.push(
-                    fetcher(`/api/staff/search?q=${encodeURIComponent(query)}`)
-                        .then((data) =>
-                            data.map((item: any) => ({
-                                id: `staff-${item.id}`,
-                                title: item.displayName,
-                                subtitle: item.email, // or role
-                                type: 'Staff Members',
-                                route: `/staff/${item.id}`,
-                                rawData: item,
-                            }))
-                        )
-                        .catch(() => [])
+                    userApi.search(query).then((data) => {
+                        return data.result?.map((item: IUserResponse) => ({
+                            id: `users-${item.id}`,
+                            title: item.displayName,
+                            subtitle:
+                                item.department?.displayName ||
+                                'Unknown Client',
+                            type: 'Staff Member',
+                            route: item.username
+                                ? INTERNAL_URLS.editStaffDetails(item.username)
+                                : INTERNAL_URLS.staffDirectory,
+                            rawData: item,
+                        }))
+                    })
                 )
             }
 

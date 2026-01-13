@@ -496,6 +496,7 @@ export class UserService {
 			select: {
 				id: true,
 				displayName: true,
+				username: true,
 				email: true,
 				avatar: true, // Nếu cần hiển thị ảnh
 			},

@@ -1,3 +1,4 @@
+import { TCreateUserInput } from '@/features/staff-directory'
 import { type ApiResponse, axiosClient } from '@/lib/axios'
 import type {
     TResetPasswordInput,
@@ -6,10 +7,9 @@ import type {
     TUserQueryInput,
 } from '@/lib/validationSchemas'
 import type { IUserResponse } from '@/shared/interfaces'
-import queryString from 'query-string'
-import { TCreateUserInput } from '../../shared/components'
-import { TRole, TUserSecurityLog } from '../../shared/types'
+import { TRole, TUserSecurityLog } from '@/shared/types'
 import lodash from 'lodash'
+import queryString from 'query-string'
 
 export interface IProfileOverview {
     stats: {
@@ -46,6 +46,11 @@ export const userApi = {
                         : undefined,
                 }
             )
+            .then((res) => res.data)
+    },
+    search: async (keywords: string) => {
+        return axiosClient
+            .get<ApiResponse<IUserResponse[]>>(`/v1/users/search?q=${keywords}`)
             .then((res) => res.data)
     },
     findAll: async (params: TUserQueryInput) => {
