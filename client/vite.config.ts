@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => {
             host: true,
             strictPort: true,
         },
+        preview: {
+            port: 3000,
+        },
 
         // Inject các biến env vào mã nguồn thông qua import.meta.env
         define: {

@@ -1,27 +1,31 @@
+import { smoothMotion } from '@/lib/motion'
 import {
-    extendVariants,
     Modal,
     ModalBody,
     ModalBodyProps,
     ModalContent,
     ModalContentProps,
     ModalFooter,
+    ModalFooterProps,
     ModalHeader,
     ModalHeaderProps,
     ModalProps,
 } from '@heroui/react'
 
-import { smoothMotion } from '@/lib/motion'
-
-const StyledModal = extendVariants(Modal, {})
-
-// Wrapper Component để inject Motion Props
 export const HeroModal = (props: ModalProps) => {
+    const { children, motionProps, ...rest } = props
+
     return (
-        <StyledModal
-            {...props}
-            motionProps={props.motionProps || smoothMotion}
-        />
+        <Modal
+            {...rest}
+            motionProps={{
+                variants: { smoothMotion },
+                ...props.motionProps,
+            }}
+            hideCloseButton={props.hideCloseButton || true}
+        >
+            {children}
+        </Modal>
     )
 }
 
@@ -36,6 +40,8 @@ export const HeroModalHeader = (props: ModalHeaderProps) => {
 export const HeroModalBody = (props: ModalBodyProps) => {
     return <ModalBody {...props} />
 }
-export const HeroModalFooter = (props: ModalBodyProps) => {
+
+// Đã sửa type: ModalBodyProps -> ModalFooterProps
+export const HeroModalFooter = (props: ModalFooterProps) => {
     return <ModalFooter {...props} />
 }

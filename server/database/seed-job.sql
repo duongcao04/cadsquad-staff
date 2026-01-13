@@ -8,7 +8,7 @@ DECLARE
     v_income FLOAT;
     v_job_no TEXT;
     
-    v_total_to_create INT := 100;
+    v_total_to_create INT := 30;
     v_jobs_per_type INT;
     v_current_count INT := 0;
     v_type_sequence INT;

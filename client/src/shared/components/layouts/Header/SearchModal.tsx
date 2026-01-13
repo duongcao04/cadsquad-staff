@@ -1,3 +1,4 @@
+import { SYSTEM_ROUTES } from '@/lib/utils'
 import {
     Chip,
     Input,
@@ -19,8 +20,7 @@ import {
     UsersIcon,
 } from 'lucide-react'
 import React, { useMemo, useState } from 'react'
-import { SYSTEM_ROUTES } from '../../../../lib/utils'
-import { HeroModal, HeroModalBody, HeroModalContent } from '../../ui/hero-modal'
+import { HeroModal, HeroModalContent, HeroModalBody } from '../../ui/hero-modal'
 
 // --- Types ---
 type Category = 'All' | 'Jobs' | 'Communities' | 'Clients' | 'System'

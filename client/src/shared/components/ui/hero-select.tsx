@@ -1,5 +1,4 @@
 import { Select, SelectItem, type SelectProps } from '@heroui/react'
-
 import { cn } from '@/lib/utils'
 
 type HeroSelectProps = {
@@ -13,6 +12,7 @@ export const HeroSelect = ({ children, ...props }: HeroSelectProps) => {
             classNames={{
                 trigger: cn('border-[1px]', props.classNames?.trigger),
                 label: 'font-medium text-text-7!',
+                selectorIcon: 'right-2',
                 ...props.classNames,
             }}
         >

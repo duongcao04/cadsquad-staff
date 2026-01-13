@@ -1,13 +1,13 @@
+import { INTERNAL_URLS } from '@/lib'
+import { workbenchDataOptions } from '@/lib/queries'
+import { HeroCard, HeroCardBody } from '@/shared/components/ui/hero-card'
+import { HeroInput } from '@/shared/components/ui/hero-input'
 import { Pagination, Skeleton } from '@heroui/react'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { workbenchDataOptions } from '../../../../lib/queries'
-import { HeroInput } from '../../../../shared/components/ui/hero-input'
-import JobMobileCard from './JobMobileCard'
-import { useMemo } from 'react'
-import lodash from 'lodash'
-import { INTERNAL_URLS } from '../../../../lib'
 import { useRouter } from '@tanstack/react-router'
-import { HeroCard, HeroCardBody } from '../../../../shared/components/ui/hero-card'
+import lodash from 'lodash'
+import { useMemo } from 'react'
+import JobMobileCard from './JobMobileCard'
 
 type Props = {
     onAssignMember: (jobNo: string) => void
