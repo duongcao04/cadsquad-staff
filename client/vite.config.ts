@@ -46,6 +46,7 @@ export default defineConfig(({ mode }) => {
                 },
             }),
             VitePWA({
+                disable: Boolean(process.env.VITE_ENABLE_PWA),
                 devOptions: {
                     enabled: false,
                 },
