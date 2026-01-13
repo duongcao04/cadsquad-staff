@@ -1,25 +1,22 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Param,
-    ParseUUIDPipe,
-    Patch,
-    Post,
-    Query,
-    Req,
-    UseGuards,
-    UsePipes,
-    ValidationPipe,
+	Body,
+	Controller,
+	Delete,
+	Get,
+	HttpCode,
+	Param,
+	ParseUUIDPipe,
+	Patch,
+	Post,
+	Query,
+	Req,
+	UseGuards,
 } from '@nestjs/common'
 import {
-    ApiBearerAuth,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
+	ApiBearerAuth,
+	ApiOperation,
+	ApiResponse,
+	ApiTags,
 } from '@nestjs/swagger'
 import { isUUID } from 'class-validator'
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
@@ -38,199 +35,203 @@ import { UserQueryDto } from './dto/user-query.dto'
 import { UserResponseDto } from './dto/user-response.dto'
 import { UserSecurityService } from './user-security.service'
 import { UserService } from './user.service'
-import {
-    ForgotPasswordDto,
-    ResetPasswordWithTokenDto,
-} from './dto/forgot-password.dto'
 
 @ApiTags('Users')
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UserController {
-    constructor(
-        private readonly userService: UserService,
-        private readonly userSecurityService: UserSecurityService
-    ) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly userSecurityService: UserSecurityService
+	) {}
 
-    @Post()
-    @HttpCode(201)
-    @ResponseMessage('Create user successfully')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Create a new user' })
-    @ApiResponse({
-        status: 201,
-        description: 'The user has been successfully created.',
-        type: UserResponseDto,
-    })
-    async create(
-        @Body() createUserDto: CreateUserDto,
-        @Query() sendInviteEmail: '0' | '1'
-    ) {
-        const isSendInviteEmail = Boolean(sendInviteEmail)
-        return this.userService.create(createUserDto, isSendInviteEmail)
-    }
+	@Get('search')
+	@HttpCode(200)
+	@ResponseMessage('Search user successfully')
+	async search(@Query('q') query: string) {
+		if (!query) return []
+		return this.userService.search(query)
+	}
 
-    @Get('security-logs')
-    @ApiOperation({ summary: 'Get recent security activities' })
-    async getRecentActivity(
-        @Req() request: Request,
-        @Query('limit') limit: number = 10
-    ) {
-        const userPayload: TokenPayload = await request['user']
-        return this.userSecurityService.getSecurityLogs(userPayload.sub, limit)
-    }
+	@Post()
+	@HttpCode(201)
+	@ResponseMessage('Create user successfully')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Create a new user' })
+	@ApiResponse({
+		status: 201,
+		description: 'The user has been successfully created.',
+		type: UserResponseDto,
+	})
+	async create(
+		@Body() createUserDto: CreateUserDto,
+		@Query() sendInviteEmail: '0' | '1'
+	) {
+		const isSendInviteEmail = Boolean(sendInviteEmail)
+		return this.userService.create(createUserDto, isSendInviteEmail)
+	}
 
-    @Get()
-    @HttpCode(200)
-    @ResponseMessage('Get list of users successfully')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get all users' })
-    @ApiResponse({
-        status: 200,
-        description: 'Return a list of users.',
-        type: [ProtectUserResponseDto],
-    })
-    async findAll(@Query() query: UserQueryDto) {
-        return this.userService.findAll(query)
-    }
+	@Get('security-logs')
+	@ApiOperation({ summary: 'Get recent security activities' })
+	async getRecentActivity(
+		@Req() request: Request,
+		@Query('limit') limit: number = 10
+	) {
+		const userPayload: TokenPayload = await request['user']
+		return this.userSecurityService.getSecurityLogs(userPayload.sub, limit)
+	}
 
-    @Post(':id/permissions')
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions('user.update')
-    async managePermission(
-        @Param('id', ParseUUIDPipe) userId: string,
-        @Body() dto: AssignUserPermissionDto
-    ) {
-        return this.userService.manageUserPermission(userId, dto)
-    }
+	@Get()
+	@HttpCode(200)
+	@ResponseMessage('Get list of users successfully')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Get all users' })
+	@ApiResponse({
+		status: 200,
+		description: 'Return a list of users.',
+		type: [ProtectUserResponseDto],
+	})
+	async findAll(@Query() query: UserQueryDto) {
+		return this.userService.findAll(query)
+	}
 
-    @Patch('update-password')
-    @HttpCode(200)
-    @ApiBearerAuth()
-    @ResponseMessage('Update password successfully')
-    @ApiOperation({ summary: 'Update the password for the current user' })
-    @ApiResponse({
-        status: 200,
-        description: 'The password has been successfully updated.',
-    })
-    async updatePassword(
-        @Req() request: Request,
-        @Body() dto: UpdatePasswordDto
-    ) {
-        const userPayload: TokenPayload = await request['user']
-        return this.userService.updatePassword(userPayload.sub, dto)
-    }
+	@Post(':id/permissions')
+	@UseGuards(PermissionsGuard)
+	@RequirePermissions('user.update')
+	async managePermission(
+		@Param('id', ParseUUIDPipe) userId: string,
+		@Body() dto: AssignUserPermissionDto
+	) {
+		return this.userService.manageUserPermission(userId, dto)
+	}
 
-    @Patch(':id/reset-password')
-    @HttpCode(200)
-    @ResponseMessage('Reset password successfully')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Reset the password for a user' })
-    @ApiResponse({
-        status: 200,
-        description: 'The password has been successfully reset.',
-    })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.USER.RESET_PASSWORD)
-    async resetPassword(
-        @Param('id') id: string,
-        @Body() dto: ResetPasswordDto
-    ) {
-        return this.userService.resetPassword(id, dto)
-    }
+	@Patch('update-password')
+	@HttpCode(200)
+	@ApiBearerAuth()
+	@ResponseMessage('Update password successfully')
+	@ApiOperation({ summary: 'Update the password for the current user' })
+	@ApiResponse({
+		status: 200,
+		description: 'The password has been successfully updated.',
+	})
+	async updatePassword(
+		@Req() request: Request,
+		@Body() dto: UpdatePasswordDto
+	) {
+		const userPayload: TokenPayload = await request['user']
+		return this.userService.updatePassword(userPayload.sub, dto)
+	}
 
-    @Get('check-username')
-    @HttpCode(200)
-    @ResponseMessage('Check username successfully')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Check if a username is valid' })
-    @ApiResponse({
-        status: 200,
-        description: 'Returns a boolean indicating if the username is valid.',
-    })
-    async checkUsernameTaken(@Query('username') username: string) {
-        const isExist = await this.userService.isUsernameTaken(username)
-        return { isExist }
-    }
+	@Patch(':id/reset-password')
+	@HttpCode(200)
+	@ResponseMessage('Reset password successfully')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Reset the password for a user' })
+	@ApiResponse({
+		status: 200,
+		description: 'The password has been successfully reset.',
+	})
+	@UseGuards(PermissionsGuard)
+	@RequirePermissions(APP_PERMISSIONS.USER.RESET_PASSWORD)
+	async resetPassword(
+		@Param('id') id: string,
+		@Body() dto: ResetPasswordDto
+	) {
+		return this.userService.resetPassword(id, dto)
+	}
 
-    // Handles both ID and Username
-    @Get(':identifier')
-    @HttpCode(200)
-    @ResponseMessage('Get user detail successfully')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Get a user by ID or Username' })
-    @ApiResponse({
-        status: 200,
-        description: 'Return a single user.',
-        type: UserResponseDto,
-    })
-    async findOne(@Param('identifier') identifier: string) {
-        // Check if the parameter looks like a UUID
-        if (isUUID(identifier)) {
-            return this.userService.findById(identifier)
-        }
-        // Otherwise treat it as a username
-        return this.userService.findByUsername(identifier)
-    }
+	@Get('check-username')
+	@HttpCode(200)
+	@ResponseMessage('Check username successfully')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Check if a username is valid' })
+	@ApiResponse({
+		status: 200,
+		description: 'Returns a boolean indicating if the username is valid.',
+	})
+	async checkUsernameTaken(@Query('username') username: string) {
+		const isExist = await this.userService.isUsernameTaken(username)
+		return { isExist }
+	}
 
-    @Patch(':username')
-    @HttpCode(200)
-    @ResponseMessage('Update user successfully')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Update a user' })
-    @ApiResponse({
-        status: 200,
-        description: 'The user has been successfully updated.',
-        type: UserResponseDto,
-    })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.USER.UPDATE)
-    async update(
-        @Param('username') username: string,
-        @Body() updateUserDto: UpdateUserDto
-    ) {
-        return this.userService.update(username, updateUserDto)
-    }
+	// Handles both ID and Username
+	@Get(':identifier')
+	@HttpCode(200)
+	@ResponseMessage('Get user detail successfully')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Get a user by ID or Username' })
+	@ApiResponse({
+		status: 200,
+		description: 'Return a single user.',
+		type: UserResponseDto,
+	})
+	async findOne(@Param('identifier') identifier: string) {
+		// Check if the parameter looks like a UUID
+		if (isUUID(identifier)) {
+			return this.userService.findById(identifier)
+		}
+		// Otherwise treat it as a username
+		return this.userService.findByUsername(identifier)
+	}
 
-    @Patch(':id/assign-role')
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(
-        APP_PERMISSIONS.ROLE.MANAGE,
-        APP_PERMISSIONS.USER.UPDATE
-    )
-    @ResponseMessage('Assign role for user successfully')
-    async assignUserRole(
-        @Param('id') id: string,
-        @Body('roleId') roleId: string
-    ) {
-        return this.userService.assignRole(id, roleId)
-    }
+	@Patch(':username')
+	@HttpCode(200)
+	@ResponseMessage('Update user successfully')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Update a user' })
+	@ApiResponse({
+		status: 200,
+		description: 'The user has been successfully updated.',
+		type: UserResponseDto,
+	})
+	@UseGuards(PermissionsGuard)
+	@RequirePermissions(APP_PERMISSIONS.USER.UPDATE)
+	async update(
+		@Param('username') username: string,
+		@Body() updateUserDto: UpdateUserDto
+	) {
+		return this.userService.update(username, updateUserDto)
+	}
 
-    @Patch(':id/status')
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.USER.BLOCK)
-    @ResponseMessage('User status updated successfully')
-    async toggleStatus(
-        @Param('id') id: string,
-        @Req() request: Request,
-        @Query('isActive') isActive: string
-    ) {
-        const userPayload: TokenPayload = await request['user']
-        return this.userService.toggleUserStatus(userPayload.sub, id, isActive)
-    }
+	@Patch(':id/assign-role')
+	@UseGuards(PermissionsGuard)
+	@RequirePermissions(
+		APP_PERMISSIONS.ROLE.MANAGE,
+		APP_PERMISSIONS.USER.UPDATE
+	)
+	@ResponseMessage('Assign role for user successfully')
+	async assignUserRole(
+		@Param('id') id: string,
+		@Body('roleId') roleId: string
+	) {
+		return this.userService.assignRole(id, roleId)
+	}
 
-    @Delete(':id')
-    @HttpCode(200)
-    @ResponseMessage('Delete user successfully')
-    @ApiBearerAuth()
-    @ApiOperation({ summary: 'Delete a user' })
-    @ApiResponse({
-        status: 200,
-        description: 'The user has been successfully deleted.',
-    })
-    @UseGuards(PermissionsGuard)
-    @RequirePermissions(APP_PERMISSIONS.USER.DELETE)
-    async remove(@Param('id') id: string) {
-        return this.userService.delete(id)
-    }
+	@Patch(':id/status')
+	@UseGuards(PermissionsGuard)
+	@RequirePermissions(APP_PERMISSIONS.USER.BLOCK)
+	@ResponseMessage('User status updated successfully')
+	async toggleStatus(
+		@Param('id') id: string,
+		@Req() request: Request,
+		@Query('isActive') isActive: string
+	) {
+		const userPayload: TokenPayload = await request['user']
+		return this.userService.toggleUserStatus(userPayload.sub, id, isActive)
+	}
+
+	@Delete(':id')
+	@HttpCode(200)
+	@ResponseMessage('Delete user successfully')
+	@ApiBearerAuth()
+	@ApiOperation({ summary: 'Delete a user' })
+	@ApiResponse({
+		status: 200,
+		description: 'The user has been successfully deleted.',
+	})
+	@UseGuards(PermissionsGuard)
+	@RequirePermissions(APP_PERMISSIONS.USER.DELETE)
+	async remove(@Param('id') id: string) {
+		return this.userService.delete(id)
+	}
 }

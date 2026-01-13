@@ -19,7 +19,7 @@ export const HeroModal = (props: ModalProps) => {
         <Modal
             {...rest}
             motionProps={{
-                variants: { smoothMotion },
+                variants:smoothMotion.variants,
                 ...props.motionProps,
             }}
             hideCloseButton={props.hideCloseButton || true}

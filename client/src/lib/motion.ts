@@ -1,6 +1,4 @@
-'use client'
-
-import { motion,MotionConfig } from 'motion/react'
+import { HTMLMotionProps, motion, MotionConfig } from 'motion/react'
 
 /**
  * Block
@@ -25,29 +23,29 @@ export const MotionH3 = motion.h3
 export const MotionH4 = motion.h4
 
 export const smoothMotion = {
-	variants: {
-		enter: {
-			y: 0,
-			opacity: 1,
-			scale: 1,
-			transition: {
-				duration: 0.4,
-				type: "spring",
-				bounce: 0,
-				damping: 25,
-				stiffness: 300,
-			},
-		},
-		exit: {
-			y: 20,
-			opacity: 0,
-			scale: 0.95,
-			transition: {
-				duration: 0.2,
-				ease: "easeIn",
-			},
-		},
-	},
-};
+    variants: {
+        enter: {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            transition: {
+                duration: 0.4,
+                type: 'spring',
+                bounce: 0,
+                damping: 25,
+                stiffness: 300,
+            },
+        },
+        exit: {
+            y: 20,
+            opacity: 0,
+            scale: 0.95,
+            transition: {
+                duration: 0.2,
+                ease: 'easeIn',
+            },
+        },
+    },
+}
 
 export { MotionConfig }

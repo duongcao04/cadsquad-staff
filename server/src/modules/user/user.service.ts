@@ -484,6 +484,25 @@ export class UserService {
 		return mapPermissions
 	}
 
+	async search(query: string) {
+		return this.prismaService.user.findMany({
+			where: {
+				OR: [
+					{ displayName: { contains: query, mode: 'insensitive' } },
+					{ email: { contains: query, mode: 'insensitive' } },
+				],
+				isActive: true, // Nếu chỉ muốn tìm nhân viên đang hoạt động
+			},
+			select: {
+				id: true,
+				displayName: true,
+				email: true,
+				avatar: true, // Nếu cần hiển thị ảnh
+			},
+			take: 20,
+		})
+	}
+
 	/**
 	 * Input: ch.duong@cadsquad.vn -> Output: ch.duong
 	 * Nếu ch.duong đã tồn tại -> Output: ch.duong.a1b2
