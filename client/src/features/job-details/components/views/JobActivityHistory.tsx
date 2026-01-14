@@ -46,7 +46,7 @@ export const JobActivityHistory: React.FC<JobActivityHistoryProps> = ({
 }) => {
     if (!isLoading && (!logs || logs.length === 0)) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-default-400">
+            <div className="flex flex-col items-center justify-center py-16 text-text-subdued">
                 <div className="p-4 rounded-full bg-default-50 mb-4 border border-default-100">
                     <History
                         size={32}
@@ -57,7 +57,7 @@ export const JobActivityHistory: React.FC<JobActivityHistoryProps> = ({
                 <p className="text-medium font-semibold text-default-600">
                     No activity recorded
                 </p>
-                <p className="text-small text-default-400">
+                <p className="text-small text-text-subdued">
                     Chronological updates will appear here.
                 </p>
             </div>
@@ -100,7 +100,7 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
         <div className="relative group animate-in fade-in slide-in-from-left-2 duration-500">
             {/* Timeline Dot */}
             <div
-                className={`absolute -left-[43px] top-0 flex items-center justify-center w-10 h-10 rounded-full border-4 border-background shadow-sm z-10 transition-transform group-hover:scale-110 ${config.bgClass} ${config.textClass}`}
+                className={`absolute -left-10.75 top-0 flex items-center justify-center w-10 h-10 rounded-full border-4 border-background shadow-sm z-10 transition-transform group-hover:scale-110 ${config.bgClass} ${config.textClass}`}
             >
                 <Icon size={18} />
             </div>
@@ -124,7 +124,7 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
                     </div>
 
                     <Tooltip content={date.toLocaleString()}>
-                        <time className="text-[10px] font-medium text-default-400 bg-default-100/50 px-2 py-1 rounded-md cursor-default">
+                        <time className="text-[10px] font-medium text-text-subdued bg-default-100/50 px-2 py-1 rounded-md cursor-default">
                             {new Intl.DateTimeFormat('en-GB', {
                                 month: 'short',
                                 day: 'numeric',
@@ -146,7 +146,7 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
                 >
                     <CardBody className="py-2.5 px-4">
                         {isRestricted ? (
-                            <div className="flex items-center gap-2.5 text-default-400">
+                            <div className="flex items-center gap-2.5 text-text-subdued">
                                 <div className="p-1.5 bg-default-200/50 rounded-md">
                                     <Lock size={14} />
                                 </div>
@@ -155,7 +155,7 @@ const ActivityItem = ({ log }: { log: TJobActivityLog }) => {
                                         Restricted Access
                                     </span>
                                     {/* Backend usually provides a safe generic note for restricted views */}
-                                    <span className="text-[10px] italic text-default-400">
+                                    <span className="text-[10px] italic text-text-subdued">
                                         {log.notes}
                                     </span>
                                 </div>
@@ -247,15 +247,14 @@ const renderDiff = (log: TJobActivityLog) => {
         case ActivityTypeEnum.PAID:
             return (
                 <div className="flex items-center gap-2">
-                    <span className="text-default-600">Settled Amount:</span>
+                    <span className="text-default-600">Job finished</span>
                     <Chip
                         size="sm"
                         color="success"
                         variant="flat"
-                        startContent={<CreditCard size={12} />}
-                        className="font-bold"
+                        startContent={<CalendarClock size={12} />}
                     >
-                        {log.currentValue}
+                        {formatValue(log.currentValue)}
                     </Chip>
                 </div>
             )
@@ -275,16 +274,15 @@ const renderDiff = (log: TJobActivityLog) => {
             )
 
         // --- 4. DATA & FILES ---
-        case ActivityTypeEnum.UPDATE_GENERAL_INFORMATION:
         case ActivityTypeEnum.UPDATE_CLIENT_INFORMATION:
             return (
                 <div className="flex flex-wrap items-center gap-2 bg-default-50 px-2 py-1.5 rounded-md border border-default-100 w-fit">
-                    <span className="text-[10px] font-bold uppercase text-default-400">
+                    <span className="text-[10px] font-bold uppercase text-text-subdued">
                         {log.fieldName}:
                     </span>
                     <div className="flex items-center gap-1.5 text-xs">
-                        <span className="line-through text-default-400">
-                            {formatValue(log.previousValue)}
+                        <span className="text-text-subdued">
+                            {formatValue(log.metadata?.oldClientName || 'None')}
                         </span>
                         <ArrowRightLeft
                             size={10}
@@ -297,10 +295,41 @@ const renderDiff = (log: TJobActivityLog) => {
                 </div>
             )
 
+        case ActivityTypeEnum.UPDATE_GENERAL_INFORMATION: {
+            if (log.fieldName.toLowerCase() === 'description') {
+                return (
+                    <div className="flex flex-wrap items-center gap-2 bg-default-50 px-2 py-1.5 rounded-md border border-default-100 w-fit">
+                        <span className="text-[10px] font-bold uppercase text-text-subdued">
+                            {log.fieldName}
+                        </span>
+                    </div>
+                )
+            }
+            return (
+                <div className="flex flex-wrap items-center gap-2 bg-default-50 px-2 py-1.5 rounded-md border border-default-100 w-fit">
+                    <span className="text-[10px] font-bold uppercase text-text-subdued">
+                        {log.fieldName}:
+                    </span>
+                    <div className="flex items-center gap-1.5 text-xs">
+                        <span className="line-through text-text-subdued">
+                            {formatValue(log.previousValue)}
+                        </span>
+                        <ArrowRightLeft
+                            size={10}
+                            className="text-default-300"
+                        />
+                        <span className="font-semibold text-default-900">
+                            {formatValue(log.currentValue)}
+                        </span>
+                    </div>
+                </div>
+            )
+        }
+
         case ActivityTypeEnum.UPDATE_ATTACHMENTS:
             return (
                 <div className="flex items-center gap-2">
-                    <Paperclip size={14} className="text-default-400" />
+                    <Paperclip size={14} className="text-text-subdued" />
                     <span className="text-default-600">
                         Attachments updated:
                     </span>
@@ -528,7 +557,7 @@ const UserDisplay = ({ userId }: { userId: string }) => {
 
 const ActivityItemSkeleton = () => (
     <div className="relative pl-2 space-y-3">
-        <Skeleton className="absolute -left-[43px] top-0 w-10 h-10 rounded-full" />
+        <Skeleton className="absolute -left-10.75 top-0 w-10 h-10 rounded-full" />
         <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
                 <Skeleton className="w-7 h-7 rounded-full" />

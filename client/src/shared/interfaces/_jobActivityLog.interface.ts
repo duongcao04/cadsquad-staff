@@ -15,6 +15,8 @@ export interface IJobActivityLogResponse {
 
     requiredPermissionCode?: string | null
 
+    metadata: any
+
     /**
      * The value of the field before the change.
      * Can be null if it's a creation event.

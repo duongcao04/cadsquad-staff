@@ -9,6 +9,7 @@ import {
 } from '../../generated/prisma'
 import { PrismaService } from '../../providers/prisma/prisma.service'
 import { CreateActivityLogDto } from './dto/create-activity-log.dto'
+import dayjs from 'dayjs'
 
 type UserWithPermissions = User & {
 	role: Role & {
@@ -148,7 +149,7 @@ export class ActivityLogService {
 				return `Rejected delivery. Revision requested by Admin`
 			case ActivityType.PAID:
 				return data.currentValue
-					? `Financial settlement completed. Amount: ${current}`
+					? `Financial settlement completed. Job finished at: ${dayjs(current).format('DD/MM/YYYY')}`
 					: `Job has been marked as fully paid.`
 			case ActivityType.UPDATE_MEMBER_COST:
 				return `Staff cost adjustment for ${field}`

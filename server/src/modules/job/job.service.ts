@@ -469,7 +469,7 @@ export class JobService {
 					await this.notificationService.sendMany(
 						accountants.map((acc) => ({
 							userId: acc.id,
-							title: 'New Payout Pending',
+							title: `[${jobUpdated.no}] New Payout Pending`,
 							content: `Job #${jobUpdated.no} is completed and ready for payment.`,
 							type: NotificationType.JOB_UPDATE,
 							redirectUrl: `/financial/pending-payouts`,
@@ -704,12 +704,14 @@ export class JobService {
 				status: { select: { thumbnailUrl: true } },
 			},
 		})
+
 		if (!jobBefore) throw new NotFoundException('Job not found')
 
-		return await this.prisma.$transaction(async (tx) => {
+		// 2. Perform Database Operations in Transaction
+		const transactionResult = await this.prisma.$transaction(async (tx) => {
 			let clientId: string | undefined = undefined
 
-			// 2. Handle Client Logic
+			// --- A. Handle Client Logic (Find or Create) ---
 			if (
 				dto.clientName &&
 				dto.clientName.trim() !== jobBefore.client?.name
@@ -740,7 +742,7 @@ export class JobService {
 				}
 			}
 
-			// 3. Execute Job Update
+			// --- B. Execute Job Update ---
 			const updatedJob = await tx.job.update({
 				where: { id: jobId },
 				data: {
@@ -753,15 +755,31 @@ export class JobService {
 				include: { client: true },
 			})
 
-			// 4. Detailed Activity Logging (Field by Field)
+			// --- C. Detailed Activity Logging ---
 			const updateTasks: Promise<any>[] = []
 
-			// Define fields to track
+			// Define which fields to track and their specific ActivityType
 			const trackableFields = [
-				{ key: 'displayName', label: 'Title' },
-				{ key: 'description', label: 'Description' },
-				{ key: 'startedAt', label: 'Start Date' },
-				{ key: 'dueAt', label: 'Deadline' },
+				{
+					key: 'displayName',
+					label: 'Title',
+					type: ActivityType.UPDATE_GENERAL_INFORMATION,
+				},
+				{
+					key: 'description',
+					label: 'Description',
+					type: ActivityType.UPDATE_GENERAL_INFORMATION,
+				},
+				{
+					key: 'startedAt',
+					label: 'Start Date',
+					type: ActivityType.RESCHEDULE, // Special icon for dates
+				},
+				{
+					key: 'dueAt',
+					label: 'Deadline',
+					type: ActivityType.RESCHEDULE, // Special icon for dates
+				},
 			]
 
 			for (const field of trackableFields) {
@@ -769,18 +787,28 @@ export class JobService {
 					updatedJob[field.key as keyof typeof updatedJob]
 				const oldValue = jobBefore[field.key as keyof typeof jobBefore]
 
-				// Compare values (handling Date objects and strings)
+				// Compare values safely
 				if (newValue?.toString() !== oldValue?.toString()) {
 					updateTasks.push(
 						this.activityLogService.create(
 							{
 								jobId,
 								modifiedById: modifierId,
-								activityType:
-									ActivityType.UPDATE_GENERAL_INFORMATION,
+								activityType: field.type, // Uses RESCHEDULE for dates
 								fieldName: field.label,
+
+								// Custom Note: "Updated Deadline" instead of "Modified dueAt"
+								notes: `Updated ${field.label}`,
+
 								currentValue: newValue?.toString() || 'N/A',
 								requiredPermissionCode: undefined, // Public info
+
+								// Save raw data for Frontend formatting
+								metadata: {
+									rawOld: oldValue,
+									rawNew: newValue,
+									fieldKey: field.key,
+								},
 							},
 							tx
 						)
@@ -796,10 +824,19 @@ export class JobService {
 							jobId,
 							modifiedById: modifierId,
 							activityType:
-								ActivityType.UPDATE_GENERAL_INFORMATION,
+								ActivityType.UPDATE_CLIENT_INFORMATION, // Specific type
 							fieldName: 'Client',
+							notes: `Updated Client`,
 							currentValue: updatedJob.client?.name || 'N/A',
 							requiredPermissionCode: APP_PERMISSIONS.CLIENT.READ,
+							metadata: {
+								oldClientName: jobBefore.client?.name ?? null,
+								newClientName: updatedJob.client?.name,
+								oldClientId: jobBefore.clientId,
+								newClientId: clientId,
+								oldClientCode: jobBefore.client?.code,
+								newClientCode: updatedJob.client?.code,
+							},
 						},
 						tx
 					)
@@ -808,22 +845,26 @@ export class JobService {
 
 			await Promise.all(updateTasks)
 
-			// 5. Notification Logic (Outside Tx recommended, but shown here for context)
-			// If the deadline changed, notify the assigned staff
-			if (
-				dto.dueAt &&
-				dto.dueAt.toString() !== jobBefore.dueAt.toString()
-			) {
-				this.notifyDeadlineChange(
-					jobId,
-					modifierId,
-					updatedJob.no,
-					updatedJob.dueAt
-				)
+			return {
+				id: updatedJob.id,
+				no: updatedJob.no,
+				dueAt: updatedJob.dueAt,
 			}
-
-			return { id: updatedJob.id, no: updatedJob.no }
 		})
+
+		// 3. Notification Logic (Outside Transaction)
+		// Check if the deadline actually changed before sending alerts
+		if (dto.dueAt && dto.dueAt.toString() !== jobBefore.dueAt.toString()) {
+			this.notifyDeadlineChange(
+				jobId,
+				modifierId,
+				transactionResult.no,
+				transactionResult.dueAt,
+				jobBefore.status.thumbnailUrl ?? undefined
+			)
+		}
+
+		return { id: transactionResult.id, no: transactionResult.no }
 	}
 
 	async assignMember(
@@ -832,6 +873,12 @@ export class JobService {
 		dto: AssignMemberDto
 	) {
 		const { memberId, staffCost } = dto
+
+		const existingMember = await this.userService.findById(memberId)
+		if (!existingMember) {
+			this.logger.error(`Member with ${memberId} not exist!`)
+			throw new NotFoundException('Member not exist')
+		}
 		const jobAssigned = await this.prisma.$transaction(async (tx) => {
 			const job = await tx.job.findUnique({
 				where: { id: jobId },
@@ -859,6 +906,7 @@ export class JobService {
 				data: { totalStaffCost: aggregate._sum.staffCost || 0 },
 				include: {
 					status: { select: { thumbnailUrl: true } },
+					assignments: true,
 				},
 			})
 
@@ -866,10 +914,15 @@ export class JobService {
 				data: {
 					jobId,
 					modifiedById: modifierId,
-					fieldName: 'Member Assignment',
+					activityType: ActivityType.ASSIGN_MEMBER,
+					fieldName: 'jobAssignments',
 					currentValue: memberId,
-					activityType: ActivityType.PRIVATE,
-					notes: `Assigned with staff cost: ${staffCost}`,
+					requiredPermissionCode: APP_PERMISSIONS.JOB.READ_SENSITIVE,
+					notes: `[${jobUpdated.no}] Assigned ${existingMember.displayName} to this job`,
+					metadata: {
+						assignedUser: existingMember.displayName,
+						savedCost: staffCost,
+					},
 				},
 			})
 
@@ -1037,7 +1090,7 @@ export class JobService {
 					activityType: ActivityType.UNASSIGN_MEMBER,
 					fieldName: 'jobAssignments',
 					currentValue: assignment.user.displayName,
-					notes: `[${jobUpdated.no}] Removed ${assignment.user.displayName} from the project`,
+					notes: `[${jobUpdated.no}] Removed ${assignment.user.displayName} from the job`,
 					requiredPermissionCode: APP_PERMISSIONS.JOB.READ_SENSITIVE, // Log contains cost-related context
 					metadata: {
 						removedUser: assignment.user.displayName,
@@ -1299,7 +1352,14 @@ export class JobService {
 		// 1. Pre-fetch job to check status and assignments
 		const job = await this.prisma.job.findUnique({
 			where: { id: jobId },
-			include: { status: true, assignments: true },
+			include: {
+				status: true,
+				assignments: true,
+				client: true,
+				jobDeliveries: true,
+				paymentChannel: true,
+				createdBy: true,
+			},
 		})
 
 		if (!job || job.isPaid) {
@@ -1338,10 +1398,12 @@ export class JobService {
 					modifiedById: modifierId,
 					fieldName: 'Payment Status',
 					activityType: ActivityType.PAID,
-					currentValue: `${job.incomeCost?.toLocaleString()} VND`, // For Admin/Accounting view
+					currentValue: now.toISOString(), // For Admin/Accounting view
 					requiredPermissionCode: APP_PERMISSIONS.JOB.PAID, // Only users with this code see the amount
 					metadata: {
 						incomeCost: job.incomeCost,
+						totalStaffCost: job.totalStaffCost,
+						job: job,
 						paidAt: now,
 					},
 				},
@@ -1357,7 +1419,7 @@ export class JobService {
 				await this.notificationService.sendMany(
 					job.assignments.map((a) => ({
 						userId: a.userId,
-						title: 'Payment Confirmed',
+						title: `[${job.no}] Payment Confirmed`,
 						content: `Your work on Job #${job.no} has been paid.`,
 						type: NotificationType.JOB_PAID,
 						redirectUrl: `/jobs/${job.no}`,
@@ -1518,7 +1580,8 @@ export class JobService {
 		jobId: string,
 		modifierId: string,
 		jobNo: string,
-		newDueDate: Date
+		newDueDate: Date,
+		thumbnailUrl?: string
 	) {
 		try {
 			// 1. Fetch all members assigned to this job
@@ -1541,8 +1604,9 @@ export class JobService {
 				assignments.map((assignee) => ({
 					userId: assignee.userId,
 					senderId: modifierId,
-					title: 'Schedule Updated',
+					title: `[${jobNo}] Schedule Updated`,
 					content: `The deadline for Job #${jobNo} has been changed to ${formattedDate}. Please check your schedule.`,
+					imageUrl: thumbnailUrl || IMAGES.NOTIFICATION_DEFAULT_IMAGE,
 					type: NotificationType.JOB_DEADLINE_REMINDER,
 					redirectUrl: `/jobs/${jobNo}`,
 				}))
