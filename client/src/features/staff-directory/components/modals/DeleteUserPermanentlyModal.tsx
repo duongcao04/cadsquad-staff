@@ -1,3 +1,4 @@
+import { INTERNAL_URLS, useDeleteUserMutation } from '@/lib'
 import {
     HeroButton,
     HeroInput,
@@ -9,44 +10,35 @@ import {
 } from '@/shared/components'
 import { TUser } from '@/shared/types'
 import { Chip } from '@heroui/react'
+import { useRouter } from '@tanstack/react-router'
 import { AlertTriangle, Trash2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 interface DeleteUserModalProps {
     isOpen: boolean
     onClose: () => void
-    onConfirm: () => Promise<void> | void
     user: TUser
 }
 
 export const DeleteUserPermanentlyModal = ({
     isOpen,
     onClose,
-    onConfirm,
     user,
 }: DeleteUserModalProps) => {
-    const [confirmText, setConfirmText] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
+    const router = useRouter()
+    const deleteUserMutation = useDeleteUserMutation()
 
-    // Reset state when modal opens
-    useEffect(() => {
-        if (isOpen) {
-            setConfirmText('')
-            setIsLoading(false)
-        }
-    }, [isOpen])
+    const [confirmText, setConfirmText] = useState('')
 
     const handleDelete = async () => {
         if (confirmText !== user?.username) return
-
-        setIsLoading(true)
-        try {
-            await onConfirm()
-            onClose()
-        } catch (error) {
-            console.error('Delete failed', error)
-            setIsLoading(false)
-        }
+        await deleteUserMutation.mutateAsync(user.id, {
+            onSuccess: () => {
+                setConfirmText('')
+                onClose()
+                router.navigate({ href: INTERNAL_URLS.staffDirectory })
+            },
+        })
     }
 
     const isMatch = confirmText === user?.username
@@ -57,7 +49,7 @@ export const DeleteUserPermanentlyModal = ({
             onClose={onClose}
             backdrop="blur"
             size="md"
-            hideCloseButton={isLoading}
+            hideCloseButton={deleteUserMutation.isPending}
         >
             <HeroModalContent>
                 {(close) => (
@@ -118,7 +110,9 @@ export const DeleteUserPermanentlyModal = ({
                                         labelPlacement="outside-top"
                                         value={confirmText}
                                         onValueChange={setConfirmText}
-                                        isDisabled={isLoading}
+                                        isDisabled={
+                                            deleteUserMutation.isPending
+                                        }
                                         errorMessage={
                                             confirmText && !isMatch
                                                 ? 'Username does not match'
@@ -133,22 +127,24 @@ export const DeleteUserPermanentlyModal = ({
                             <HeroButton
                                 variant="light"
                                 onPress={close}
-                                isDisabled={isLoading}
+                                isDisabled={deleteUserMutation.isPending}
                             >
                                 Cancel
                             </HeroButton>
                             <HeroButton
                                 color="danger"
                                 variant="shadow"
-                                isLoading={isLoading}
+                                isLoading={deleteUserMutation.isPending}
                                 isDisabled={!isMatch}
                                 onPress={handleDelete}
                                 startContent={
-                                    !isLoading && <Trash2 size={18} />
+                                    !deleteUserMutation.isPending && (
+                                        <Trash2 size={18} />
+                                    )
                                 }
                                 className="font-semibold"
                             >
-                                {isLoading
+                                {deleteUserMutation.isPending
                                     ? 'Deleting...'
                                     : 'Permanently Delete'}
                             </HeroButton>

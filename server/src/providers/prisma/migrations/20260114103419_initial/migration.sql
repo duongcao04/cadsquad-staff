@@ -26,13 +26,13 @@ CREATE TYPE "JobStatusSystemType" AS ENUM ('STANDARD', 'WAIT_REVIEW', 'COMPLETED
 CREATE TYPE "DeliveryStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
-CREATE TYPE "ActivityType" AS ENUM ('CreateJob', 'ChangeStatus', 'DeliverJob', 'MarkPaid', 'ReviewJob', 'AssignMember', 'UnassignMember', 'ChangePaymentChannel', 'IncomeCost', 'UpdateInformation', 'DeleteJob', 'Private');
+CREATE TYPE "ActivityType" AS ENUM ('CREATE_JOB', 'ASSIGN_MEMBER', 'UNASSIGN_MEMBER', 'UPDATE_MEMBER_COST', 'FORCE_CHANGE_STATUS', 'DELIVER', 'APPROVE', 'REJECT', 'PAID', 'UPDATE_ATTACHMENTS', 'UPDATE_GENERAL_INFORMATION', 'UPDATE_CLIENT_INFORMATION', 'RESCHEDULE', 'DELETE', 'PRIVATE');
 
 -- CreateEnum
 CREATE TYPE "NotificationStatus" AS ENUM ('SEEN', 'UNSEEN');
 
 -- CreateEnum
-CREATE TYPE "NotificationType" AS ENUM ('INFO', 'WARNING', 'ERROR', 'SUCCESS', 'JOB_UPDATE', 'DEADLINE_REMINDER', 'STATUS_CHANGE');
+CREATE TYPE "NotificationType" AS ENUM ('INFO', 'WARNING', 'ERROR', 'SUCCESS', 'JOB_DEADLINE_REMINDER', 'JOB_UPDATE', 'JOB_CREATED', 'JOB_DELIVERED', 'JOB_APPROVED', 'JOB_REJECTED', 'JOB_ASSIGNED_MEMBER', 'JOB_PAID', 'JOB_DELETED', 'JOB_WAITING_PAYOUT', 'USER_CREATED', 'USER_RESTORED', 'ISSUE_REPORT');
 
 -- CreateEnum
 CREATE TYPE "CommunityRole" AS ENUM ('MEMBER', 'MODERATOR', 'OWNER');
@@ -75,11 +75,12 @@ CREATE TABLE "User" (
     "departmentId" TEXT,
     "phoneNumber" TEXT,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "managerId" TEXT,
+    "roleId" TEXT,
+    "deletedAt" TIMESTAMP(3),
     "lastLoginAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "managerId" TEXT,
-    "roleId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
@@ -421,12 +422,13 @@ CREATE TABLE "JobStatusHistory" (
 CREATE TABLE "JobActivityLog" (
     "id" TEXT NOT NULL,
     "jobId" TEXT NOT NULL,
-    "previousValue" TEXT,
+    "fieldName" TEXT,
     "currentValue" TEXT,
+    "metadata" JSONB,
     "modifiedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "modifiedById" TEXT NOT NULL,
-    "fieldName" TEXT NOT NULL,
-    "activityType" "ActivityType" NOT NULL DEFAULT 'Private',
+    "requiredPermissionCode" TEXT,
+    "activityType" "ActivityType" NOT NULL DEFAULT 'PRIVATE',
     "notes" TEXT,
 
     CONSTRAINT "JobActivityLog_pkey" PRIMARY KEY ("id")

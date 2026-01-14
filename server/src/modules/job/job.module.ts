@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { JobService } from './job.service'
 import { JobController } from './job.controller'
 import { AuthModule } from '../auth/auth.module'
@@ -13,8 +13,8 @@ import { SharePointModule } from '../sharepoint/sharepoint.module'
 
 @Module({
 	imports: [
-		AuthModule,
-		UserModule,
+		forwardRef(() => AuthModule),
+		forwardRef(() => UserModule),
 		UserConfigModule,
 		NotificationModule,
 		JobTypeModule,

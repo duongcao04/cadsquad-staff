@@ -201,7 +201,6 @@ function EditStaffPage() {
                     isOpen={isOpenDeleteUserPermanentlyModal}
                     onClose={onCloseDeleteUserPermanentlyModal}
                     user={user}
-                    onConfirm={() => {}}
                 />
             )}
             {isOpenUploadAvatarModal && (

@@ -1,12 +1,10 @@
-import { addToast } from '@heroui/react'
-import { useMutation, useQuery } from '@tanstack/react-query'
-
+import { TCreateUserInput } from '@/features/staff-directory'
 import { userApi } from '@/lib/api'
 import { type ApiError, ApiResponse } from '@/lib/axios'
-
-import { queryClient } from '../../main'
-import { TCreateUserInput } from '../../shared/components'
-import { TRole, TUser } from '../../shared/types'
+import { queryClient } from '@/main'
+import { TRole, TUser } from '@/shared/types'
+import { addToast } from '@heroui/react'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import type {
     TResetPasswordInput,
     TUpdatePasswordInput,
@@ -214,27 +212,20 @@ export const useCreateUserMutation = (onSuccess?: (res: TUser) => void) => {
             } else {
                 addToast({ title: 'Staff member created', color: 'success' })
             }
-            queryClient.invalidateQueries({ queryKey: ['users'] })
+            queryClient.refetchQueries({ queryKey: ['users'] })
         },
         onError: (error) => onErrorToast(error, 'User creation failed'),
     })
 }
 
 // Mutation: Xóa user
-export const useDeleteUser = () => {
+export const useDeleteUserMutation = () => {
     return useMutation({
         mutationFn: async (id: string) => await userApi.remove(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] })
+            queryClient.refetchQueries({ queryKey: ['users'] })
         },
-        onError(error) {
-            const err = error as unknown as ApiError
-            addToast({
-                title: 'Delete user failed',
-                description: err.message,
-                color: 'danger',
-            })
-        },
+        onError: (error) => onErrorToast(error, 'Delete user failed'),
     })
 }
 export const useToggleUserStatusMutation = (

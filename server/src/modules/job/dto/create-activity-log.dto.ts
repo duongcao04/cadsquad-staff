@@ -1,6 +1,12 @@
+import { ActivityType } from '@/generated/prisma'
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsOptional, IsNotEmpty } from 'class-validator'
-import { ActivityType } from '../../../generated/prisma'
+import {
+	IsEnum,
+	IsNotEmpty,
+	IsObject,
+	IsOptional,
+	IsString,
+} from 'class-validator'
 
 export class CreateActivityLogDto {
 	@ApiProperty({
@@ -10,14 +16,6 @@ export class CreateActivityLogDto {
 	@IsString()
 	@IsNotEmpty()
 	jobId: string
-
-	@ApiProperty({
-		description: 'Previous value of the field being modified',
-		required: false,
-	})
-	@IsOptional()
-	@IsString()
-	previousValue?: string
 
 	@ApiProperty({
 		description: 'Current value of the field being modified',
@@ -46,9 +44,9 @@ export class CreateActivityLogDto {
 	@ApiProperty({
 		description: 'Type of activity',
 		enum: ActivityType,
-		example: ActivityType.UpdateInformation,
+		example: 'UPDATE_GENERAL_INFORMATION',
 	})
-	@IsString()
+	@IsEnum(ActivityType) // Using IsEnum for stricter validation
 	@IsNotEmpty()
 	activityType: ActivityType
 
@@ -59,4 +57,26 @@ export class CreateActivityLogDto {
 	@IsOptional()
 	@IsString()
 	notes?: string
+
+	// --- NEW FIELDS FOR PERMISSION & SENSITIVE DATA ---
+
+	@ApiProperty({
+		description:
+			'Permission code required to view this log. If null, log is public.',
+		example: 'job.view_financial',
+		required: false,
+	})
+	@IsOptional()
+	@IsString()
+	requiredPermissionCode?: string
+
+	@ApiProperty({
+		description:
+			'Sensitive data stored as JSON (e.g., costs, private feedback)',
+		example: { staffCost: 500, adminNote: 'Confidential' },
+		required: false,
+	})
+	@IsOptional()
+	@IsObject()
+	metadata?: Record<string, any>
 }

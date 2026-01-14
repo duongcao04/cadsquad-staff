@@ -1,4 +1,4 @@
-import { INTERNAL_URLS } from '@/lib'
+import { currencyFormatter, INTERNAL_URLS } from '@/lib'
 import { formatCurrencyVND } from '@/lib/formatCurrency'
 import { JobStatusChip } from '@/shared/components'
 import CountdownTimer from '@/shared/components/ui/countdown-timer'
@@ -72,18 +72,18 @@ function JobCard({ data, onPress }: Props) {
             <div className="flex flex-col items-center justify-center gap-1">
                 <p className="text-xs text-text-subdued">Staff cost</p>
                 <p className="font-bold text-currency">
-                    {formatCurrencyVND(data.staffCost)}
+                    {currencyFormatter(data.staffCost, 'Vietnamese')}
                 </p>
             </div>
             <div className="flex flex-col items-center justify-center gap-0.5">
                 <p className="text-xs  text-text-subdued">Due on</p>
-                <p className="font-semibold text-sm flex items-center justify-center">
+                <div className="font-semibold text-sm flex items-center justify-center">
                     <Clock2 size={14} className="text-text-subdued mr-2" />
                     <CountdownTimer
                         targetDate={targetDate}
                         hiddenUnits={['second', 'year']}
                     />
-                </p>
+                </div>
             </div>
             <div className="flex flex-col items-center justify-center gap-1">
                 <p className="text-xs  text-text-subdued">Status</p>

@@ -4,6 +4,7 @@ import {
 	Controller,
 	Delete,
 	Get,
+	InternalServerErrorException,
 	Param,
 	Patch,
 	Post,
@@ -19,6 +20,7 @@ import { APP_PERMISSIONS } from '../../utils/_app-permissions'
 import { TokenPayload } from '../auth/dto/token-payload.dto'
 import { JwtGuard } from '../auth/jwt.guard'
 import { JobTypeService } from '../job-type/job-type.service'
+import { SharePointService } from '../sharepoint/sharepoint.service'
 import { ActivityLogService } from './activity-log.service'
 import { AssignMemberDto, UpdateAssignmentDto } from './dto/assign-member.dto'
 import { ChangeStatusDto } from './dto/change-status.dto'
@@ -27,11 +29,9 @@ import { DeliverJobDto } from './dto/deliver-job.dto'
 import { CreateJobCommentDto } from './dto/job-comment/create-comment.dto'
 import { JobQueryDto } from './dto/job-query.dto'
 import { UpdateGeneralJobDto } from './dto/update-general.dto'
-import { UpdateJobDto } from './dto/update-job.dto'
 import { UpdateRevenueDto } from './dto/update-revenue.dto'
 import { JobCommentService } from './job-comment.service'
 import { JobService } from './job.service'
-import { SharePointService } from '../sharepoint/sharepoint.service'
 
 @ApiTags('Jobs')
 @Controller('jobs')
@@ -59,8 +59,16 @@ export class JobController {
 
 	@Get(':jobId/activity-logs')
 	@ResponseMessage('Fetch activity logs successfully')
-	async getActivityLogs(@Param('jobId') jobId: string) {
-		const logs = await this.activityLogService.findByJobId(jobId)
+	async getActivityLogs(
+		@Param('jobId') jobId: string,
+		@Req() request: Request
+	) {
+		const user: TokenPayload = request['user']
+		const logs = await this.activityLogService.findByJobId(
+			jobId,
+			user.role.code,
+			user.permissions
+		)
 		return logs
 	}
 
@@ -168,8 +176,17 @@ export class JobController {
 	async create(@Req() request: Request, @Body() createJobDto: CreateJobDto) {
 		const user: TokenPayload = request['user']
 		const created = await this.jobService.create(user.sub, createJobDto)
-		const folderName = createJobDto.no + '- ' + createJobDto.displayName
-		await this.sharepointService.createFolder('012FXBO3INCUN6K3IYSZDJWUU6IMK6UG7D', folderName)
+		try {
+			const folderName = createJobDto.no + '- ' + createJobDto.displayName
+			await this.sharepointService.createFolder(
+				'012FXBO3INCUN6K3IYSZDJWUU6IMK6UG7D',
+				folderName
+			)
+		} catch (error) {
+			throw new InternalServerErrorException(
+				'Create sharepoint folder failded'
+			)
+		}
 		return created
 	}
 
@@ -293,18 +310,6 @@ export class JobController {
 		return this.jobService.updateRevenue(user.sub, id, updateRevenueDto)
 	}
 
-	@Patch(':id')
-	@UseGuards(PermissionsGuard)
-	@RequirePermissions(APP_PERMISSIONS.JOB.UPDATE)
-	async update(
-		@Req() request: Request,
-		@Param('id') id: string,
-		@Body() updateJobDto: UpdateJobDto
-	) {
-		const user: TokenPayload = request['user']
-		return this.jobService.update(user.sub, id, updateJobDto)
-	}
-
 	@Patch(':id/change-status')
 	@UseGuards(PermissionsGuard)
 	@RequirePermissions(APP_PERMISSIONS.JOB.UPDATE)
@@ -333,6 +338,6 @@ export class JobController {
 	@RequirePermissions(APP_PERMISSIONS.JOB.DELETE)
 	async remove(@Req() request: Request, @Param('id') id: string) {
 		const user: TokenPayload = request['user']
-		return this.jobService.delete(id, user.sub)
+		return this.jobService.softDelete(id, user.sub)
 	}
 }

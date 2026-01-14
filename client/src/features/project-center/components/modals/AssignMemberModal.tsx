@@ -1,6 +1,23 @@
 import { optimizeCloudinary } from '@/lib'
 import { jobByNoOptions, usersListOptions } from '@/lib/queries'
 import {
+    useAssignMemberMutation,
+    useRemoveMemberMutation,
+    useUpdateAssignmentCostMutation,
+} from '@/lib/queries/useJob'
+import { HeroButton } from '@/shared/components/ui/hero-button'
+import {
+    HeroModal,
+    HeroModalBody,
+    HeroModalContent,
+    HeroModalFooter,
+    HeroModalHeader,
+} from '@/shared/components/ui/hero-modal'
+import HeroNumberInput from '@/shared/components/ui/hero-number-input'
+import { HeroTooltip } from '@/shared/components/ui/hero-tooltip'
+import { ScrollArea, ScrollBar } from '@/shared/components/ui/scroll-area'
+import { TJob, TUser } from '@/shared/types'
+import {
     addToast,
     Autocomplete,
     AutocompleteItem,
@@ -23,23 +40,6 @@ import {
 } from 'lucide-react'
 import { Dispatch, SetStateAction, Suspense, useMemo, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { TJob, TUser } from '../../../../shared/types'
-import {
-    HeroModal,
-    HeroModalBody,
-    HeroModalContent,
-    HeroModalFooter,
-    HeroModalHeader,
-} from '../../../../shared/components/ui/hero-modal'
-import HeroNumberInput from '../../../../shared/components/ui/hero-number-input'
-import { ScrollArea, ScrollBar } from '../../../../shared/components/ui/scroll-area'
-import { HeroButton } from '../../../../shared/components/ui/hero-button'
-import {
-    useAssignMemberMutation,
-    useRemoveMemberMutation,
-    useUpdateAssignmentCostMutation,
-} from '../../../../lib/queries/useJob'
-import { HeroTooltip } from '../../../../shared/components/ui/hero-tooltip'
 
 type AssignedMember = {
     userId: string

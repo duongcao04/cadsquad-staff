@@ -19,6 +19,7 @@ import {
 	ApiTags,
 } from '@nestjs/swagger'
 import { isUUID } from 'class-validator'
+import { BypassTransform } from '../../common/decorators/bypass.decorator'
 import { RequirePermissions } from '../../common/decorators/require-permissions.decorator'
 import { ResponseMessage } from '../../common/decorators/responseMessage.decorator'
 import { PermissionsGuard } from '../../common/guards/permissions.guard'
@@ -51,6 +52,25 @@ export class UserController {
 	async search(@Query('q') query: string) {
 		if (!query) return []
 		return this.userService.search(query)
+	}
+
+	@Get('schedule')
+	@HttpCode(200)
+	@ResponseMessage('Get profile schedules successfully')
+	async schedule(
+		@Req() request: Request,
+		@Query('day') day: number,
+		@Query('month') month: number,
+		@Query('year') year: number
+	) {
+		const userPayload: TokenPayload = await request['user']
+		if (!month && !year) return []
+		return this.userService.getUserSchedule(
+			userPayload.sub,
+			month,
+			year,
+			day
+		)
 	}
 
 	@Post()
@@ -221,8 +241,7 @@ export class UserController {
 	}
 
 	@Delete(':id')
-	@HttpCode(200)
-	@ResponseMessage('Delete user successfully')
+	@HttpCode(204)
 	@ApiBearerAuth()
 	@ApiOperation({ summary: 'Delete a user' })
 	@ApiResponse({
@@ -231,7 +250,13 @@ export class UserController {
 	})
 	@UseGuards(PermissionsGuard)
 	@RequirePermissions(APP_PERMISSIONS.USER.DELETE)
+	@BypassTransform()
 	async remove(@Param('id') id: string) {
-		return this.userService.delete(id)
+		const softDeleted = await this.userService.softDelete(id)
+		return {
+			success: true,
+			message: softDeleted.message,
+			timestamp: new Date().toISOString(),
+		}
 	}
 }

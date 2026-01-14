@@ -4,7 +4,10 @@ import { jobsListOptions, useProfile } from '@/lib/queries'
 import { workbenchDataOptions } from '@/lib/queries/options/job-queries'
 import { notificationsListOptions } from '@/lib/queries/options/notification-queries'
 import { queryClient } from '@/main'
+import { BellIcon } from '@/shared/components/icons/animate/BellIcon'
+import { HeroButton } from '@/shared/components/ui/hero-button'
 import { NotificationStatusEnum, NotificationTypeEnum } from '@/shared/enums'
+import { TUserNotification } from '@/shared/types'
 import {
     addToast,
     Badge,
@@ -21,9 +24,6 @@ import { useRouter } from '@tanstack/react-router'
 import { useChannel } from 'ably/react'
 import { CheckCheck, Inbox, RefreshCcw } from 'lucide-react'
 import { useState } from 'react'
-import { TUserNotification } from '../../../../shared/types'
-import { BellIcon } from '../../../../shared/components/icons/animate/BellIcon'
-import { HeroButton } from '../../../../shared/components/ui/hero-button'
 import { NotificationCard } from './NotificationCard'
 
 export default function NotificationDropdown() {
@@ -38,8 +38,6 @@ export default function NotificationDropdown() {
 
     const markAllSeenMutation = useMarkAllSeenMutation()
 
-    console.log(CHANNELS.userNotificationsKey(profile.id))
-
     const handleMarkAllSeen = () => {
         markAllSeenMutation.mutateAsync()
     }
@@ -49,7 +47,6 @@ export default function NotificationDropdown() {
             channelName: CHANNELS.userNotificationsKey(profile.id),
         },
         (message) => {
-            console.log('Nhận tin:', message)
             refetch()
             const noti: TUserNotification = message.data
             addToast({
@@ -91,7 +88,7 @@ export default function NotificationDropdown() {
                 ),
             })
             if (message.name === NotificationTypeEnum.JOB_UPDATE) {
-                queryClient.invalidateQueries({
+                queryClient.refetchQueries({
                     queryKey: [
                         jobsListOptions().queryKey,
                         workbenchDataOptions().queryKey,

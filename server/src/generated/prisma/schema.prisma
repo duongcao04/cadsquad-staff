@@ -48,7 +48,6 @@ model User {
   department          Department?        @relation(fields: [departmentId], references: [id])
   phoneNumber         String?
   isActive            Boolean            @default(true)
-  lastLoginAt         DateTime?
   notifications       Notification[]     @relation("UserNotifications")
   jobsCreated         Job[]              @relation("JobCreator")
   filesCreated        FileSystem[]       @relation("CreatedFiles")
@@ -56,8 +55,6 @@ model User {
   sendedNotifications Notification[]     @relation("UserSendedNotifications")
   jobActivityLog      JobActivityLog[]
   configs             UserConfig[]
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
   jobComments         JobComment[]
   gallery             Gallery[]
   userDevices         UserDevices[]
@@ -81,6 +78,11 @@ model User {
   // This for Grant permissions
   userPermissions UserPermission[]
   securityLogs    UserSecurityLog[]
+
+  deletedAt   DateTime?
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model UserSecurityLog {
@@ -593,15 +595,25 @@ model JobActivityLog {
   job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
   jobId String
 
-  previousValue String?
-  currentValue  String?
+  // Data changes
+  fieldName    String?
+  // Publicly visible part (e.g., "John Doe")
+  currentValue String?
+  // Sensitive part (e.g., "Cost: $500")
+  // If this field is populated, only authorized users see it
+  metadata     Json? // Store { cost: 500 } here
 
+  // Metadata
   modifiedAt   DateTime @default(now())
   modifiedBy   User     @relation(fields: [modifiedById], references: [id])
   modifiedById String
 
-  fieldName    String
-  activityType ActivityType @default(Private)
+  // Logic:
+  // If null -> Public (Everyone with Job access sees it)
+  // If set -> Only users with this Permission Code or ADMIN see it
+  requiredPermissionCode String?
+
+  activityType ActivityType @default(PRIVATE)
   notes        String?
 
   @@index([jobId, modifiedAt])
@@ -609,23 +621,29 @@ model JobActivityLog {
 }
 
 enum ActivityType {
-  CreateJob
-  // Job flow
-  ChangeStatus
-  DeliverJob
-  MarkPaid
-  ReviewJob
-  // Assign member
-  AssignMember
-  UnassignMember
+  CREATE_JOB
+  // Member
+  ASSIGN_MEMBER
+  UNASSIGN_MEMBER
+  UPDATE_MEMBER_COST
+  // WorkFlow
+  FORCE_CHANGE_STATUS
+  DELIVER
+  APPROVE
+  REJECT
   // Financial
-  ChangePaymentChannel
-  IncomeCost
-  // General
-  UpdateInformation
-  DeleteJob
+  PAID
+  // INFO
+  UPDATE_ATTACHMENTS
+  UPDATE_GENERAL_INFORMATION
+  // Client
+  UPDATE_CLIENT_INFORMATION
+  // Schedule
+  RESCHEDULE
+  // Danger
+  DELETE
   // Private
-  Private
+  PRIVATE
 }
 
 model Notification {
@@ -659,13 +677,27 @@ enum NotificationStatus {
 }
 
 enum NotificationType {
+  // Global
   INFO
   WARNING
   ERROR
   SUCCESS
+  // Job
+  JOB_DEADLINE_REMINDER
   JOB_UPDATE
-  DEADLINE_REMINDER
-  STATUS_CHANGE
+  JOB_CREATED
+  JOB_DELIVERED
+  JOB_APPROVED
+  JOB_REJECTED
+  JOB_ASSIGNED_MEMBER
+  JOB_PAID
+  JOB_DELETED
+  JOB_WAITING_PAYOUT
+  // User
+  USER_CREATED
+  USER_RESTORED
+  // System
+  ISSUE_REPORT
 }
 
 model Community {

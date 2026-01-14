@@ -6,7 +6,7 @@ import type {
     TUpdateUserInput,
     TUserQueryInput,
 } from '@/lib/validationSchemas'
-import type { IUserResponse } from '@/shared/interfaces'
+import type { IJobResponse, IUserResponse } from '@/shared/interfaces'
 import { TRole, TUserSecurityLog } from '@/shared/types'
 import lodash from 'lodash'
 import queryString from 'query-string'
@@ -111,6 +111,20 @@ export const userApi = {
     findOne: async (username: string) => {
         return axiosClient
             .get<ApiResponse<IUserResponse>>(`/v1/users/${username}`)
+            .then((res) => res.data)
+    },
+    schedule: async (year: number, month: number, day?: number) => {
+        let q
+        if (day) {
+            q = `year=${year}&month=${month}&day=${day}`
+        } else {
+            q = `year=${year}&month=${month}`
+        }
+
+        return axiosClient
+            .get<
+                ApiResponse<{ jobsSchedule: IJobResponse[] }>
+            >(`/v1/users/schedule?${q}`)
             .then((res) => res.data)
     },
     update: async (username: string, data: TUpdateUserInput) => {

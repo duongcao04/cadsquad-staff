@@ -2,17 +2,19 @@ import {
 	BadRequestException,
 	ConflictException,
 	ForbiddenException,
-	Inject,
 	Injectable,
 	InternalServerErrorException,
 	Logger,
 	NotFoundException,
 } from '@nestjs/common'
-import { randomBytes } from 'node:crypto'
 import { plainToInstance } from 'class-transformer'
+import dayjs from 'dayjs'
+import { Prisma, User } from '../../generated/prisma'
 import { MailService } from '../../providers/mail/mail.service'
 import { PrismaService } from '../../providers/prisma/prisma.service'
+import { IMAGES } from '../../utils'
 import { BcryptService } from '../auth/bcrypt.service'
+import { NotificationService } from '../notification/notification.service'
 import {
 	AssignUserPermissionDto,
 	PermissionAction,
@@ -23,7 +25,6 @@ import { UpdatePasswordDto } from './dto/update-password.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { UserQueryDto } from './dto/user-query.dto'
 import { UserResponseDto } from './dto/user-response.dto'
-import { User, Prisma } from '../../generated/prisma'
 
 @Injectable()
 export class UserService {
@@ -31,59 +32,85 @@ export class UserService {
 	constructor(
 		private readonly prismaService: PrismaService,
 		private readonly bcryptService: BcryptService,
-		private readonly mailService: MailService
+		private readonly mailService: MailService,
+		private readonly notificationService: NotificationService
 	) {}
 
 	async create(dto: CreateUserDto, sendInviteEmail: boolean) {
-		// 1. Kiểm tra email tồn tại
-		const existingUser = await this.prismaService.user.findUnique({
+		// 1. Check if user exists (including soft-deleted ones)
+		const existingUser = await this.prismaService.user.findFirst({
 			where: { email: dto.email },
 		})
-		if (existingUser) throw new ConflictException('Email already exists')
 
-		let roleId: string | null = null
-		if (dto.roleId) {
-			roleId = dto.roleId
-		} else {
-			const staffRoleId = await this.prismaService.role.findUnique({
-				where: { code: 'staff' },
-			})
-			if (staffRoleId) {
-				roleId = staffRoleId.id
-			}
+		// If user is active (deletedAt is null), throw conflict
+		if (existingUser && !existingUser.deletedAt) {
+			throw new ConflictException('Email already exists')
 		}
 
-		// 2. Hash mật khẩu
+		// Prepare shared data
 		const hashedPassword = await this.bcryptService.hash(dto.password)
-
-		// 3. Get unique username
 		const username = await this.generateUsernameFromEmail(dto.email)
-
-		// 4. Generate avatarURL
 		const avatar = this.generateAvatar(dto.displayName)
 
-		// 3. Tạo User trong DB
-		// Lưu ý: Better Auth cần 'name' và 'username'
-		const user = await this.prismaService.user
-			.createManyAndReturn({
-				include: {
-					role: true,
-				},
-				data: {
-					...dto,
-					password: hashedPassword,
-					username: username,
-					displayName: dto.displayName,
-					avatar,
-					roleId,
-				},
+		let roleId = dto.roleId
+		if (!roleId) {
+			const staffRole = await this.prismaService.role.findUnique({
+				where: { code: 'staff' },
 			})
-			.then((res) => res[0])
+			roleId = staffRole?.id
+		}
 
-		// 4. Gửi Email nếu được yêu cầu
+		const userData = {
+			...dto,
+			password: hashedPassword,
+			username,
+			avatar,
+			roleId,
+			isActive: true,
+			deletedAt: null, // Critical: Reset the delete flag
+		}
+
+		// 2. Transaction for Create or Update (Restore)
+		const user = await this.prismaService.$transaction(async (tx) => {
+			let userResult
+
+			if (existingUser && existingUser.deletedAt) {
+				// RESTORE LOGIC
+				userResult = await tx.user.update({
+					where: { id: existingUser.id },
+					data: userData,
+					include: { role: true },
+				})
+			} else {
+				// NORMAL CREATE LOGIC
+				// Using create instead of createManyAndReturn for single objects is cleaner
+				userResult = await tx.user.create({
+					data: userData,
+					include: { role: true },
+				})
+			}
+			return userResult
+		})
+
+		try {
+			await this.notificationService.send({
+				userId: user.id,
+				title: existingUser
+					? 'Account Restored'
+					: 'Welcome to CADSQUAD',
+				content: 'Your account has been successfully set up.',
+				type: 'SUCCESS',
+				imageUrl: IMAGES.NOTIFICATION_DEFAULT_IMAGE,
+				redirectUrl: '/profile',
+			})
+		} catch (sideEffectError) {
+			// Log the error but don't fail the User creation
+			this.logger.error('Send user notification error:', sideEffectError)
+		}
+
+		// 3. Send Email
 		try {
 			if (sendInviteEmail) {
-				// Chúng ta gửi mật khẩu chưa hash cho user qua email
 				await this.mailService.sendUserInvitation(
 					dto.email,
 					dto.displayName,
@@ -91,7 +118,7 @@ export class UserService {
 				)
 			}
 		} catch (error) {
-			this.logger.error(error)
+			this.logger.error('Email failed to send:', error)
 		}
 
 		return plainToInstance(UserResponseDto, user, {
@@ -107,7 +134,7 @@ export class UserService {
 
 		// check user tồn tại
 		const user = await this.prismaService.user.findUnique({
-			where: { id: userId },
+			where: { id: userId, isActive: true },
 		})
 		if (!user) {
 			throw new NotFoundException('User not found')
@@ -154,6 +181,7 @@ export class UserService {
 		const existingUser = await this.prismaService.user.findUnique({
 			where: {
 				id: userId,
+				isActive: true,
 			},
 		})
 		if (!existingUser) {
@@ -175,48 +203,35 @@ export class UserService {
 			this.logger.error('Updated user role failed', error.stack)
 		}
 	}
-
 	async findAll(query: UserQueryDto): Promise<{
 		users: UserResponseDto[]
 		total: number
 		totalPages: number
 		currentPage: number
 	}> {
-		const { page = 1, limit = 8, search, departmentId, role } = query
-		const skip = (page - 1) * limit
+		const { search, departmentId, role, page, limit } = query
 
-		// Xây dựng bộ lọc động
+		// 1. Build the dynamic filter
 		const where: Prisma.UserWhereInput = {
-			AND: [
-				search
-					? {
-							OR: [
-								{
-									displayName: {
-										contains: search,
-										mode: 'insensitive',
-									},
-								},
-								{
-									email: {
-										contains: search,
-										mode: 'insensitive',
-									},
-								},
-								{
-									username: {
-										contains: search,
-										mode: 'insensitive',
-									},
-								},
-							],
-						}
-					: {},
-				departmentId ? { departmentId } : {},
-				role ? { role: role as any } : {},
-			],
+			deletedAt: null,
+			...(search && {
+				OR: [
+					{ displayName: { contains: search, mode: 'insensitive' } },
+					{ email: { contains: search, mode: 'insensitive' } },
+					{ username: { contains: search, mode: 'insensitive' } },
+				],
+			}),
+			...(departmentId && { departmentId }),
+			...(role && { role: { code: role } }),
 		}
 
+		// 2. Determine if we should paginate
+		// If either page or limit is missing, we fetch everything
+		const isPaging = page !== undefined && limit !== undefined
+		const skip = isPaging ? (Number(page) - 1) * Number(limit) : undefined
+		const take = isPaging ? Number(limit) : undefined
+
+		// 3. Execute queries
 		const [users, total] = await this.prismaService.$transaction([
 			this.prismaService.user.findMany({
 				where,
@@ -225,11 +240,9 @@ export class UserService {
 					jobTitle: true,
 					role: true,
 				},
-				orderBy: {
-					createdAt: 'desc', // Thường ưu tiên người mới tạo lên đầu
-				},
-				skip: Number(skip),
-				take: Number(limit),
+				orderBy: { createdAt: 'desc' },
+				skip, // If undefined, Prisma ignores it
+				take, // If undefined, Prisma ignores it
 			}),
 			this.prismaService.user.count({ where }),
 		])
@@ -239,15 +252,16 @@ export class UserService {
 				excludeExtraneousValues: true,
 			}),
 			total,
-			currentPage: page,
-			totalPages: Math.ceil(total / limit),
+			// If not paging, currentPage is 1 and totalPages is 1
+			currentPage: isPaging ? Number(page) : 1,
+			totalPages: isPaging ? Math.ceil(total / Number(limit)) : 1,
 		}
 	}
 
 	async resetPassword(userId: string, data: ResetPasswordDto) {
 		const hashedPassword = await this.bcryptService.hash(data.newPassword)
 		const user = await this.prismaService.user.update({
-			where: { id: userId },
+			where: { id: userId, deletedAt: null },
 			data: { password: hashedPassword },
 		})
 		return { username: user.username }
@@ -256,7 +270,7 @@ export class UserService {
 	async findById(userId: string): Promise<User | null> {
 		try {
 			const userData = await this.prismaService.user.findUnique({
-				where: { id: userId },
+				where: { id: userId, deletedAt: null },
 			})
 			const userRes = plainToInstance(UserResponseDto, userData, {
 				excludeExtraneousValues: true,
@@ -277,7 +291,7 @@ export class UserService {
 	async findByUsername(username: string): Promise<User | null> {
 		try {
 			const userData = await this.prismaService.user.findUnique({
-				where: { username: username },
+				where: { username: username, deletedAt: null },
 				include: {
 					department: true,
 					jobTitle: true,
@@ -300,7 +314,7 @@ export class UserService {
 	async manageUserPermission(userId: string, dto: AssignUserPermissionDto) {
 		// 1. Check if User exists
 		const user = await this.prismaService.user.findUnique({
-			where: { id: userId },
+			where: { id: userId, deletedAt: null },
 		})
 		if (!user) throw new NotFoundException('User not found')
 
@@ -367,27 +381,60 @@ export class UserService {
 		data: UpdateUserDto
 	): Promise<{ id: string; username: string }> {
 		const user = await this.prismaService.user.update({
-			where: { username },
+			where: { username, deletedAt: null },
 			data,
 		})
+		if (!user) {
+			throw new NotFoundException('User not found!')
+		}
 		return { id: user.id, username: user.username }
 	}
 
-	async delete(id: string) {
+	async softDelete(id: string) {
+		// 1. Fetch user and count active job assignments in one go if possible
 		const existingUser = await this.prismaService.user.findUnique({
 			where: { id },
+			include: {
+				jobAssignments: {
+					where: {
+						job: {
+							status: {
+								systemType: { notIn: ['TERMINATED'] },
+							},
+						},
+					},
+				},
+			},
 		})
 
 		if (!existingUser) {
 			throw new NotFoundException('User not found')
 		}
 
-		await this.prismaService.user.delete({
+		// 2. Check if the user has ongoing jobs
+		if (existingUser.jobAssignments.length > 0) {
+			throw new BadRequestException(
+				`Cannot delete user: They still have ${existingUser.jobAssignments.length} active job assignments.`
+			)
+		}
+
+		// 3. Perform soft delete
+		await this.prismaService.user.update({
 			where: { id },
+			data: {
+				isActive: false, // Keep username, but "burn" or reset everything else
+				deletedAt: new Date(),
+				username: `${existingUser.username}_deleted-${Date.now()}`,
+				password: 'DELETED_USER_ACCOUNT', // Scramble the password
+				departmentId: null,
+				jobTitleId: null,
+				roleId: null,
+			},
 		})
 
 		return {
 			username: existingUser.username,
+			message: 'User soft-deleted successfully',
 		}
 	}
 
@@ -398,7 +445,7 @@ export class UserService {
 	) {
 		// 1. Kiểm tra user tồn tại
 		const user = await this.prismaService.user.findUnique({
-			where: { id: userId },
+			where: { id: userId, deletedAt: null },
 			select: {
 				id: true,
 				isActive: true,
@@ -502,6 +549,70 @@ export class UserService {
 			},
 			take: 20,
 		})
+	}
+
+	async getUserSchedule(
+		userId: string,
+		month: number,
+		year: number,
+		day?: number
+	) {
+		// 1. Tạo object cơ sở để tránh lặp lại logic .year().month()
+		const baseDate = dayjs('2026/01/14')
+
+		let start: Date
+		let end: Date
+
+		if (day) {
+			// Kiểm tra nếu day không hợp lệ cho tháng đó (VD: 31/02)
+			const daysInMonth = baseDate.daysInMonth()
+			const targetDay = day > daysInMonth ? daysInMonth : day
+
+			const dateObj = baseDate.date(targetDay)
+			start = dateObj.startOf('day').toDate()
+			end = dateObj.endOf('day').toDate()
+		} else {
+			start = baseDate.startOf('month').toDate()
+			end = baseDate.endOf('month').toDate()
+		}
+
+		const jobsSchedule = await this.prismaService.job.findMany({
+			where: {
+				dueAt: {
+					gte: start,
+					lte: end,
+				},
+				assignments: {
+					some: {
+						userId: userId,
+					},
+				},
+				deletedAt: null, // Đảm bảo job chưa bị xóa
+			},
+			include: {
+				status: {
+					select: {
+						displayName: true,
+						hexColor: true,
+						code: true,
+					},
+				},
+				type: true,
+			},
+			orderBy: {
+				dueAt: 'asc',
+			},
+		})
+
+		return {
+			jobsSchedule,
+			meta: {
+				start,
+				end,
+				type: day ? 'day' : 'month',
+				total: jobsSchedule.length,
+			},
+		}
 	}
 
 	/**

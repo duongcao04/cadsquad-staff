@@ -56,23 +56,17 @@ export const editUserSchema = z.object({
 export type TEditUser = z.infer<typeof editUserSchema>
 
 export const userQuerySchema = z.object({
-    // Phân trang: Tự động chuyển string từ URL sang number
-    page: z.preprocess((val) => Number(val), z.number().min(1)).default(1),
+    // Removed .default() to allow "No Pagination" mode
+    page: z.coerce.number().min(1).optional(),
 
-    limit: z
-        .preprocess((val) => Number(val), z.number().min(1).max(100))
-        .default(10),
+    limit: z.coerce.number().min(1).max(100).optional(),
 
-    // Tìm kiếm theo tên/email
     search: z.string().optional(),
 
-    // Lọc theo phòng ban (UUID)
     departmentId: z.string().uuid('Invalid Department ID').optional(),
 
-    // Lọc theo Role
-    role: z.enum(['ADMIN', 'USER', 'ACCOUNTING']).optional(),
+    role: z.enum(['ADMIN', 'USER', 'ACCOUNTING', 'STAFF']).optional(),
 
-    // Sắp xếp
     sortBy: z.string().default('createdAt'),
     sortOrder: z.enum(['asc', 'desc']).default('desc'),
 })

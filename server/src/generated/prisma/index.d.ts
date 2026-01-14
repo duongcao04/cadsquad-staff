@@ -282,18 +282,21 @@ export type DeliveryStatus = (typeof DeliveryStatus)[keyof typeof DeliveryStatus
 
 
 export const ActivityType: {
-  CreateJob: 'CreateJob',
-  ChangeStatus: 'ChangeStatus',
-  DeliverJob: 'DeliverJob',
-  MarkPaid: 'MarkPaid',
-  ReviewJob: 'ReviewJob',
-  AssignMember: 'AssignMember',
-  UnassignMember: 'UnassignMember',
-  ChangePaymentChannel: 'ChangePaymentChannel',
-  IncomeCost: 'IncomeCost',
-  UpdateInformation: 'UpdateInformation',
-  DeleteJob: 'DeleteJob',
-  Private: 'Private'
+  CREATE_JOB: 'CREATE_JOB',
+  ASSIGN_MEMBER: 'ASSIGN_MEMBER',
+  UNASSIGN_MEMBER: 'UNASSIGN_MEMBER',
+  UPDATE_MEMBER_COST: 'UPDATE_MEMBER_COST',
+  FORCE_CHANGE_STATUS: 'FORCE_CHANGE_STATUS',
+  DELIVER: 'DELIVER',
+  APPROVE: 'APPROVE',
+  REJECT: 'REJECT',
+  PAID: 'PAID',
+  UPDATE_ATTACHMENTS: 'UPDATE_ATTACHMENTS',
+  UPDATE_GENERAL_INFORMATION: 'UPDATE_GENERAL_INFORMATION',
+  UPDATE_CLIENT_INFORMATION: 'UPDATE_CLIENT_INFORMATION',
+  RESCHEDULE: 'RESCHEDULE',
+  DELETE: 'DELETE',
+  PRIVATE: 'PRIVATE'
 };
 
 export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType]
@@ -312,9 +315,19 @@ export const NotificationType: {
   WARNING: 'WARNING',
   ERROR: 'ERROR',
   SUCCESS: 'SUCCESS',
+  JOB_DEADLINE_REMINDER: 'JOB_DEADLINE_REMINDER',
   JOB_UPDATE: 'JOB_UPDATE',
-  DEADLINE_REMINDER: 'DEADLINE_REMINDER',
-  STATUS_CHANGE: 'STATUS_CHANGE'
+  JOB_CREATED: 'JOB_CREATED',
+  JOB_DELIVERED: 'JOB_DELIVERED',
+  JOB_APPROVED: 'JOB_APPROVED',
+  JOB_REJECTED: 'JOB_REJECTED',
+  JOB_ASSIGNED_MEMBER: 'JOB_ASSIGNED_MEMBER',
+  JOB_PAID: 'JOB_PAID',
+  JOB_DELETED: 'JOB_DELETED',
+  JOB_WAITING_PAYOUT: 'JOB_WAITING_PAYOUT',
+  USER_CREATED: 'USER_CREATED',
+  USER_RESTORED: 'USER_RESTORED',
+  ISSUE_REPORT: 'ISSUE_REPORT'
 };
 
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType]
@@ -6801,11 +6814,12 @@ export namespace Prisma {
     departmentId: string | null
     phoneNumber: string | null
     isActive: boolean | null
+    managerId: string | null
+    roleId: string | null
+    deletedAt: Date | null
     lastLoginAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
-    managerId: string | null
-    roleId: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -6820,11 +6834,12 @@ export namespace Prisma {
     departmentId: string | null
     phoneNumber: string | null
     isActive: boolean | null
+    managerId: string | null
+    roleId: string | null
+    deletedAt: Date | null
     lastLoginAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
-    managerId: string | null
-    roleId: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -6839,11 +6854,12 @@ export namespace Prisma {
     departmentId: number
     phoneNumber: number
     isActive: number
+    managerId: number
+    roleId: number
+    deletedAt: number
     lastLoginAt: number
     createdAt: number
     updatedAt: number
-    managerId: number
-    roleId: number
     _all: number
   }
 
@@ -6860,11 +6876,12 @@ export namespace Prisma {
     departmentId?: true
     phoneNumber?: true
     isActive?: true
+    managerId?: true
+    roleId?: true
+    deletedAt?: true
     lastLoginAt?: true
     createdAt?: true
     updatedAt?: true
-    managerId?: true
-    roleId?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -6879,11 +6896,12 @@ export namespace Prisma {
     departmentId?: true
     phoneNumber?: true
     isActive?: true
+    managerId?: true
+    roleId?: true
+    deletedAt?: true
     lastLoginAt?: true
     createdAt?: true
     updatedAt?: true
-    managerId?: true
-    roleId?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -6898,11 +6916,12 @@ export namespace Prisma {
     departmentId?: true
     phoneNumber?: true
     isActive?: true
+    managerId?: true
+    roleId?: true
+    deletedAt?: true
     lastLoginAt?: true
     createdAt?: true
     updatedAt?: true
-    managerId?: true
-    roleId?: true
     _all?: true
   }
 
@@ -6990,11 +7009,12 @@ export namespace Prisma {
     departmentId: string | null
     phoneNumber: string | null
     isActive: boolean
+    managerId: string | null
+    roleId: string | null
+    deletedAt: Date | null
     lastLoginAt: Date | null
     createdAt: Date
     updatedAt: Date
-    managerId: string | null
-    roleId: string | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -7026,11 +7046,12 @@ export namespace Prisma {
     departmentId?: boolean
     phoneNumber?: boolean
     isActive?: boolean
+    managerId?: boolean
+    roleId?: boolean
+    deletedAt?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    managerId?: boolean
-    roleId?: boolean
     jobTitle?: boolean | User$jobTitleArgs<ExtArgs>
     department?: boolean | User$departmentArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
@@ -7071,11 +7092,12 @@ export namespace Prisma {
     departmentId?: boolean
     phoneNumber?: boolean
     isActive?: boolean
+    managerId?: boolean
+    roleId?: boolean
+    deletedAt?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    managerId?: boolean
-    roleId?: boolean
     jobTitle?: boolean | User$jobTitleArgs<ExtArgs>
     department?: boolean | User$departmentArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
@@ -7094,11 +7116,12 @@ export namespace Prisma {
     departmentId?: boolean
     phoneNumber?: boolean
     isActive?: boolean
+    managerId?: boolean
+    roleId?: boolean
+    deletedAt?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    managerId?: boolean
-    roleId?: boolean
     jobTitle?: boolean | User$jobTitleArgs<ExtArgs>
     department?: boolean | User$departmentArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
@@ -7117,14 +7140,15 @@ export namespace Prisma {
     departmentId?: boolean
     phoneNumber?: boolean
     isActive?: boolean
+    managerId?: boolean
+    roleId?: boolean
+    deletedAt?: boolean
     lastLoginAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    managerId?: boolean
-    roleId?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "username" | "displayName" | "avatar" | "jobTitleId" | "password" | "emailVerified" | "departmentId" | "phoneNumber" | "isActive" | "lastLoginAt" | "createdAt" | "updatedAt" | "managerId" | "roleId", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "username" | "displayName" | "avatar" | "jobTitleId" | "password" | "emailVerified" | "departmentId" | "phoneNumber" | "isActive" | "managerId" | "roleId" | "deletedAt" | "lastLoginAt" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     jobTitle?: boolean | User$jobTitleArgs<ExtArgs>
     department?: boolean | User$departmentArgs<ExtArgs>
@@ -7207,11 +7231,12 @@ export namespace Prisma {
       departmentId: string | null
       phoneNumber: string | null
       isActive: boolean
+      managerId: string | null
+      roleId: string | null
+      deletedAt: Date | null
       lastLoginAt: Date | null
       createdAt: Date
       updatedAt: Date
-      managerId: string | null
-      roleId: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -7671,11 +7696,12 @@ export namespace Prisma {
     readonly departmentId: FieldRef<"User", 'String'>
     readonly phoneNumber: FieldRef<"User", 'String'>
     readonly isActive: FieldRef<"User", 'Boolean'>
+    readonly managerId: FieldRef<"User", 'String'>
+    readonly roleId: FieldRef<"User", 'String'>
+    readonly deletedAt: FieldRef<"User", 'DateTime'>
     readonly lastLoginAt: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
-    readonly managerId: FieldRef<"User", 'String'>
-    readonly roleId: FieldRef<"User", 'String'>
   }
     
 
@@ -34910,11 +34936,11 @@ export namespace Prisma {
   export type JobActivityLogMinAggregateOutputType = {
     id: string | null
     jobId: string | null
-    previousValue: string | null
+    fieldName: string | null
     currentValue: string | null
     modifiedAt: Date | null
     modifiedById: string | null
-    fieldName: string | null
+    requiredPermissionCode: string | null
     activityType: $Enums.ActivityType | null
     notes: string | null
   }
@@ -34922,11 +34948,11 @@ export namespace Prisma {
   export type JobActivityLogMaxAggregateOutputType = {
     id: string | null
     jobId: string | null
-    previousValue: string | null
+    fieldName: string | null
     currentValue: string | null
     modifiedAt: Date | null
     modifiedById: string | null
-    fieldName: string | null
+    requiredPermissionCode: string | null
     activityType: $Enums.ActivityType | null
     notes: string | null
   }
@@ -34934,11 +34960,12 @@ export namespace Prisma {
   export type JobActivityLogCountAggregateOutputType = {
     id: number
     jobId: number
-    previousValue: number
+    fieldName: number
     currentValue: number
+    metadata: number
     modifiedAt: number
     modifiedById: number
-    fieldName: number
+    requiredPermissionCode: number
     activityType: number
     notes: number
     _all: number
@@ -34948,11 +34975,11 @@ export namespace Prisma {
   export type JobActivityLogMinAggregateInputType = {
     id?: true
     jobId?: true
-    previousValue?: true
+    fieldName?: true
     currentValue?: true
     modifiedAt?: true
     modifiedById?: true
-    fieldName?: true
+    requiredPermissionCode?: true
     activityType?: true
     notes?: true
   }
@@ -34960,11 +34987,11 @@ export namespace Prisma {
   export type JobActivityLogMaxAggregateInputType = {
     id?: true
     jobId?: true
-    previousValue?: true
+    fieldName?: true
     currentValue?: true
     modifiedAt?: true
     modifiedById?: true
-    fieldName?: true
+    requiredPermissionCode?: true
     activityType?: true
     notes?: true
   }
@@ -34972,11 +34999,12 @@ export namespace Prisma {
   export type JobActivityLogCountAggregateInputType = {
     id?: true
     jobId?: true
-    previousValue?: true
+    fieldName?: true
     currentValue?: true
+    metadata?: true
     modifiedAt?: true
     modifiedById?: true
-    fieldName?: true
+    requiredPermissionCode?: true
     activityType?: true
     notes?: true
     _all?: true
@@ -35057,11 +35085,12 @@ export namespace Prisma {
   export type JobActivityLogGroupByOutputType = {
     id: string
     jobId: string
-    previousValue: string | null
+    fieldName: string | null
     currentValue: string | null
+    metadata: JsonValue | null
     modifiedAt: Date
     modifiedById: string
-    fieldName: string
+    requiredPermissionCode: string | null
     activityType: $Enums.ActivityType
     notes: string | null
     _count: JobActivityLogCountAggregateOutputType | null
@@ -35086,11 +35115,12 @@ export namespace Prisma {
   export type JobActivityLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     jobId?: boolean
-    previousValue?: boolean
+    fieldName?: boolean
     currentValue?: boolean
+    metadata?: boolean
     modifiedAt?: boolean
     modifiedById?: boolean
-    fieldName?: boolean
+    requiredPermissionCode?: boolean
     activityType?: boolean
     notes?: boolean
     job?: boolean | JobDefaultArgs<ExtArgs>
@@ -35100,11 +35130,12 @@ export namespace Prisma {
   export type JobActivityLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     jobId?: boolean
-    previousValue?: boolean
+    fieldName?: boolean
     currentValue?: boolean
+    metadata?: boolean
     modifiedAt?: boolean
     modifiedById?: boolean
-    fieldName?: boolean
+    requiredPermissionCode?: boolean
     activityType?: boolean
     notes?: boolean
     job?: boolean | JobDefaultArgs<ExtArgs>
@@ -35114,11 +35145,12 @@ export namespace Prisma {
   export type JobActivityLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     jobId?: boolean
-    previousValue?: boolean
+    fieldName?: boolean
     currentValue?: boolean
+    metadata?: boolean
     modifiedAt?: boolean
     modifiedById?: boolean
-    fieldName?: boolean
+    requiredPermissionCode?: boolean
     activityType?: boolean
     notes?: boolean
     job?: boolean | JobDefaultArgs<ExtArgs>
@@ -35128,16 +35160,17 @@ export namespace Prisma {
   export type JobActivityLogSelectScalar = {
     id?: boolean
     jobId?: boolean
-    previousValue?: boolean
+    fieldName?: boolean
     currentValue?: boolean
+    metadata?: boolean
     modifiedAt?: boolean
     modifiedById?: boolean
-    fieldName?: boolean
+    requiredPermissionCode?: boolean
     activityType?: boolean
     notes?: boolean
   }
 
-  export type JobActivityLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "jobId" | "previousValue" | "currentValue" | "modifiedAt" | "modifiedById" | "fieldName" | "activityType" | "notes", ExtArgs["result"]["jobActivityLog"]>
+  export type JobActivityLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "jobId" | "fieldName" | "currentValue" | "metadata" | "modifiedAt" | "modifiedById" | "requiredPermissionCode" | "activityType" | "notes", ExtArgs["result"]["jobActivityLog"]>
   export type JobActivityLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     job?: boolean | JobDefaultArgs<ExtArgs>
     modifiedBy?: boolean | UserDefaultArgs<ExtArgs>
@@ -35160,11 +35193,12 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       jobId: string
-      previousValue: string | null
+      fieldName: string | null
       currentValue: string | null
+      metadata: Prisma.JsonValue | null
       modifiedAt: Date
       modifiedById: string
-      fieldName: string
+      requiredPermissionCode: string | null
       activityType: $Enums.ActivityType
       notes: string | null
     }, ExtArgs["result"]["jobActivityLog"]>
@@ -35594,11 +35628,12 @@ export namespace Prisma {
   interface JobActivityLogFieldRefs {
     readonly id: FieldRef<"JobActivityLog", 'String'>
     readonly jobId: FieldRef<"JobActivityLog", 'String'>
-    readonly previousValue: FieldRef<"JobActivityLog", 'String'>
+    readonly fieldName: FieldRef<"JobActivityLog", 'String'>
     readonly currentValue: FieldRef<"JobActivityLog", 'String'>
+    readonly metadata: FieldRef<"JobActivityLog", 'Json'>
     readonly modifiedAt: FieldRef<"JobActivityLog", 'DateTime'>
     readonly modifiedById: FieldRef<"JobActivityLog", 'String'>
-    readonly fieldName: FieldRef<"JobActivityLog", 'String'>
+    readonly requiredPermissionCode: FieldRef<"JobActivityLog", 'String'>
     readonly activityType: FieldRef<"JobActivityLog", 'ActivityType'>
     readonly notes: FieldRef<"JobActivityLog", 'String'>
   }
@@ -42854,11 +42889,12 @@ export namespace Prisma {
     departmentId: 'departmentId',
     phoneNumber: 'phoneNumber',
     isActive: 'isActive',
+    managerId: 'managerId',
+    roleId: 'roleId',
+    deletedAt: 'deletedAt',
     lastLoginAt: 'lastLoginAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    managerId: 'managerId',
-    roleId: 'roleId'
+    updatedAt: 'updatedAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -43200,11 +43236,12 @@ export namespace Prisma {
   export const JobActivityLogScalarFieldEnum: {
     id: 'id',
     jobId: 'jobId',
-    previousValue: 'previousValue',
+    fieldName: 'fieldName',
     currentValue: 'currentValue',
+    metadata: 'metadata',
     modifiedAt: 'modifiedAt',
     modifiedById: 'modifiedById',
-    fieldName: 'fieldName',
+    requiredPermissionCode: 'requiredPermissionCode',
     activityType: 'activityType',
     notes: 'notes'
   };
@@ -43312,6 +43349,14 @@ export namespace Prisma {
   };
 
   export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const QueryMode: {
@@ -43729,11 +43774,12 @@ export namespace Prisma {
     departmentId?: StringNullableFilter<"User"> | string | null
     phoneNumber?: StringNullableFilter<"User"> | string | null
     isActive?: BoolFilter<"User"> | boolean
+    managerId?: StringNullableFilter<"User"> | string | null
+    roleId?: StringNullableFilter<"User"> | string | null
+    deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    managerId?: StringNullableFilter<"User"> | string | null
-    roleId?: StringNullableFilter<"User"> | string | null
     jobTitle?: XOR<JobTitleNullableScalarRelationFilter, JobTitleWhereInput> | null
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     notifications?: NotificationListRelationFilter
@@ -43773,11 +43819,12 @@ export namespace Prisma {
     departmentId?: SortOrderInput | SortOrder
     phoneNumber?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    managerId?: SortOrderInput | SortOrder
+    roleId?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    managerId?: SortOrderInput | SortOrder
-    roleId?: SortOrderInput | SortOrder
     jobTitle?: JobTitleOrderByWithRelationInput
     department?: DepartmentOrderByWithRelationInput
     notifications?: NotificationOrderByRelationAggregateInput
@@ -43820,11 +43867,12 @@ export namespace Prisma {
     departmentId?: StringNullableFilter<"User"> | string | null
     phoneNumber?: StringNullableFilter<"User"> | string | null
     isActive?: BoolFilter<"User"> | boolean
+    managerId?: StringNullableFilter<"User"> | string | null
+    roleId?: StringNullableFilter<"User"> | string | null
+    deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    managerId?: StringNullableFilter<"User"> | string | null
-    roleId?: StringNullableFilter<"User"> | string | null
     jobTitle?: XOR<JobTitleNullableScalarRelationFilter, JobTitleWhereInput> | null
     department?: XOR<DepartmentNullableScalarRelationFilter, DepartmentWhereInput> | null
     notifications?: NotificationListRelationFilter
@@ -43864,11 +43912,12 @@ export namespace Prisma {
     departmentId?: SortOrderInput | SortOrder
     phoneNumber?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    managerId?: SortOrderInput | SortOrder
+    roleId?: SortOrderInput | SortOrder
+    deletedAt?: SortOrderInput | SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    managerId?: SortOrderInput | SortOrder
-    roleId?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -43889,11 +43938,12 @@ export namespace Prisma {
     departmentId?: StringNullableWithAggregatesFilter<"User"> | string | null
     phoneNumber?: StringNullableWithAggregatesFilter<"User"> | string | null
     isActive?: BoolWithAggregatesFilter<"User"> | boolean
+    managerId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    roleId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    deletedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     lastLoginAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
-    managerId?: StringNullableWithAggregatesFilter<"User"> | string | null
-    roleId?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
   export type UserSecurityLogWhereInput = {
@@ -45661,11 +45711,12 @@ export namespace Prisma {
     NOT?: JobActivityLogWhereInput | JobActivityLogWhereInput[]
     id?: StringFilter<"JobActivityLog"> | string
     jobId?: StringFilter<"JobActivityLog"> | string
-    previousValue?: StringNullableFilter<"JobActivityLog"> | string | null
+    fieldName?: StringNullableFilter<"JobActivityLog"> | string | null
     currentValue?: StringNullableFilter<"JobActivityLog"> | string | null
+    metadata?: JsonNullableFilter<"JobActivityLog">
     modifiedAt?: DateTimeFilter<"JobActivityLog"> | Date | string
     modifiedById?: StringFilter<"JobActivityLog"> | string
-    fieldName?: StringFilter<"JobActivityLog"> | string
+    requiredPermissionCode?: StringNullableFilter<"JobActivityLog"> | string | null
     activityType?: EnumActivityTypeFilter<"JobActivityLog"> | $Enums.ActivityType
     notes?: StringNullableFilter<"JobActivityLog"> | string | null
     job?: XOR<JobScalarRelationFilter, JobWhereInput>
@@ -45675,11 +45726,12 @@ export namespace Prisma {
   export type JobActivityLogOrderByWithRelationInput = {
     id?: SortOrder
     jobId?: SortOrder
-    previousValue?: SortOrderInput | SortOrder
+    fieldName?: SortOrderInput | SortOrder
     currentValue?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     modifiedAt?: SortOrder
     modifiedById?: SortOrder
-    fieldName?: SortOrder
+    requiredPermissionCode?: SortOrderInput | SortOrder
     activityType?: SortOrder
     notes?: SortOrderInput | SortOrder
     job?: JobOrderByWithRelationInput
@@ -45692,11 +45744,12 @@ export namespace Prisma {
     OR?: JobActivityLogWhereInput[]
     NOT?: JobActivityLogWhereInput | JobActivityLogWhereInput[]
     jobId?: StringFilter<"JobActivityLog"> | string
-    previousValue?: StringNullableFilter<"JobActivityLog"> | string | null
+    fieldName?: StringNullableFilter<"JobActivityLog"> | string | null
     currentValue?: StringNullableFilter<"JobActivityLog"> | string | null
+    metadata?: JsonNullableFilter<"JobActivityLog">
     modifiedAt?: DateTimeFilter<"JobActivityLog"> | Date | string
     modifiedById?: StringFilter<"JobActivityLog"> | string
-    fieldName?: StringFilter<"JobActivityLog"> | string
+    requiredPermissionCode?: StringNullableFilter<"JobActivityLog"> | string | null
     activityType?: EnumActivityTypeFilter<"JobActivityLog"> | $Enums.ActivityType
     notes?: StringNullableFilter<"JobActivityLog"> | string | null
     job?: XOR<JobScalarRelationFilter, JobWhereInput>
@@ -45706,11 +45759,12 @@ export namespace Prisma {
   export type JobActivityLogOrderByWithAggregationInput = {
     id?: SortOrder
     jobId?: SortOrder
-    previousValue?: SortOrderInput | SortOrder
+    fieldName?: SortOrderInput | SortOrder
     currentValue?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
     modifiedAt?: SortOrder
     modifiedById?: SortOrder
-    fieldName?: SortOrder
+    requiredPermissionCode?: SortOrderInput | SortOrder
     activityType?: SortOrder
     notes?: SortOrderInput | SortOrder
     _count?: JobActivityLogCountOrderByAggregateInput
@@ -45724,11 +45778,12 @@ export namespace Prisma {
     NOT?: JobActivityLogScalarWhereWithAggregatesInput | JobActivityLogScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"JobActivityLog"> | string
     jobId?: StringWithAggregatesFilter<"JobActivityLog"> | string
-    previousValue?: StringNullableWithAggregatesFilter<"JobActivityLog"> | string | null
+    fieldName?: StringNullableWithAggregatesFilter<"JobActivityLog"> | string | null
     currentValue?: StringNullableWithAggregatesFilter<"JobActivityLog"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"JobActivityLog">
     modifiedAt?: DateTimeWithAggregatesFilter<"JobActivityLog"> | Date | string
     modifiedById?: StringWithAggregatesFilter<"JobActivityLog"> | string
-    fieldName?: StringWithAggregatesFilter<"JobActivityLog"> | string
+    requiredPermissionCode?: StringNullableWithAggregatesFilter<"JobActivityLog"> | string | null
     activityType?: EnumActivityTypeWithAggregatesFilter<"JobActivityLog"> | $Enums.ActivityType
     notes?: StringNullableWithAggregatesFilter<"JobActivityLog"> | string | null
   }
@@ -46310,6 +46365,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -46352,11 +46408,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -46390,6 +46447,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46432,11 +46490,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -46472,11 +46531,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -46489,6 +46549,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46506,11 +46567,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserSecurityLogCreateInput = {
@@ -48420,10 +48482,11 @@ export namespace Prisma {
 
   export type JobActivityLogCreateInput = {
     id?: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
     job: JobCreateNestedOneWithoutActivityLogInput
@@ -48433,21 +48496,23 @@ export namespace Prisma {
   export type JobActivityLogUncheckedCreateInput = {
     id?: string
     jobId: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
     modifiedById: string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
   }
 
   export type JobActivityLogUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     job?: JobUpdateOneRequiredWithoutActivityLogNestedInput
@@ -48457,11 +48522,12 @@ export namespace Prisma {
   export type JobActivityLogUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     jobId?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     modifiedById?: StringFieldUpdateOperationsInput | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -48469,21 +48535,23 @@ export namespace Prisma {
   export type JobActivityLogCreateManyInput = {
     id?: string
     jobId: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
     modifiedById: string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
   }
 
   export type JobActivityLogUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -48491,11 +48559,12 @@ export namespace Prisma {
   export type JobActivityLogUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     jobId?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     modifiedById?: StringFieldUpdateOperationsInput | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -49377,11 +49446,12 @@ export namespace Prisma {
     departmentId?: SortOrder
     phoneNumber?: SortOrder
     isActive?: SortOrder
+    managerId?: SortOrder
+    roleId?: SortOrder
+    deletedAt?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    managerId?: SortOrder
-    roleId?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -49396,11 +49466,12 @@ export namespace Prisma {
     departmentId?: SortOrder
     phoneNumber?: SortOrder
     isActive?: SortOrder
+    managerId?: SortOrder
+    roleId?: SortOrder
+    deletedAt?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    managerId?: SortOrder
-    roleId?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -49415,11 +49486,12 @@ export namespace Prisma {
     departmentId?: SortOrder
     phoneNumber?: SortOrder
     isActive?: SortOrder
+    managerId?: SortOrder
+    roleId?: SortOrder
+    deletedAt?: SortOrder
     lastLoginAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    managerId?: SortOrder
-    roleId?: SortOrder
   }
 
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -50648,6 +50720,29 @@ export namespace Prisma {
   export type JobStatusHistorySumOrderByAggregateInput = {
     durationSeconds?: SortOrder
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type EnumActivityTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.ActivityType | EnumActivityTypeFieldRefInput<$PrismaModel>
@@ -50659,11 +50754,12 @@ export namespace Prisma {
   export type JobActivityLogCountOrderByAggregateInput = {
     id?: SortOrder
     jobId?: SortOrder
-    previousValue?: SortOrder
+    fieldName?: SortOrder
     currentValue?: SortOrder
+    metadata?: SortOrder
     modifiedAt?: SortOrder
     modifiedById?: SortOrder
-    fieldName?: SortOrder
+    requiredPermissionCode?: SortOrder
     activityType?: SortOrder
     notes?: SortOrder
   }
@@ -50671,11 +50767,11 @@ export namespace Prisma {
   export type JobActivityLogMaxOrderByAggregateInput = {
     id?: SortOrder
     jobId?: SortOrder
-    previousValue?: SortOrder
+    fieldName?: SortOrder
     currentValue?: SortOrder
     modifiedAt?: SortOrder
     modifiedById?: SortOrder
-    fieldName?: SortOrder
+    requiredPermissionCode?: SortOrder
     activityType?: SortOrder
     notes?: SortOrder
   }
@@ -50683,13 +50779,39 @@ export namespace Prisma {
   export type JobActivityLogMinOrderByAggregateInput = {
     id?: SortOrder
     jobId?: SortOrder
-    previousValue?: SortOrder
+    fieldName?: SortOrder
     currentValue?: SortOrder
     modifiedAt?: SortOrder
     modifiedById?: SortOrder
-    fieldName?: SortOrder
+    requiredPermissionCode?: SortOrder
     activityType?: SortOrder
     notes?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumActivityTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -54036,6 +54158,29 @@ export namespace Prisma {
     notIn?: $Enums.ActivityType[] | ListEnumActivityTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumActivityTypeFilter<$PrismaModel> | $Enums.ActivityType
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumActivityTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.ActivityType | EnumActivityTypeFieldRefInput<$PrismaModel>
@@ -54125,6 +54270,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -54166,11 +54312,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -54219,6 +54366,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54260,11 +54408,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -54554,10 +54703,11 @@ export namespace Prisma {
 
   export type JobActivityLogCreateWithoutModifiedByInput = {
     id?: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
     job: JobCreateNestedOneWithoutActivityLogInput
@@ -54566,10 +54716,11 @@ export namespace Prisma {
   export type JobActivityLogUncheckedCreateWithoutModifiedByInput = {
     id?: string
     jobId: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
   }
@@ -54760,6 +54911,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -54801,11 +54953,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -54843,6 +54996,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -54884,10 +55038,11 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -55403,11 +55558,12 @@ export namespace Prisma {
     NOT?: JobActivityLogScalarWhereInput | JobActivityLogScalarWhereInput[]
     id?: StringFilter<"JobActivityLog"> | string
     jobId?: StringFilter<"JobActivityLog"> | string
-    previousValue?: StringNullableFilter<"JobActivityLog"> | string | null
+    fieldName?: StringNullableFilter<"JobActivityLog"> | string | null
     currentValue?: StringNullableFilter<"JobActivityLog"> | string | null
+    metadata?: JsonNullableFilter<"JobActivityLog">
     modifiedAt?: DateTimeFilter<"JobActivityLog"> | Date | string
     modifiedById?: StringFilter<"JobActivityLog"> | string
-    fieldName?: StringFilter<"JobActivityLog"> | string
+    requiredPermissionCode?: StringNullableFilter<"JobActivityLog"> | string | null
     activityType?: EnumActivityTypeFilter<"JobActivityLog"> | $Enums.ActivityType
     notes?: StringNullableFilter<"JobActivityLog"> | string | null
   }
@@ -55605,6 +55761,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55646,11 +55803,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -55704,11 +55862,12 @@ export namespace Prisma {
     departmentId?: StringNullableFilter<"User"> | string | null
     phoneNumber?: StringNullableFilter<"User"> | string | null
     isActive?: BoolFilter<"User"> | boolean
+    managerId?: StringNullableFilter<"User"> | string | null
+    roleId?: StringNullableFilter<"User"> | string | null
+    deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
-    managerId?: StringNullableFilter<"User"> | string | null
-    roleId?: StringNullableFilter<"User"> | string | null
   }
 
   export type SessionUpsertWithWhereUniqueWithoutUserInput = {
@@ -55985,6 +56144,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -56026,11 +56186,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -56079,6 +56240,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56120,11 +56282,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -56186,6 +56349,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -56227,10 +56391,11 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -56461,6 +56626,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -56502,11 +56668,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -56584,6 +56751,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56625,11 +56793,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -56747,6 +56916,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -56788,11 +56958,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -56841,6 +57012,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56882,11 +57054,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -56919,6 +57092,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -56960,11 +57134,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -57013,6 +57188,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57054,11 +57230,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -57091,6 +57268,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -57132,11 +57310,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -57185,6 +57364,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57226,11 +57406,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -57332,6 +57513,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -57373,11 +57555,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -57556,6 +57739,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57597,11 +57781,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -57681,6 +57866,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -57721,11 +57907,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -57785,6 +57972,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -57825,11 +58013,12 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -57889,6 +58078,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -57930,11 +58120,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -57983,6 +58174,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -58024,11 +58216,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -58061,6 +58254,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -58102,11 +58296,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     files?: FileSystemUncheckedCreateNestedManyWithoutVisibleToUsersInput
@@ -58144,6 +58339,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -58185,11 +58381,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -58307,6 +58504,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -58348,11 +58546,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     files?: FileSystemUncheckedUpdateManyWithoutVisibleToUsersNestedInput
@@ -58566,6 +58765,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -58607,11 +58807,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
     files?: FileSystemUncheckedCreateNestedManyWithoutVisibleToUsersInput
@@ -58707,10 +58908,11 @@ export namespace Prisma {
 
   export type JobActivityLogCreateWithoutJobInput = {
     id?: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
     modifiedBy: UserCreateNestedOneWithoutJobActivityLogInput
@@ -58718,11 +58920,12 @@ export namespace Prisma {
 
   export type JobActivityLogUncheckedCreateWithoutJobInput = {
     id?: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
     modifiedById: string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
   }
@@ -59006,6 +59209,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59047,11 +59251,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
     files?: FileSystemUncheckedUpdateManyWithoutVisibleToUsersNestedInput
@@ -59327,6 +59532,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -59368,11 +59574,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -59496,6 +59703,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59537,11 +59745,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -59664,6 +59873,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -59705,11 +59915,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -59827,6 +60038,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59868,11 +60080,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -60367,6 +60580,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -60408,11 +60622,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -60536,6 +60751,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60577,11 +60793,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -60722,6 +60939,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -60763,11 +60981,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -60936,6 +61155,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60977,11 +61197,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -61083,6 +61304,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -61124,11 +61346,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -61252,6 +61475,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -61293,11 +61517,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -61330,6 +61555,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -61371,11 +61597,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
     files?: FileSystemUncheckedCreateNestedManyWithoutVisibleToUsersInput
@@ -61413,6 +61640,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -61454,11 +61682,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -61507,6 +61736,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -61548,11 +61778,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
     files?: FileSystemUncheckedUpdateManyWithoutVisibleToUsersNestedInput
@@ -61596,6 +61827,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -61637,11 +61869,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -61779,6 +62012,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -61820,11 +62054,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -61904,6 +62139,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -61945,11 +62181,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -62139,6 +62376,7 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -62180,11 +62418,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     jobsCreated?: JobUncheckedCreateNestedManyWithoutCreatedByInput
     filesCreated?: FileSystemUncheckedCreateNestedManyWithoutCreatedByInput
@@ -62285,6 +62524,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62326,11 +62566,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -62552,10 +62793,11 @@ export namespace Prisma {
   export type JobActivityLogCreateManyModifiedByInput = {
     id?: string
     jobId: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
   }
@@ -62624,10 +62866,11 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    roleId?: string | null
   }
 
   export type SessionCreateManyUserInput = {
@@ -62959,10 +63202,11 @@ export namespace Prisma {
 
   export type JobActivityLogUpdateWithoutModifiedByInput = {
     id?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     job?: JobUpdateOneRequiredWithoutActivityLogNestedInput
@@ -62971,10 +63215,11 @@ export namespace Prisma {
   export type JobActivityLogUncheckedUpdateWithoutModifiedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     jobId?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -62982,10 +63227,11 @@ export namespace Prisma {
   export type JobActivityLogUncheckedUpdateManyWithoutModifiedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     jobId?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
   }
@@ -63158,6 +63404,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63199,10 +63446,11 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -63238,10 +63486,11 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SessionUpdateWithoutUserInput = {
@@ -63489,10 +63738,11 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
   }
 
   export type PermissionUpdateWithoutRolesInput = {
@@ -63540,6 +63790,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63581,10 +63832,11 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -63620,10 +63872,11 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserPermissionCreateManyPermissionInput = {
@@ -63774,11 +64027,12 @@ export namespace Prisma {
     departmentId?: string | null
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
   }
 
   export type UserUpdateWithoutJobTitleInput = {
@@ -63791,6 +64045,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63831,11 +64086,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -63870,11 +64126,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserCreateManyDepartmentInput = {
@@ -63888,11 +64145,12 @@ export namespace Prisma {
     emailVerified?: boolean
     phoneNumber?: string | null
     isActive?: boolean
+    managerId?: string | null
+    roleId?: string | null
+    deletedAt?: Date | string | null
     lastLoginAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    managerId?: string | null
-    roleId?: string | null
   }
 
   export type UserUpdateWithoutDepartmentInput = {
@@ -63905,6 +64163,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63945,11 +64204,12 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -63984,11 +64244,12 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UserUpdateWithoutFilesInput = {
@@ -64001,6 +64262,7 @@ export namespace Prisma {
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -64042,11 +64304,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     jobsCreated?: JobUncheckedUpdateManyWithoutCreatedByNestedInput
     filesCreated?: FileSystemUncheckedUpdateManyWithoutCreatedByNestedInput
@@ -64081,11 +64344,12 @@ export namespace Prisma {
     departmentId?: NullableStringFieldUpdateOperationsInput | string | null
     phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    roleId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    roleId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type JobAssignmentCreateManyJobInput = {
@@ -64097,11 +64361,12 @@ export namespace Prisma {
 
   export type JobActivityLogCreateManyJobInput = {
     id?: string
-    previousValue?: string | null
+    fieldName?: string | null
     currentValue?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: Date | string
     modifiedById: string
-    fieldName: string
+    requiredPermissionCode?: string | null
     activityType?: $Enums.ActivityType
     notes?: string | null
   }
@@ -64179,10 +64444,11 @@ export namespace Prisma {
 
   export type JobActivityLogUpdateWithoutJobInput = {
     id?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     modifiedBy?: UserUpdateOneRequiredWithoutJobActivityLogNestedInput
@@ -64190,22 +64456,24 @@ export namespace Prisma {
 
   export type JobActivityLogUncheckedUpdateWithoutJobInput = {
     id?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     modifiedById?: StringFieldUpdateOperationsInput | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type JobActivityLogUncheckedUpdateManyWithoutJobInput = {
     id?: StringFieldUpdateOperationsInput | string
-    previousValue?: NullableStringFieldUpdateOperationsInput | string | null
+    fieldName?: NullableStringFieldUpdateOperationsInput | string | null
     currentValue?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
     modifiedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     modifiedById?: StringFieldUpdateOperationsInput | string
-    fieldName?: StringFieldUpdateOperationsInput | string
+    requiredPermissionCode?: NullableStringFieldUpdateOperationsInput | string | null
     activityType?: EnumActivityTypeFieldUpdateOperationsInput | $Enums.ActivityType
     notes?: NullableStringFieldUpdateOperationsInput | string | null
   }

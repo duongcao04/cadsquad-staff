@@ -148,11 +148,12 @@ exports.Prisma.UserScalarFieldEnum = {
   departmentId: 'departmentId',
   phoneNumber: 'phoneNumber',
   isActive: 'isActive',
+  managerId: 'managerId',
+  roleId: 'roleId',
+  deletedAt: 'deletedAt',
   lastLoginAt: 'lastLoginAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  managerId: 'managerId',
-  roleId: 'roleId'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.UserSecurityLogScalarFieldEnum = {
@@ -422,11 +423,12 @@ exports.Prisma.JobStatusHistoryScalarFieldEnum = {
 exports.Prisma.JobActivityLogScalarFieldEnum = {
   id: 'id',
   jobId: 'jobId',
-  previousValue: 'previousValue',
+  fieldName: 'fieldName',
   currentValue: 'currentValue',
+  metadata: 'metadata',
   modifiedAt: 'modifiedAt',
   modifiedById: 'modifiedById',
-  fieldName: 'fieldName',
+  requiredPermissionCode: 'requiredPermissionCode',
   activityType: 'activityType',
   notes: 'notes'
 };
@@ -509,6 +511,11 @@ exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -588,18 +595,21 @@ exports.DeliveryStatus = exports.$Enums.DeliveryStatus = {
 };
 
 exports.ActivityType = exports.$Enums.ActivityType = {
-  CreateJob: 'CreateJob',
-  ChangeStatus: 'ChangeStatus',
-  DeliverJob: 'DeliverJob',
-  MarkPaid: 'MarkPaid',
-  ReviewJob: 'ReviewJob',
-  AssignMember: 'AssignMember',
-  UnassignMember: 'UnassignMember',
-  ChangePaymentChannel: 'ChangePaymentChannel',
-  IncomeCost: 'IncomeCost',
-  UpdateInformation: 'UpdateInformation',
-  DeleteJob: 'DeleteJob',
-  Private: 'Private'
+  CREATE_JOB: 'CREATE_JOB',
+  ASSIGN_MEMBER: 'ASSIGN_MEMBER',
+  UNASSIGN_MEMBER: 'UNASSIGN_MEMBER',
+  UPDATE_MEMBER_COST: 'UPDATE_MEMBER_COST',
+  FORCE_CHANGE_STATUS: 'FORCE_CHANGE_STATUS',
+  DELIVER: 'DELIVER',
+  APPROVE: 'APPROVE',
+  REJECT: 'REJECT',
+  PAID: 'PAID',
+  UPDATE_ATTACHMENTS: 'UPDATE_ATTACHMENTS',
+  UPDATE_GENERAL_INFORMATION: 'UPDATE_GENERAL_INFORMATION',
+  UPDATE_CLIENT_INFORMATION: 'UPDATE_CLIENT_INFORMATION',
+  RESCHEDULE: 'RESCHEDULE',
+  DELETE: 'DELETE',
+  PRIVATE: 'PRIVATE'
 };
 
 exports.NotificationType = exports.$Enums.NotificationType = {
@@ -607,9 +617,19 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   WARNING: 'WARNING',
   ERROR: 'ERROR',
   SUCCESS: 'SUCCESS',
+  JOB_DEADLINE_REMINDER: 'JOB_DEADLINE_REMINDER',
   JOB_UPDATE: 'JOB_UPDATE',
-  DEADLINE_REMINDER: 'DEADLINE_REMINDER',
-  STATUS_CHANGE: 'STATUS_CHANGE'
+  JOB_CREATED: 'JOB_CREATED',
+  JOB_DELIVERED: 'JOB_DELIVERED',
+  JOB_APPROVED: 'JOB_APPROVED',
+  JOB_REJECTED: 'JOB_REJECTED',
+  JOB_ASSIGNED_MEMBER: 'JOB_ASSIGNED_MEMBER',
+  JOB_PAID: 'JOB_PAID',
+  JOB_DELETED: 'JOB_DELETED',
+  JOB_WAITING_PAYOUT: 'JOB_WAITING_PAYOUT',
+  USER_CREATED: 'USER_CREATED',
+  USER_RESTORED: 'USER_RESTORED',
+  ISSUE_REPORT: 'ISSUE_REPORT'
 };
 
 exports.NotificationStatus = exports.$Enums.NotificationStatus = {

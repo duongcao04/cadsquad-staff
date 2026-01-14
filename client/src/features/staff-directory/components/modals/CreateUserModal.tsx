@@ -4,6 +4,15 @@ import {
     jobTitlesListOptions,
     rolesListOptions,
 } from '@/lib/queries'
+import { useCreateUserMutation } from '@/lib/queries/useUser'
+import { transformEmail } from '@/lib/utils'
+import HeroCopyButton from '@/shared/components/ui/hero-copy-button'
+import { HeroInput } from '@/shared/components/ui/hero-input'
+import { HeroModal, HeroModalContent } from '@/shared/components/ui/hero-modal'
+import { HeroPasswordInput } from '@/shared/components/ui/hero-password-input'
+import { HeroSelect, HeroSelectItem } from '@/shared/components/ui/hero-select'
+import { useDevice } from '@/shared/hooks'
+import { TDepartment, TJobTitle, TRole } from '@/shared/types'
 import {
     addToast,
     Button,
@@ -35,15 +44,6 @@ import { Key, Suspense, useCallback, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
-import { useCreateUserMutation } from '../../../../lib/queries/useUser'
-import { transformEmail } from '../../../../lib/utils'
-import { TDepartment, TJobTitle, TRole } from '../../../../shared/types'
-import { HeroInput } from '../../../../shared/components/ui/hero-input'
-import { HeroModal, HeroModalContent } from '../../../../shared/components/ui/hero-modal'
-import { HeroPasswordInput } from '../../../../shared/components/ui/hero-password-input'
-import { HeroSelect, HeroSelectItem } from '../../../../shared/components/ui/hero-select'
-import { useDevice } from '../../../../shared/hooks'
-import HeroCopyButton from '../../../../shared/components/ui/hero-copy-button'
 
 const ONLY_INTERNAL_EMAIL = false
 
@@ -111,8 +111,6 @@ export default function CreateUserModal({
 
         await createUserMutation.mutateAsync(values, {
             onSuccess(res) {
-                console.log(res)
-
                 setIsSuccess(true)
                 setUserCreated({
                     displayName: values.displayName,
@@ -426,8 +424,16 @@ const CreateUserFormContent = ({
                                     }
                                     onSelectionChange={onTabChange}
                                 >
-                                    <Tab key="auto" title="Auto-Generate" />
-                                    <Tab key="manual" title="Manual Entry" />
+                                    <Tab
+                                        key="auto"
+                                        title="Auto-Generate"
+                                        type="button"
+                                    />
+                                    <Tab
+                                        key="manual"
+                                        title="Manual Entry"
+                                        type="button"
+                                    />
                                 </Tabs>
                             </div>
 

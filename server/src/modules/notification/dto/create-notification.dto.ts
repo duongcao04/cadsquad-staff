@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, IsEnum } from 'class-validator'
 import { NotificationType } from '../../../generated/prisma'
+import { IMAGES } from '../../../utils'
 
 export class CreateNotificationDto {
 	@ApiProperty({
@@ -25,7 +26,7 @@ export class CreateNotificationDto {
 	})
 	@IsOptional()
 	@IsString()
-	imageUrl?: string
+	imageUrl?: string = IMAGES.NOTIFICATION_DEFAULT_IMAGE
 
 	@ApiProperty({ description: 'ID of the sender', required: false })
 	@IsOptional()

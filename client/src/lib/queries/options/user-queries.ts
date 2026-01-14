@@ -37,8 +37,6 @@ export const mapUser: (item?: IUserResponse) => TUser = (item) => {
 
 export const usersListOptions = (
     params: TUserQueryInput = {
-        page: 1,
-        limit: 10,
         sortBy: '',
         sortOrder: 'asc',
     }

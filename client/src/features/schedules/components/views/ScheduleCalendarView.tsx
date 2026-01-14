@@ -66,7 +66,7 @@ export default function ScheduleCalendarView({
                                     {format(day, 'd')}
                                 </span>
                             </div>
-                            <div className="flex-1 flex flex-col gap-1 overflow-y-auto max-h-[150px] scrollbar-hide">
+                            <div className="flex-1 flex flex-col gap-1 overflow-y-auto max-h-37.5 scrollbar-hide">
                                 {daysJobs.map((job) => (
                                     <div
                                         key={job.id}

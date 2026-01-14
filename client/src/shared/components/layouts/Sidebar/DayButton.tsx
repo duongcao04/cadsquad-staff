@@ -2,13 +2,12 @@ import dayjs from 'dayjs'
 import lodash from 'lodash'
 import { CalendarDay } from 'react-day-picker'
 
-import { useJobsDueOnDate } from '@/lib/queries'
-
 type Props = {
     selectedDate: Date | undefined
     setSelectedDate: React.Dispatch<React.SetStateAction<Date | undefined>>
     calendarDay: CalendarDay
     openModal: () => void
+    isHighlight: boolean
 }
 
 export default function DayButton({
@@ -16,13 +15,12 @@ export default function DayButton({
     setSelectedDate,
     calendarDay,
     openModal,
+    isHighlight,
 }: Props) {
-    const { data: jobs } = useJobsDueOnDate(calendarDay.date?.toISOString())
     // eslint-disable-next-line react-hooks/purity
     const today = new Date(Date.now())
     const isSelected = lodash.isEqual(selectedDate, calendarDay.date)
     const isToday = dayjs(today).isSame(calendarDay.date, 'date')
-    const isHighlight = Boolean(jobs?.length)
 
     return (
         <button
